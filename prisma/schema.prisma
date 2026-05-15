@@ -1,0 +1,254 @@
+generator client {
+  provider = "prisma-client-js"
+}
+  datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────
+// USUARIOS
+// ─────────────────────────────────────────────────────────────────
+
+model Usuario {
+  id              String   @id @default(cuid())
+  nombre_completo String
+  email           String   @unique
+  password_hash   String
+  telefono        String
+  direccion       String
+  dni             String   @unique
+  role            Role     @default(user)
+  bio             String?
+  slug            String   @unique
+  created_at      DateTime @default(now())
+
+  videos           Video[]
+  archivos         Archivo[]
+  taller_usuarios  TallerUsuario[]
+  postulaciones    Postulacion[]
+  empresa_miembros EmpresaMiembro[]
+}
+
+enum Role {
+  super_admin
+  admin
+  user
+  empleador   // ← nuevo: acceso al panel de empresa
+}
+
+// ─────────────────────────────────────────────────────────────────
+// TALLERES
+// ─────────────────────────────────────────────────────────────────
+
+model Taller {
+  id             String   @id @default(cuid())
+  nombre         String
+  descripcion    String?
+  activo         Boolean  @default(true)
+  habilita_cv    Boolean  @default(true)
+  habilita_pitch Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  modulos         TallerModulo[]
+  taller_usuarios TallerUsuario[]
+  videos          Video[]
+}
+
+model TallerModulo {
+  id            String    @id @default(cuid())
+  taller_id     String
+  tipo_video    TipoVideo
+  nombre_modulo String
+  duracion_base Int
+  texto_guia    String
+  orden         Int
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  taller Taller @relation(fields: [taller_id], references: [id], onDelete: Cascade)
+
+  @@unique([taller_id, tipo_video, orden])
+}
+
+model TallerUsuario {
+  id          String       @id @default(cuid())
+  usuario_id  String
+  taller_id   String
+  estado      EstadoTaller @default(asignado)
+  asignado_en DateTime     @default(now())
+  validado_en DateTime?
+  notas       String?
+
+  usuario Usuario @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  taller  Taller  @relation(fields: [taller_id], references: [id], onDelete: Cascade)
+
+  @@unique([usuario_id, taller_id])
+}
+
+enum EstadoTaller {
+  asignado
+  completado
+  validado
+}
+
+// ─────────────────────────────────────────────────────────────────
+// VIDEOS
+// ─────────────────────────────────────────────────────────────────
+
+model Video {
+  id              String    @id @default(cuid())
+  user_id         String
+  tipo            TipoVideo
+  video_url       String
+  es_fragmento    Boolean   @default(true)
+  orden_fragmento Int?
+  modulo_id       String?
+  modulo_nombre   String?
+  duracion_seg    Int?
+  taller_id       String?
+  created_at      DateTime  @default(now())
+
+  usuario       Usuario       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  taller        Taller?       @relation(fields: [taller_id], references: [id], onDelete: SetNull)
+  postulaciones Postulacion[] // ← un video puede usarse en múltiples postulaciones
+}
+
+enum TipoVideo {
+  video_cv
+  video_pitch
+}
+
+// ─────────────────────────────────────────────────────────────────
+// ARCHIVOS
+// ─────────────────────────────────────────────────────────────────
+
+model Archivo {
+  id         String   @id @default(cuid())
+  user_id    String
+  file_url   String
+  file_type  String
+  created_at DateTime @default(now())
+
+  usuario Usuario @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────────────────────────
+// CONFIGURACIÓN GLOBAL
+// ─────────────────────────────────────────────────────────────────
+
+model ConfiguracionVideo {
+  id            String    @id @default(cuid())
+  tipo_video    TipoVideo
+  nombre_modulo String
+  duracion_base Int
+  texto_guia    String
+  orden         Int
+
+  @@unique([tipo_video, orden])
+}
+
+// ─────────────────────────────────────────────────────────────────
+// EMPRESAS
+// ─────────────────────────────────────────────────────────────────
+
+model Empresa {
+  id          String   @id @default(cuid())
+  nombre      String
+  slug        String   @unique  // para URL pública /empresa/[slug]
+  logo_url    String?
+  descripcion String?
+  rubro       String?
+  ciudad      String?
+  sitio_web   String?
+  activa      Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  miembros  EmpresaMiembro[]
+  ofertas   Oferta[]
+}
+
+// Relación usuario ↔ empresa (manager puede crear ofertas, recruiter solo ver)
+model EmpresaMiembro {
+  id          String         @id @default(cuid())
+  empresa_id  String
+  usuario_id  String
+  rol_interno RolEmpresa     @default(recruiter)
+  activo      Boolean        @default(true)
+  created_at  DateTime       @default(now())
+
+  empresa Empresa @relation(fields: [empresa_id], references: [id], onDelete: Cascade)
+  usuario Usuario @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+
+  @@unique([empresa_id, usuario_id])
+}
+
+enum RolEmpresa {
+  manager    // puede crear/editar/cerrar ofertas
+  recruiter  // solo puede ver postulantes y cambiar estados
+}
+
+// ─────────────────────────────────────────────────────────────────
+// OFERTAS
+// ─────────────────────────────────────────────────────────────────
+
+model Oferta {
+  id           String       @id @default(cuid())
+  empresa_id   String
+  titulo       String
+  descripcion  String
+  requisitos   String?
+  area         String?      // ej: "Tecnología", "Comercial", "Logística"
+  modalidad    Modalidad    @default(presencial)
+  ciudad       String?
+  estado       EstadoOferta @default(activa)
+  created_at   DateTime     @default(now())
+  updated_at   DateTime     @updatedAt
+
+  empresa       Empresa       @relation(fields: [empresa_id], references: [id], onDelete: Cascade)
+  postulaciones Postulacion[]
+}
+
+enum Modalidad {
+  presencial
+  remoto
+  hibrido
+}
+
+enum EstadoOferta {
+  activa
+  pausada
+  cerrada
+}
+
+// ─────────────────────────────────────────────────────────────────
+// POSTULACIONES
+// ─────────────────────────────────────────────────────────────────
+
+model Postulacion {
+  id         String            @id @default(cuid())
+  oferta_id  String
+  usuario_id String
+  video_id   String            // el Video CV elegido por el candidato
+  estado     EstadoPostulacion @default(pendiente)
+  nota       String?           // mensaje opcional del candidato al aplicar
+  created_at DateTime          @default(now())
+  updated_at DateTime          @updatedAt
+
+  oferta  Oferta  @relation(fields: [oferta_id], references: [id], onDelete: Cascade)
+  usuario Usuario @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  video   Video   @relation(fields: [video_id], references: [id], onDelete: Restrict)
+
+  // Un candidato solo puede aplicar una vez a la misma oferta
+  @@unique([oferta_id, usuario_id])
+}
+
+enum EstadoPostulacion {
+  pendiente   // recién aplicó, empresa no la vio
+  visto       // la empresa abrió el video
+  interesado  // empresa marcó interés
+  descartado  // empresa descartó
+}

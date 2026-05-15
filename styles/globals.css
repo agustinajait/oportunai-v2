@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=DM+Sans:wght@400;500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: 'Fraunces', serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+@layer base {
+  * { box-sizing: border-box; }
+  html { font-family: var(--font-body); }
+  body { @apply bg-ink-50 text-ink-800; }
+  h1, h2, h3 { font-family: var(--font-display); }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white font-medium rounded-xl
+           hover:bg-brand-700 active:scale-95 transition-all duration-150 shadow-sm;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-white text-ink-800 font-medium rounded-xl
+           border border-ink-200 hover:bg-ink-50 active:scale-95 transition-all duration-150;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-4 py-2 text-ink-600 font-medium rounded-lg
+           hover:bg-ink-100 active:scale-95 transition-all duration-150;
+  }
+  .input-field {
+    @apply w-full px-4 py-3 bg-white border border-ink-200 rounded-xl text-ink-800
+           placeholder-ink-400 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent
+           transition-all duration-150;
+  }
+  .card {
+    @apply bg-white rounded-2xl border border-ink-100 shadow-sm;
+  }
+  .label {
+    @apply block text-sm font-medium text-ink-600 mb-1.5;
+  }
+  .error-text {
+    @apply text-sm text-red-500 mt-1;
+  }
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+}

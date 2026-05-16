@@ -1,3 +1,4 @@
+﻿export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
     });
     if (existing) {
       const field = existing.email === email ? 'El email' : 'El DNI';
-      return NextResponse.json({ error: `${field} ya está registrado` }, { status: 409 });
+      return NextResponse.json({ error: `${field} ya estÃ¡ registrado` }, { status: 409 });
     }
 
     const password_hash = await bcrypt.hash(password, 12);
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 días
+      maxAge: 60 * 60 * 24 * 7, // 7 dÃ­as
       path: '/',
     });
 
@@ -52,3 +53,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }
+

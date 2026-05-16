@@ -1,20 +1,21 @@
+﻿export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { readFile } from 'fs/promises';
 import { existsSync, statSync } from 'fs';
 import path from 'path';
 
-// Public endpoint — no auth required so users can share direct download links.
+// Public endpoint â€” no auth required so users can share direct download links.
 // Only serves final (non-fragment) videos stored on disk.
 
 export async function GET(req: NextRequest) {
   try {
     const id = req.nextUrl.searchParams.get('id');
     if (!id) {
-      return NextResponse.json({ error: 'Falta el parámetro id' }, { status: 400 });
+      return NextResponse.json({ error: 'Falta el parÃ¡metro id' }, { status: 400 });
     }
 
-    // Fetch video record — only final videos are downloadable
+    // Fetch video record â€” only final videos are downloadable
     const video = await prisma.video.findUnique({
       where: { id },
       select: {
@@ -83,3 +84,4 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Error al descargar el video' }, { status: 500 });
   }
 }
+

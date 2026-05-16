@@ -1,9 +1,10 @@
+﻿export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
-// taller_id leído desde FormData — corrección de bug del módulo original
+// taller_id leÃ­do desde FormData â€” correcciÃ³n de bug del mÃ³dulo original
 
 const MAX_SIZE = 100 * 1024 * 1024; // 100 MB por fragmento
 
@@ -26,19 +27,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 });
     }
     if (!['video_cv', 'video_pitch'].includes(tipo)) {
-      return NextResponse.json({ error: 'Tipo de video inválido' }, { status: 400 });
+      return NextResponse.json({ error: 'Tipo de video invÃ¡lido' }, { status: 400 });
     }
     if (fragment.size > MAX_SIZE) {
-      return NextResponse.json({ error: 'El fragmento supera el límite de 100 MB' }, { status: 400 });
+      return NextResponse.json({ error: 'El fragmento supera el lÃ­mite de 100 MB' }, { status: 400 });
     }
 
-    // Si viene taller_id, verificar que el usuario esté asignado a ese taller
+    // Si viene taller_id, verificar que el usuario estÃ© asignado a ese taller
     if (taller_id) {
       const relacion = await prisma.tallerUsuario.findUnique({
         where: { usuario_id_taller_id: { usuario_id: session.userId, taller_id } },
       });
       if (!relacion) {
-        return NextResponse.json({ error: 'No tenés acceso a ese taller' }, { status: 403 });
+        return NextResponse.json({ error: 'No tenÃ©s acceso a ese taller' }, { status: 403 });
       }
     }
 
@@ -75,3 +76,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Error al guardar el fragmento' }, { status: 500 });
   }
 }
+

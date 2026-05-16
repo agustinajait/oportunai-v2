@@ -1,3 +1,4 @@
+﻿export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession, isSuperAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -30,3 +31,4 @@ export async function GET() {
 
   return NextResponse.json(usuarios);
 }
+

@@ -1,3 +1,4 @@
+﻿export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
 
-    if (!file) return NextResponse.json({ error: 'No se recibió archivo' }, { status: 400 });
+    if (!file) return NextResponse.json({ error: 'No se recibiÃ³ archivo' }, { status: 400 });
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json({ error: 'Formato no permitido. Solo PDF o Word.' }, { status: 400 });
     }
@@ -30,7 +31,7 @@ export async function POST(req: NextRequest) {
     const ext = file.name.split('.').pop() ?? 'pdf';
     const filename = `${session.userId}-${Date.now()}.${ext}`;
 
-    // En producción esto se reemplaza por S3
+    // En producciÃ³n esto se reemplaza por S3
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
     await mkdir(uploadDir, { recursive: true });
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -54,3 +55,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Error al subir el archivo' }, { status: 500 });
   }
 }
+

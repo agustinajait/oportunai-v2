@@ -1,3 +1,4 @@
+﻿export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
@@ -17,12 +18,12 @@ export async function POST(req: NextRequest) {
 
     const usuario = await prisma.usuario.findUnique({ where: { email } });
     if (!usuario) {
-      return NextResponse.json({ error: 'Email o contraseña incorrectos' }, { status: 401 });
+      return NextResponse.json({ error: 'Email o contraseÃ±a incorrectos' }, { status: 401 });
     }
 
     const valid = await bcrypt.compare(password, usuario.password_hash);
     if (!valid) {
-      return NextResponse.json({ error: 'Email o contraseña incorrectos' }, { status: 401 });
+      return NextResponse.json({ error: 'Email o contraseÃ±a incorrectos' }, { status: 401 });
     }
 
     const token = await createToken({
@@ -47,3 +48,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }
+

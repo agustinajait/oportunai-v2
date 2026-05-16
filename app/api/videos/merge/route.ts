@@ -1,3 +1,4 @@
+﻿export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -11,7 +12,7 @@ export async function POST(req: NextRequest) {
     const { tipo, video_url, taller_id } = body;
 
     if (!tipo || !['video_cv', 'video_pitch'].includes(tipo)) {
-      return NextResponse.json({ error: 'tipo inválido' }, { status: 400 });
+      return NextResponse.json({ error: 'tipo invÃ¡lido' }, { status: 400 });
     }
 
     if (!video_url) {
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
         video_url,
         es_fragmento: false,
         taller_id: taller_id ?? undefined,
-        modulo_nombre: `${tipo === 'video_cv' ? 'Video CV' : 'Video Pitch'} — Final`,
+        modulo_nombre: `${tipo === 'video_cv' ? 'Video CV' : 'Video Pitch'} â€” Final`,
       },
     });
 
@@ -46,3 +47,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err.message ?? 'Error al guardar el video' }, { status: 500 });
   }
 }
+

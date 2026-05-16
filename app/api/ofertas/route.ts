@@ -1,8 +1,9 @@
+﻿export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSessionFromRequest } from '@/lib/auth';
 
-// GET /api/ofertas — lista ofertas activas (público, para candidatos)
+// GET /api/ofertas â€” lista ofertas activas (pÃºblico, para candidatos)
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/ofertas — crear oferta (solo empleador)
+// POST /api/ofertas â€” crear oferta (solo empleador)
 export async function POST(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req);
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
     const { titulo, descripcion, requisitos, area, modalidad, ciudad } = body;
 
     if (!titulo || !descripcion) {
-      return NextResponse.json({ error: 'Título y descripción son requeridos' }, { status: 400 });
+      return NextResponse.json({ error: 'TÃ­tulo y descripciÃ³n son requeridos' }, { status: 400 });
     }
 
     // Obtener empresa del usuario
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!miembro) {
-      return NextResponse.json({ error: 'No tenés empresa asociada' }, { status: 400 });
+      return NextResponse.json({ error: 'No tenÃ©s empresa asociada' }, { status: 400 });
     }
 
     const oferta = await prisma.oferta.create({

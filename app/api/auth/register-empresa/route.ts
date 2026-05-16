@@ -1,3 +1,4 @@
+﻿export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createToken, generateEmpresaSlug } from '@/lib/auth';
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
 
     const existente = await prisma.usuario.findUnique({ where: { email } });
     if (existente) {
-      return NextResponse.json({ error: 'El email ya está registrado' }, { status: 400 });
+      return NextResponse.json({ error: 'El email ya estÃ¡ registrado' }, { status: 400 });
     }
 
     const password_hash = await bcrypt.hash(password, 10);

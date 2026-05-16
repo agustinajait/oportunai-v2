@@ -200,7 +200,7 @@ export default function VideoRecorder({
       // Upload a Supabase Storage
       const filename = `${session.userId}/${tipo}-${Date.now()}.${ext}`;
       const { data, error } = await supabase.storage
-        .from('VIDEOS')
+        .from('videos')
         .upload(filename, mergedBlob, {
           contentType: mimeType,
           upsert: true,
@@ -209,7 +209,7 @@ export default function VideoRecorder({
       if (error) throw new Error(error.message);
 
       // Obtener URL pública
-      const { data: urlData } = supabase.storage.from('VIDEOS').getPublicUrl(filename);
+      const { data: urlData } = supabase.storage.from('videos').getPublicUrl(filename);
       const videoUrl = urlData.publicUrl;
 
       setUploadProgress('Guardando en base de datos...');

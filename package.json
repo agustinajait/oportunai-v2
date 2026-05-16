@@ -10,7 +10,7 @@
     "dbstudio": "prisma studio",
     "dbseed": "node prisma/seed.js",
     "railway": "prisma db push",
-    "postinstall": "prisma generate --no-engine"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",

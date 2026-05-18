@@ -1,7 +1,8 @@
 generator client {
   provider = "prisma-client-js"
 }
-  datasource db {
+
+datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
@@ -35,7 +36,7 @@ enum Role {
   super_admin
   admin
   user
-  empleador   // ← nuevo: acceso al panel de empresa
+  empleador
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -113,7 +114,7 @@ model Video {
 
   usuario       Usuario       @relation(fields: [user_id], references: [id], onDelete: Cascade)
   taller        Taller?       @relation(fields: [taller_id], references: [id], onDelete: SetNull)
-  postulaciones Postulacion[] // ← un video puede usarse en múltiples postulaciones
+  postulaciones Postulacion[]
 }
 
 enum TipoVideo {
@@ -157,7 +158,7 @@ model ConfiguracionVideo {
 model Empresa {
   id          String   @id @default(cuid())
   nombre      String
-  slug        String   @unique  // para URL pública /empresa/[slug]
+  slug        String   @unique
   logo_url    String?
   descripcion String?
   rubro       String?
@@ -171,7 +172,6 @@ model Empresa {
   ofertas   Oferta[]
 }
 
-// Relación usuario ↔ empresa (manager puede crear ofertas, recruiter solo ver)
 model EmpresaMiembro {
   id          String         @id @default(cuid())
   empresa_id  String
@@ -187,8 +187,8 @@ model EmpresaMiembro {
 }
 
 enum RolEmpresa {
-  manager    // puede crear/editar/cerrar ofertas
-  recruiter  // solo puede ver postulantes y cambiar estados
+  manager
+  recruiter
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -196,17 +196,18 @@ enum RolEmpresa {
 // ─────────────────────────────────────────────────────────────────
 
 model Oferta {
-  id           String       @id @default(cuid())
-  empresa_id   String
-  titulo       String
-  descripcion  String
-  requisitos   String?
-  area         String?      // ej: "Tecnología", "Comercial", "Logística"
-  modalidad    Modalidad    @default(presencial)
-  ciudad       String?
-  estado       EstadoOferta @default(activa)
-  created_at   DateTime     @default(now())
-  updated_at   DateTime     @updatedAt
+  id                  String       @id @default(cuid())
+  empresa_id          String
+  titulo              String
+  descripcion         String
+  requisitos          String?
+  area                String?
+  modalidad           Modalidad    @default(presencial)
+  ciudad              String?
+  estado              EstadoOferta @default(activa)
+  mensaje_whatsapp    String?
+  created_at          DateTime     @default(now())
+  updated_at          DateTime     @updatedAt
 
   empresa       Empresa       @relation(fields: [empresa_id], references: [id], onDelete: Cascade)
   postulaciones Postulacion[]
@@ -232,9 +233,9 @@ model Postulacion {
   id         String            @id @default(cuid())
   oferta_id  String
   usuario_id String
-  video_id   String            // el Video CV elegido por el candidato
+  video_id   String
   estado     EstadoPostulacion @default(pendiente)
-  nota       String?           // mensaje opcional del candidato al aplicar
+  nota       String?
   created_at DateTime          @default(now())
   updated_at DateTime          @updatedAt
 
@@ -242,13 +243,12 @@ model Postulacion {
   usuario Usuario @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
   video   Video   @relation(fields: [video_id], references: [id], onDelete: Restrict)
 
-  // Un candidato solo puede aplicar una vez a la misma oferta
   @@unique([oferta_id, usuario_id])
 }
 
 enum EstadoPostulacion {
-  pendiente   // recién aplicó, empresa no la vio
-  visto       // la empresa abrió el video
-  interesado  // empresa marcó interés
-  descartado  // empresa descartó
+  pendiente
+  visto
+  interesado
+  descartado
 }

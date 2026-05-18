@@ -3,13 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSessionFromRequest } from '@/lib/auth';
 
-// GET /api/ofertas â€” lista ofertas activas (pÃºblico, para candidatos)
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const area = searchParams.get('area');
     const ciudad = searchParams.get('ciudad');
-
     const ofertas = await prisma.oferta.findMany({
       where: {
         estado: 'activa',
@@ -22,7 +20,6 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { created_at: 'desc' },
     });
-
     return NextResponse.json({ ofertas });
   } catch (error) {
     console.error(error);
@@ -30,31 +27,24 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/ofertas â€” crear oferta (solo empleador)
 export async function POST(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req);
     if (!session || session.role !== 'empleador') {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
-
     const body = await req.json();
-    const { titulo, descripcion, requisitos, area, modalidad, ciudad } = body;
-
+    const { titulo, descripcion, requisitos, area, modalidad, ciudad, mensaje_whatsapp } = body;
     if (!titulo || !descripcion) {
-      return NextResponse.json({ error: 'TÃ­tulo y descripciÃ³n son requeridos' }, { status: 400 });
+      return NextResponse.json({ error: 'Titulo y descripcion son requeridos' }, { status: 400 });
     }
-
-    // Obtener empresa del usuario
     const miembro = await prisma.empresaMiembro.findFirst({
       where: { usuario_id: session.userId },
       include: { empresa: true },
     });
-
     if (!miembro) {
-      return NextResponse.json({ error: 'No tenÃ©s empresa asociada' }, { status: 400 });
+      return NextResponse.json({ error: 'No tenes empresa asociada' }, { status: 400 });
     }
-
     const oferta = await prisma.oferta.create({
       data: {
         empresa_id: miembro.empresa_id,
@@ -65,9 +55,9 @@ export async function POST(req: NextRequest) {
         modalidad: modalidad || 'presencial',
         ciudad: ciudad || null,
         estado: 'activa',
+        mensaje_whatsapp: mensaje_whatsapp || null,
       },
     });
-
     return NextResponse.json({ ok: true, oferta });
   } catch (error) {
     console.error(error);

@@ -1,145 +1,125 @@
-'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+ export const dynamic = 'force-dynamic';
+import { notFound } from 'next/navigation';
+import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 
-export default function RegisterEmpresaPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [form, setForm] = useState({
-    nombre_completo: '',
-    email: '',
-    password: '',
-    nombre_empresa: '',
-    rubro: '',
-    ciudad: '',
+export default async function EmpresaPublicaPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const empresa = await prisma.empresa.findUnique({
+    where: { slug: params.slug },
+    include: {
+      ofertas: {
+        where: { estado: 'activa' },
+        include: { _count: { select: { postulaciones: true } } },
+        orderBy: { created_at: 'desc' },
+      },
+    },
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  if (!empresa || !empresa.activa) notFound();
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await fetch('/api/auth/register-empresa', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al registrar');
-      router.push('/empresa/dashboard');
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
+  const modalidadLabel: Record<string, string> = {
+    presencial: 'Presencial',
+    remoto: 'Remoto',
+    hibrido: 'Híbrido',
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-md">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Registrá tu empresa</h1>
-          <p className="text-gray-500 mt-1 text-sm">Publicá ofertas y encontrá candidatos con Video CV</p>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Nombre de la empresa *</label>
-            <input
-              name="nombre_empresa"
-              value={form.nombre_empresa}
-              onChange={handleChange}
-              placeholder="Ej: Acme S.A."
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Rubro</label>
-              <input
-                name="rubro"
-                value={form.rubro}
-                onChange={handleChange}
-                placeholder="Ej: Tecnología"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    <div className="min-h-screen bg-ink-50">
+      {/* Header empresa */}
+      <div className="bg-white border-b border-ink-100">
+        <div className="max-w-4xl mx-auto px-6 py-10">
+          <div className="flex items-center gap-6">
+            {empresa.logo_url ? (
+              <img
+                src={empresa.logo_url}
+                alt={empresa.nombre}
+                className="w-20 h-20 rounded-2xl object-cover border border-ink-200 shadow-sm"
               />
-            </div>
+            ) : (
+              <div className="w-20 h-20 rounded-2xl bg-brand-100 flex items-center justify-center text-brand-600 font-bold text-3xl">
+                {empresa.nombre[0]}
+              </div>
+            )}
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Ciudad</label>
-              <input
-                name="ciudad"
-                value={form.ciudad}
-                onChange={handleChange}
-                placeholder="Ej: Buenos Aires"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <h1 className="font-display text-3xl font-semibold text-ink-900">{empresa.nombre}</h1>
+              <div className="flex gap-3 mt-1 text-sm text-ink-500">
+                {empresa.rubro && <span>{empresa.rubro}</span>}
+                {empresa.ciudad && <span>· {empresa.ciudad}</span>}
+                {empresa.sitio_web && (
+                  <a href={empresa.sitio_web} target="_blank" className="text-brand-600 hover:underline">
+                    · {empresa.sitio_web.replace(/https?:\/\//, '')}
+                  </a>
+                )}
+              </div>
+              {empresa.descripcion && (
+                <p className="text-ink-500 mt-3 max-w-xl leading-relaxed">{empresa.descripcion}</p>
+              )}
             </div>
           </div>
-
-          <hr className="border-gray-100" />
-
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Tu nombre completo *</label>
-            <input
-              name="nombre_completo"
-              value={form.nombre_completo}
-              onChange={handleChange}
-              placeholder="Ej: María González"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Email *</label>
-            <input
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="empresa@mail.com"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Contraseña *</label>
-            <input
-              name="password"
-              type="password"
-              value={form.password}
-              onChange={handleChange}
-              placeholder="Mínimo 6 caracteres"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {error && (
-            <div className="bg-red-50 text-red-600 text-sm rounded-lg px-3 py-2">{error}</div>
-          )}
-
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="w-full bg-blue-600 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-          >
-            {loading ? 'Registrando...' : 'Crear cuenta de empresa'}
-          </button>
         </div>
+      </div>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
-          ¿Ya tenés cuenta?{' '}
-          <Link href="/login" className="text-blue-600 hover:underline">Iniciá sesión</Link>
-        </p>
-        <p className="text-center text-sm text-gray-500 mt-2">
-          ¿Sos candidato?{' '}
-          <Link href="/register" className="text-blue-600 hover:underline">Registrate acá</Link>
-        </p>
+      {/* Ofertas */}
+      <div className="max-w-4xl mx-auto px-6 py-10">
+        <h2 className="font-display text-xl font-semibold text-ink-800 mb-6">
+          Ofertas activas ({empresa.ofertas.length})
+        </h2>
+
+        {empresa.ofertas.length === 0 ? (
+          <div className="card p-12 text-center">
+            <p className="text-ink-400">No hay ofertas activas por ahora</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {empresa.ofertas.map(oferta => (
+              <div key={oferta.id} className="card p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-ink-900 text-lg mb-2">{oferta.titulo}</h3>
+                    <p className="text-ink-500 text-sm leading-relaxed line-clamp-3 mb-3">
+                      {oferta.descripcion}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {oferta.area && (
+                        <span className="bg-brand-50 text-brand-700 text-xs px-2.5 py-1 rounded-full">
+                          {oferta.area}
+                        </span>
+                      )}
+                      {oferta.ciudad && (
+                        <span className="text-xs text-ink-400">📍 {oferta.ciudad}</span>
+                      )}
+                      <span className="text-xs text-ink-400">
+                        💼 {modalidadLabel[oferta.modalidad]}
+                      </span>
+                    </div>
+                    {oferta.requisitos && (
+                      <div className="mt-3 bg-ink-50 rounded-lg px-4 py-3">
+                        <p className="text-xs font-medium text-ink-600 mb-1">Requisitos</p>
+                        <p className="text-xs text-ink-500 leading-relaxed">{oferta.requisitos}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="shrink-0 text-center">
+                    <div className="text-2xl font-bold text-brand-600">{oferta._count.postulaciones}</div>
+                    <div className="text-xs text-ink-400">postulantes</div>
+                  </div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-ink-100">
+                  <Link
+                    href="/dashboard"
+                    className="btn-primary text-sm py-2 px-5"
+                  >
+                    Aplicar con mi Video CV →
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

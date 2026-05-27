@@ -8,10 +8,6 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// ─────────────────────────────────────────────────────────────────
-// USUARIOS
-// ─────────────────────────────────────────────────────────────────
-
 model Usuario {
   id              String   @id @default(cuid())
   nombre_completo String
@@ -27,6 +23,7 @@ model Usuario {
 
   videos           Video[]
   archivos         Archivo[]
+  documentos       Documento[]
   taller_usuarios  TallerUsuario[]
   postulaciones    Postulacion[]
   empresa_miembros EmpresaMiembro[]
@@ -38,10 +35,6 @@ enum Role {
   user
   empleador
 }
-
-// ─────────────────────────────────────────────────────────────────
-// TALLERES
-// ─────────────────────────────────────────────────────────────────
 
 model Taller {
   id             String   @id @default(cuid())
@@ -95,10 +88,6 @@ enum EstadoTaller {
   validado
 }
 
-// ─────────────────────────────────────────────────────────────────
-// VIDEOS
-// ─────────────────────────────────────────────────────────────────
-
 model Video {
   id              String    @id @default(cuid())
   user_id         String
@@ -122,10 +111,6 @@ enum TipoVideo {
   video_pitch
 }
 
-// ─────────────────────────────────────────────────────────────────
-// ARCHIVOS
-// ─────────────────────────────────────────────────────────────────
-
 model Archivo {
   id         String   @id @default(cuid())
   user_id    String
@@ -136,9 +121,25 @@ model Archivo {
   usuario Usuario @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
-// ─────────────────────────────────────────────────────────────────
-// CONFIGURACIÓN GLOBAL
-// ─────────────────────────────────────────────────────────────────
+model Documento {
+  id         String        @id @default(cuid())
+  user_id    String
+  tipo       TipoDocumento
+  file_url   String
+  created_at DateTime      @default(now())
+
+  usuario Usuario @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, tipo])
+}
+
+enum TipoDocumento {
+  dni
+  antecedentes_penales
+  manipulacion_alimentos
+  libreta_sanitaria
+  otro
+}
 
 model ConfiguracionVideo {
   id            String    @id @default(cuid())
@@ -150,10 +151,6 @@ model ConfiguracionVideo {
 
   @@unique([tipo_video, orden])
 }
-
-// ─────────────────────────────────────────────────────────────────
-// EMPRESAS
-// ─────────────────────────────────────────────────────────────────
 
 model Empresa {
   id          String   @id @default(cuid())
@@ -191,23 +188,20 @@ enum RolEmpresa {
   recruiter
 }
 
-// ─────────────────────────────────────────────────────────────────
-// OFERTAS
-// ─────────────────────────────────────────────────────────────────
-
 model Oferta {
-  id                  String       @id @default(cuid())
-  empresa_id          String
-  titulo              String
-  descripcion         String
-  requisitos          String?
-  area                String?
-  modalidad           Modalidad    @default(presencial)
-  ciudad              String?
-  estado              EstadoOferta @default(activa)
-  mensaje_whatsapp    String?
-  created_at          DateTime     @default(now())
-  updated_at          DateTime     @updatedAt
+  id               String       @id @default(cuid())
+  empresa_id       String
+  titulo           String
+  descripcion      String
+  requisitos       String?
+  area             String?
+  modalidad        Modalidad    @default(presencial)
+  ciudad           String?
+  estado           EstadoOferta @default(activa)
+  mensaje_whatsapp String?
+  docs_requeridos  String[]     @default([])
+  created_at       DateTime     @default(now())
+  updated_at       DateTime     @updatedAt
 
   empresa       Empresa       @relation(fields: [empresa_id], references: [id], onDelete: Cascade)
   postulaciones Postulacion[]
@@ -224,10 +218,6 @@ enum EstadoOferta {
   pausada
   cerrada
 }
-
-// ─────────────────────────────────────────────────────────────────
-// POSTULACIONES
-// ─────────────────────────────────────────────────────────────────
 
 model Postulacion {
   id         String            @id @default(cuid())

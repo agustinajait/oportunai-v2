@@ -1,5 +1,14 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { Check, X } from 'lucide-react';
+
+const DOCS_CONFIG = [
+  { tipo: 'dni', label: 'DNI' },
+  { tipo: 'antecedentes_penales', label: 'Antecedentes Penales' },
+  { tipo: 'manipulacion_alimentos', label: 'Manip. Alimentos' },
+  { tipo: 'libreta_sanitaria', label: 'Libreta Sanitaria' },
+  { tipo: 'otro', label: 'Otro documento' },
+];
 
 type Oferta = {
   id: string;
@@ -9,6 +18,7 @@ type Oferta = {
   modalidad: string;
   estado: string;
   mensaje_whatsapp: string | null;
+  docs_requeridos: string[];
   created_at: string;
   _count: { postulaciones: number };
 };
@@ -27,6 +37,7 @@ type Postulante = {
     bio: string | null;
   };
   video: { id: string; video_url: string; tipo: string };
+  documentos?: { tipo: string; file_url: string }[];
 };
 
 type Empresa = {
@@ -52,6 +63,7 @@ export default function EmpresaDashboard() {
   const [form, setForm] = useState({
     titulo: '', descripcion: '', requisitos: '', area: '',
     modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '',
+    docs_requeridos: [] as string[],
   });
 
   const [perfilForm, setPerfilForm] = useState({
@@ -114,7 +126,17 @@ export default function EmpresaDashboard() {
     setTab('postulantes');
     const res = await fetch(`/api/ofertas/${oferta.id}/postulantes`);
     const data = await res.json();
-    if (data.postulaciones) setPostulantes(data.postulaciones);
+    if (data.postulaciones) {
+      // Cargar documentos de cada postulante
+      const postsConDocs = await Promise.all(
+        data.postulaciones.map(async (p: Postulante) => {
+          const resDoc = await fetch(`/api/empresa/candidato/${p.usuario.id}/documentos`);
+          const dataDoc = await resDoc.json();
+          return { ...p, documentos: dataDoc.documentos || [] };
+        })
+      );
+      setPostulantes(postsConDocs);
+    }
   }
 
   async function cambiarEstado(postulacion_id: string, estado: string) {
@@ -135,19 +157,27 @@ export default function EmpresaDashboard() {
     });
     const data = await res.json();
     if (data.ok) {
-      setForm({ titulo: '', descripcion: '', requisitos: '', area: '', modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '' });
+      setForm({ titulo: '', descripcion: '', requisitos: '', area: '', modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '', docs_requeridos: [] });
       setTab('ofertas');
       cargarOfertas();
     }
     setLoading(false);
   }
 
+  function toggleDocRequerido(tipo: string) {
+    setForm(prev => ({
+      ...prev,
+      docs_requeridos: prev.docs_requeridos.includes(tipo)
+        ? prev.docs_requeridos.filter(d => d !== tipo)
+        : [...prev.docs_requeridos, tipo],
+    }));
+  }
+
   function whatsappUrl(telefono: string, mensaje: string, candidato: string) {
     const tel = telefono.replace(/\D/g, '');
     const numero = tel.startsWith('54') ? tel : `54${tel}`;
-    const texto = mensaje
-      .replace('{nombre}', candidato)
-      .replace('{empresa}', empresa?.nombre || '');
+    const intro = `Hola ${candidato}, te contacto desde ${empresa?.nombre || 'nuestra empresa'}. `;
+    const texto = intro + (mensaje || '');
     return `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`;
   }
 
@@ -181,10 +211,7 @@ export default function EmpresaDashboard() {
               {empresa?.rubro && <p className="text-sm text-gray-500">{empresa.rubro}</p>}
             </div>
           </div>
-          <button
-            onClick={() => setTab('nueva')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-          >
+          <button onClick={() => setTab('nueva')} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
             + Nueva oferta
           </button>
         </div>
@@ -192,13 +219,8 @@ export default function EmpresaDashboard() {
         {/* Tabs */}
         <div className="flex gap-1 mb-6 bg-white border border-gray-200 rounded-lg p-1 w-fit">
           {tabs.map(t => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key as any)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                tab === t.key ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
+            <button key={t.key} onClick={() => setTab(t.key as any)}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${tab === t.key ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-gray-900'}`}>
               {t.label}
             </button>
           ))}
@@ -224,8 +246,8 @@ export default function EmpresaDashboard() {
                       {oferta.ciudad && <span>· {oferta.ciudad}</span>}
                       <span>· {oferta.modalidad}</span>
                     </div>
-                    {oferta.mensaje_whatsapp && (
-                      <p className="text-xs text-green-600 mt-1">✓ Mensaje WhatsApp configurado</p>
+                    {oferta.docs_requeridos?.length > 0 && (
+                      <p className="text-xs text-purple-600 mt-1">📋 Requiere: {oferta.docs_requeridos.map(d => DOCS_CONFIG.find(c => c.tipo === d)?.label).join(', ')}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-4">
@@ -233,10 +255,7 @@ export default function EmpresaDashboard() {
                       <div className="text-2xl font-bold text-blue-600">{oferta._count.postulaciones}</div>
                       <div className="text-xs text-gray-400">postulantes</div>
                     </div>
-                    <button
-                      onClick={() => verPostulantes(oferta)}
-                      className="border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors"
-                    >
+                    <button onClick={() => verPostulantes(oferta)} className="border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">
                       Ver postulantes →
                     </button>
                   </div>
@@ -272,8 +291,7 @@ export default function EmpresaDashboard() {
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1">Área</label>
-                  <input value={form.area} onChange={e => setForm({ ...form, area: e.target.value })}
-                    placeholder="Ej: Ventas"
+                  <input value={form.area} onChange={e => setForm({ ...form, area: e.target.value })} placeholder="Ej: Ventas"
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
                 <div>
@@ -287,28 +305,40 @@ export default function EmpresaDashboard() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1">Ciudad</label>
-                  <input value={form.ciudad} onChange={e => setForm({ ...form, ciudad: e.target.value })}
-                    placeholder="Ej: CABA"
+                  <input value={form.ciudad} onChange={e => setForm({ ...form, ciudad: e.target.value })} placeholder="Ej: CABA"
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">
-                  Mensaje WhatsApp para contactar candidatos
-                </label>
+                <label className="text-sm font-medium text-gray-700 block mb-2">Documentos requeridos</label>
+                <div className="space-y-2">
+                  {DOCS_CONFIG.map(doc => (
+                    <label key={doc.tipo} className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={form.docs_requeridos.includes(doc.tipo)}
+                        onChange={() => toggleDocRequerido(doc.tipo)}
+                        className="w-4 h-4 accent-blue-600"
+                      />
+                      <span className="text-sm text-gray-700">{doc.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">Mensaje adicional WhatsApp (opcional)</label>
                 <textarea value={form.mensaje_whatsapp} onChange={e => setForm({ ...form, mensaje_whatsapp: e.target.value })}
-                  placeholder={"Hola {nombre}, vi tu Video CV en Oportunai y me interesa contactarte para el puesto de... Soy de {empresa}."}
+                  placeholder="Me gustaría coordinar una entrevista..."
                   rows={3}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <p className="text-xs text-gray-400 mt-1">Usá {"{nombre}"} y {"{empresa}"} como variables automáticas</p>
+                <p className="text-xs text-gray-400 mt-1">El mensaje se enviará con: "Hola [nombre], te contacto desde [empresa]. [tu mensaje]"</p>
               </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={crearOferta} disabled={loading}
                   className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
                   {loading ? 'Publicando...' : 'Publicar oferta'}
                 </button>
-                <button onClick={() => setTab('ofertas')}
-                  className="border border-gray-200 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">
+                <button onClick={() => setTab('ofertas')} className="border border-gray-200 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">
                   Cancelar
                 </button>
               </div>
@@ -330,13 +360,35 @@ export default function EmpresaDashboard() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="font-semibold text-gray-900">{p.usuario.nombre_completo}</h3>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${estadoColor[p.estado]}`}>
-                          {p.estado}
-                        </span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${estadoColor[p.estado]}`}>{p.estado}</span>
                       </div>
                       <p className="text-sm text-gray-500">{p.usuario.email} · {p.usuario.telefono}</p>
                       {p.usuario.bio && <p className="text-sm text-gray-600 mt-2">{p.usuario.bio}</p>}
                       {p.nota && <p className="text-sm text-gray-500 italic mt-2">"{p.nota}"</p>}
+
+                      {/* Checklist de documentos */}
+                      {ofertaSeleccionada?.docs_requeridos?.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-gray-100">
+                          <p className="text-xs font-medium text-gray-600 mb-2">Documentos requeridos:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {ofertaSeleccionada.docs_requeridos.map(tipo => {
+                              const tieneDoc = p.documentos?.some(d => d.tipo === tipo);
+                              const doc = p.documentos?.find(d => d.tipo === tipo);
+                              const label = DOCS_CONFIG.find(c => c.tipo === tipo)?.label || tipo;
+                              return (
+                                <div key={tipo} className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full ${tieneDoc ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                                  {tieneDoc ? <Check size={11} /> : <X size={11} />}
+                                  {tieneDoc && doc ? (
+                                    <a href={doc.file_url} target="_blank" className="hover:underline">{label}</a>
+                                  ) : (
+                                    <span>{label}</span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className="flex flex-col gap-2">
                       <a href={`/u/${p.usuario.slug}/cv`} target="_blank"
@@ -344,11 +396,9 @@ export default function EmpresaDashboard() {
                         Ver perfil →
                       </a>
                       {ofertaSeleccionada?.mensaje_whatsapp && (
-                        <a
-                          href={whatsappUrl(p.usuario.telefono, ofertaSeleccionada.mensaje_whatsapp, p.usuario.nombre_completo)}
+                        <a href={whatsappUrl(p.usuario.telefono, ofertaSeleccionada.mensaje_whatsapp, p.usuario.nombre_completo)}
                           target="_blank"
-                          className="bg-green-500 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-green-600 transition-colors text-center flex items-center gap-1.5 justify-center"
-                        >
+                          className="bg-green-500 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-green-600 transition-colors text-center flex items-center gap-1.5 justify-center">
                           📱 WhatsApp
                         </a>
                       )}

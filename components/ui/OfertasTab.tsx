@@ -123,9 +123,19 @@ export default function OfertasTab({ videos }: { videos: Video[] }) {
             <div key={oferta.id} className="card p-5 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Building2 size={14} className="text-ink-400" />
-                    <span className="text-sm text-ink-500">{oferta.empresa.nombre}</span>
+                  <div className="flex items-center gap-2 mb-2">
+                    {oferta.empresa.logo_url ? (
+                      <img
+                        src={oferta.empresa.logo_url}
+                        alt={oferta.empresa.nombre}
+                        className="w-7 h-7 rounded-lg object-cover border border-gray-100"
+                      />
+                    ) : (
+                      <div className="w-7 h-7 rounded-lg bg-brand-100 flex items-center justify-center">
+                        <Building2 size={14} className="text-brand-600" />
+                      </div>
+                    )}
+                    <span className="text-sm font-medium text-ink-600">{oferta.empresa.nombre}</span>
                   </div>
                   <h3 className="font-semibold text-ink-900 text-base mb-2">{oferta.titulo}</h3>
                   <p className="text-sm text-ink-500 line-clamp-2 mb-3">{oferta.descripcion}</p>
@@ -174,8 +184,19 @@ export default function OfertasTab({ videos }: { videos: Video[] }) {
       {ofertaDetalle && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-            <h3 className="font-semibold text-ink-900 text-lg mb-1">Aplicar a {ofertaDetalle.titulo}</h3>
-            <p className="text-sm text-ink-500 mb-5">{ofertaDetalle.empresa.nombre}</p>
+            <div className="flex items-center gap-3 mb-4">
+              {ofertaDetalle.empresa.logo_url ? (
+                <img src={ofertaDetalle.empresa.logo_url} alt={ofertaDetalle.empresa.nombre} className="w-10 h-10 rounded-xl object-cover" />
+              ) : (
+                <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center">
+                  <Building2 size={18} className="text-brand-600" />
+                </div>
+              )}
+              <div>
+                <h3 className="font-semibold text-ink-900">{ofertaDetalle.titulo}</h3>
+                <p className="text-sm text-ink-500">{ofertaDetalle.empresa.nombre}</p>
+              </div>
+            </div>
 
             <div className="space-y-4">
               <div>

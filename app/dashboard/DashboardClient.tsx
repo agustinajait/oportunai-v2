@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import {
   Video, Mic, FileText, Edit3, Check, X, Upload,
   ExternalLink, Copy, CheckCheck, Clock, Circle,
-  BookOpen, ChevronDown, ArrowRight, Zap, Briefcase
+  BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck
 } from 'lucide-react';
 import OfertasTab from '@/components/ui/OfertasTab';
 
@@ -25,7 +25,20 @@ interface Usuario {
   created_at: string; videos: VideoItem[]; archivos: Archivo[];
 }
 
-// ─────────────────────────────────────────────────────────────────
+interface Documento {
+  id: string;
+  tipo: string;
+  file_url: string;
+  created_at: string;
+}
+
+const DOCS_CONFIG = [
+  { tipo: 'dni', label: 'DNI', descripcion: 'Documento Nacional de Identidad' },
+  { tipo: 'antecedentes_penales', label: 'Antecedentes Penales', descripcion: 'Certificado de antecedentes penales' },
+  { tipo: 'manipulacion_alimentos', label: 'Manipulación de Alimentos', descripcion: 'Certificado del curso' },
+  { tipo: 'libreta_sanitaria', label: 'Libreta Sanitaria', descripcion: 'Libreta sanitaria vigente' },
+  { tipo: 'otro', label: 'Otro documento', descripcion: 'Cualquier otro documento relevante' },
+];
 
 export default function DashboardClient({
   usuario,
@@ -35,15 +48,17 @@ export default function DashboardClient({
   tallersAsignados: TallerUsuario[];
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<'perfil' | 'ofertas'>('perfil');
+  const [tab, setTab] = useState<'perfil' | 'ofertas' | 'documentos'>('perfil');
   const [bio, setBio] = useState(usuario.bio ?? '');
   const [editingBio, setEditingBio] = useState(false);
   const [bioSaving, setBioSaving] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState<string | null>(null);
+  const [documentos, setDocumentos] = useState<Documento[]>([]);
+  const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
+  const [docMsg, setDocMsg] = useState<string | null>(null);
 
-  // Taller dropdown state
   const [selectedTaller, setSelectedTaller] = useState<string>('');
   const [selectedTipo, setSelectedTipo] = useState<'video_cv' | 'video_pitch'>('video_cv');
 
@@ -54,6 +69,36 @@ export default function DashboardClient({
   const videoCV = usuario.videos.find(v => v.tipo === 'video_cv' && !v.taller);
   const videoPitch = usuario.videos.find(v => v.tipo === 'video_pitch' && !v.taller);
   const archivoCV = usuario.archivos[0] ?? null;
+
+  useEffect(() => {
+    if (tab === 'documentos') cargarDocumentos();
+  }, [tab]);
+
+  async function cargarDocumentos() {
+    const res = await fetch('/api/documentos');
+    const data = await res.json();
+    if (data.documentos) setDocumentos(data.documentos);
+  }
+
+  async function subirDocumento(e: React.ChangeEvent<HTMLInputElement>, tipo: string) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingDoc(tipo);
+    setDocMsg(null);
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('tipo', tipo);
+    const res = await fetch('/api/documentos', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.ok) {
+      setDocMsg('Documento subido correctamente ✓');
+      cargarDocumentos();
+    } else {
+      setDocMsg(data.error ?? 'Error al subir');
+    }
+    setUploadingDoc(null);
+    setTimeout(() => setDocMsg(null), 3000);
+  }
 
   const saveBio = async () => {
     setBioSaving(true);
@@ -90,7 +135,6 @@ export default function DashboardClient({
     }
   };
 
-  // Get available tipo options for selected taller
   const tallerSeleccionado = tallersAsignados.find(t => t.taller.id === selectedTaller)?.taller;
   const tiposDisponibles = tallerSeleccionado
     ? [
@@ -103,6 +147,9 @@ export default function DashboardClient({
     if (!selectedTaller) return;
     router.push(`/dashboard/grabar-taller?taller_id=${selectedTaller}&tipo=${selectedTipo}`);
   };
+
+  const tieneDocumento = (tipo: string) => documentos.some(d => d.tipo === tipo);
+  const getDocumento = (tipo: string) => documentos.find(d => d.tipo === tipo);
 
   return (
     <div className="min-h-screen bg-ink-50">
@@ -129,13 +176,22 @@ export default function DashboardClient({
               Mi perfil
             </button>
             <button
+              onClick={() => setTab('documentos')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                tab === 'documentos' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
+              }`}
+            >
+              <ShieldCheck size={14} />
+              Mis documentos
+            </button>
+            <button
               onClick={() => setTab('ofertas')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 tab === 'ofertas' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
               }`}
             >
               <Briefcase size={14} />
-              Ofertas de trabajo
+              Ofertas
             </button>
           </div>
         </div>
@@ -143,6 +199,72 @@ export default function DashboardClient({
         {/* Tab Ofertas */}
         {tab === 'ofertas' && (
           <OfertasTab videos={usuario.videos} />
+        )}
+
+        {/* Tab Documentos */}
+        {tab === 'documentos' && (
+          <div className="max-w-2xl space-y-4">
+            <p className="text-ink-500 text-sm mb-6">
+              Subí tus documentos para que las empresas puedan verificar tu perfil al revisar tu postulación.
+            </p>
+            {docMsg && (
+              <div className={`rounded-lg px-4 py-3 text-sm font-medium mb-4 ${
+                docMsg.includes('✓') ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+              }`}>
+                {docMsg}
+              </div>
+            )}
+            {DOCS_CONFIG.map(doc => {
+              const tiene = tieneDocumento(doc.tipo);
+              const documento = getDocumento(doc.tipo);
+              const cargando = uploadingDoc === doc.tipo;
+              return (
+                <div key={doc.tipo} className="card p-5 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      tiene ? 'bg-emerald-100' : 'bg-ink-100'
+                    }`}>
+                      {tiene
+                        ? <Check size={18} className="text-emerald-600" />
+                        : <FileText size={18} className="text-ink-400" />
+                      }
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-ink-800 text-sm">{doc.label}</p>
+                        {tiene && (
+                          <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">
+                            ✓ Cargado
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-ink-400">{doc.descripcion}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {tiene && documento && (
+                      <a
+                        href={documento.file_url}
+                        target="_blank"
+                        className="text-brand-600 hover:text-brand-700"
+                      >
+                        <ExternalLink size={15} />
+                      </a>
+                    )}
+                    <label className={`border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-xs cursor-pointer hover:bg-gray-50 transition-colors ${cargando ? 'opacity-50 pointer-events-none' : ''}`}>
+                      {cargando ? 'Subiendo...' : tiene ? 'Reemplazar' : 'Subir'}
+                      <input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        className="hidden"
+                        onChange={e => subirDocumento(e, doc.tipo)}
+                      />
+                    </label>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
 
         {/* Tab Perfil */}
@@ -272,7 +394,6 @@ export default function DashboardClient({
                     )}
                   </div>
 
-                  {/* Taller list summary */}
                   <div className="mt-4 pt-4 border-t border-ink-100 space-y-2">
                     {tallersAsignados.map(ta => (
                       <div key={ta.taller.id} className="flex items-center justify-between text-xs">
@@ -314,7 +435,6 @@ export default function DashboardClient({
                 copiedKey="pitch"
               />
 
-              {/* Videos de talleres */}
               {usuario.videos.filter(v => v.taller).length > 0 && (
                 <div className="card p-6">
                   <div className="flex items-center gap-2 mb-4">
@@ -349,7 +469,6 @@ export default function DashboardClient({
   );
 }
 
-// ─────────────────────────────────────────────────────────────────
 function VideoCard({
   tipo, titulo, descripcion, icon: Icon, color, recordHref, video, shareUrl, copied, onCopy, copiedKey
 }: {

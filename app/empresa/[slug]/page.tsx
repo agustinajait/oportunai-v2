@@ -1,4 +1,4 @@
- export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
@@ -13,7 +13,6 @@ export default async function EmpresaPublicaPage({
     include: {
       ofertas: {
         where: { estado: 'activa' },
-        include: { _count: { select: { postulaciones: true } } },
         orderBy: { created_at: 'desc' },
       },
     },
@@ -77,36 +76,30 @@ export default async function EmpresaPublicaPage({
           <div className="space-y-4">
             {empresa.ofertas.map(oferta => (
               <div key={oferta.id} className="card p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-ink-900 text-lg mb-2">{oferta.titulo}</h3>
-                    <p className="text-ink-500 text-sm leading-relaxed line-clamp-3 mb-3">
-                      {oferta.descripcion}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {oferta.area && (
-                        <span className="bg-brand-50 text-brand-700 text-xs px-2.5 py-1 rounded-full">
-                          {oferta.area}
-                        </span>
-                      )}
-                      {oferta.ciudad && (
-                        <span className="text-xs text-ink-400">📍 {oferta.ciudad}</span>
-                      )}
-                      <span className="text-xs text-ink-400">
-                        💼 {modalidadLabel[oferta.modalidad]}
+                <div className="flex-1">
+                  <h3 className="font-semibold text-ink-900 text-lg mb-2">{oferta.titulo}</h3>
+                  <p className="text-ink-500 text-sm leading-relaxed line-clamp-3 mb-3">
+                    {oferta.descripcion}
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {oferta.area && (
+                      <span className="bg-brand-50 text-brand-700 text-xs px-2.5 py-1 rounded-full">
+                        {oferta.area}
                       </span>
-                    </div>
-                    {oferta.requisitos && (
-                      <div className="mt-3 bg-ink-50 rounded-lg px-4 py-3">
-                        <p className="text-xs font-medium text-ink-600 mb-1">Requisitos</p>
-                        <p className="text-xs text-ink-500 leading-relaxed">{oferta.requisitos}</p>
-                      </div>
                     )}
+                    {oferta.ciudad && (
+                      <span className="text-xs text-ink-400">📍 {oferta.ciudad}</span>
+                    )}
+                    <span className="text-xs text-ink-400">
+                      💼 {modalidadLabel[oferta.modalidad]}
+                    </span>
                   </div>
-                  <div className="shrink-0 text-center">
-                    <div className="text-2xl font-bold text-brand-600">{oferta._count.postulaciones}</div>
-                    <div className="text-xs text-ink-400">postulantes</div>
-                  </div>
+                  {oferta.requisitos && (
+                    <div className="mt-3 bg-ink-50 rounded-lg px-4 py-3">
+                      <p className="text-xs font-medium text-ink-600 mb-1">Requisitos</p>
+                      <p className="text-xs text-ink-500 leading-relaxed">{oferta.requisitos}</p>
+                    </div>
+                  )}
                 </div>
                 <div className="mt-4 pt-4 border-t border-ink-100">
                   <Link

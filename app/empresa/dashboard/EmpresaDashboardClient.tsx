@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock } from 'lucide-react';
 
 const DOCS_CONFIG = [
   { tipo: 'dni', label: 'DNI' },
@@ -10,45 +10,34 @@ const DOCS_CONFIG = [
   { tipo: 'otro', label: 'Otro documento' },
 ];
 
+const PIPELINE = [
+  { estado: 'pendiente', label: 'Sin ver', color: 'bg-gray-100 text-gray-600', icon: Clock },
+  { estado: 'visto', label: 'Visto', color: 'bg-blue-100 text-blue-600', icon: Eye },
+  { estado: 'interesado', label: 'Interesado', color: 'bg-purple-100 text-purple-600', icon: Check },
+  { estado: 'contactar', label: 'Contactar', color: 'bg-yellow-100 text-yellow-700', icon: Phone },
+  { estado: 'en_proceso', label: 'En proceso', color: 'bg-orange-100 text-orange-600', icon: Users },
+  { estado: 'contratado', label: 'Contratado', color: 'bg-green-100 text-green-700', icon: Trophy },
+  { estado: 'bolsa_talentos', label: 'Bolsa talentos', color: 'bg-teal-100 text-teal-600', icon: Archive },
+  { estado: 'descartado', label: 'Descartado', color: 'bg-red-100 text-red-600', icon: X },
+];
+
 type Oferta = {
-  id: string;
-  titulo: string;
-  area: string | null;
-  ciudad: string | null;
-  modalidad: string;
-  estado: string;
-  mensaje_whatsapp: string | null;
-  docs_requeridos: string[];
-  created_at: string;
+  id: string; titulo: string; area: string | null; ciudad: string | null;
+  modalidad: string; estado: string; mensaje_whatsapp: string | null;
+  docs_requeridos: string[]; created_at: string;
   _count: { postulaciones: number };
 };
 
 type Postulante = {
-  id: string;
-  estado: string;
-  nota: string | null;
-  created_at: string;
-  usuario: {
-    id: string;
-    nombre_completo: string;
-    email: string;
-    telefono: string;
-    slug: string;
-    bio: string | null;
-  };
+  id: string; estado: string; nota: string | null; created_at: string;
+  usuario: { id: string; nombre_completo: string; email: string; telefono: string; slug: string; bio: string | null; };
   video: { id: string; video_url: string; tipo: string };
   documentos?: { tipo: string; file_url: string }[];
 };
 
 type Empresa = {
-  id: string;
-  nombre: string;
-  slug: string;
-  logo_url: string | null;
-  descripcion: string | null;
-  rubro: string | null;
-  ciudad: string | null;
-  sitio_web: string | null;
+  id: string; nombre: string; slug: string; logo_url: string | null;
+  descripcion: string | null; rubro: string | null; ciudad: string | null; sitio_web: string | null;
 };
 
 export default function EmpresaDashboard() {
@@ -59,6 +48,8 @@ export default function EmpresaDashboard() {
   const [empresa, setEmpresa] = useState<Empresa | null>(null);
   const [loading, setLoading] = useState(false);
   const [perfilGuardado, setPerfilGuardado] = useState(false);
+  const [videoModal, setVideoModal] = useState<Postulante | null>(null);
+  const [filtroEstado, setFiltroEstado] = useState<string>('todos');
 
   const [form, setForm] = useState({
     titulo: '', descripcion: '', requisitos: '', area: '',
@@ -70,10 +61,7 @@ export default function EmpresaDashboard() {
     nombre: '', descripcion: '', rubro: '', ciudad: '', sitio_web: '',
   });
 
-  useEffect(() => {
-    cargarOfertas();
-    cargarEmpresa();
-  }, []);
+  useEffect(() => { cargarOfertas(); cargarEmpresa(); }, []);
 
   async function cargarOfertas() {
     const res = await fetch('/api/empresa/ofertas');
@@ -86,23 +74,13 @@ export default function EmpresaDashboard() {
     const data = await res.json();
     if (data.empresa) {
       setEmpresa(data.empresa);
-      setPerfilForm({
-        nombre: data.empresa.nombre || '',
-        descripcion: data.empresa.descripcion || '',
-        rubro: data.empresa.rubro || '',
-        ciudad: data.empresa.ciudad || '',
-        sitio_web: data.empresa.sitio_web || '',
-      });
+      setPerfilForm({ nombre: data.empresa.nombre || '', descripcion: data.empresa.descripcion || '', rubro: data.empresa.rubro || '', ciudad: data.empresa.ciudad || '', sitio_web: data.empresa.sitio_web || '' });
     }
   }
 
   async function guardarPerfil() {
     setLoading(true);
-    await fetch('/api/empresa/perfil', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(perfilForm),
-    });
+    await fetch('/api/empresa/perfil', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(perfilForm) });
     setPerfilGuardado(true);
     setTimeout(() => setPerfilGuardado(false), 2000);
     cargarEmpresa();
@@ -116,18 +94,16 @@ export default function EmpresaDashboard() {
     fd.append('file', file);
     const res = await fetch('/api/empresa/logo', { method: 'POST', body: fd });
     const data = await res.json();
-    if (data.logo_url) {
-      setEmpresa(prev => prev ? { ...prev, logo_url: data.logo_url } : prev);
-    }
+    if (data.logo_url) setEmpresa(prev => prev ? { ...prev, logo_url: data.logo_url } : prev);
   }
 
   async function verPostulantes(oferta: Oferta) {
     setOfertaSeleccionada(oferta);
     setTab('postulantes');
+    setFiltroEstado('todos');
     const res = await fetch(`/api/ofertas/${oferta.id}/postulantes`);
     const data = await res.json();
     if (data.postulaciones) {
-      // Cargar documentos de cada postulante
       const postsConDocs = await Promise.all(
         data.postulaciones.map(async (p: Postulante) => {
           const resDoc = await fetch(`/api/empresa/candidato/${p.usuario.id}/documentos`);
@@ -150,11 +126,7 @@ export default function EmpresaDashboard() {
 
   async function crearOferta() {
     setLoading(true);
-    const res = await fetch('/api/ofertas', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
+    const res = await fetch('/api/ofertas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
     const data = await res.json();
     if (data.ok) {
       setForm({ titulo: '', descripcion: '', requisitos: '', area: '', modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '', docs_requeridos: [] });
@@ -165,46 +137,41 @@ export default function EmpresaDashboard() {
   }
 
   function toggleDocRequerido(tipo: string) {
-    setForm(prev => ({
-      ...prev,
-      docs_requeridos: prev.docs_requeridos.includes(tipo)
-        ? prev.docs_requeridos.filter(d => d !== tipo)
-        : [...prev.docs_requeridos, tipo],
-    }));
+    setForm(prev => ({ ...prev, docs_requeridos: prev.docs_requeridos.includes(tipo) ? prev.docs_requeridos.filter(d => d !== tipo) : [...prev.docs_requeridos, tipo] }));
   }
 
   function whatsappUrl(telefono: string, mensaje: string, candidato: string) {
     const tel = telefono.replace(/\D/g, '');
     const numero = tel.startsWith('54') ? tel : `54${tel}`;
     const intro = `Hola ${candidato}, te contacto desde ${empresa?.nombre || 'nuestra empresa'}. `;
-    const texto = intro + (mensaje || '');
-    return `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`;
+    return `https://wa.me/${numero}?text=${encodeURIComponent(intro + (mensaje || ''))}`;
   }
 
-  const estadoColor: Record<string, string> = {
-    pendiente: 'bg-gray-100 text-gray-600',
-    visto: 'bg-blue-100 text-blue-600',
-    interesado: 'bg-green-100 text-green-600',
-    descartado: 'bg-red-100 text-red-600',
-  };
+  const getPipelineInfo = (estado: string) => PIPELINE.find(p => p.estado === estado) || PIPELINE[0];
+
+  const postulanteFiltrados = filtroEstado === 'todos' ? postulantes : postulantes.filter(p => p.estado === filtroEstado);
+
+  const conteosPorEstado = PIPELINE.reduce((acc, p) => {
+    acc[p.estado] = postulantes.filter(post => post.estado === p.estado).length;
+    return acc;
+  }, {} as Record<string, number>);
 
   const tabs = [
     { key: 'ofertas', label: 'Mis ofertas' },
-    { key: 'postulantes', label: ofertaSeleccionada ? `Postulantes — ${ofertaSeleccionada.titulo}` : 'Postulantes' },
+    { key: 'postulantes', label: ofertaSeleccionada ? `Pipeline — ${ofertaSeleccionada.titulo}` : 'Pipeline' },
     { key: 'perfil', label: 'Perfil empresa' },
   ];
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             {empresa?.logo_url ? (
               <img src={empresa.logo_url} alt="logo" className="w-12 h-12 rounded-xl object-cover border border-gray-200" />
             ) : (
-              <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">
-                {empresa?.nombre?.[0] || 'E'}
-              </div>
+              <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">{empresa?.nombre?.[0] || 'E'}</div>
             )}
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{empresa?.nombre || 'Panel de empresa'}</h1>
@@ -232,9 +199,7 @@ export default function EmpresaDashboard() {
             {ofertas.length === 0 ? (
               <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
                 <p className="text-gray-400 text-lg mb-4">Todavía no publicaste ninguna oferta</p>
-                <button onClick={() => setTab('nueva')} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
-                  Publicar primera oferta
-                </button>
+                <button onClick={() => setTab('nueva')} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Publicar primera oferta</button>
               </div>
             ) : (
               ofertas.map(oferta => (
@@ -256,7 +221,7 @@ export default function EmpresaDashboard() {
                       <div className="text-xs text-gray-400">postulantes</div>
                     </div>
                     <button onClick={() => verPostulantes(oferta)} className="border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">
-                      Ver postulantes →
+                      Ver pipeline →
                     </button>
                   </div>
                 </div>
@@ -272,20 +237,17 @@ export default function EmpresaDashboard() {
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Título del puesto *</label>
-                <input value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })}
-                  placeholder="Ej: Vendedor/a zona norte"
+                <input value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} placeholder="Ej: Vendedor/a zona norte"
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Descripción *</label>
-                <textarea value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })}
-                  placeholder="Describí el puesto, tareas, horario..." rows={4}
+                <textarea value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} rows={4}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Requisitos</label>
-                <textarea value={form.requisitos} onChange={e => setForm({ ...form, requisitos: e.target.value })}
-                  placeholder="Experiencia, estudios, habilidades..." rows={3}
+                <textarea value={form.requisitos} onChange={e => setForm({ ...form, requisitos: e.target.value })} rows={3}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div className="grid grid-cols-3 gap-3">
@@ -314,12 +276,7 @@ export default function EmpresaDashboard() {
                 <div className="space-y-2">
                   {DOCS_CONFIG.map(doc => (
                     <label key={doc.tipo} className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={form.docs_requeridos.includes(doc.tipo)}
-                        onChange={() => toggleDocRequerido(doc.tipo)}
-                        className="w-4 h-4 accent-blue-600"
-                      />
+                      <input type="checkbox" checked={form.docs_requeridos.includes(doc.tipo)} onChange={() => toggleDocRequerido(doc.tipo)} className="w-4 h-4 accent-blue-600" />
                       <span className="text-sm text-gray-700">{doc.label}</span>
                     </label>
                   ))}
@@ -328,99 +285,118 @@ export default function EmpresaDashboard() {
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Mensaje adicional WhatsApp (opcional)</label>
                 <textarea value={form.mensaje_whatsapp} onChange={e => setForm({ ...form, mensaje_whatsapp: e.target.value })}
-                  placeholder="Me gustaría coordinar una entrevista..."
-                  rows={3}
+                  placeholder="Me gustaría coordinar una entrevista..." rows={3}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <p className="text-xs text-gray-400 mt-1">El mensaje se enviará con: "Hola [nombre], te contacto desde [empresa]. [tu mensaje]"</p>
+                <p className="text-xs text-gray-400 mt-1">Se enviará: "Hola [nombre], te contacto desde [empresa]. [tu mensaje]"</p>
               </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={crearOferta} disabled={loading}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                <button onClick={crearOferta} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
                   {loading ? 'Publicando...' : 'Publicar oferta'}
                 </button>
-                <button onClick={() => setTab('ofertas')} className="border border-gray-200 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">
-                  Cancelar
-                </button>
+                <button onClick={() => setTab('ofertas')} className="border border-gray-200 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">Cancelar</button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Tab: Postulantes */}
+        {/* Tab: Pipeline postulantes */}
         {tab === 'postulantes' && (
-          <div className="space-y-4">
-            {postulantes.length === 0 ? (
+          <div>
+            {/* Filtros por estado */}
+            <div className="flex gap-2 mb-6 flex-wrap">
+              <button onClick={() => setFiltroEstado('todos')}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filtroEstado === 'todos' ? 'bg-gray-800 text-white' : 'bg-white border border-gray-200 text-gray-600'}`}>
+                Todos ({postulantes.length})
+              </button>
+              {PIPELINE.map(p => {
+                const count = conteosPorEstado[p.estado] || 0;
+                if (count === 0) return null;
+                return (
+                  <button key={p.estado} onClick={() => setFiltroEstado(p.estado)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filtroEstado === p.estado ? 'bg-gray-800 text-white' : `${p.color} border border-transparent`}`}>
+                    {p.label} ({count})
+                  </button>
+                );
+              })}
+            </div>
+
+            {postulanteFiltrados.length === 0 ? (
               <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                <p className="text-gray-400">Todavía no hay postulantes para esta oferta</p>
+                <p className="text-gray-400">No hay postulantes en este estado</p>
               </div>
             ) : (
-              postulantes.map(p => (
-                <div key={p.id} className="bg-white rounded-xl border border-gray-200 p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-gray-900">{p.usuario.nombre_completo}</h3>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${estadoColor[p.estado]}`}>{p.estado}</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {postulanteFiltrados.map(p => {
+                  const pipelineInfo = getPipelineInfo(p.estado);
+                  const Icon = pipelineInfo.icon;
+                  return (
+                    <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                      {/* Video preview */}
+                      <div className="relative bg-gray-900 aspect-video cursor-pointer" onClick={() => setVideoModal(p)}>
+                        <video src={p.video.video_url} className="w-full h-full object-cover opacity-80" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                            <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[16px] border-l-white border-b-[8px] border-b-transparent ml-1" />
+                          </div>
+                        </div>
+                        <div className={`absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full ${pipelineInfo.color}`}>
+                          <Icon size={10} />
+                          {pipelineInfo.label}
+                        </div>
                       </div>
-                      <p className="text-sm text-gray-500">{p.usuario.email} · {p.usuario.telefono}</p>
-                      {p.usuario.bio && <p className="text-sm text-gray-600 mt-2">{p.usuario.bio}</p>}
-                      {p.nota && <p className="text-sm text-gray-500 italic mt-2">"{p.nota}"</p>}
 
-                      {/* Checklist de documentos */}
-                      {ofertaSeleccionada?.docs_requeridos?.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-gray-100">
-                          <p className="text-xs font-medium text-gray-600 mb-2">Documentos requeridos:</p>
-                          <div className="flex flex-wrap gap-2">
+                      {/* Info candidato */}
+                      <div className="p-4">
+                        <h3 className="font-semibold text-gray-900 mb-1">{p.usuario.nombre_completo}</h3>
+                        {p.usuario.bio && <p className="text-xs text-gray-500 line-clamp-2 mb-2">{p.usuario.bio}</p>}
+                        <p className="text-xs text-gray-400 mb-3">{p.usuario.email}</p>
+
+                        {/* Checklist docs */}
+                        {ofertaSeleccionada?.docs_requeridos?.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mb-3">
                             {ofertaSeleccionada.docs_requeridos.map(tipo => {
                               const tieneDoc = p.documentos?.some(d => d.tipo === tipo);
-                              const doc = p.documentos?.find(d => d.tipo === tipo);
                               const label = DOCS_CONFIG.find(c => c.tipo === tipo)?.label || tipo;
                               return (
-                                <div key={tipo} className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full ${tieneDoc ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-600'}`}>
-                                  {tieneDoc ? <Check size={11} /> : <X size={11} />}
-                                  {tieneDoc && doc ? (
-                                    <a href={doc.file_url} target="_blank" className="hover:underline">{label}</a>
-                                  ) : (
-                                    <span>{label}</span>
-                                  )}
-                                </div>
+                                <span key={tipo} className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${tieneDoc ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                                  {tieneDoc ? <Check size={10} /> : <X size={10} />}
+                                  {label}
+                                </span>
                               );
                             })}
                           </div>
+                        )}
+
+                        {/* Acciones */}
+                        <div className="flex gap-2 mb-3">
+                          <a href={`/u/${p.usuario.slug}/cv`} target="_blank"
+                            className="flex-1 text-center border border-blue-200 text-blue-600 py-1.5 rounded-lg text-xs hover:bg-blue-50 transition-colors">
+                            Ver perfil
+                          </a>
+                          {ofertaSeleccionada?.mensaje_whatsapp && (
+                            <a href={whatsappUrl(p.usuario.telefono, ofertaSeleccionada.mensaje_whatsapp, p.usuario.nombre_completo)}
+                              target="_blank"
+                              className="flex-1 text-center bg-green-500 text-white py-1.5 rounded-lg text-xs hover:bg-green-600 transition-colors">
+                              📱 WhatsApp
+                            </a>
+                          )}
                         </div>
-                      )}
+
+                        {/* Pipeline selector */}
+                        <select
+                          value={p.estado}
+                          onChange={e => cambiarEstado(p.id, e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          {PIPELINE.map(s => (
+                            <option key={s.estado} value={s.estado}>{s.label}</option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <a href={`/u/${p.usuario.slug}/cv`} target="_blank"
-                        className="border border-blue-200 text-blue-600 px-4 py-1.5 rounded-lg text-sm hover:bg-blue-50 transition-colors text-center">
-                        Ver perfil →
-                      </a>
-                      {ofertaSeleccionada?.mensaje_whatsapp && (
-                        <a href={whatsappUrl(p.usuario.telefono, ofertaSeleccionada.mensaje_whatsapp, p.usuario.nombre_completo)}
-                          target="_blank"
-                          className="bg-green-500 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-green-600 transition-colors text-center flex items-center gap-1.5 justify-center">
-                          📱 WhatsApp
-                        </a>
-                      )}
-                      <video src={p.video.video_url} controls className="w-48 h-28 rounded-lg object-cover border border-gray-200" />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
-                    <button onClick={() => cambiarEstado(p.id, 'interesado')}
-                      className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${p.estado === 'interesado' ? 'bg-green-600 text-white' : 'border border-green-200 text-green-600 hover:bg-green-50'}`}>
-                      ✓ Interesado
-                    </button>
-                    <button onClick={() => cambiarEstado(p.id, 'visto')}
-                      className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${p.estado === 'visto' ? 'bg-blue-600 text-white' : 'border border-blue-200 text-blue-600 hover:bg-blue-50'}`}>
-                      👁 Visto
-                    </button>
-                    <button onClick={() => cambiarEstado(p.id, 'descartado')}
-                      className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${p.estado === 'descartado' ? 'bg-red-600 text-white' : 'border border-red-200 text-red-600 hover:bg-red-50'}`}>
-                      ✕ Descartar
-                    </button>
-                  </div>
-                </div>
-              ))
+                  );
+                })}
+              </div>
             )}
           </div>
         )}
@@ -445,34 +421,30 @@ export default function EmpresaDashboard() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">Nombre de la empresa *</label>
+                <label className="text-sm font-medium text-gray-700 block mb-1">Nombre *</label>
                 <input value={perfilForm.nombre} onChange={e => setPerfilForm({ ...perfilForm, nombre: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Descripción</label>
                 <textarea value={perfilForm.descripcion} onChange={e => setPerfilForm({ ...perfilForm, descripcion: e.target.value })}
-                  rows={3} placeholder="Contá de qué se trata tu empresa..."
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1">Rubro</label>
                   <input value={perfilForm.rubro} onChange={e => setPerfilForm({ ...perfilForm, rubro: e.target.value })}
-                    placeholder="Ej: Tecnología"
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1">Ciudad</label>
                   <input value={perfilForm.ciudad} onChange={e => setPerfilForm({ ...perfilForm, ciudad: e.target.value })}
-                    placeholder="Ej: Buenos Aires"
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Sitio web</label>
                 <input value={perfilForm.sitio_web} onChange={e => setPerfilForm({ ...perfilForm, sitio_web: e.target.value })}
-                  placeholder="https://..."
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <button onClick={guardarPerfil} disabled={loading}
@@ -483,6 +455,35 @@ export default function EmpresaDashboard() {
           </div>
         )}
       </div>
+
+      {/* Modal video */}
+      {videoModal && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setVideoModal(null)}>
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-semibold text-gray-900">{videoModal.usuario.nombre_completo}</h3>
+                <p className="text-sm text-gray-500">{videoModal.usuario.email}</p>
+              </div>
+              <button onClick={() => setVideoModal(null)} className="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            <video src={videoModal.video.video_url} controls autoPlay className="w-full rounded-xl" />
+            <div className="flex gap-2 mt-4">
+              <a href={`/u/${videoModal.usuario.slug}/cv`} target="_blank"
+                className="flex-1 text-center border border-blue-200 text-blue-600 py-2 rounded-lg text-sm hover:bg-blue-50 transition-colors">
+                Ver perfil completo →
+              </a>
+              {ofertaSeleccionada?.mensaje_whatsapp && (
+                <a href={whatsappUrl(videoModal.usuario.telefono, ofertaSeleccionada.mensaje_whatsapp, videoModal.usuario.nombre_completo)}
+                  target="_blank"
+                  className="flex-1 text-center bg-green-500 text-white py-2 rounded-lg text-sm hover:bg-green-600 transition-colors">
+                  📱 Contactar por WhatsApp
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

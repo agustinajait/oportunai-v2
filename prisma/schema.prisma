@@ -240,5 +240,9 @@ enum EstadoPostulacion {
   pendiente
   visto
   interesado
+  contactar
+  en_proceso
+  contratado
+  bolsa_talentos
   descartado
 }

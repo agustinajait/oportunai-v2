@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSessionFromRequest } from '@/lib/auth';
 
-// GET /api/ofertas/[id]/postulantes — empresa ve los postulantes
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await getSessionFromRequest(req);
@@ -11,7 +10,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    // Verificar que la oferta pertenece a la empresa del usuario
     const miembro = await prisma.empresaMiembro.findFirst({
       where: { usuario_id: session.userId },
     });
@@ -35,6 +33,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             telefono: true,
             slug: true,
             bio: true,
+            direccion: true,
+            fecha_nacimiento: true,
           },
         },
         video: { select: { id: true, video_url: true, tipo: true, created_at: true } },
@@ -49,7 +49,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-// PATCH /api/ofertas/[id]/postulantes — empresa cambia estado de postulación
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await getSessionFromRequest(req);
@@ -60,7 +59,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const body = await req.json();
     const { postulacion_id, estado } = body;
 
-    if (!['visto', 'interesado', 'descartado'].includes(estado)) {
+    const estadosValidos = ['pendiente', 'visto', 'interesado', 'contactar', 'en_proceso', 'contratado', 'bolsa_talentos', 'descartado'];
+    if (!estadosValidos.includes(estado)) {
       return NextResponse.json({ error: 'Estado inválido' }, { status: 400 });
     }
 

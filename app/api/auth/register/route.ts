@@ -14,21 +14,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
     }
 
-    const { nombre_completo, email, password, telefono, direccion, dni } = parsed.data;
+    const { nombre_completo, email, password, telefono, direccion, dni, fecha_nacimiento } = parsed.data;
 
     const existing = await prisma.usuario.findFirst({
       where: { OR: [{ email }, { dni }] },
     });
     if (existing) {
       const field = existing.email === email ? 'El email' : 'El DNI';
-      return NextResponse.json({ error: `${field} ya estÃ¡ registrado` }, { status: 409 });
+      return NextResponse.json({ error: `${field} ya está registrado` }, { status: 409 });
     }
 
     const password_hash = await bcrypt.hash(password, 12);
     const slug = generateSlug(nombre_completo, dni);
 
     const usuario = await prisma.usuario.create({
-      data: { nombre_completo, email, password_hash, telefono, direccion, dni, slug },
+      data: {
+        nombre_completo, email, password_hash, telefono, direccion, dni, slug,
+        fecha_nacimiento: fecha_nacimiento ? new Date(fecha_nacimiento) : null,
+      },
     });
 
     const token = await createToken({
@@ -43,7 +46,7 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 dÃ­as
+      maxAge: 60 * 60 * 24 * 7,
       path: '/',
     });
 
@@ -53,4 +56,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }
-

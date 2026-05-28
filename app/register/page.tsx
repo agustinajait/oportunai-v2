@@ -13,11 +13,7 @@ export default function RegisterPage() {
   const [showPass, setShowPass] = useState(false);
   const [serverError, setServerError] = useState('');
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<RegisterInput>({ resolver: zodResolver(registerSchema) });
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterInput>({ resolver: zodResolver(registerSchema) });
 
   const onSubmit = async (data: RegisterInput) => {
     setServerError('');
@@ -27,10 +23,7 @@ export default function RegisterPage() {
       body: JSON.stringify(data),
     });
     const json = await res.json();
-    if (!res.ok) {
-      setServerError(json.error ?? 'Error al registrarse');
-      return;
-    }
+    if (!res.ok) { setServerError(json.error ?? 'Error al registrarse'); return; }
     router.push('/dashboard');
     router.refresh();
   };
@@ -64,16 +57,23 @@ export default function RegisterPage() {
                 {errors.dni && <p className="error-text">{errors.dni.message}</p>}
               </div>
               <div>
+                <label className="label">Fecha de nacimiento</label>
+                <input {...register('fecha_nacimiento')} type="date" className="input-field" />
+                {errors.fecha_nacimiento && <p className="error-text">{errors.fecha_nacimiento.message}</p>}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <label className="label">Teléfono</label>
                 <input {...register('telefono')} className="input-field" placeholder="1112345678" />
                 {errors.telefono && <p className="error-text">{errors.telefono.message}</p>}
               </div>
-            </div>
-
-            <div>
-              <label className="label">Dirección</label>
-              <input {...register('direccion')} className="input-field" placeholder="Av. Corrientes 1234, CABA" />
-              {errors.direccion && <p className="error-text">{errors.direccion.message}</p>}
+              <div>
+                <label className="label">Dirección</label>
+                <input {...register('direccion')} className="input-field" placeholder="Av. Corrientes 1234, CABA" />
+                {errors.direccion && <p className="error-text">{errors.direccion.message}</p>}
+              </div>
             </div>
 
             <div>
@@ -85,28 +85,15 @@ export default function RegisterPage() {
             <div>
               <label className="label">Contraseña</label>
               <div className="relative">
-                <input
-                  {...register('password')}
-                  type={showPass ? 'text' : 'password'}
-                  className="input-field pr-12"
-                  placeholder="Mín. 8 caracteres, 1 mayúscula, 1 número"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
-                >
+                <input {...register('password')} type={showPass ? 'text' : 'password'} className="input-field pr-12" placeholder="Mín. 8 caracteres, 1 mayúscula, 1 número" />
+                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600">
                   {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {errors.password && <p className="error-text">{errors.password.message}</p>}
             </div>
 
-            {serverError && (
-              <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl border border-red-200">
-                {serverError}
-              </div>
-            )}
+            {serverError && <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl border border-red-200">{serverError}</div>}
 
             <button type="submit" disabled={isSubmitting} className="btn-primary w-full justify-center py-3.5 mt-2">
               {isSubmitting && <Loader2 size={18} className="animate-spin" />}
@@ -117,9 +104,7 @@ export default function RegisterPage() {
 
         <p className="text-center text-ink-400 text-sm mt-6">
           ¿Ya tenés cuenta?{' '}
-          <Link href="/login" className="text-brand-600 hover:text-brand-700 font-medium">
-            Ingresá
-          </Link>
+          <Link href="/login" className="text-brand-600 hover:text-brand-700 font-medium">Ingresá</Link>
         </p>
       </div>
     </div>

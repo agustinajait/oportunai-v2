@@ -18,6 +18,7 @@ model Usuario {
   dni             String   @unique
   role            Role     @default(user)
   bio             String?
+fecha_nacimiento DateTime?
   slug            String   @unique
   created_at      DateTime @default(now())
 

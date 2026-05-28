@@ -21,6 +21,16 @@ const PIPELINE = [
   { estado: 'descartado', label: 'Descartado', color: 'bg-red-100 text-red-600', icon: X },
 ];
 
+function calcularEdad(fecha_nacimiento: string | null): string {
+  if (!fecha_nacimiento) return '';
+  const hoy = new Date();
+  const nac = new Date(fecha_nacimiento);
+  let edad = hoy.getFullYear() - nac.getFullYear();
+  const m = hoy.getMonth() - nac.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+  return `${edad} años`;
+}
+
 type Oferta = {
   id: string; titulo: string; area: string | null; ciudad: string | null;
   modalidad: string; estado: string; mensaje_whatsapp: string | null;
@@ -30,7 +40,10 @@ type Oferta = {
 
 type Postulante = {
   id: string; estado: string; nota: string | null; created_at: string;
-  usuario: { id: string; nombre_completo: string; email: string; telefono: string; slug: string; bio: string | null; };
+  usuario: {
+    id: string; nombre_completo: string; email: string; telefono: string;
+    slug: string; bio: string | null; direccion: string | null; fecha_nacimiento: string | null;
+  };
   video: { id: string; video_url: string; tipo: string };
   documentos?: { tipo: string; file_url: string }[];
 };
@@ -117,8 +130,7 @@ export default function EmpresaDashboard() {
 
   async function cambiarEstado(postulacion_id: string, estado: string) {
     await fetch(`/api/ofertas/${ofertaSeleccionada?.id}/postulantes`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ postulacion_id, estado }),
     });
     setPostulantes(prev => prev.map(p => p.id === postulacion_id ? { ...p, estado } : p));
@@ -148,13 +160,8 @@ export default function EmpresaDashboard() {
   }
 
   const getPipelineInfo = (estado: string) => PIPELINE.find(p => p.estado === estado) || PIPELINE[0];
-
   const postulanteFiltrados = filtroEstado === 'todos' ? postulantes : postulantes.filter(p => p.estado === filtroEstado);
-
-  const conteosPorEstado = PIPELINE.reduce((acc, p) => {
-    acc[p.estado] = postulantes.filter(post => post.estado === p.estado).length;
-    return acc;
-  }, {} as Record<string, number>);
+  const conteosPorEstado = PIPELINE.reduce((acc, p) => { acc[p.estado] = postulantes.filter(post => post.estado === p.estado).length; return acc; }, {} as Record<string, number>);
 
   const tabs = [
     { key: 'ofertas', label: 'Mis ofertas' },
@@ -165,7 +172,6 @@ export default function EmpresaDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             {empresa?.logo_url ? (
@@ -178,12 +184,9 @@ export default function EmpresaDashboard() {
               {empresa?.rubro && <p className="text-sm text-gray-500">{empresa.rubro}</p>}
             </div>
           </div>
-          <button onClick={() => setTab('nueva')} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-            + Nueva oferta
-          </button>
+          <button onClick={() => setTab('nueva')} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">+ Nueva oferta</button>
         </div>
 
-        {/* Tabs */}
         <div className="flex gap-1 mb-6 bg-white border border-gray-200 rounded-lg p-1 w-fit">
           {tabs.map(t => (
             <button key={t.key} onClick={() => setTab(t.key as any)}
@@ -220,9 +223,7 @@ export default function EmpresaDashboard() {
                       <div className="text-2xl font-bold text-blue-600">{oferta._count.postulaciones}</div>
                       <div className="text-xs text-gray-400">postulantes</div>
                     </div>
-                    <button onClick={() => verPostulantes(oferta)} className="border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">
-                      Ver pipeline →
-                    </button>
+                    <button onClick={() => verPostulantes(oferta)} className="border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">Ver pipeline →</button>
                   </div>
                 </div>
               ))
@@ -236,30 +237,25 @@ export default function EmpresaDashboard() {
             <h2 className="text-lg font-semibold text-gray-900 mb-5">Nueva oferta de trabajo</h2>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">Título del puesto *</label>
-                <input value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} placeholder="Ej: Vendedor/a zona norte"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-sm font-medium text-gray-700 block mb-1">Título *</label>
+                <input value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Descripción *</label>
-                <textarea value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} rows={4}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <textarea value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} rows={4} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Requisitos</label>
-                <textarea value={form.requisitos} onChange={e => setForm({ ...form, requisitos: e.target.value })} rows={3}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <textarea value={form.requisitos} onChange={e => setForm({ ...form, requisitos: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1">Área</label>
-                  <input value={form.area} onChange={e => setForm({ ...form, area: e.target.value })} placeholder="Ej: Ventas"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input value={form.area} onChange={e => setForm({ ...form, area: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1">Modalidad</label>
-                  <select value={form.modalidad} onChange={e => setForm({ ...form, modalidad: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <select value={form.modalidad} onChange={e => setForm({ ...form, modalidad: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="presencial">Presencial</option>
                     <option value="remoto">Remoto</option>
                     <option value="hibrido">Híbrido</option>
@@ -267,8 +263,7 @@ export default function EmpresaDashboard() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1">Ciudad</label>
-                  <input value={form.ciudad} onChange={e => setForm({ ...form, ciudad: e.target.value })} placeholder="Ej: CABA"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input value={form.ciudad} onChange={e => setForm({ ...form, ciudad: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
               </div>
               <div>
@@ -283,26 +278,23 @@ export default function EmpresaDashboard() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">Mensaje adicional WhatsApp (opcional)</label>
-                <textarea value={form.mensaje_whatsapp} onChange={e => setForm({ ...form, mensaje_whatsapp: e.target.value })}
-                  placeholder="Me gustaría coordinar una entrevista..." rows={3}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-sm font-medium text-gray-700 block mb-1">Mensaje WhatsApp (opcional)</label>
+                <textarea value={form.mensaje_whatsapp} onChange={e => setForm({ ...form, mensaje_whatsapp: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 <p className="text-xs text-gray-400 mt-1">Se enviará: "Hola [nombre], te contacto desde [empresa]. [tu mensaje]"</p>
               </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={crearOferta} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                <button onClick={crearOferta} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
                   {loading ? 'Publicando...' : 'Publicar oferta'}
                 </button>
-                <button onClick={() => setTab('ofertas')} className="border border-gray-200 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">Cancelar</button>
+                <button onClick={() => setTab('ofertas')} className="border border-gray-200 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Tab: Pipeline postulantes */}
+        {/* Tab: Pipeline */}
         {tab === 'postulantes' && (
           <div>
-            {/* Filtros por estado */}
             <div className="flex gap-2 mb-6 flex-wrap">
               <button onClick={() => setFiltroEstado('todos')}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filtroEstado === 'todos' ? 'bg-gray-800 text-white' : 'bg-white border border-gray-200 text-gray-600'}`}>
@@ -313,7 +305,7 @@ export default function EmpresaDashboard() {
                 if (count === 0) return null;
                 return (
                   <button key={p.estado} onClick={() => setFiltroEstado(p.estado)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filtroEstado === p.estado ? 'bg-gray-800 text-white' : `${p.color} border border-transparent`}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filtroEstado === p.estado ? 'bg-gray-800 text-white' : `${p.color}`}`}>
                     {p.label} ({count})
                   </button>
                 );
@@ -329,9 +321,10 @@ export default function EmpresaDashboard() {
                 {postulanteFiltrados.map(p => {
                   const pipelineInfo = getPipelineInfo(p.estado);
                   const Icon = pipelineInfo.icon;
+                  const edad = calcularEdad(p.usuario.fecha_nacimiento);
+                  const ciudad = p.usuario.direccion?.split(',').slice(-2).join(',').trim() || '';
                   return (
                     <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                      {/* Video preview */}
                       <div className="relative bg-gray-900 aspect-video cursor-pointer" onClick={() => setVideoModal(p)}>
                         <video src={p.video.video_url} className="w-full h-full object-cover opacity-80" />
                         <div className="absolute inset-0 flex items-center justify-center">
@@ -345,52 +338,44 @@ export default function EmpresaDashboard() {
                         </div>
                       </div>
 
-                      {/* Info candidato */}
                       <div className="p-4">
-                        <h3 className="font-semibold text-gray-900 mb-1">{p.usuario.nombre_completo}</h3>
+                        <h3 className="font-semibold text-gray-900">{p.usuario.nombre_completo}</h3>
+                        <div className="flex gap-2 text-xs text-gray-400 mt-1 mb-2">
+                          {edad && <span>🎂 {edad}</span>}
+                          {ciudad && <span>📍 {ciudad}</span>}
+                        </div>
                         {p.usuario.bio && <p className="text-xs text-gray-500 line-clamp-2 mb-2">{p.usuario.bio}</p>}
-                        <p className="text-xs text-gray-400 mb-3">{p.usuario.email}</p>
 
-                        {/* Checklist docs */}
                         {ofertaSeleccionada?.docs_requeridos?.length > 0 && (
                           <div className="flex flex-wrap gap-1 mb-3">
                             {ofertaSeleccionada.docs_requeridos.map(tipo => {
                               const tieneDoc = p.documentos?.some(d => d.tipo === tipo);
+                              const doc = p.documentos?.find(d => d.tipo === tipo);
                               const label = DOCS_CONFIG.find(c => c.tipo === tipo)?.label || tipo;
                               return (
                                 <span key={tipo} className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${tieneDoc ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-600'}`}>
                                   {tieneDoc ? <Check size={10} /> : <X size={10} />}
-                                  {label}
+                                  {tieneDoc && doc ? <a href={doc.file_url} target="_blank" className="hover:underline">{label}</a> : label}
                                 </span>
                               );
                             })}
                           </div>
                         )}
 
-                        {/* Acciones */}
                         <div className="flex gap-2 mb-3">
                           <a href={`/u/${p.usuario.slug}/cv`} target="_blank"
-                            className="flex-1 text-center border border-blue-200 text-blue-600 py-1.5 rounded-lg text-xs hover:bg-blue-50 transition-colors">
-                            Ver perfil
-                          </a>
+                            className="flex-1 text-center border border-blue-200 text-blue-600 py-1.5 rounded-lg text-xs hover:bg-blue-50">Ver perfil</a>
                           {ofertaSeleccionada?.mensaje_whatsapp && (
                             <a href={whatsappUrl(p.usuario.telefono, ofertaSeleccionada.mensaje_whatsapp, p.usuario.nombre_completo)}
-                              target="_blank"
-                              className="flex-1 text-center bg-green-500 text-white py-1.5 rounded-lg text-xs hover:bg-green-600 transition-colors">
+                              target="_blank" className="flex-1 text-center bg-green-500 text-white py-1.5 rounded-lg text-xs hover:bg-green-600">
                               📱 WhatsApp
                             </a>
                           )}
                         </div>
 
-                        {/* Pipeline selector */}
-                        <select
-                          value={p.estado}
-                          onChange={e => cambiarEstado(p.id, e.target.value)}
-                          className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          {PIPELINE.map(s => (
-                            <option key={s.estado} value={s.estado}>{s.label}</option>
-                          ))}
+                        <select value={p.estado} onChange={e => cambiarEstado(p.id, e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                          {PIPELINE.map(s => <option key={s.estado} value={s.estado}>{s.label}</option>)}
                         </select>
                       </div>
                     </div>
@@ -401,7 +386,7 @@ export default function EmpresaDashboard() {
           </div>
         )}
 
-        {/* Tab: Perfil empresa */}
+        {/* Tab: Perfil */}
         {tab === 'perfil' && (
           <div className="bg-white rounded-xl border border-gray-200 p-6 max-w-xl">
             <h2 className="text-lg font-semibold text-gray-900 mb-5">Perfil de empresa</h2>
@@ -409,12 +394,8 @@ export default function EmpresaDashboard() {
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-2">Logo</label>
                 <div className="flex items-center gap-4">
-                  {empresa?.logo_url ? (
-                    <img src={empresa.logo_url} alt="logo" className="w-16 h-16 rounded-xl object-cover border border-gray-200" />
-                  ) : (
-                    <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 text-2xl">🏢</div>
-                  )}
-                  <label className="border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm cursor-pointer hover:bg-gray-50 transition-colors">
+                  {empresa?.logo_url ? <img src={empresa.logo_url} alt="logo" className="w-16 h-16 rounded-xl object-cover border border-gray-200" /> : <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 text-2xl">🏢</div>}
+                  <label className="border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm cursor-pointer hover:bg-gray-50">
                     Subir logo
                     <input type="file" accept="image/*" className="hidden" onChange={subirLogo} />
                   </label>
@@ -422,33 +403,27 @@ export default function EmpresaDashboard() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Nombre *</label>
-                <input value={perfilForm.nombre} onChange={e => setPerfilForm({ ...perfilForm, nombre: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input value={perfilForm.nombre} onChange={e => setPerfilForm({ ...perfilForm, nombre: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Descripción</label>
-                <textarea value={perfilForm.descripcion} onChange={e => setPerfilForm({ ...perfilForm, descripcion: e.target.value })}
-                  rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <textarea value={perfilForm.descripcion} onChange={e => setPerfilForm({ ...perfilForm, descripcion: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1">Rubro</label>
-                  <input value={perfilForm.rubro} onChange={e => setPerfilForm({ ...perfilForm, rubro: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input value={perfilForm.rubro} onChange={e => setPerfilForm({ ...perfilForm, rubro: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1">Ciudad</label>
-                  <input value={perfilForm.ciudad} onChange={e => setPerfilForm({ ...perfilForm, ciudad: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input value={perfilForm.ciudad} onChange={e => setPerfilForm({ ...perfilForm, ciudad: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Sitio web</label>
-                <input value={perfilForm.sitio_web} onChange={e => setPerfilForm({ ...perfilForm, sitio_web: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input value={perfilForm.sitio_web} onChange={e => setPerfilForm({ ...perfilForm, sitio_web: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
-              <button onClick={guardarPerfil} disabled={loading}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
+              <button onClick={guardarPerfil} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
                 {perfilGuardado ? '✓ Guardado' : loading ? 'Guardando...' : 'Guardar cambios'}
               </button>
             </div>
@@ -463,20 +438,20 @@ export default function EmpresaDashboard() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-semibold text-gray-900">{videoModal.usuario.nombre_completo}</h3>
-                <p className="text-sm text-gray-500">{videoModal.usuario.email}</p>
+                <div className="flex gap-3 text-sm text-gray-500">
+                  <span>{videoModal.usuario.email}</span>
+                  {calcularEdad(videoModal.usuario.fecha_nacimiento) && <span>· {calcularEdad(videoModal.usuario.fecha_nacimiento)}</span>}
+                </div>
               </div>
-              <button onClick={() => setVideoModal(null)} className="text-gray-400 hover:text-gray-600">✕</button>
+              <button onClick={() => setVideoModal(null)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
             </div>
             <video src={videoModal.video.video_url} controls autoPlay className="w-full rounded-xl" />
             <div className="flex gap-2 mt-4">
               <a href={`/u/${videoModal.usuario.slug}/cv`} target="_blank"
-                className="flex-1 text-center border border-blue-200 text-blue-600 py-2 rounded-lg text-sm hover:bg-blue-50 transition-colors">
-                Ver perfil completo →
-              </a>
+                className="flex-1 text-center border border-blue-200 text-blue-600 py-2 rounded-lg text-sm hover:bg-blue-50">Ver perfil completo →</a>
               {ofertaSeleccionada?.mensaje_whatsapp && (
                 <a href={whatsappUrl(videoModal.usuario.telefono, ofertaSeleccionada.mensaje_whatsapp, videoModal.usuario.nombre_completo)}
-                  target="_blank"
-                  className="flex-1 text-center bg-green-500 text-white py-2 rounded-lg text-sm hover:bg-green-600 transition-colors">
+                  target="_blank" className="flex-1 text-center bg-green-500 text-white py-2 rounded-lg text-sm hover:bg-green-600">
                   📱 Contactar por WhatsApp
                 </a>
               )}

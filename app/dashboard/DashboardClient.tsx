@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import {
   Video, Mic, FileText, Edit3, Check, X, Upload,
@@ -14,6 +14,7 @@ import OfertasTab from '@/components/ui/OfertasTab';
 interface VideoItem {
   id: string; tipo: string; video_url: string; created_at: string;
   taller: { id: string; nombre: string } | null;
+  oferta_id: string | null;
 }
 interface Archivo { id: string; file_url: string; file_type: string; created_at: string }
 interface TallerModulo { id: string; tipo_video: string; nombre_modulo: string; duracion_base: number; texto_guia: string; orden: number; }
@@ -48,7 +49,11 @@ export default function DashboardClient({
   tallersAsignados: TallerUsuario[];
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<'perfil' | 'ofertas' | 'documentos'>('perfil');
+  const searchParams = useSearchParams();
+  const [tab, setTab] = useState<'perfil' | 'ofertas' | 'documentos'>(
+    searchParams.get('tab') === 'ofertas' ? 'ofertas' : 'perfil'
+  );
+  const initialOfertaId = searchParams.get('oferta_id') ?? undefined;
   const [bio, setBio] = useState(usuario.bio ?? '');
   const [editingBio, setEditingBio] = useState(false);
   const [bioSaving, setBioSaving] = useState(false);
@@ -66,8 +71,8 @@ export default function DashboardClient({
   const cvUrl = `${appUrl}/u/${usuario.slug}/cv`;
   const pitchUrl = `${appUrl}/u/${usuario.slug}/pitch`;
 
-  const videoCV = usuario.videos.find(v => v.tipo === 'video_cv' && !v.taller);
-  const videoPitch = usuario.videos.find(v => v.tipo === 'video_pitch' && !v.taller);
+  const videoCV = usuario.videos.find(v => v.tipo === 'video_cv' && !v.taller && !v.oferta_id);
+  const videoPitch = usuario.videos.find(v => v.tipo === 'video_pitch' && !v.taller && !v.oferta_id);
   const archivoCV = usuario.archivos[0] ?? null;
 
   useEffect(() => {
@@ -198,7 +203,7 @@ export default function DashboardClient({
 
         {/* Tab Ofertas */}
         {tab === 'ofertas' && (
-          <OfertasTab videos={usuario.videos} />
+          <OfertasTab videos={usuario.videos} initialOfertaId={initialOfertaId} />
         )}
 
         {/* Tab Documentos */}

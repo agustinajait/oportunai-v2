@@ -21,6 +21,7 @@ type Video = {
   tipo: string;
   video_url: string;
   created_at: string;
+  oferta_id?: string | null;
 };
 
 type PostulacionCompleta = {
@@ -54,7 +55,7 @@ const modalidadLabel: Record<string, string> = {
   presencial: 'Presencial', remoto: 'Remoto', hibrido: 'Híbrido',
 };
 
-export default function OfertasTab({ videos }: { videos: Video[] }) {
+export default function OfertasTab({ videos, initialOfertaId }: { videos: Video[]; initialOfertaId?: string }) {
   const [vista, setVista] = useState<'explorar' | 'mis_postulaciones'>('explorar');
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const [postulaciones, setPostulaciones] = useState<PostulacionCompleta[]>([]);
@@ -68,6 +69,17 @@ export default function OfertasTab({ videos }: { videos: Video[] }) {
   const videosFinales = videos.filter(v => !v.tipo.includes('fragmento'));
 
   useEffect(() => { cargarDatos(); }, []);
+
+  // Auto-abrir oferta al volver de grabación específica
+  useEffect(() => {
+    if (!initialOfertaId || ofertas.length === 0) return;
+    const oferta = ofertas.find(o => o.id === initialOfertaId);
+    if (oferta && !yaAplicoA(oferta.id)) {
+      const especifico = videosFinales.find(v => v.oferta_id === initialOfertaId);
+      setOfertaDetalle(oferta);
+      setVideoSeleccionado(especifico?.id ?? videosFinales[0]?.id ?? '');
+    }
+  }, [initialOfertaId, ofertas]);
 
   async function cargarDatos() {
     setLoading(true);
@@ -303,22 +315,31 @@ export default function OfertasTab({ videos }: { videos: Video[] }) {
               </div>
             </div>
 
-            {/* Preguntas de la empresa */}
+            {/* Nudge de preguntas específicas */}
             {ofertaDetalle.preguntas_videocv?.length > 0 && (
-              <div className="bg-purple-50 rounded-xl p-4 mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <MessageSquare size={14} className="text-purple-600" />
-                  <span className="text-sm font-medium text-purple-800">La empresa quiere saber:</span>
+              <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 mb-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <MessageSquare size={14} className="text-purple-500" />
+                  <span className="text-sm font-semibold text-purple-800">¡Queremos conocerte un poco más!</span>
                 </div>
-                <ul className="space-y-1.5">
+                <p className="text-xs text-purple-600 mb-3">
+                  Esta empresa tiene preguntas específicas. Podés postularte con tu Video CV genérico o grabar un video corto respondiéndolas para destacar tu candidatura.
+                </p>
+                <ul className="space-y-1 mb-3">
                   {ofertaDetalle.preguntas_videocv.map((pregunta, i) => (
-                    <li key={i} className="text-sm text-purple-700 flex gap-2">
+                    <li key={i} className="text-xs text-purple-700 flex gap-2">
                       <span className="font-semibold shrink-0">{i + 1}.</span>
                       <span>{pregunta}</span>
                     </li>
                   ))}
                 </ul>
-                <p className="text-xs text-purple-500 mt-2">Intentá responder estas preguntas en tu video.</p>
+                <a
+                  href={`/dashboard/grabar-oferta?oferta_id=${ofertaDetalle.id}`}
+                  className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+                >
+                  <MessageSquare size={12} />
+                  Grabar video con mis respuestas
+                </a>
               </div>
             )}
 
@@ -327,28 +348,45 @@ export default function OfertasTab({ videos }: { videos: Video[] }) {
                 <label className="text-sm font-medium text-ink-700 block mb-2">Elegí tu Video CV</label>
                 {videosFinales.length === 0 ? (
                   <div className="bg-amber-50 text-amber-700 text-sm rounded-lg px-3 py-2">
-                    Todavía no tenés un Video CV grabado. Grabá uno desde tu dashboard primero.
+                    Todavía no tenés un Video CV grabado. Grabá uno primero.
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {videosFinales.map(v => (
-                      <label key={v.id} className={`flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition-colors ${
-                        videoSeleccionado === v.id ? 'border-brand-500 bg-brand-50' : 'border-gray-200 hover:bg-gray-50'
-                      }`}>
-                        <input
-                          type="radio" name="video" value={v.id}
-                          checked={videoSeleccionado === v.id}
-                          onChange={() => setVideoSeleccionado(v.id)}
-                          className="accent-brand-600"
-                        />
-                        <div>
-                          <div className="text-sm font-medium text-ink-800">
-                            {v.tipo === 'video_cv' ? 'Video CV' : 'Video Pitch'}
-                          </div>
-                          <div className="text-xs text-ink-400">{new Date(v.created_at).toLocaleDateString('es-AR')}</div>
-                        </div>
-                      </label>
-                    ))}
+                    {/* Videos específicos para esta oferta primero */}
+                    {videosFinales
+                      .slice()
+                      .sort((a, b) => {
+                        const aEsp = a.oferta_id === ofertaDetalle.id ? -1 : 0;
+                        const bEsp = b.oferta_id === ofertaDetalle.id ? -1 : 0;
+                        return aEsp - bEsp;
+                      })
+                      .filter(v => !v.oferta_id || v.oferta_id === ofertaDetalle.id)
+                      .map(v => {
+                        const esEspecifico = v.oferta_id === ofertaDetalle.id;
+                        return (
+                          <label key={v.id} className={`flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition-colors ${
+                            videoSeleccionado === v.id ? 'border-brand-500 bg-brand-50' : 'border-gray-200 hover:bg-gray-50'
+                          }`}>
+                            <input
+                              type="radio" name="video" value={v.id}
+                              checked={videoSeleccionado === v.id}
+                              onChange={() => setVideoSeleccionado(v.id)}
+                              className="accent-brand-600"
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-ink-800">
+                                  {esEspecifico ? 'Video específico para esta oferta' : v.tipo === 'video_cv' ? 'Video CV genérico' : 'Video Pitch'}
+                                </span>
+                                {esEspecifico && (
+                                  <span className="text-xs bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded-full">Recomendado</span>
+                                )}
+                              </div>
+                              <div className="text-xs text-ink-400">{new Date(v.created_at).toLocaleDateString('es-AR')}</div>
+                            </div>
+                          </label>
+                        );
+                      })}
                   </div>
                 )}
               </div>

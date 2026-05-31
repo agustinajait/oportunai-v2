@@ -315,38 +315,37 @@ export default function OfertasTab({ videos, initialOfertaId }: { videos: Video[
               </div>
             </div>
 
-            {/* Preguntas de la empresa */}
+            {/* Nudge de preguntas específicas */}
             {ofertaDetalle.preguntas_videocv?.length > 0 && (
-              <div className="bg-purple-50 rounded-xl p-4 mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <MessageSquare size={14} className="text-purple-600" />
-                  <span className="text-sm font-medium text-purple-800">La empresa quiere saber:</span>
+              <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 mb-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <MessageSquare size={14} className="text-purple-500" />
+                  <span className="text-sm font-semibold text-purple-800">¡Queremos conocerte un poco más!</span>
                 </div>
-                <ul className="space-y-1.5">
+                <p className="text-xs text-purple-600 mb-3">
+                  Esta empresa tiene preguntas específicas. Podés postularte con tu Video CV genérico o grabar un video corto respondiéndolas para destacar tu candidatura.
+                </p>
+                <ul className="space-y-1 mb-3">
                   {ofertaDetalle.preguntas_videocv.map((pregunta, i) => (
-                    <li key={i} className="text-sm text-purple-700 flex gap-2">
+                    <li key={i} className="text-xs text-purple-700 flex gap-2">
                       <span className="font-semibold shrink-0">{i + 1}.</span>
                       <span>{pregunta}</span>
                     </li>
                   ))}
                 </ul>
-                <p className="text-xs text-purple-500 mt-2">Intentá responder estas preguntas en tu video.</p>
+                <a
+                  href={`/dashboard/grabar-oferta?oferta_id=${ofertaDetalle.id}`}
+                  className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+                >
+                  <MessageSquare size={12} />
+                  Grabar video con mis respuestas
+                </a>
               </div>
             )}
 
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-ink-700 block mb-2">Elegí tu Video CV</label>
-                {/* Botón grabar video específico (solo si la oferta tiene preguntas) */}
-                {ofertaDetalle.preguntas_videocv?.length > 0 && (
-                  <a
-                    href={`/dashboard/grabar-oferta?oferta_id=${ofertaDetalle.id}`}
-                    className="flex items-center gap-2 w-full mb-3 border-2 border-dashed border-purple-300 text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-xl px-4 py-3 text-sm font-medium transition-colors"
-                  >
-                    <MessageSquare size={15} />
-                    Grabar video respondiendo las preguntas
-                  </a>
-                )}
                 {videosFinales.length === 0 ? (
                   <div className="bg-amber-50 text-amber-700 text-sm rounded-lg px-3 py-2">
                     Todavía no tenés un Video CV grabado. Grabá uno primero.

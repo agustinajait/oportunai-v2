@@ -21,6 +21,7 @@ type Video = {
   tipo: string;
   video_url: string;
   created_at: string;
+  oferta_id?: string | null;
 };
 
 type PostulacionCompleta = {
@@ -54,7 +55,7 @@ const modalidadLabel: Record<string, string> = {
   presencial: 'Presencial', remoto: 'Remoto', hibrido: 'Híbrido',
 };
 
-export default function OfertasTab({ videos }: { videos: Video[] }) {
+export default function OfertasTab({ videos, initialOfertaId }: { videos: Video[]; initialOfertaId?: string }) {
   const [vista, setVista] = useState<'explorar' | 'mis_postulaciones'>('explorar');
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const [postulaciones, setPostulaciones] = useState<PostulacionCompleta[]>([]);
@@ -68,6 +69,17 @@ export default function OfertasTab({ videos }: { videos: Video[] }) {
   const videosFinales = videos.filter(v => !v.tipo.includes('fragmento'));
 
   useEffect(() => { cargarDatos(); }, []);
+
+  // Auto-abrir oferta al volver de grabación específica
+  useEffect(() => {
+    if (!initialOfertaId || ofertas.length === 0) return;
+    const oferta = ofertas.find(o => o.id === initialOfertaId);
+    if (oferta && !yaAplicoA(oferta.id)) {
+      const especifico = videosFinales.find(v => v.oferta_id === initialOfertaId);
+      setOfertaDetalle(oferta);
+      setVideoSeleccionado(especifico?.id ?? videosFinales[0]?.id ?? '');
+    }
+  }, [initialOfertaId, ofertas]);
 
   async function cargarDatos() {
     setLoading(true);
@@ -325,30 +337,57 @@ export default function OfertasTab({ videos }: { videos: Video[] }) {
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-ink-700 block mb-2">Elegí tu Video CV</label>
+                {/* Botón grabar video específico (solo si la oferta tiene preguntas) */}
+                {ofertaDetalle.preguntas_videocv?.length > 0 && (
+                  <a
+                    href={`/dashboard/grabar-oferta?oferta_id=${ofertaDetalle.id}`}
+                    className="flex items-center gap-2 w-full mb-3 border-2 border-dashed border-purple-300 text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-xl px-4 py-3 text-sm font-medium transition-colors"
+                  >
+                    <MessageSquare size={15} />
+                    Grabar video respondiendo las preguntas
+                  </a>
+                )}
                 {videosFinales.length === 0 ? (
                   <div className="bg-amber-50 text-amber-700 text-sm rounded-lg px-3 py-2">
-                    Todavía no tenés un Video CV grabado. Grabá uno desde tu dashboard primero.
+                    Todavía no tenés un Video CV grabado. Grabá uno primero.
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {videosFinales.map(v => (
-                      <label key={v.id} className={`flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition-colors ${
-                        videoSeleccionado === v.id ? 'border-brand-500 bg-brand-50' : 'border-gray-200 hover:bg-gray-50'
-                      }`}>
-                        <input
-                          type="radio" name="video" value={v.id}
-                          checked={videoSeleccionado === v.id}
-                          onChange={() => setVideoSeleccionado(v.id)}
-                          className="accent-brand-600"
-                        />
-                        <div>
-                          <div className="text-sm font-medium text-ink-800">
-                            {v.tipo === 'video_cv' ? 'Video CV' : 'Video Pitch'}
-                          </div>
-                          <div className="text-xs text-ink-400">{new Date(v.created_at).toLocaleDateString('es-AR')}</div>
-                        </div>
-                      </label>
-                    ))}
+                    {/* Videos específicos para esta oferta primero */}
+                    {videosFinales
+                      .slice()
+                      .sort((a, b) => {
+                        const aEsp = a.oferta_id === ofertaDetalle.id ? -1 : 0;
+                        const bEsp = b.oferta_id === ofertaDetalle.id ? -1 : 0;
+                        return aEsp - bEsp;
+                      })
+                      .filter(v => !v.oferta_id || v.oferta_id === ofertaDetalle.id)
+                      .map(v => {
+                        const esEspecifico = v.oferta_id === ofertaDetalle.id;
+                        return (
+                          <label key={v.id} className={`flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition-colors ${
+                            videoSeleccionado === v.id ? 'border-brand-500 bg-brand-50' : 'border-gray-200 hover:bg-gray-50'
+                          }`}>
+                            <input
+                              type="radio" name="video" value={v.id}
+                              checked={videoSeleccionado === v.id}
+                              onChange={() => setVideoSeleccionado(v.id)}
+                              className="accent-brand-600"
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-ink-800">
+                                  {esEspecifico ? 'Video específico para esta oferta' : v.tipo === 'video_cv' ? 'Video CV genérico' : 'Video Pitch'}
+                                </span>
+                                {esEspecifico && (
+                                  <span className="text-xs bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded-full">Recomendado</span>
+                                )}
+                              </div>
+                              <div className="text-xs text-ink-400">{new Date(v.created_at).toLocaleDateString('es-AR')}</div>
+                            </div>
+                          </label>
+                        );
+                      })}
                   </div>
                 )}
               </div>

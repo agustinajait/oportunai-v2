@@ -39,12 +39,16 @@ export default function VideoRecorder({
   tipo,
   tallerId,
   tallerNombre,
+  ofertaId,
+  ofertaNombre,
 }: {
   modulos: Modulo[];
   session: SessionPayload;
   tipo: 'video_cv' | 'video_pitch';
   tallerId?: string;
   tallerNombre?: string;
+  ofertaId?: string;
+  ofertaNombre?: string;
 }) {
   const router = useRouter();
   const tituloVideo = tipo === 'video_cv' ? 'Video CV' : 'Video Pitch';
@@ -222,6 +226,7 @@ export default function VideoRecorder({
           tipo,
           video_url: videoUrl,
           ...(tallerId ? { taller_id: tallerId } : {}),
+          ...(ofertaId ? { oferta_id: ofertaId } : {}),
         }),
       });
 
@@ -264,7 +269,7 @@ export default function VideoRecorder({
             {tipo === 'video_cv' ? <Video size={13} className="text-white" /> : <Mic size={13} className="text-white" />}
           </div>
           <span className="text-white font-medium text-sm">{tituloVideo}</span>
-          {tallerNombre && <p className="text-white/40 text-xs">{tallerNombre}</p>}
+          {(tallerNombre || ofertaNombre) && <p className="text-white/40 text-xs">{tallerNombre ?? ofertaNombre}</p>}
         </div>
         {stage === 'recording' ? (
           <div className="flex items-center gap-1.5 text-red-400 text-sm font-medium">
@@ -447,8 +452,11 @@ export default function VideoRecorder({
               <h2 className="font-display text-2xl font-semibold text-white mb-2">¡{tituloVideo} grabado!</h2>
               <p className="text-white/50 text-sm max-w-sm mb-8">Tu video está listo y ya podés compartirlo.</p>
               <div className="space-y-3 w-full max-w-xs">
-                <button onClick={() => router.push('/dashboard')} className="btn-primary w-full justify-center py-3.5 rounded-2xl">
-                  Ver mi dashboard
+                <button
+                  onClick={() => router.push(ofertaId ? `/dashboard?tab=ofertas&oferta_id=${ofertaId}` : '/dashboard')}
+                  className="btn-primary w-full justify-center py-3.5 rounded-2xl"
+                >
+                  {ofertaId ? 'Volver y postularme' : 'Ver mi dashboard'}
                 </button>
                 <button onClick={restart} className="w-full text-white/50 hover:text-white text-sm py-2.5 transition-colors">
                   Volver a grabar

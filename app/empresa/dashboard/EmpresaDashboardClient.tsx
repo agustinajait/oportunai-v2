@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter } from 'lucide-react';
+import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2 } from 'lucide-react';
 
 const DOCS_CONFIG = [
   { tipo: 'dni', label: 'DNI' },
@@ -49,7 +49,7 @@ function extraerCiudad(direccion: string | null): string {
 type Oferta = {
   id: string; titulo: string; area: string | null; ciudad: string | null;
   modalidad: string; estado: string; mensaje_whatsapp: string | null;
-  docs_requeridos: string[]; created_at: string;
+  docs_requeridos: string[]; preguntas_videocv: string[]; created_at: string;
   _count: { postulaciones: number };
 };
 
@@ -87,7 +87,9 @@ export default function EmpresaDashboard() {
     titulo: '', descripcion: '', requisitos: '', area: '',
     modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '',
     docs_requeridos: [] as string[],
+    preguntas_videocv: [] as string[],
   });
+  const [preguntaInput, setPreguntaInput] = useState('');
 
   const [perfilForm, setPerfilForm] = useState({
     nombre: '', descripcion: '', rubro: '', ciudad: '', sitio_web: '',
@@ -168,7 +170,8 @@ export default function EmpresaDashboard() {
     const res = await fetch('/api/ofertas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
     const data = await res.json();
     if (data.ok) {
-      setForm({ titulo: '', descripcion: '', requisitos: '', area: '', modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '', docs_requeridos: [] });
+      setForm({ titulo: '', descripcion: '', requisitos: '', area: '', modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '', docs_requeridos: [], preguntas_videocv: [] });
+      setPreguntaInput('');
       setTab('ofertas');
       cargarOfertas();
     }
@@ -177,6 +180,17 @@ export default function EmpresaDashboard() {
 
   function toggleDocRequerido(tipo: string) {
     setForm(prev => ({ ...prev, docs_requeridos: prev.docs_requeridos.includes(tipo) ? prev.docs_requeridos.filter(d => d !== tipo) : [...prev.docs_requeridos, tipo] }));
+  }
+
+  function agregarPregunta() {
+    const p = preguntaInput.trim();
+    if (!p || form.preguntas_videocv.includes(p)) return;
+    setForm(prev => ({ ...prev, preguntas_videocv: [...prev.preguntas_videocv, p] }));
+    setPreguntaInput('');
+  }
+
+  function eliminarPregunta(idx: number) {
+    setForm(prev => ({ ...prev, preguntas_videocv: prev.preguntas_videocv.filter((_, i) => i !== idx) }));
   }
 
   function whatsappUrl(telefono: string, mensaje: string, candidato: string) {
@@ -328,6 +342,34 @@ export default function EmpresaDashboard() {
                     </label>
                   ))}
                 </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-2">Preguntas para el Video CV</label>
+                <p className="text-xs text-gray-400 mb-2">Los candidatos verán estas preguntas al postularse, como guía para su video.</p>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    value={preguntaInput}
+                    onChange={e => setPreguntaInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), agregarPregunta())}
+                    placeholder="Ej: ¿Cuál es tu experiencia en el rubro?"
+                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button type="button" onClick={agregarPregunta} className="border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-600">
+                    <Plus size={16} />
+                  </button>
+                </div>
+                {form.preguntas_videocv.length > 0 && (
+                  <div className="space-y-1.5">
+                    {form.preguntas_videocv.map((p, i) => (
+                      <div key={i} className="flex items-center gap-2 bg-blue-50 rounded-lg px-3 py-2">
+                        <span className="text-xs text-blue-700 flex-1">{i + 1}. {p}</span>
+                        <button type="button" onClick={() => eliminarPregunta(i)} className="text-blue-400 hover:text-red-500 transition-colors">
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Mensaje WhatsApp (opcional)</label>

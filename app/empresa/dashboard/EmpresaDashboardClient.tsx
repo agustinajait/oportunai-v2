@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock } from 'lucide-react';
+import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2 } from 'lucide-react';
 
 const DOCS_CONFIG = [
   { tipo: 'dni', label: 'DNI' },
@@ -31,10 +31,25 @@ function calcularEdad(fecha_nacimiento: string | null): string {
   return `${edad} años`;
 }
 
+function calcularEdadNumero(fecha_nacimiento: string | null): number | null {
+  if (!fecha_nacimiento) return null;
+  const hoy = new Date();
+  const nac = new Date(fecha_nacimiento);
+  let edad = hoy.getFullYear() - nac.getFullYear();
+  const m = hoy.getMonth() - nac.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+  return edad;
+}
+
+function extraerCiudad(direccion: string | null): string {
+  if (!direccion) return '';
+  return direccion.split(',').slice(-2).join(',').trim();
+}
+
 type Oferta = {
   id: string; titulo: string; area: string | null; ciudad: string | null;
   modalidad: string; estado: string; mensaje_whatsapp: string | null;
-  docs_requeridos: string[]; created_at: string;
+  docs_requeridos: string[]; preguntas_videocv: string[]; created_at: string;
   _count: { postulaciones: number };
 };
 
@@ -63,12 +78,18 @@ export default function EmpresaDashboard() {
   const [perfilGuardado, setPerfilGuardado] = useState(false);
   const [videoModal, setVideoModal] = useState<Postulante | null>(null);
   const [filtroEstado, setFiltroEstado] = useState<string>('todos');
+  const [filtroEdadMin, setFiltroEdadMin] = useState<string>('');
+  const [filtroEdadMax, setFiltroEdadMax] = useState<string>('');
+  const [filtroCiudad, setFiltroCiudad] = useState<string>('');
+  const [filtroDocsCompletos, setFiltroDocsCompletos] = useState<boolean>(false);
 
   const [form, setForm] = useState({
     titulo: '', descripcion: '', requisitos: '', area: '',
     modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '',
     docs_requeridos: [] as string[],
+    preguntas_videocv: [] as string[],
   });
+  const [preguntaInput, setPreguntaInput] = useState('');
 
   const [perfilForm, setPerfilForm] = useState({
     nombre: '', descripcion: '', rubro: '', ciudad: '', sitio_web: '',
@@ -110,10 +131,18 @@ export default function EmpresaDashboard() {
     if (data.logo_url) setEmpresa(prev => prev ? { ...prev, logo_url: data.logo_url } : prev);
   }
 
+  function limpiarFiltros() {
+    setFiltroEdadMin('');
+    setFiltroEdadMax('');
+    setFiltroCiudad('');
+    setFiltroDocsCompletos(false);
+  }
+
   async function verPostulantes(oferta: Oferta) {
     setOfertaSeleccionada(oferta);
     setTab('postulantes');
     setFiltroEstado('todos');
+    limpiarFiltros();
     const res = await fetch(`/api/ofertas/${oferta.id}/postulantes`);
     const data = await res.json();
     if (data.postulaciones) {
@@ -141,7 +170,8 @@ export default function EmpresaDashboard() {
     const res = await fetch('/api/ofertas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
     const data = await res.json();
     if (data.ok) {
-      setForm({ titulo: '', descripcion: '', requisitos: '', area: '', modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '', docs_requeridos: [] });
+      setForm({ titulo: '', descripcion: '', requisitos: '', area: '', modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '', docs_requeridos: [], preguntas_videocv: [] });
+      setPreguntaInput('');
       setTab('ofertas');
       cargarOfertas();
     }
@@ -152,6 +182,17 @@ export default function EmpresaDashboard() {
     setForm(prev => ({ ...prev, docs_requeridos: prev.docs_requeridos.includes(tipo) ? prev.docs_requeridos.filter(d => d !== tipo) : [...prev.docs_requeridos, tipo] }));
   }
 
+  function agregarPregunta() {
+    const p = preguntaInput.trim();
+    if (!p || form.preguntas_videocv.includes(p)) return;
+    setForm(prev => ({ ...prev, preguntas_videocv: [...prev.preguntas_videocv, p] }));
+    setPreguntaInput('');
+  }
+
+  function eliminarPregunta(idx: number) {
+    setForm(prev => ({ ...prev, preguntas_videocv: prev.preguntas_videocv.filter((_, i) => i !== idx) }));
+  }
+
   function whatsappUrl(telefono: string, mensaje: string, candidato: string) {
     const tel = telefono.replace(/\D/g, '');
     const numero = tel.startsWith('54') ? tel : `54${tel}`;
@@ -160,7 +201,32 @@ export default function EmpresaDashboard() {
   }
 
   const getPipelineInfo = (estado: string) => PIPELINE.find(p => p.estado === estado) || PIPELINE[0];
-  const postulanteFiltrados = filtroEstado === 'todos' ? postulantes : postulantes.filter(p => p.estado === filtroEstado);
+
+  const hayFiltrosActivos = filtroEdadMin !== '' || filtroEdadMax !== '' || filtroCiudad !== '' || filtroDocsCompletos;
+
+  const postulanteFiltrados = postulantes
+    .filter(p => filtroEstado === 'todos' || p.estado === filtroEstado)
+    .filter(p => {
+      if (!filtroEdadMin && !filtroEdadMax) return true;
+      const edad = calcularEdadNumero(p.usuario.fecha_nacimiento);
+      if (edad === null) return filtroEdadMin === '';
+      if (filtroEdadMin && edad < parseInt(filtroEdadMin)) return false;
+      if (filtroEdadMax && edad > parseInt(filtroEdadMax)) return false;
+      return true;
+    })
+    .filter(p => {
+      if (!filtroCiudad) return true;
+      const ciudad = extraerCiudad(p.usuario.direccion);
+      return ciudad.toLowerCase().includes(filtroCiudad.toLowerCase());
+    })
+    .filter(p => {
+      if (!filtroDocsCompletos) return true;
+      if (!ofertaSeleccionada?.docs_requeridos?.length) return true;
+      return ofertaSeleccionada.docs_requeridos.every(tipo =>
+        p.documentos?.some(d => d.tipo === tipo)
+      );
+    });
+
   const conteosPorEstado = PIPELINE.reduce((acc, p) => { acc[p.estado] = postulantes.filter(post => post.estado === p.estado).length; return acc; }, {} as Record<string, number>);
 
   const tabs = [
@@ -278,6 +344,34 @@ export default function EmpresaDashboard() {
                 </div>
               </div>
               <div>
+                <label className="text-sm font-medium text-gray-700 block mb-2">Preguntas para el Video CV</label>
+                <p className="text-xs text-gray-400 mb-2">Los candidatos verán estas preguntas al postularse, como guía para su video.</p>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    value={preguntaInput}
+                    onChange={e => setPreguntaInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), agregarPregunta())}
+                    placeholder="Ej: ¿Cuál es tu experiencia en el rubro?"
+                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button type="button" onClick={agregarPregunta} className="border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-600">
+                    <Plus size={16} />
+                  </button>
+                </div>
+                {form.preguntas_videocv.length > 0 && (
+                  <div className="space-y-1.5">
+                    {form.preguntas_videocv.map((p, i) => (
+                      <div key={i} className="flex items-center gap-2 bg-blue-50 rounded-lg px-3 py-2">
+                        <span className="text-xs text-blue-700 flex-1">{i + 1}. {p}</span>
+                        <button type="button" onClick={() => eliminarPregunta(i)} className="text-blue-400 hover:text-red-500 transition-colors">
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Mensaje WhatsApp (opcional)</label>
                 <textarea value={form.mensaje_whatsapp} onChange={e => setForm({ ...form, mensaje_whatsapp: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 <p className="text-xs text-gray-400 mt-1">Se enviará: "Hola [nombre], te contacto desde [empresa]. [tu mensaje]"</p>
@@ -295,7 +389,59 @@ export default function EmpresaDashboard() {
         {/* Tab: Pipeline */}
         {tab === 'postulantes' && (
           <div>
-            <div className="flex gap-2 mb-6 flex-wrap">
+            {/* Panel de filtros avanzados */}
+            <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Filter size={14} className="text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">Filtros</span>
+                {hayFiltrosActivos && (
+                  <button onClick={limpiarFiltros} className="ml-auto text-xs text-blue-600 hover:underline">
+                    Limpiar filtros
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-gray-500 block mb-1">Edad</label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="number" min="16" max="99" placeholder="Mín"
+                      value={filtroEdadMin} onChange={e => setFiltroEdadMin(e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="text-gray-400 text-xs shrink-0">—</span>
+                    <input
+                      type="number" min="16" max="99" placeholder="Máx"
+                      value={filtroEdadMax} onChange={e => setFiltroEdadMax(e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 block mb-1">Ciudad</label>
+                  <input
+                    type="text" placeholder="Ej: Buenos Aires"
+                    value={filtroCiudad} onChange={e => setFiltroCiudad(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                {(ofertaSeleccionada?.docs_requeridos?.length ?? 0) > 0 && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 block mb-1">Documentos</label>
+                    <label className="flex items-center gap-2 cursor-pointer py-1.5">
+                      <input
+                        type="checkbox" checked={filtroDocsCompletos}
+                        onChange={e => setFiltroDocsCompletos(e.target.checked)}
+                        className="w-4 h-4 accent-blue-600"
+                      />
+                      <span className="text-xs text-gray-700">Solo con docs completos</span>
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-2 mb-6 flex-wrap items-center">
               <button onClick={() => setFiltroEstado('todos')}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filtroEstado === 'todos' ? 'bg-gray-800 text-white' : 'bg-white border border-gray-200 text-gray-600'}`}>
                 Todos ({postulantes.length})
@@ -310,6 +456,11 @@ export default function EmpresaDashboard() {
                   </button>
                 );
               })}
+              {(hayFiltrosActivos || filtroEstado !== 'todos') && (
+                <span className="ml-auto text-xs text-gray-400">
+                  {postulanteFiltrados.length} resultado{postulanteFiltrados.length !== 1 ? 's' : ''}
+                </span>
+              )}
             </div>
 
             {postulanteFiltrados.length === 0 ? (

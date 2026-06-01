@@ -68,6 +68,8 @@ export default function VideoRecorder({
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const recordedRef = useRef<RecordedChunk[]>([]);
+  const isStoppingRef = useRef(false);
+  const stopModuloRef = useRef<(byTimer?: boolean) => void>(() => {});
 
   const [camError, setCamError] = useState<string | null>(null);
 
@@ -127,18 +129,70 @@ export default function VideoRecorder({
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(timerRef.current!);
-          stopModulo(true);
+          // Use ref so we always invoke the latest stopModulo (avoids stale closure)
+          stopModuloRef.current(true);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [stage, moduloIdx]);
+  }, [stage, moduloIdx, efectivaDuration]);
+
+  // ── Merge en browser + upload a Supabase ────────────────────────
+  const processAndUpload = useCallback(async (chunks: RecordedChunk[]) => {
+    try {
+      setUploadProgress('Uniendo fragmentos...');
+
+      const allBlobs = chunks.map(c => c.blob);
+      const mimeType = allBlobs[0].type || 'video/webm';
+      const mergedBlob = new Blob(allBlobs, { type: mimeType });
+      const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+
+      setUploadProgress('Subiendo video...');
+
+      const filename = `${session.userId}/${tipo}-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage
+        .from('videos')
+        .upload(filename, mergedBlob, {
+          contentType: mimeType,
+          upsert: true,
+        });
+
+      if (error) throw new Error(error.message);
+
+      const { data: urlData } = supabase.storage.from('videos').getPublicUrl(filename);
+      const videoUrl = urlData.publicUrl;
+
+      setUploadProgress('Guardando en base de datos...');
+
+      const res = await fetch('/api/videos/merge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipo,
+          video_url: videoUrl,
+          ...(tallerId ? { taller_id: tallerId } : {}),
+          ...(ofertaId ? { oferta_id: ofertaId } : {}),
+        }),
+      });
+
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error ?? 'Error al guardar el video');
+      }
+
+      setStage('done');
+    } catch (err: any) {
+      setUploadError(err.message);
+      setStage('error');
+    }
+  }, [session.userId, tipo, tallerId, ofertaId]);
 
   // ── Grabar ──────────────────────────────────────────────────────
   const beginRecording = useCallback(() => {
     if (!streamRef.current) return;
+    isStoppingRef.current = false;
     chunksRef.current = [];
     const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
       ? 'video/webm;codecs=vp9,opus'
@@ -151,9 +205,15 @@ export default function VideoRecorder({
   }, []);
 
   const stopModulo = useCallback((byTimer = false) => {
+    if (isStoppingRef.current) return;
+    isStoppingRef.current = true;
+
     clearInterval(timerRef.current!);
     const recorder = recorderRef.current;
-    if (!recorder || recorder.state === 'inactive') return;
+    if (!recorder || recorder.state === 'inactive') {
+      isStoppingRef.current = false;
+      return;
+    }
 
     const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000);
     const usedTime = Math.min(elapsed, efectivaDuration);
@@ -181,65 +241,14 @@ export default function VideoRecorder({
       }
     };
     recorder.stop();
-  }, [modulo, moduloIdx, totalModulos, efectivaDuration]);
+  }, [modulo, moduloIdx, totalModulos, efectivaDuration, processAndUpload]);
+
+  // Keep stopModuloRef always pointing at the latest stopModulo
+  useEffect(() => { stopModuloRef.current = stopModulo; }, [stopModulo]);
 
   const startNextModulo = () => {
     setCountdown(3);
     setStage('countdown');
-  };
-
-  // ── Merge en browser + upload a Supabase ────────────────────────
-  const processAndUpload = async (chunks: RecordedChunk[]) => {
-    try {
-      setUploadProgress('Uniendo fragmentos...');
-
-      // Merge: concatenar todos los blobs en uno solo
-      const allBlobs = chunks.map(c => c.blob);
-      const mimeType = allBlobs[0].type || 'video/webm';
-      const mergedBlob = new Blob(allBlobs, { type: mimeType });
-      const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
-
-      setUploadProgress('Subiendo video...');
-
-      // Upload a Supabase Storage
-      const filename = `${session.userId}/${tipo}-${Date.now()}.${ext}`;
-      const { data, error } = await supabase.storage
-        .from('videos')
-        .upload(filename, mergedBlob, {
-          contentType: mimeType,
-          upsert: true,
-        });
-
-      if (error) throw new Error(error.message);
-
-      // Obtener URL pública
-      const { data: urlData } = supabase.storage.from('videos').getPublicUrl(filename);
-      const videoUrl = urlData.publicUrl;
-
-      setUploadProgress('Guardando en base de datos...');
-
-      // Guardar en DB via API
-      const res = await fetch('/api/videos/merge', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tipo,
-          video_url: videoUrl,
-          ...(tallerId ? { taller_id: tallerId } : {}),
-          ...(ofertaId ? { oferta_id: ofertaId } : {}),
-        }),
-      });
-
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j.error ?? 'Error al guardar el video');
-      }
-
-      setStage('done');
-    } catch (err: any) {
-      setUploadError(err.message);
-      setStage('error');
-    }
   };
 
   const restart = () => {

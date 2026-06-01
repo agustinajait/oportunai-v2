@@ -20,6 +20,7 @@ model Usuario {
   bio             String?
 fecha_nacimiento DateTime?
   slug            String   @unique
+  cv_datos        Json?
   created_at      DateTime @default(now())
 
   videos           Video[]

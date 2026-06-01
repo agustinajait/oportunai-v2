@@ -67,6 +67,8 @@ export default function OfertasTab({ videos, initialOfertaId }: { videos: Video[
   const [mensaje, setMensaje] = useState<{ texto: string; tipo: 'ok' | 'error' } | null>(null);
 
   const videosFinales = videos.filter(v => !v.tipo.includes('fragmento'));
+  const genericoCV = videosFinales.find(v => v.tipo === 'video_cv' && !v.oferta_id) ?? null;
+  const videoEspecifico = (ofertaId: string) => videosFinales.find(v => v.oferta_id === ofertaId) ?? null;
 
   useEffect(() => { cargarDatos(); }, []);
 
@@ -75,9 +77,7 @@ export default function OfertasTab({ videos, initialOfertaId }: { videos: Video[
     if (!initialOfertaId || ofertas.length === 0) return;
     const oferta = ofertas.find(o => o.id === initialOfertaId);
     if (oferta && !yaAplicoA(oferta.id)) {
-      const especifico = videosFinales.find(v => v.oferta_id === initialOfertaId);
-      setOfertaDetalle(oferta);
-      setVideoSeleccionado(especifico?.id ?? videosFinales[0]?.id ?? '');
+      abrirPostular(oferta);
     }
   }, [initialOfertaId, ofertas]);
 
@@ -98,20 +98,32 @@ export default function OfertasTab({ videos, initialOfertaId }: { videos: Video[
     return postulaciones.some(p => p.oferta_id === oferta_id);
   }
 
+  function abrirPostular(oferta: Oferta) {
+    setOfertaDetalle(oferta);
+    setNota('');
+    // videoSeleccionado is only used internally now to hold the resolved video id
+    setVideoSeleccionado(genericoCV?.id ?? '');
+  }
+
   async function aplicar() {
-    if (!ofertaDetalle || !videoSeleccionado) return;
+    if (!ofertaDetalle) return;
+    const vid = genericoCV?.id;
+    if (!vid) {
+      setMensaje({ texto: 'Primero grabá tu Video CV desde "Mi perfil"', tipo: 'error' });
+      setTimeout(() => setMensaje(null), 4000);
+      return;
+    }
     setAplicando(ofertaDetalle.id);
     const res = await fetch('/api/postulaciones', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ oferta_id: ofertaDetalle.id, video_id: videoSeleccionado, nota }),
+      body: JSON.stringify({ oferta_id: ofertaDetalle.id, video_id: vid, nota }),
     });
     const data = await res.json();
     if (data.ok) {
       await cargarDatos();
       setMensaje({ texto: '¡Postulación enviada!', tipo: 'ok' });
       setOfertaDetalle(null);
-      setVideoSeleccionado('');
       setNota('');
       setVista('mis_postulaciones');
     } else {
@@ -221,10 +233,10 @@ export default function OfertasTab({ videos, initialOfertaId }: { videos: Video[
                         </div>
                       ) : (
                         <button
-                          onClick={() => { setOfertaDetalle(oferta); setVideoSeleccionado(videosFinales[0]?.id ?? ''); }}
+                          onClick={() => abrirPostular(oferta)}
                           className="flex items-center gap-1.5 bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-brand-700 transition-colors"
                         >
-                          Aplicar <ChevronRight size={14} />
+                          Postular <ChevronRight size={14} />
                         </button>
                       )}
                     </div>
@@ -298,128 +310,144 @@ export default function OfertasTab({ videos, initialOfertaId }: { videos: Video[
       )}
 
       {/* Modal de aplicación */}
-      {ofertaDetalle && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center gap-3 mb-4">
-              {ofertaDetalle.empresa.logo_url ? (
-                <img src={ofertaDetalle.empresa.logo_url} alt={ofertaDetalle.empresa.nombre} className="w-10 h-10 rounded-xl object-cover" />
-              ) : (
-                <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center">
-                  <Building2 size={18} className="text-brand-600" />
-                </div>
-              )}
-              <div>
-                <h3 className="font-semibold text-ink-900">{ofertaDetalle.titulo}</h3>
-                <p className="text-sm text-ink-500">{ofertaDetalle.empresa.nombre}</p>
-              </div>
-            </div>
+      {ofertaDetalle && (() => {
+        const tienePreguntas = (ofertaDetalle.preguntas_videocv?.length ?? 0) > 0;
+        const especifico = videoEspecifico(ofertaDetalle.id);
+        const puedeAplicar = !tienePreguntas ? !!genericoCV : (!!especifico && !!genericoCV);
 
-            {/* Nudge de preguntas específicas */}
-            {ofertaDetalle.preguntas_videocv?.length > 0 && (
-              <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 mb-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <MessageSquare size={14} className="text-purple-500" />
-                  <span className="text-sm font-semibold text-purple-800">¡Queremos conocerte un poco más!</span>
-                </div>
-                <p className="text-xs text-purple-600 mb-3">
-                  Esta empresa tiene preguntas específicas. Podés postularte con tu Video CV genérico o grabar un video corto respondiéndolas para destacar tu candidatura.
-                </p>
-                <ul className="space-y-1 mb-3">
-                  {ofertaDetalle.preguntas_videocv.map((pregunta, i) => (
-                    <li key={i} className="text-xs text-purple-700 flex gap-2">
-                      <span className="font-semibold shrink-0">{i + 1}.</span>
-                      <span>{pregunta}</span>
-                    </li>
-                  ))}
-                </ul>
-                <a
-                  href={`/dashboard/grabar-oferta?oferta_id=${ofertaDetalle.id}`}
-                  className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors"
-                >
-                  <MessageSquare size={12} />
-                  Grabar video con mis respuestas
-                </a>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-ink-700 block mb-2">Elegí tu Video CV</label>
-                {videosFinales.length === 0 ? (
-                  <div className="bg-amber-50 text-amber-700 text-sm rounded-lg px-3 py-2">
-                    Todavía no tenés un Video CV grabado. Grabá uno primero.
-                  </div>
+        return (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-5">
+                {ofertaDetalle.empresa.logo_url ? (
+                  <img src={ofertaDetalle.empresa.logo_url} alt={ofertaDetalle.empresa.nombre} className="w-10 h-10 rounded-xl object-cover" />
                 ) : (
-                  <div className="space-y-2">
-                    {/* Videos específicos para esta oferta primero */}
-                    {videosFinales
-                      .slice()
-                      .sort((a, b) => {
-                        const aEsp = a.oferta_id === ofertaDetalle.id ? -1 : 0;
-                        const bEsp = b.oferta_id === ofertaDetalle.id ? -1 : 0;
-                        return aEsp - bEsp;
-                      })
-                      .filter(v => !v.oferta_id || v.oferta_id === ofertaDetalle.id)
-                      .map(v => {
-                        const esEspecifico = v.oferta_id === ofertaDetalle.id;
-                        return (
-                          <label key={v.id} className={`flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition-colors ${
-                            videoSeleccionado === v.id ? 'border-brand-500 bg-brand-50' : 'border-gray-200 hover:bg-gray-50'
-                          }`}>
-                            <input
-                              type="radio" name="video" value={v.id}
-                              checked={videoSeleccionado === v.id}
-                              onChange={() => setVideoSeleccionado(v.id)}
-                              className="accent-brand-600"
-                            />
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-ink-800">
-                                  {esEspecifico ? 'Video específico para esta oferta' : v.tipo === 'video_cv' ? 'Video CV genérico' : 'Video Pitch'}
-                                </span>
-                                {esEspecifico && (
-                                  <span className="text-xs bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded-full">Recomendado</span>
-                                )}
-                              </div>
-                              <div className="text-xs text-ink-400">{new Date(v.created_at).toLocaleDateString('es-AR')}</div>
-                            </div>
-                          </label>
-                        );
-                      })}
+                  <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center">
+                    <Building2 size={18} className="text-brand-600" />
                   </div>
                 )}
+                <div>
+                  <h3 className="font-semibold text-ink-900">{ofertaDetalle.titulo}</h3>
+                  <p className="text-sm text-ink-500">{ofertaDetalle.empresa.nombre}</p>
+                </div>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-ink-700 block mb-1">Mensaje para la empresa (opcional)</label>
-                <textarea
-                  value={nota} onChange={e => setNota(e.target.value)}
-                  placeholder="Contale por qué te interesa el puesto..."
-                  rows={3}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                />
-              </div>
+              {tienePreguntas ? (
+                /* ── OFERTA CON PREGUNTAS ESPECÍFICAS ── */
+                <div className="space-y-4">
+                  <div className="bg-purple-50 border border-purple-100 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <MessageSquare size={14} className="text-purple-500" />
+                      <span className="text-sm font-semibold text-purple-800">Esta empresa tiene preguntas específicas</span>
+                    </div>
+                    <ul className="space-y-1.5 mb-3">
+                      {ofertaDetalle.preguntas_videocv.map((pregunta, i) => (
+                        <li key={i} className="text-xs text-purple-700 flex gap-2">
+                          <span className="font-semibold shrink-0">{i + 1}.</span>
+                          <span>{pregunta}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    {especifico ? (
+                      <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
+                        <Check size={13} className="text-emerald-500" />
+                        Video con respuestas grabado — listo para postularte
+                      </div>
+                    ) : (
+                      <a
+                        href={`/dashboard/grabar-oferta?oferta_id=${ofertaDetalle.id}`}
+                        className="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors w-full"
+                      >
+                        <MessageSquare size={14} />
+                        Grabar mis respuestas para aplicar
+                      </a>
+                    )}
+                  </div>
 
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={aplicar}
-                  disabled={!videoSeleccionado || !!aplicando}
-                  className="flex-1 bg-brand-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors"
-                >
-                  {aplicando ? 'Enviando...' : 'Enviar postulación'}
-                </button>
-                <button
-                  onClick={() => { setOfertaDetalle(null); setNota(''); }}
-                  className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-ink-600 hover:bg-gray-50 transition-colors"
-                >
-                  Cancelar
-                </button>
-              </div>
+                  {!genericoCV && (
+                    <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 text-xs text-amber-700">
+                      También necesitás tener tu Video CV grabado. Grabá uno desde "Mi perfil".
+                    </div>
+                  )}
+
+                  {puedeAplicar && (
+                    <>
+                      <div>
+                        <label className="text-sm font-medium text-ink-700 block mb-1">Mensaje para la empresa (opcional)</label>
+                        <textarea
+                          value={nota} onChange={e => setNota(e.target.value)}
+                          placeholder="Contale por qué te interesa el puesto..."
+                          rows={3}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        />
+                      </div>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={aplicar}
+                          disabled={!!aplicando}
+                          className="flex-1 bg-brand-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors"
+                        >
+                          {aplicando ? 'Enviando...' : 'Enviar postulación'}
+                        </button>
+                        <button onClick={() => { setOfertaDetalle(null); setNota(''); }}
+                          className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-ink-600 hover:bg-gray-50">
+                          Cancelar
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  {!puedeAplicar && (
+                    <button onClick={() => { setOfertaDetalle(null); setNota(''); }}
+                      className="w-full border border-gray-200 rounded-xl text-sm text-ink-600 py-2.5 hover:bg-gray-50">
+                      Volver
+                    </button>
+                  )}
+                </div>
+              ) : (
+                /* ── OFERTA SIN PREGUNTAS: POSTULACIÓN DIRECTA ── */
+                <div className="space-y-4">
+                  {!genericoCV ? (
+                    <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 text-sm text-amber-700">
+                      Primero grabá tu Video CV desde "Mi perfil" para poder postularte.
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
+                      <Check size={13} className="text-emerald-500" />
+                      Tu Video CV se adjuntará automáticamente a la postulación
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="text-sm font-medium text-ink-700 block mb-1">Mensaje para la empresa (opcional)</label>
+                    <textarea
+                      value={nota} onChange={e => setNota(e.target.value)}
+                      placeholder="Contale por qué te interesa el puesto..."
+                      rows={3}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={aplicar}
+                      disabled={!genericoCV || !!aplicando}
+                      className="flex-1 bg-brand-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors"
+                    >
+                      {aplicando ? 'Enviando...' : 'Enviar postulación'}
+                    </button>
+                    <button onClick={() => { setOfertaDetalle(null); setNota(''); }}
+                      className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-ink-600 hover:bg-gray-50">
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

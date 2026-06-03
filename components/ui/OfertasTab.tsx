@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Briefcase, MapPin, Monitor, Building2, ChevronRight, Check, Clock, Eye, Star, Phone, Users, Trophy, Archive, X, MessageSquare } from 'lucide-react';
 
 type Oferta = {
@@ -65,6 +65,7 @@ export default function OfertasTab({ videos, initialOfertaId }: { videos: Video[
   const [videoSeleccionado, setVideoSeleccionado] = useState<string>('');
   const [nota, setNota] = useState('');
   const [mensaje, setMensaje] = useState<{ texto: string; tipo: 'ok' | 'error' } | null>(null);
+  const handledInitialOffer = useRef(false);
 
   const videosFinales = videos.filter(v => !v.tipo.includes('fragmento'));
   const genericoCV = videosFinales.find(v => v.tipo === 'video_cv' && !v.oferta_id) ?? null;
@@ -72,14 +73,21 @@ export default function OfertasTab({ videos, initialOfertaId }: { videos: Video[
 
   useEffect(() => { cargarDatos(); }, []);
 
-  // Auto-abrir oferta al volver de grabación específica
+  // Al volver de grabar preguntas: auto-enviar si ya tiene el video específico, o abrir modal
   useEffect(() => {
-    if (!initialOfertaId || ofertas.length === 0) return;
+    if (!initialOfertaId || loading || handledInitialOffer.current) return;
     const oferta = ofertas.find(o => o.id === initialOfertaId);
-    if (oferta && !yaAplicoA(oferta.id)) {
+    if (!oferta) return;
+    handledInitialOffer.current = true;
+    if (yaAplicoA(oferta.id)) return;
+    const tienePreguntas = (oferta.preguntas_videocv?.length ?? 0) > 0;
+    const especifico = videoEspecifico(oferta.id);
+    if (tienePreguntas && especifico && genericoCV) {
+      autoAplicar(oferta);
+    } else {
       abrirPostular(oferta);
     }
-  }, [initialOfertaId, ofertas]);
+  }, [initialOfertaId, loading, ofertas]);
 
   async function cargarDatos() {
     setLoading(true);
@@ -131,6 +139,28 @@ export default function OfertasTab({ videos, initialOfertaId }: { videos: Video[
     }
     setAplicando(null);
     setTimeout(() => setMensaje(null), 3000);
+  }
+
+  async function autoAplicar(oferta: Oferta) {
+    const vid = genericoCV?.id;
+    if (!vid) { abrirPostular(oferta); return; }
+    setAplicando(oferta.id);
+    const res = await fetch('/api/postulaciones', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ oferta_id: oferta.id, video_id: vid, nota: '' }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      await cargarDatos();
+      setMensaje({ texto: '¡Postulación enviada!', tipo: 'ok' });
+      setVista('mis_postulaciones');
+    } else {
+      abrirPostular(oferta);
+      setMensaje({ texto: data.error || 'Error al postularse', tipo: 'error' });
+    }
+    setAplicando(null);
+    setTimeout(() => setMensaje(null), 4000);
   }
 
   if (loading) {

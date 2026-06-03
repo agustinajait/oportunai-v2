@@ -4,33 +4,51 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import {
-  Users, BookOpen, Video, Settings, Plus, Trash2, Edit3,
-  Check, X, ChevronDown, ChevronUp, Loader2, CheckCircle,
-  Clock, Mic, AlertCircle, ExternalLink
+  Users, BookOpen, Video, Plus, Trash2,
+  Check, X, ChevronDown, ChevronUp, Loader2,
+  Clock, Mic, ExternalLink, Building2, Mail, Phone,
+  ShieldCheck, ToggleLeft, ToggleRight, Briefcase
 } from 'lucide-react';
 import type { SessionPayload } from '@/lib/auth';
 
-// ── Types ──────────────────────────────────────────────────────────
+// ── Types ────────────────────────────────────────────────────────────
 interface TallerModulo { id: string; tipo_video: string; nombre_modulo: string; duracion_base: number; texto_guia: string; orden: number; }
 interface Taller { id: string; nombre: string; descripcion: string | null; activo: boolean; habilita_cv: boolean; habilita_pitch: boolean; modulos: TallerModulo[]; _count: { taller_usuarios: number; videos: number }; }
 interface TallerUsuario { taller: { id: string; nombre: string }; estado: string; asignado_en: string; validado_en: string | null; }
 interface VideoItem { id: string; tipo: string; video_url: string; created_at: string; es_fragmento: boolean; taller: { nombre: string } | null; }
 interface Usuario { id: string; nombre_completo: string; email: string; dni: string; role: string; slug: string; created_at: string; taller_usuarios: TallerUsuario[]; videos: VideoItem[]; _count: { videos: number }; }
 
-// ── Estado badge ───────────────────────────────────────────────────
+interface EmpresaMiembro { usuario: { id: string; nombre_completo: string; email: string; telefono: string; role: string }; rol_interno: string; activo: boolean; }
+interface EmpresaOferta { id: string; titulo: string; estado: string; created_at: string; _count: { postulaciones: number }; }
+interface Empresa { id: string; nombre: string; slug: string; logo_url: string | null; rubro: string | null; ciudad: string | null; activa: boolean; created_at: string; miembros: EmpresaMiembro[]; _count: { ofertas: number }; ofertas: EmpresaOferta[]; }
+
+// ── Helpers ──────────────────────────────────────────────────────────
 const estadoBadge = (estado: string) => {
   const map: Record<string, string> = { asignado: 'badge bg-ink-100 text-ink-600', completado: 'badge bg-blue-100 text-blue-700', validado: 'badge bg-emerald-100 text-emerald-700' };
   return map[estado] ?? 'badge bg-ink-100 text-ink-600';
 };
+const roleBadge = (role: string) => {
+  const map: Record<string, string> = { super_admin: 'bg-purple-100 text-purple-700', admin: 'bg-brand-100 text-brand-700', empleador: 'bg-amber-100 text-amber-700', user: 'bg-ink-100 text-ink-600' };
+  return map[role] ?? 'bg-ink-100 text-ink-600';
+};
+const ofertaEstadoBadge = (estado: string) => {
+  const map: Record<string, string> = { activa: 'bg-emerald-100 text-emerald-700', pausada: 'bg-amber-100 text-amber-700', cerrada: 'bg-ink-100 text-ink-500' };
+  return map[estado] ?? 'bg-ink-100 text-ink-500';
+};
 
-// ─────────────────────────────────────────────────────────────────
-export default function SuperAdminClient({ talleres: initTalleres, usuarios: initUsuarios, session }: { talleres: Taller[]; usuarios: Usuario[]; session: SessionPayload }) {
+// ─────────────────────────────────────────────────────────────────────
+export default function SuperAdminClient({
+  talleres: initTalleres, usuarios: initUsuarios, empresas: initEmpresas, session,
+}: {
+  talleres: Taller[]; usuarios: Usuario[]; empresas: Empresa[]; session: SessionPayload;
+}) {
   const router = useRouter();
-  const [tab, setTab] = useState<'talleres' | 'usuarios'>('talleres');
+  const [tab, setTab] = useState<'talleres' | 'usuarios' | 'empresas'>('talleres');
   const [talleres, setTalleres] = useState<Taller[]>(initTalleres);
-  const [usuarios] = useState<Usuario[]>(initUsuarios);
+  const [usuarios, setUsuarios] = useState<Usuario[]>(initUsuarios);
+  const [empresas, setEmpresas] = useState<Empresa[]>(initEmpresas);
 
-  // ── Taller state ────────────────────────────────────────────────
+  // ── Taller state ────────────────────────────────────────────────────
   const [expandedTaller, setExpandedTaller] = useState<string | null>(null);
   const [editingModulo, setEditingModulo] = useState<Record<string, { duracion_base: number; texto_guia: string }>>({});
   const [savingModulo, setSavingModulo] = useState<string | null>(null);
@@ -38,21 +56,25 @@ export default function SuperAdminClient({ talleres: initTalleres, usuarios: ini
   const [newTaller, setNewTaller] = useState({ nombre: '', descripcion: '', habilita_cv: true, habilita_pitch: true });
   const [submittingTaller, setSubmittingTaller] = useState(false);
 
-  // ── Usuario state ───────────────────────────────────────────────
+  // ── Usuario state ───────────────────────────────────────────────────
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [assigningTaller, setAssigningTaller] = useState<{ userId: string; tallerId: string } | null>(null);
   const [submittingAssign, setSubmittingAssign] = useState(false);
   const [updatingEstado, setUpdatingEstado] = useState<string | null>(null);
+  const [updatingRole, setUpdatingRole] = useState<string | null>(null);
 
-  // ══════════════════════════════════════════════════════════════
+  // ── Empresa state ───────────────────────────────────────────────────
+  const [expandedEmpresa, setExpandedEmpresa] = useState<string | null>(null);
+  const [togglingEmpresa, setTogglingEmpresa] = useState<string | null>(null);
+
+  // ══════════════════════════════════════════════════════════════════
   // TALLERES HANDLERS
-  // ══════════════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════
   const handleCreateTaller = async () => {
     if (!newTaller.nombre.trim()) return;
     setSubmittingTaller(true);
     const res = await fetch('/api/super-admin/talleres', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newTaller),
     });
     if (res.ok) {
@@ -72,49 +94,37 @@ export default function SuperAdminClient({ talleres: initTalleres, usuarios: ini
 
   const handleToggleActivo = async (taller: Taller) => {
     const res = await fetch(`/api/super-admin/talleres/${taller.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ activo: !taller.activo }),
     });
-    if (res.ok) {
-      setTalleres(prev => prev.map(t => t.id === taller.id ? { ...t, activo: !t.activo } : t));
-    }
+    if (res.ok) setTalleres(prev => prev.map(t => t.id === taller.id ? { ...t, activo: !t.activo } : t));
   };
 
-  const getModuloEdit = (m: TallerModulo) =>
-    editingModulo[m.id] ?? { duracion_base: m.duracion_base, texto_guia: m.texto_guia };
-
-  const isDirtyModulo = (m: TallerModulo) => {
-    const e = editingModulo[m.id];
-    return e && (e.duracion_base !== m.duracion_base || e.texto_guia !== m.texto_guia);
-  };
+  const getModuloEdit = (m: TallerModulo) => editingModulo[m.id] ?? { duracion_base: m.duracion_base, texto_guia: m.texto_guia };
+  const isDirtyModulo = (m: TallerModulo) => { const e = editingModulo[m.id]; return e && (e.duracion_base !== m.duracion_base || e.texto_guia !== m.texto_guia); };
 
   const handleSaveModulo = async (taller: Taller, modulo: TallerModulo) => {
     const data = getModuloEdit(modulo);
     setSavingModulo(modulo.id);
     const res = await fetch(`/api/super-admin/talleres/${taller.id}/modulos/${modulo.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     if (res.ok) {
-      setTalleres(prev => prev.map(t =>
-        t.id === taller.id ? { ...t, modulos: t.modulos.map(m => m.id === modulo.id ? { ...m, ...data } : m) } : t
-      ));
+      setTalleres(prev => prev.map(t => t.id === taller.id ? { ...t, modulos: t.modulos.map(m => m.id === modulo.id ? { ...m, ...data } : m) } : t));
       setEditingModulo(prev => { const n = { ...prev }; delete n[modulo.id]; return n; });
     }
     setSavingModulo(null);
   };
 
-  // ══════════════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════
   // USUARIOS HANDLERS
-  // ══════════════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════
   const handleAssignTaller = async () => {
     if (!assigningTaller) return;
     setSubmittingAssign(true);
     await fetch(`/api/super-admin/usuarios/${assigningTaller.userId}/talleres`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ taller_id: assigningTaller.tallerId }),
     });
     setAssigningTaller(null);
@@ -125,17 +135,41 @@ export default function SuperAdminClient({ talleres: initTalleres, usuarios: ini
   const handleCambiarEstado = async (userId: string, tallerId: string, estado: string) => {
     setUpdatingEstado(`${userId}-${tallerId}`);
     await fetch(`/api/super-admin/usuarios/${userId}/talleres`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ taller_id: tallerId, estado }),
     });
     setUpdatingEstado(null);
     router.refresh();
   };
 
-  // ══════════════════════════════════════════════════════════════
+  const handleCambiarRol = async (userId: string, role: string) => {
+    setUpdatingRole(userId);
+    const res = await fetch(`/api/super-admin/usuarios/${userId}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role }),
+    });
+    if (res.ok) {
+      setUsuarios(prev => prev.map(u => u.id === userId ? { ...u, role } : u));
+    }
+    setUpdatingRole(null);
+  };
+
+  // ══════════════════════════════════════════════════════════════════
+  // EMPRESAS HANDLERS
+  // ══════════════════════════════════════════════════════════════════
+  const handleToggleEmpresa = async (empresa: Empresa) => {
+    setTogglingEmpresa(empresa.id);
+    const res = await fetch(`/api/super-admin/empresas/${empresa.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activa: !empresa.activa }),
+    });
+    if (res.ok) setEmpresas(prev => prev.map(e => e.id === empresa.id ? { ...e, activa: !e.activa } : e));
+    setTogglingEmpresa(null);
+  };
+
+  // ══════════════════════════════════════════════════════════════════
   // RENDER HELPERS
-  // ══════════════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════
   const renderModulos = (taller: Taller) => {
     const cvMods = taller.modulos.filter(m => m.tipo_video === 'video_cv');
     const pitchMods = taller.modulos.filter(m => m.tipo_video === 'video_pitch');
@@ -143,9 +177,7 @@ export default function SuperAdminClient({ talleres: initTalleres, usuarios: ini
     const renderGroup = (mods: TallerModulo[], label: string, color: string) => (
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-3">
-          {label === 'Video CV'
-            ? <Video size={14} className={color} />
-            : <Mic size={14} className={color} />}
+          {label === 'Video CV' ? <Video size={14} className={color} /> : <Mic size={14} className={color} />}
           <span className="text-xs font-semibold text-ink-500 uppercase tracking-wider">{label}</span>
         </div>
         <div className="space-y-3">
@@ -162,29 +194,21 @@ export default function SuperAdminClient({ talleres: initTalleres, usuarios: ini
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="label flex items-center gap-1"><Clock size={12} /> Duración (seg.)</label>
-                    <input
-                      type="number" min={5} max={120}
-                      value={e.duracion_base}
+                    <input type="number" min={5} max={120} value={e.duracion_base}
                       onChange={ev => setEditingModulo(prev => ({ ...prev, [m.id]: { ...e, duracion_base: parseInt(ev.target.value) } }))}
-                      className="input-field text-sm"
-                    />
+                      className="input-field text-sm" />
                   </div>
                   <div className="sm:col-span-2">
                     <label className="label">Texto guía</label>
-                    <textarea
-                      value={e.texto_guia}
+                    <textarea value={e.texto_guia}
                       onChange={ev => setEditingModulo(prev => ({ ...prev, [m.id]: { ...e, texto_guia: ev.target.value } }))}
-                      rows={2} className="input-field text-sm resize-none"
-                    />
+                      rows={2} className="input-field text-sm resize-none" />
                   </div>
                 </div>
                 {dirty && (
                   <div className="flex gap-2 mt-2">
-                    <button onClick={() => handleSaveModulo(taller, m)} className="btn-primary py-1.5 px-3 text-sm">
-                      <Check size={13} /> Guardar
-                    </button>
-                    <button onClick={() => setEditingModulo(prev => { const n = { ...prev }; delete n[m.id]; return n; })}
-                      className="btn-ghost py-1.5 px-3 text-sm"><X size={13} /></button>
+                    <button onClick={() => handleSaveModulo(taller, m)} className="btn-primary py-1.5 px-3 text-sm"><Check size={13} /> Guardar</button>
+                    <button onClick={() => setEditingModulo(prev => { const n = { ...prev }; delete n[m.id]; return n; })} className="btn-ghost py-1.5 px-3 text-sm"><X size={13} /></button>
                   </div>
                 )}
               </div>
@@ -202,44 +226,39 @@ export default function SuperAdminClient({ talleres: initTalleres, usuarios: ini
     );
   };
 
-  // ══════════════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════
   // MAIN RENDER
-  // ══════════════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════
   return (
     <div className="min-h-screen bg-ink-50">
       <Navbar session={session} />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8 flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="badge bg-purple-100 text-purple-700">Super Admin</span>
-            </div>
-            <h1 className="font-display text-3xl font-semibold text-ink-900">Gestión de Talleres y Videos</h1>
-            <p className="text-ink-400 text-sm mt-1">Creá talleres, asigná usuarios y gestioná todo el contenido</p>
-          </div>
+        <div className="mb-8">
+          <span className="badge bg-purple-100 text-purple-700 mb-1 inline-block">Super Admin</span>
+          <h1 className="font-display text-3xl font-semibold text-ink-900">Panel de gestión</h1>
+          <p className="text-ink-400 text-sm mt-1">Talleres, usuarios y empresas</p>
         </div>
 
         {/* Tabs */}
         <div className="flex gap-1 bg-ink-100 rounded-xl p-1 mb-8 w-fit">
           {[
-            { key: 'talleres', label: 'Talleres', icon: <BookOpen size={15} /> },
-            { key: 'usuarios', label: 'Usuarios', icon: <Users size={15} /> },
+            { key: 'talleres', label: 'Talleres', icon: <BookOpen size={15} />, count: talleres.length },
+            { key: 'usuarios', label: 'Usuarios', icon: <Users size={15} />, count: usuarios.length },
+            { key: 'empresas', label: 'Empresas', icon: <Building2 size={15} />, count: empresas.length },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key as any)}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${tab === t.key ? 'bg-white text-ink-800 shadow-sm' : 'text-ink-500 hover:text-ink-700'}`}>
               {t.icon} {t.label}
-              {t.key === 'talleres' && <span className="badge bg-ink-200 text-ink-600 ml-1">{talleres.length}</span>}
-              {t.key === 'usuarios' && <span className="badge bg-ink-200 text-ink-600 ml-1">{usuarios.length}</span>}
+              <span className="badge bg-ink-200 text-ink-600 ml-1">{t.count}</span>
             </button>
           ))}
         </div>
 
-        {/* ── TAB: TALLERES ──────────────────────────────────────── */}
+        {/* ── TAB: TALLERES ──────────────────────────────────────────── */}
         {tab === 'talleres' && (
           <div className="space-y-4">
-            {/* Create new */}
             {!creatingTaller ? (
               <button onClick={() => setCreatingTaller(true)} className="btn-primary flex items-center gap-2">
                 <Plus size={16} /> Nuevo taller
@@ -262,15 +281,13 @@ export default function SuperAdminClient({ talleres: initTalleres, usuarios: ini
                 <div className="flex gap-6 mb-4">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={newTaller.habilita_cv}
-                      onChange={e => setNewTaller(p => ({ ...p, habilita_cv: e.target.checked }))}
-                      className="w-4 h-4 rounded" />
+                      onChange={e => setNewTaller(p => ({ ...p, habilita_cv: e.target.checked }))} className="w-4 h-4 rounded" />
                     <Video size={15} className="text-brand-500" />
                     <span className="text-sm font-medium">Habilitar Video CV</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={newTaller.habilita_pitch}
-                      onChange={e => setNewTaller(p => ({ ...p, habilita_pitch: e.target.checked }))}
-                      className="w-4 h-4 rounded" />
+                      onChange={e => setNewTaller(p => ({ ...p, habilita_pitch: e.target.checked }))} className="w-4 h-4 rounded" />
                     <Mic size={15} className="text-emerald-500" />
                     <span className="text-sm font-medium">Habilitar Video Pitch</span>
                   </label>
@@ -286,11 +303,9 @@ export default function SuperAdminClient({ talleres: initTalleres, usuarios: ini
               </div>
             )}
 
-            {/* Taller list */}
             {talleres.map(taller => (
               <div key={taller.id} className="card overflow-hidden">
-                <button
-                  onClick={() => setExpandedTaller(expandedTaller === taller.id ? null : taller.id)}
+                <button onClick={() => setExpandedTaller(expandedTaller === taller.id ? null : taller.id)}
                   className="w-full flex items-center justify-between px-6 py-4 hover:bg-ink-50 transition-colors">
                   <div className="flex items-center gap-4">
                     <div>
@@ -334,17 +349,16 @@ export default function SuperAdminClient({ talleres: initTalleres, usuarios: ini
           </div>
         )}
 
-        {/* ── TAB: USUARIOS ──────────────────────────────────────── */}
+        {/* ── TAB: USUARIOS ──────────────────────────────────────────── */}
         {tab === 'usuarios' && (
           <div className="space-y-3">
             {usuarios.map(u => (
               <div key={u.id} className="card overflow-hidden">
-                <button
-                  onClick={() => setExpandedUser(expandedUser === u.id ? null : u.id)}
+                <button onClick={() => setExpandedUser(expandedUser === u.id ? null : u.id)}
                   className="w-full flex items-center justify-between px-6 py-4 hover:bg-ink-50 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center flex-shrink-0 font-semibold text-brand-700 text-sm">
-                      {u.nombre_completo.split(' ').map(n => n[0]).slice(0,2).join('')}
+                      {u.nombre_completo.split(' ').map(n => n[0]).slice(0, 2).join('')}
                     </div>
                     <div className="text-left">
                       <p className="font-medium text-ink-800">{u.nombre_completo}</p>
@@ -353,7 +367,7 @@ export default function SuperAdminClient({ talleres: initTalleres, usuarios: ini
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="flex gap-2 text-xs">
-                      <span className={`badge ${u.role === 'super_admin' ? 'bg-purple-100 text-purple-700' : u.role === 'admin' ? 'bg-brand-100 text-brand-700' : 'bg-ink-100 text-ink-600'}`}>{u.role}</span>
+                      <span className={`badge ${roleBadge(u.role)}`}>{u.role}</span>
                       <span className="badge bg-ink-100 text-ink-600">{u.taller_usuarios.length} talleres</span>
                       <span className="badge bg-ink-100 text-ink-600">{u._count.videos} videos</span>
                     </div>
@@ -363,6 +377,25 @@ export default function SuperAdminClient({ talleres: initTalleres, usuarios: ini
 
                 {expandedUser === u.id && (
                   <div className="border-t border-ink-100 px-6 py-5 space-y-6">
+
+                    {/* Rol */}
+                    <div>
+                      <h4 className="font-semibold text-ink-800 text-sm mb-3 flex items-center gap-2"><ShieldCheck size={14} /> Rol del usuario</h4>
+                      <div className="flex items-center gap-3">
+                        <select
+                          value={u.role}
+                          onChange={e => handleCambiarRol(u.id, e.target.value)}
+                          disabled={updatingRole === u.id}
+                          className="input-field text-sm w-48">
+                          <option value="user">user</option>
+                          <option value="admin">admin</option>
+                          <option value="empleador">empleador</option>
+                          <option value="super_admin">super_admin</option>
+                        </select>
+                        {updatingRole === u.id && <Loader2 size={14} className="animate-spin text-brand-500" />}
+                        <span className="text-xs text-ink-400">Cambia acceso inmediatamente</span>
+                      </div>
+                    </div>
 
                     {/* Talleres asignados */}
                     <div>
@@ -376,15 +409,13 @@ export default function SuperAdminClient({ talleres: initTalleres, usuarios: ini
 
                       {assigningTaller?.userId === u.id && (
                         <div className="bg-ink-50 rounded-xl p-4 mb-3 flex items-center gap-3">
-                          <select
-                            className="input-field text-sm flex-1"
+                          <select className="input-field text-sm flex-1"
                             value={assigningTaller.tallerId}
                             onChange={e => setAssigningTaller({ userId: u.id, tallerId: e.target.value })}>
                             {talleres.map(t => <option key={t.id} value={t.id}>{t.nombre}</option>)}
                           </select>
                           <button onClick={handleAssignTaller} disabled={submittingAssign} className="btn-primary py-2 px-4 text-sm">
-                            {submittingAssign ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-                            Asignar
+                            {submittingAssign ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Asignar
                           </button>
                           <button onClick={() => setAssigningTaller(null)} className="btn-ghost py-2 px-2"><X size={14} /></button>
                         </div>
@@ -405,8 +436,7 @@ export default function SuperAdminClient({ talleres: initTalleres, usuarios: ini
                               </div>
                               <div className="flex items-center gap-2">
                                 <span className={estadoBadge(rel.estado)}>{rel.estado}</span>
-                                <select
-                                  value={rel.estado}
+                                <select value={rel.estado}
                                   onChange={e => handleCambiarEstado(u.id, rel.taller.id, e.target.value)}
                                   className="text-xs border border-ink-200 rounded-lg px-2 py-1 bg-white">
                                   <option value="asignado">asignado</option>
@@ -431,21 +461,16 @@ export default function SuperAdminClient({ talleres: initTalleres, usuarios: ini
                           {u.videos.map(v => (
                             <div key={v.id} className="flex items-center justify-between bg-ink-50 rounded-xl px-4 py-3">
                               <div className="flex items-center gap-3">
-                                {v.tipo === 'video_cv'
-                                  ? <Video size={15} className="text-brand-500" />
-                                  : <Mic size={15} className="text-emerald-500" />}
+                                {v.tipo === 'video_cv' ? <Video size={15} className="text-brand-500" /> : <Mic size={15} className="text-emerald-500" />}
                                 <div>
                                   <p className="text-sm font-medium text-ink-800">
                                     {v.tipo === 'video_cv' ? 'Video CV' : 'Video Pitch'}
                                     {v.taller && <span className="text-ink-400 font-normal"> · {v.taller.nombre}</span>}
                                   </p>
-                                  <p className="text-xs text-ink-400">
-                                    {new Date(v.created_at).toLocaleString('es-AR')}
-                                  </p>
+                                  <p className="text-xs text-ink-400">{new Date(v.created_at).toLocaleString('es-AR')}</p>
                                 </div>
                               </div>
-                              <a href={v.video_url} target="_blank" rel="noopener noreferrer"
-                                className="btn-ghost py-1 px-2 text-xs gap-1">
+                              <a href={v.video_url} target="_blank" rel="noopener noreferrer" className="btn-ghost py-1 px-2 text-xs gap-1">
                                 <ExternalLink size={12} /> Ver
                               </a>
                             </div>
@@ -459,6 +484,121 @@ export default function SuperAdminClient({ talleres: initTalleres, usuarios: ini
             ))}
           </div>
         )}
+
+        {/* ── TAB: EMPRESAS ──────────────────────────────────────────── */}
+        {tab === 'empresas' && (
+          <div className="space-y-3">
+            {empresas.length === 0 && (
+              <div className="card p-12 text-center">
+                <Building2 size={36} className="mx-auto mb-3 text-ink-300" />
+                <p className="text-ink-400">No hay empresas registradas todavía.</p>
+              </div>
+            )}
+
+            {empresas.map(e => (
+              <div key={e.id} className="card overflow-hidden">
+                <button onClick={() => setExpandedEmpresa(expandedEmpresa === e.id ? null : e.id)}
+                  className="w-full flex items-center justify-between px-6 py-4 hover:bg-ink-50 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                      <Building2 size={18} className="text-amber-600" />
+                    </div>
+                    <div className="text-left">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-ink-800">{e.nombre}</p>
+                        {!e.activa && <span className="badge bg-red-100 text-red-600 text-xs">Inactiva</span>}
+                      </div>
+                      <p className="text-xs text-ink-400">
+                        {[e.rubro, e.ciudad].filter(Boolean).join(' · ')}
+                        {' · '}creada {new Date(e.created_at).toLocaleDateString('es-AR')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex gap-2 text-xs">
+                      <span className="badge bg-ink-100 text-ink-600 flex gap-1"><Users size={10} /> {e.miembros.length}</span>
+                      <span className="badge bg-ink-100 text-ink-600 flex gap-1"><Briefcase size={10} /> {e._count.ofertas} ofertas</span>
+                    </div>
+                    <button
+                      onClick={ev => { ev.stopPropagation(); handleToggleEmpresa(e); }}
+                      disabled={togglingEmpresa === e.id}
+                      className={`btn-ghost py-1 px-2 text-xs flex items-center gap-1 ${e.activa ? 'text-emerald-600' : 'text-ink-400'}`}>
+                      {togglingEmpresa === e.id
+                        ? <Loader2 size={13} className="animate-spin" />
+                        : e.activa ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                      {e.activa ? 'Activa' : 'Inactiva'}
+                    </button>
+                    {expandedEmpresa === e.id ? <ChevronUp size={16} className="text-ink-400" /> : <ChevronDown size={16} className="text-ink-400" />}
+                  </div>
+                </button>
+
+                {expandedEmpresa === e.id && (
+                  <div className="border-t border-ink-100 px-6 py-5 space-y-5">
+
+                    {/* Miembros */}
+                    <div>
+                      <h4 className="font-semibold text-ink-800 text-sm mb-3 flex items-center gap-2"><Users size={14} /> Miembros</h4>
+                      {e.miembros.length === 0 ? (
+                        <p className="text-xs text-ink-400 italic">Sin miembros</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {e.miembros.map((m, i) => (
+                            <div key={i} className="bg-ink-50 rounded-xl px-4 py-3">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-ink-800">{m.usuario.nombre_completo}</p>
+                                  <div className="flex items-center gap-3 mt-1 flex-wrap">
+                                    <span className="flex items-center gap-1 text-xs text-ink-500">
+                                      <Mail size={11} /> {m.usuario.email}
+                                    </span>
+                                    {m.usuario.telefono && (
+                                      <span className="flex items-center gap-1 text-xs text-ink-500">
+                                        <Phone size={11} /> {m.usuario.telefono}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex gap-2 ml-3 flex-shrink-0">
+                                  <span className="badge bg-amber-100 text-amber-700 text-xs">{m.rol_interno}</span>
+                                  <span className={`badge text-xs ${roleBadge(m.usuario.role)}`}>{m.usuario.role}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Ofertas */}
+                    <div>
+                      <h4 className="font-semibold text-ink-800 text-sm mb-3 flex items-center gap-2"><Briefcase size={14} /> Ofertas</h4>
+                      {e.ofertas.length === 0 ? (
+                        <p className="text-xs text-ink-400 italic">Sin ofertas publicadas</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {e.ofertas.map(o => (
+                            <div key={o.id} className="bg-ink-50 rounded-xl px-4 py-3 flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-ink-800">{o.titulo}</p>
+                                <p className="text-xs text-ink-400 mt-0.5">{new Date(o.created_at).toLocaleDateString('es-AR')}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={`badge text-xs ${ofertaEstadoBadge(o.estado)}`}>{o.estado}</span>
+                                <span className="badge bg-ink-100 text-ink-600 text-xs">{o._count.postulaciones} postulaciones</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
       </main>
     </div>
   );

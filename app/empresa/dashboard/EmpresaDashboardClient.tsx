@@ -492,7 +492,10 @@ export default function EmpresaDashboard() {
                   const ciudad = p.usuario.direccion?.split(',').slice(-2).join(',').trim() || '';
                   return (
                     <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                      <div className="relative bg-gray-900 aspect-video cursor-pointer" onClick={() => setVideoModal(p)}>
+                      <div className="relative bg-gray-900 aspect-video cursor-pointer" onClick={() => {
+                        setVideoModal(p);
+                        if (p.estado === 'pendiente') cambiarEstado(p.id, 'visto');
+                      }}>
                         <video src={p.video.video_url} className="w-full h-full object-cover opacity-80" />
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">

@@ -3,7 +3,13 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
 import Navbar from '@/components/layout/Navbar';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 import {
   Video, Mic, FileText, Edit3, Check, X, Upload,
   ExternalLink, Copy, CheckCheck, Clock, Circle,
@@ -103,10 +109,26 @@ export default function DashboardClient({
     if (!file) return;
     setUploadingDoc(tipo);
     setDocMsg(null);
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('tipo', tipo);
-    const res = await fetch('/api/documentos', { method: 'POST', body: fd });
+
+    const ext = file.name.split('.').pop() ?? 'pdf';
+    const filename = `${usuario.id}/doc-${tipo}-${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from('videos')
+      .upload(filename, file, { contentType: file.type, upsert: true });
+
+    if (uploadError) {
+      setDocMsg('Error al subir: ' + uploadError.message);
+      setUploadingDoc(null);
+      setTimeout(() => setDocMsg(null), 4000);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage.from('videos').getPublicUrl(filename);
+    const res = await fetch('/api/documentos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file_url: urlData.publicUrl, tipo }),
+    });
     const data = await res.json();
     if (data.ok) {
       setDocMsg('Documento subido correctamente ✓');
@@ -157,11 +179,35 @@ export default function DashboardClient({
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.type !== 'application/pdf') {
+      setUploadMsg('Solo se permiten archivos PDF');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadMsg('El archivo supera los 10 MB');
+      return;
+    }
     setUploading(true);
     setUploadMsg(null);
-    const fd = new FormData();
-    fd.append('file', file);
-    const res = await fetch('/api/files/upload', { method: 'POST', body: fd });
+
+    const ext = 'pdf';
+    const filename = `${usuario.id}/cv-${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from('videos')
+      .upload(filename, file, { contentType: file.type, upsert: true });
+
+    if (uploadError) {
+      setUploadMsg('Error al subir: ' + uploadError.message);
+      setUploading(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage.from('videos').getPublicUrl(filename);
+    const res = await fetch('/api/files/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file_url: urlData.publicUrl, file_type: ext }),
+    });
     setUploading(false);
     if (res.ok) {
       setUploadMsg('CV subido correctamente ✓');

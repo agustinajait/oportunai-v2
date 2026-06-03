@@ -31,7 +31,11 @@ export default function LoginPage() {
       setServerError(json.error ?? 'Error al iniciar sesión');
       return;
     }
-    router.push(json.role === 'admin' ? '/admin' : '/dashboard');
+    const dest = json.role === 'super_admin' ? '/super-admin'
+      : json.role === 'admin' ? '/admin'
+      : json.role === 'empleador' ? '/empresa/dashboard'
+      : '/dashboard';
+    router.push(dest);
     router.refresh();
   };
 

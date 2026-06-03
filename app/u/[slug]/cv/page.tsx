@@ -40,6 +40,7 @@ export default async function VideoCVPage({ params }: Props) {
       nombre_completo: true,
       bio: true,
       slug: true,
+      alfa_digital: true,
       email: true,
       telefono: true,
       direccion: true,

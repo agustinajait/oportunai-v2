@@ -18,6 +18,7 @@ interface UsuarioPublico {
   email: string;
   telefono: string;
   direccion: string;
+  alfa_digital?: string | null;
   videos: VideoItem[];
   archivos: ArchivoItem[];
 }
@@ -140,11 +141,17 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                   {isCv ? 'Video CV de' : 'Video Pitch de'}{' '}
                   {usuario.nombre_completo}
                 </h1>
-                <div className="flex items-center gap-2 mt-1.5">
+                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                   <span className={`badge ${accentClass.badge} flex items-center gap-1`}>
                     {isCv ? <Video size={11} /> : <Mic size={11} />}
                     {isCv ? 'Video CV' : 'Video Pitch'}
                   </span>
+                  {usuario.alfa_digital && (
+                    <span className="badge bg-purple-100 text-purple-700 flex items-center gap-1">
+                      {usuario.alfa_digital === 'Perfil nativo digital' ? '🚀' : usuario.alfa_digital === 'Usuario digital activo' ? '⚡' : '🌱'}
+                      {usuario.alfa_digital}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

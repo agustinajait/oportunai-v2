@@ -67,6 +67,7 @@ type Postulante = {
     id: string; nombre_completo: string; email: string; telefono: string;
     slug: string; bio: string | null; direccion: string | null; fecha_nacimiento: string | null;
     cv_datos: CvDatos | null;
+    alfa_digital: string | null; alfa_score: number | null;
     videos: { id: string; video_url: string; tipo: string; created_at: string }[];
   };
   video: { id: string; video_url: string; tipo: string };
@@ -511,6 +512,11 @@ export default function EmpresaDashboard() {
                           {ciudad && <span>📍 {ciudad}</span>}
                         </div>
                         {p.usuario.bio && <p className="text-xs text-gray-500 line-clamp-2 mb-2">{p.usuario.bio}</p>}
+                        {p.usuario.alfa_digital && (
+                          <span className="inline-block text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full mb-2">
+                            {p.usuario.alfa_digital === 'Perfil nativo digital' ? '🚀' : p.usuario.alfa_digital === 'Usuario digital activo' ? '⚡' : '🌱'} {p.usuario.alfa_digital}
+                          </span>
+                        )}
 
                         {ofertaSeleccionada?.docs_requeridos?.length > 0 && (
                           <div className="flex flex-wrap gap-1 mb-3">
@@ -603,7 +609,14 @@ export default function EmpresaDashboard() {
           <div className="bg-white rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-semibold text-gray-900">{videoModal.usuario.nombre_completo}</h3>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-semibold text-gray-900">{videoModal.usuario.nombre_completo}</h3>
+                  {videoModal.usuario.alfa_digital && (
+                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                      {videoModal.usuario.alfa_digital === 'Perfil nativo digital' ? '🚀' : videoModal.usuario.alfa_digital === 'Usuario digital activo' ? '⚡' : '🌱'} {videoModal.usuario.alfa_digital}
+                    </span>
+                  )}
+                </div>
                 <div className="flex gap-3 text-sm text-gray-500">
                   <span>{videoModal.usuario.email}</span>
                   {calcularEdad(videoModal.usuario.fecha_nacimiento) && <span>· {calcularEdad(videoModal.usuario.fecha_nacimiento)}</span>}

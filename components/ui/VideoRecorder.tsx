@@ -25,14 +25,6 @@ interface Modulo {
 
 type Stage = 'preview' | 'countdown' | 'recording' | 'between' | 'uploading' | 'done' | 'error';
 
-interface RecordedChunk {
-  moduloId: string;
-  moduloNombre: string;
-  orden: number;
-  blob: Blob;
-  duracion: number;
-}
-
 export default function VideoRecorder({
   modulos,
   session,
@@ -57,7 +49,6 @@ export default function VideoRecorder({
   const [moduloIdx, setModuloIdx] = useState(0);
   const [countdown, setCountdown] = useState(3);
   const [timeLeft, setTimeLeft] = useState(0);
-  const [accumulated, setAccumulated] = useState(0);
   const [uploadProgress, setUploadProgress] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -66,16 +57,16 @@ export default function VideoRecorder({
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<BlobPart[]>([]);
-  const recordedRef = useRef<RecordedChunk[]>([]);
-  const isStoppingRef = useRef(false);
-  const stopModuloRef = useRef<(byTimer?: boolean) => void>(() => {});
+  const chunksRef = useRef<Blob[]>([]);
+  const lastBlobRef = useRef<Blob | null>(null);
+  const isAdvancingRef = useRef(false);
+  const handleModuleEndRef = useRef<() => void>(() => {});
 
   const [camError, setCamError] = useState<string | null>(null);
 
   const modulo = modulos[moduloIdx];
   const totalModulos = modulos.length;
-  const efectivaDuration = modulo ? modulo.duracion_base + accumulated : 0;
+  const efectivaDuration = modulo?.duracion_base ?? 0;
 
   const timerColor =
     timeLeft > efectivaDuration * 0.4 ? 'text-emerald-400' :
@@ -83,7 +74,7 @@ export default function VideoRecorder({
 
   const progressPct = modulo ? ((efectivaDuration - timeLeft) / efectivaDuration) * 100 : 0;
 
-  // ── Cámara ──────────────────────────────────────────────────────
+  // ── Cámara ────────────────────────────────────────────────────────
   useEffect(() => {
     let active = true;
     (async () => {
@@ -112,7 +103,7 @@ export default function VideoRecorder({
     };
   }, []);
 
-  // ── Countdown ───────────────────────────────────────────────────
+  // ── Countdown ─────────────────────────────────────────────────────
   useEffect(() => {
     if (stage !== 'countdown') return;
     if (countdown === 0) { beginRecording(); return; }
@@ -120,7 +111,7 @@ export default function VideoRecorder({
     return () => clearTimeout(t);
   }, [stage, countdown]);
 
-  // ── Timer ───────────────────────────────────────────────────────
+  // ── Timer ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (stage !== 'recording') return;
     setTimeLeft(efectivaDuration);
@@ -129,8 +120,7 @@ export default function VideoRecorder({
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(timerRef.current!);
-          // Use ref so we always invoke the latest stopModulo (avoids stale closure)
-          stopModuloRef.current(true);
+          handleModuleEndRef.current();
           return 0;
         }
         return prev - 1;
@@ -139,30 +129,21 @@ export default function VideoRecorder({
     return () => clearInterval(timerRef.current!);
   }, [stage, moduloIdx, efectivaDuration]);
 
-  // ── Merge en browser + upload a Supabase ────────────────────────
-  const processAndUpload = useCallback(async (chunks: RecordedChunk[]) => {
+  // ── Upload ────────────────────────────────────────────────────────
+  const processAndUpload = useCallback(async (blob: Blob) => {
     try {
-      setUploadProgress('Uniendo fragmentos...');
-
-      const allBlobs = chunks.map(c => c.blob);
-      const mimeType = allBlobs[0].type || 'video/webm';
-      const mergedBlob = new Blob(allBlobs, { type: mimeType });
-      const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
-
       setUploadProgress('Subiendo video...');
-
+      const mimeType = blob.type || 'video/webm';
+      const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
       const filename = `${session.userId}/${tipo}-${Date.now()}.${ext}`;
+
       const { error } = await supabase.storage
         .from('videos')
-        .upload(filename, mergedBlob, {
-          contentType: mimeType,
-          upsert: true,
-        });
+        .upload(filename, blob, { contentType: mimeType, upsert: true });
 
       if (error) throw new Error(error.message);
 
       const { data: urlData } = supabase.storage.from('videos').getPublicUrl(filename);
-      const videoUrl = urlData.publicUrl;
 
       setUploadProgress('Guardando en base de datos...');
 
@@ -171,7 +152,7 @@ export default function VideoRecorder({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tipo,
-          video_url: videoUrl,
+          video_url: urlData.publicUrl,
           ...(tallerId ? { taller_id: tallerId } : {}),
           ...(ofertaId ? { oferta_id: ofertaId } : {}),
         }),
@@ -189,62 +170,69 @@ export default function VideoRecorder({
     }
   }, [session.userId, tipo, tallerId, ofertaId]);
 
-  // ── Grabar ──────────────────────────────────────────────────────
+  // ── Finalizar grabación ───────────────────────────────────────────
+  const finalizeRecording = useCallback(() => {
+    const recorder = recorderRef.current;
+    if (!recorder || recorder.state === 'inactive') return;
+
+    recorder.onstop = () => {
+      const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
+      lastBlobRef.current = blob;
+      setStage('uploading');
+      processAndUpload(blob);
+    };
+    recorder.stop();
+  }, [processAndUpload]);
+
+  // ── Avanzar módulo o finalizar ────────────────────────────────────
+  const handleModuleEnd = useCallback(() => {
+    if (isAdvancingRef.current) return;
+    isAdvancingRef.current = true;
+
+    clearInterval(timerRef.current!);
+    const nextIdx = moduloIdx + 1;
+
+    if (nextIdx >= totalModulos) {
+      finalizeRecording();
+    } else {
+      // Pausar grabación durante la pantalla entre módulos
+      const recorder = recorderRef.current;
+      if (recorder && recorder.state === 'recording') {
+        recorder.pause();
+      }
+      setModuloIdx(nextIdx);
+      setStage('between');
+    }
+  }, [moduloIdx, totalModulos, finalizeRecording]);
+
+  // Keep ref updated to avoid stale closure in timer
+  useEffect(() => { handleModuleEndRef.current = handleModuleEnd; }, [handleModuleEnd]);
+
+  // ── Comenzar / retomar grabación ──────────────────────────────────
   const beginRecording = useCallback(() => {
     if (!streamRef.current) return;
-    isStoppingRef.current = false;
+    isAdvancingRef.current = false;
+
+    const recorder = recorderRef.current;
+
+    // Módulo siguiente: reanudar MediaRecorder pausado
+    if (recorder && recorder.state === 'paused') {
+      recorder.resume();
+      setStage('recording');
+      return;
+    }
+
+    // Primer módulo: crear nuevo MediaRecorder
     chunksRef.current = [];
     const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
       ? 'video/webm;codecs=vp9,opus'
       : MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
-    const recorder = new MediaRecorder(streamRef.current, { mimeType });
-    recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-    recorder.start(250);
-    recorderRef.current = recorder;
+    const newRecorder = new MediaRecorder(streamRef.current, { mimeType });
+    newRecorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+    newRecorder.start(250);
+    recorderRef.current = newRecorder;
     setStage('recording');
   }, []);
-
-  const stopModulo = useCallback((byTimer = false) => {
-    if (isStoppingRef.current) return;
-    isStoppingRef.current = true;
-
-    clearInterval(timerRef.current!);
-    const recorder = recorderRef.current;
-    if (!recorder || recorder.state === 'inactive') {
-      isStoppingRef.current = false;
-      return;
-    }
-
-    const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000);
-    const usedTime = Math.min(elapsed, efectivaDuration);
-    const leftover = efectivaDuration - usedTime;
-
-    recorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
-      const chunk: RecordedChunk = {
-        moduloId: modulo.id,
-        moduloNombre: modulo.nombre_modulo,
-        orden: modulo.orden,
-        blob,
-        duracion: usedTime,
-      };
-      recordedRef.current = [...recordedRef.current, chunk];
-
-      const nextIdx = moduloIdx + 1;
-      if (nextIdx >= totalModulos) {
-        setStage('uploading');
-        processAndUpload(recordedRef.current);
-      } else {
-        setAccumulated(byTimer ? 0 : leftover);
-        setModuloIdx(nextIdx);
-        setStage('between');
-      }
-    };
-    recorder.stop();
-  }, [modulo, moduloIdx, totalModulos, efectivaDuration, processAndUpload]);
-
-  // Keep stopModuloRef always pointing at the latest stopModulo
-  useEffect(() => { stopModuloRef.current = stopModulo; }, [stopModulo]);
 
   const startNextModulo = () => {
     setCountdown(3);
@@ -252,16 +240,24 @@ export default function VideoRecorder({
   };
 
   const restart = () => {
-    recordedRef.current = [];
+    const recorder = recorderRef.current;
+    if (recorder && recorder.state !== 'inactive') {
+      recorder.onstop = null;
+      recorder.stop();
+    }
+    recorderRef.current = null;
+    chunksRef.current = [];
+    isAdvancingRef.current = false;
     setModuloIdx(0);
-    setAccumulated(0);
     setCountdown(3);
+    setUploadError(null);
+    setUploadProgress('');
     setStage('preview');
   };
 
-  // ══════════════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════
   // RENDER
-  // ══════════════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════
   return (
     <div className="h-screen bg-ink-900 flex flex-col overflow-hidden">
 
@@ -337,9 +333,6 @@ export default function VideoRecorder({
                     </div>
                   ))}
                 </div>
-                <p className="text-white/40 text-xs mb-6">
-                  Si terminás un módulo antes de tiempo, los segundos pasan al siguiente.
-                </p>
                 <button
                   onClick={() => { setCountdown(3); setStage('countdown'); }}
                   className="btn-primary w-full justify-center text-base py-3.5 rounded-2xl"
@@ -381,9 +374,6 @@ export default function VideoRecorder({
                     style={{ width: `${progressPct}%` }}
                   />
                 </div>
-                {accumulated > 0 && (
-                  <p className="text-brand-300 text-xs mt-2">+{accumulated}s acumulados del módulo anterior</p>
-                )}
               </div>
 
               <div className="flex items-center justify-center gap-2 pb-4">
@@ -397,13 +387,13 @@ export default function VideoRecorder({
 
               <div className="mx-4 mb-6 flex gap-3 pointer-events-auto">
                 <button
-                  onClick={() => stopModulo(false)}
+                  onClick={() => handleModuleEnd()}
                   className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur text-white font-medium py-4 rounded-2xl transition-colors border border-white/20"
                 >
-                  <SkipForward size={18} /> Finalizar módulo
+                  <SkipForward size={18} /> {moduloIdx + 1 < totalModulos ? 'Siguiente módulo' : 'Finalizar'}
                 </button>
                 <button
-                  onClick={() => stopModulo(false)}
+                  onClick={() => handleModuleEnd()}
                   className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-colors flex-shrink-0"
                 >
                   <Square size={22} className="text-white" fill="white" />
@@ -423,15 +413,10 @@ export default function VideoRecorder({
                 <h3 className="font-display text-xl font-semibold text-white mb-3">
                   {modulos[moduloIdx - 1]?.nombre_modulo} ✓
                 </h3>
-                {accumulated > 0 && (
-                  <div className="bg-brand-500/20 border border-brand-500/30 rounded-xl px-4 py-3 mb-4">
-                    <p className="text-brand-300 text-sm font-medium">+{accumulated}s → pasan al próximo</p>
-                  </div>
-                )}
                 <div className="bg-white/5 rounded-xl px-4 py-3 mb-6 text-left">
                   <p className="text-white/40 text-xs uppercase tracking-widest mb-1">Próximo</p>
                   <p className="text-white font-medium">{modulos[moduloIdx]?.nombre_modulo}</p>
-                  <p className="text-white/40 text-xs mt-0.5">{modulos[moduloIdx]?.duracion_base + accumulated}s disponibles</p>
+                  <p className="text-white/40 text-xs mt-0.5">{modulos[moduloIdx]?.duracion_base}s</p>
                 </div>
                 <button onClick={startNextModulo} className="btn-primary w-full justify-center py-3.5 rounded-2xl">
                   Continuar <ChevronRight size={18} />
@@ -480,7 +465,10 @@ export default function VideoRecorder({
               <AlertCircle size={48} className="text-red-400 mb-4" />
               <h2 className="font-display text-xl font-semibold text-white mb-2">Error al subir</h2>
               <p className="text-white/50 text-sm mb-6">{uploadError}</p>
-              <button onClick={() => processAndUpload(recordedRef.current)} className="btn-primary justify-center">
+              <button
+                onClick={() => lastBlobRef.current && processAndUpload(lastBlobRef.current)}
+                className="btn-primary justify-center"
+              >
                 Reintentar
               </button>
             </div>

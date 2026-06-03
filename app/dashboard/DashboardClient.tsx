@@ -20,9 +20,18 @@ interface Archivo { id: string; file_url: string; file_type: string; created_at:
 interface TallerModulo { id: string; tipo_video: string; nombre_modulo: string; duracion_base: number; texto_guia: string; orden: number; }
 interface Taller { id: string; nombre: string; descripcion: string | null; habilita_cv: boolean; habilita_pitch: boolean; modulos: TallerModulo[]; }
 interface TallerUsuario { taller: Taller; estado: string; asignado_en: string; }
+interface CvDatos {
+  resumen?: string;
+  experiencia?: { empresa: string; cargo: string; periodo: string; descripcion: string }[];
+  educacion?: { institucion: string; titulo: string; periodo: string }[];
+  habilidades?: string[];
+  idiomas?: string[];
+}
+
 interface Usuario {
   id: string; nombre_completo: string; email: string; telefono: string;
   bio: string | null; slug: string; role: 'super_admin' | 'admin' | 'user';
+  cv_datos: CvDatos | null;
   created_at: string; videos: VideoItem[]; archivos: Archivo[];
 }
 
@@ -60,6 +69,8 @@ export default function DashboardClient({
   const [copied, setCopied] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState<string | null>(null);
+  const [analyzingCV, setAnalyzingCV] = useState(false);
+  const [cvDatos, setCvDatos] = useState<CvDatos | null>(usuario.cv_datos);
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
   const [docMsg, setDocMsg] = useState<string | null>(null);
@@ -120,6 +131,25 @@ export default function DashboardClient({
     navigator.clipboard.writeText(url);
     setCopied(key);
     setTimeout(() => setCopied(null), 2000);
+  };
+
+  const analyzeCV = async () => {
+    setAnalyzingCV(true);
+    setUploadMsg(null);
+    try {
+      const res = await fetch('/api/user/cv', { method: 'POST' });
+      const data = await res.json();
+      if (data.ok) {
+        setCvDatos(data.cv_datos);
+        setUploadMsg('CV analizado correctamente ✓');
+      } else {
+        setUploadMsg(data.error ?? 'Error al analizar');
+      }
+    } catch {
+      setUploadMsg('Error al analizar el CV');
+    }
+    setAnalyzingCV(false);
+    setTimeout(() => setUploadMsg(null), 4000);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -311,30 +341,59 @@ export default function DashboardClient({
               <div className="card p-6">
                 <h2 className="font-semibold text-ink-800 mb-4">Archivo CV</h2>
                 {archivoCV ? (
-                  <div className="flex items-center gap-3 bg-ink-50 rounded-xl p-3">
-                    <div className="w-9 h-9 bg-brand-100 rounded-lg flex items-center justify-center">
-                      <FileText size={16} className="text-brand-600" />
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 bg-ink-50 rounded-xl p-3">
+                      <div className="w-9 h-9 bg-brand-100 rounded-lg flex items-center justify-center">
+                        <FileText size={16} className="text-brand-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-ink-700 truncate">CV subido</p>
+                        <p className="text-xs text-ink-400">{new Date(archivoCV.created_at).toLocaleDateString('es-AR')}</p>
+                      </div>
+                      <a href={archivoCV.file_url} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 mr-1">
+                        <ExternalLink size={15} />
+                      </a>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-ink-700 truncate">CV subido</p>
-                      <p className="text-xs text-ink-400">{new Date(archivoCV.created_at).toLocaleDateString('es-AR')}</p>
-                    </div>
-                    <a href={archivoCV.file_url} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700">
-                      <ExternalLink size={15} />
-                    </a>
+                    {cvDatos ? (
+                      <div className="bg-emerald-50 rounded-xl p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-semibold text-emerald-700">CV analizado ✓</p>
+                          <button onClick={analyzeCV} disabled={analyzingCV} className="text-xs text-emerald-600 hover:underline disabled:opacity-50">
+                            {analyzingCV ? 'Analizando...' : 'Re-analizar'}
+                          </button>
+                        </div>
+                        {cvDatos.resumen && <p className="text-xs text-emerald-800 leading-relaxed">{cvDatos.resumen}</p>}
+                        {(cvDatos.habilidades?.length ?? 0) > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {cvDatos.habilidades!.slice(0, 6).map((h, i) => (
+                              <span key={i} className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">{h}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <button
+                        onClick={analyzeCV}
+                        disabled={analyzingCV}
+                        className="w-full btn-secondary text-xs py-2 justify-center gap-2 disabled:opacity-50"
+                      >
+                        <Zap size={13} />
+                        {analyzingCV ? 'Analizando con IA...' : 'Analizar CV con IA'}
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <div className="border-2 border-dashed border-ink-200 rounded-xl p-6 text-center">
                     <Upload size={20} className="text-ink-300 mx-auto mb-2" />
-                    <p className="text-sm text-ink-400 mb-3">PDF o Word · máx 5 MB</p>
+                    <p className="text-sm text-ink-400 mb-3">PDF · máx 5 MB</p>
                     <label className={`btn-secondary text-xs py-2 px-4 cursor-pointer ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
                       <Upload size={13} />
-                      {uploading ? 'Subiendo...' : 'Subir CV'}
-                      <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handleFileUpload} />
+                      {uploading ? 'Subiendo...' : 'Subir CV en PDF'}
+                      <input type="file" accept=".pdf" className="hidden" onChange={handleFileUpload} />
                     </label>
                   </div>
                 )}
-                {uploadMsg && <p className="text-xs mt-2 text-center text-ink-500">{uploadMsg}</p>}
+                {uploadMsg && <p className={`text-xs mt-2 text-center ${uploadMsg.includes('✓') ? 'text-emerald-600' : 'text-red-500'}`}>{uploadMsg}</p>}
               </div>
 
               {/* Talleres */}

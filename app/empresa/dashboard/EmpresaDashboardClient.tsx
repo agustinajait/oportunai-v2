@@ -53,11 +53,21 @@ type Oferta = {
   _count: { postulaciones: number };
 };
 
+type CvDatos = {
+  resumen?: string;
+  experiencia?: { empresa: string; cargo: string; periodo: string; descripcion: string }[];
+  educacion?: { institucion: string; titulo: string; periodo: string }[];
+  habilidades?: string[];
+  idiomas?: string[];
+};
+
 type Postulante = {
   id: string; estado: string; nota: string | null; created_at: string;
   usuario: {
     id: string; nombre_completo: string; email: string; telefono: string;
     slug: string; bio: string | null; direccion: string | null; fecha_nacimiento: string | null;
+    cv_datos: CvDatos | null;
+    videos: { id: string; video_url: string; tipo: string; created_at: string }[];
   };
   video: { id: string; video_url: string; tipo: string };
   documentos?: { tipo: string; file_url: string }[];
@@ -167,7 +177,12 @@ export default function EmpresaDashboard() {
 
   async function crearOferta() {
     setLoading(true);
-    const res = await fetch('/api/ofertas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+    // Auto-add any question that was typed but not explicitly added via "+"
+    const pendiente = preguntaInput.trim();
+    const formFinal = pendiente && !form.preguntas_videocv.includes(pendiente)
+      ? { ...form, preguntas_videocv: [...form.preguntas_videocv, pendiente] }
+      : form;
+    const res = await fetch('/api/ofertas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formFinal) });
     const data = await res.json();
     if (data.ok) {
       setForm({ titulo: '', descripcion: '', requisitos: '', area: '', modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '', docs_requeridos: [], preguntas_videocv: [] });
@@ -585,7 +600,7 @@ export default function EmpresaDashboard() {
       {/* Modal video */}
       {videoModal && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setVideoModal(null)}>
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-semibold text-gray-900">{videoModal.usuario.nombre_completo}</h3>
@@ -596,14 +611,65 @@ export default function EmpresaDashboard() {
               </div>
               <button onClick={() => setVideoModal(null)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
             </div>
-            <video src={videoModal.video.video_url} controls autoPlay className="w-full rounded-xl" />
-            <div className="flex gap-2 mt-4">
+
+            {/* Video CV genérico */}
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1">Video CV</p>
+            <video src={videoModal.video.video_url} controls autoPlay className="w-full rounded-xl mb-4" />
+
+            {/* Video específico (respuestas a preguntas) */}
+            {videoModal.usuario.videos?.[0] && (
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-purple-600 uppercase tracking-widest mb-1">Respuestas a tus preguntas</p>
+                <video src={videoModal.usuario.videos[0].video_url} controls className="w-full rounded-xl" />
+              </div>
+            )}
+
+            {/* CV analizado */}
+            {videoModal.usuario.cv_datos && (
+              <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-3">
+                <p className="text-xs font-semibold text-gray-700 uppercase tracking-widest">CV</p>
+                {videoModal.usuario.cv_datos.resumen && (
+                  <p className="text-sm text-gray-700 leading-relaxed">{videoModal.usuario.cv_datos.resumen}</p>
+                )}
+                {(videoModal.usuario.cv_datos.experiencia?.length ?? 0) > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 mb-1">Experiencia</p>
+                    <div className="space-y-1">
+                      {videoModal.usuario.cv_datos.experiencia!.map((e, i) => (
+                        <div key={i} className="text-xs text-gray-600">
+                          <span className="font-medium">{e.cargo}</span> — {e.empresa} <span className="text-gray-400">({e.periodo})</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {(videoModal.usuario.cv_datos.educacion?.length ?? 0) > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 mb-1">Educación</p>
+                    {videoModal.usuario.cv_datos.educacion!.map((e, i) => (
+                      <div key={i} className="text-xs text-gray-600">
+                        <span className="font-medium">{e.titulo}</span> — {e.institucion} <span className="text-gray-400">({e.periodo})</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {(videoModal.usuario.cv_datos.habilidades?.length ?? 0) > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {videoModal.usuario.cv_datos.habilidades!.map((h, i) => (
+                      <span key={i} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{h}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-2">
               <a href={`/u/${videoModal.usuario.slug}/cv`} target="_blank"
-                className="flex-1 text-center border border-blue-200 text-blue-600 py-2 rounded-lg text-sm hover:bg-blue-50">Ver perfil completo →</a>
+                className="flex-1 text-center border border-blue-200 text-blue-600 py-2 rounded-lg text-sm hover:bg-blue-50">Ver perfil →</a>
               {ofertaSeleccionada?.mensaje_whatsapp && (
                 <a href={whatsappUrl(videoModal.usuario.telefono, ofertaSeleccionada.mensaje_whatsapp, videoModal.usuario.nombre_completo)}
                   target="_blank" className="flex-1 text-center bg-green-500 text-white py-2 rounded-lg text-sm hover:bg-green-600">
-                  📱 Contactar por WhatsApp
+                  📱 WhatsApp
                 </a>
               )}
             </div>

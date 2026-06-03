@@ -21,6 +21,8 @@ model Usuario {
 fecha_nacimiento DateTime?
   slug            String   @unique
   cv_datos        Json?
+  alfa_digital    String?
+  alfa_score      Int?
   created_at      DateTime @default(now())
 
   videos           Video[]

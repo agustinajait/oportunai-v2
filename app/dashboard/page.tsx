@@ -20,6 +20,8 @@ export default async function DashboardPage() {
         slug: true,
         role: true,
         cv_datos: true,
+        alfa_digital: true,
+        alfa_score: true,
         created_at: true,
         videos: {
           where: { es_fragmento: false },

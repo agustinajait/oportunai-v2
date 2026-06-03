@@ -32,6 +32,7 @@ interface Usuario {
   id: string; nombre_completo: string; email: string; telefono: string;
   bio: string | null; slug: string; role: 'super_admin' | 'admin' | 'user';
   cv_datos: CvDatos | null;
+  alfa_digital: string | null; alfa_score: number | null;
   created_at: string; videos: VideoItem[]; archivos: Archivo[];
 }
 
@@ -77,6 +78,7 @@ export default function DashboardClient({
 
   const [selectedTaller, setSelectedTaller] = useState<string>('');
   const [selectedTipo, setSelectedTipo] = useState<'video_cv' | 'video_pitch'>('video_cv');
+  const [alfaBadge, setAlfaBadge] = useState(usuario.alfa_digital);
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
   const cvUrl = `${appUrl}/u/${usuario.slug}/cv`;
@@ -335,6 +337,49 @@ export default function DashboardClient({
                   </p>
                 )}
                 {editingBio && <p className="text-xs text-ink-300 mt-1 text-right">{bio.length}/500</p>}
+              </div>
+
+              {/* Perfil digital */}
+              <div className="card p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Zap size={16} className="text-purple-600" />
+                  <h2 className="font-semibold text-ink-800">Perfil digital</h2>
+                </div>
+                {alfaBadge ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 bg-purple-50 rounded-xl p-3">
+                      <div className="w-10 h-10 bg-[#533AB7] rounded-xl flex items-center justify-center text-xl flex-shrink-0">
+                        {alfaBadge === 'Perfil nativo digital' ? '🚀' : alfaBadge === 'Usuario digital activo' ? '⚡' : '🌱'}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-purple-800">{alfaBadge}</p>
+                        {usuario.alfa_score !== null && (
+                          <p className="text-xs text-purple-500">{usuario.alfa_score} / 15 puntos</p>
+                        )}
+                      </div>
+                    </div>
+                    <Link
+                      href="/dashboard/alfabetizacion"
+                      className="block text-center text-xs text-purple-600 hover:text-purple-800 hover:underline transition-colors"
+                    >
+                      Volver a hacer el test
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-ink-500 leading-relaxed">
+                      Completá el test de alfabetización digital y sumá un badge a tu perfil.
+                    </p>
+                    <p className="text-xs text-ink-300">Solo tarda 2 minutos · 5 preguntas</p>
+                    <Link
+                      href="/dashboard/alfabetizacion"
+                      className="inline-flex items-center gap-2 bg-[#533AB7] hover:bg-purple-800 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors"
+                    >
+                      <Zap size={14} />
+                      Empezar →
+                    </Link>
+                  </div>
+                )}
               </div>
 
               {/* CV File */}

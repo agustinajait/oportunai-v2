@@ -10,6 +10,13 @@ import {
 
 interface VideoItem { id: string; tipo: string; video_url: string; created_at: string }
 interface ArchivoItem { id: string; file_url: string; file_type: string }
+interface CvDatos {
+  resumen?: string;
+  experiencia?: { empresa: string; cargo: string; periodo: string }[];
+  educacion?: { institucion: string; titulo: string; periodo: string }[];
+  habilidades?: string[];
+  idiomas?: string[];
+}
 
 interface UsuarioPublico {
   nombre_completo: string;
@@ -19,6 +26,7 @@ interface UsuarioPublico {
   telefono: string;
   direccion: string;
   alfa_digital?: string | null;
+  cv_datos?: CvDatos | null;
   videos: VideoItem[];
   archivos: ArchivoItem[];
 }
@@ -307,6 +315,57 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
             )}
           </div>
         </div>
+
+        {/* ── CV ANALIZADO ─────────────────────────────────────── */}
+        {usuario.cv_datos && (
+          <div className="card p-5 space-y-3">
+            <h3 className="font-medium text-ink-800 text-sm">CV analizado</h3>
+            {usuario.cv_datos.resumen && (
+              <p className="text-sm text-ink-600 leading-relaxed">{usuario.cv_datos.resumen}</p>
+            )}
+            {(usuario.cv_datos.experiencia?.length ?? 0) > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-ink-400 uppercase tracking-widest mb-1.5">Experiencia</p>
+                <div className="space-y-1">
+                  {usuario.cv_datos.experiencia!.map((e, i) => (
+                    <div key={i} className="text-sm text-ink-600">
+                      <span className="font-medium text-ink-800">{e.cargo}</span> — {e.empresa}
+                      <span className="text-ink-400 text-xs ml-1">({e.periodo})</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {(usuario.cv_datos.educacion?.length ?? 0) > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-ink-400 uppercase tracking-widest mb-1.5">Educación</p>
+                {usuario.cv_datos.educacion!.map((e, i) => (
+                  <div key={i} className="text-sm text-ink-600">
+                    <span className="font-medium text-ink-800">{e.titulo}</span> — {e.institucion}
+                    <span className="text-ink-400 text-xs ml-1">({e.periodo})</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {(usuario.cv_datos.habilidades?.length ?? 0) > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {usuario.cv_datos.habilidades!.map((h, i) => (
+                  <span key={i} className="text-xs bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full">{h}</span>
+                ))}
+              </div>
+            )}
+            {(usuario.cv_datos.idiomas?.length ?? 0) > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-ink-400 uppercase tracking-widest mb-1.5">Idiomas</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {usuario.cv_datos.idiomas!.map((l, i) => (
+                    <span key={i} className="text-xs bg-ink-100 text-ink-600 px-2 py-0.5 rounded-full">{l}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── SWITCH CV / PITCH ─────────────────────────────────── */}
         <div className="card p-4 flex items-center justify-between">

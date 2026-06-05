@@ -679,6 +679,32 @@ export default function EmpresaDashboard() {
               </div>
             )}
 
+            {/* Documentos */}
+            {(videoModal.documentos?.length ?? 0) > 0 && (
+              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <p className="text-xs font-semibold text-gray-700 uppercase tracking-widest mb-2">Documentos</p>
+                <div className="flex flex-wrap gap-2">
+                  {videoModal.documentos!.map(doc => {
+                    const label = DOCS_CONFIG.find(c => c.tipo === doc.tipo)?.label || doc.tipo;
+                    return (
+                      <a key={doc.tipo} href={doc.file_url} target="_blank"
+                        className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full hover:bg-green-200 transition-colors">
+                        <Check size={10} /> {label}
+                      </a>
+                    );
+                  })}
+                  {ofertaSeleccionada?.docs_requeridos?.filter(tipo => !videoModal.documentos?.some(d => d.tipo === tipo)).map(tipo => {
+                    const label = DOCS_CONFIG.find(c => c.tipo === tipo)?.label || tipo;
+                    return (
+                      <span key={tipo} className="flex items-center gap-1 text-xs bg-red-50 text-red-500 px-2 py-1 rounded-full">
+                        <X size={10} /> {label}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="flex gap-2">
               <a href={`/u/${videoModal.usuario.slug}/cv`} target="_blank"
                 className="flex-1 text-center border border-blue-200 text-blue-600 py-2 rounded-lg text-sm hover:bg-blue-50">Ver perfil →</a>

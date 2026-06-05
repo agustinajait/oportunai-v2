@@ -44,6 +44,7 @@ export default async function VideoCVPage({ params }: Props) {
       email: true,
       telefono: true,
       direccion: true,
+      cv_datos: true,
       videos: {
         where: { tipo: 'video_cv', es_fragmento: false },
         orderBy: { created_at: 'desc' },

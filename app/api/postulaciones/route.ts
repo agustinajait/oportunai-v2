@@ -7,8 +7,8 @@ import { getSessionFromRequest } from '@/lib/auth';
 export async function POST(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req);
-    if (!session || session.role !== 'user') {
-      return NextResponse.json({ error: 'Solo candidatos pueden postularse' }, { status: 401 });
+    if (!session || session.role === 'empleador') {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
     const body = await req.json();

@@ -54,6 +54,7 @@ const DOCS_CONFIG = [
   { tipo: 'antecedentes_penales', label: 'Antecedentes Penales', descripcion: 'Certificado de antecedentes penales' },
   { tipo: 'manipulacion_alimentos', label: 'Manipulación de Alimentos', descripcion: 'Certificado del curso' },
   { tipo: 'libreta_sanitaria', label: 'Libreta Sanitaria', descripcion: 'Libreta sanitaria vigente' },
+  { tipo: 'registro_conducir', label: 'Registro de Conducir', descripcion: 'Licencia de conducir vigente' },
   { tipo: 'otro', label: 'Otro documento', descripcion: 'Cualquier otro documento relevante' },
 ];
 

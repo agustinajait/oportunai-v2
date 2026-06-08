@@ -24,6 +24,7 @@ fecha_nacimiento DateTime?
   alfa_digital    String?
   alfa_score      Int?
   google_id       String?  @unique
+  grabaciones_cv  Int      @default(0)
   created_at      DateTime @default(now())
 
   videos           Video[]

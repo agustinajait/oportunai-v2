@@ -7,8 +7,18 @@ const DOCS_CONFIG = [
   { tipo: 'antecedentes_penales', label: 'Antecedentes Penales' },
   { tipo: 'manipulacion_alimentos', label: 'Manip. Alimentos' },
   { tipo: 'libreta_sanitaria', label: 'Libreta Sanitaria' },
+  { tipo: 'registro_conducir', label: 'Registro de Conducir' },
   { tipo: 'otro', label: 'Otro documento' },
 ];
+
+function parseDocLabel(d: string): string {
+  if (d.startsWith('otro:')) return d.slice(5) || 'Otro documento';
+  return DOCS_CONFIG.find(c => c.tipo === d)?.label || d;
+}
+
+function parseDocTipo(d: string): string {
+  return d.startsWith('otro:') ? 'otro' : d;
+}
 
 const PIPELINE = [
   { estado: 'pendiente', label: 'Sin ver', color: 'bg-gray-100 text-gray-600', icon: Clock },
@@ -103,6 +113,8 @@ export default function EmpresaDashboard() {
     preguntas_videocv: [] as string[],
   });
   const [preguntaInput, setPreguntaInput] = useState('');
+  const [otroLabel, setOtroLabel] = useState('');
+  const [editOtroLabel, setEditOtroLabel] = useState('');
   const [editForm, setEditForm] = useState({
     titulo: '', descripcion: '', requisitos: '', area: '',
     modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '',
@@ -205,10 +217,12 @@ export default function EmpresaDashboard() {
 
   function abrirEditar(oferta: Oferta) {
     setOfertaEditando(oferta);
+    const otroDoc = (oferta.docs_requeridos || []).find(d => d.startsWith('otro:'));
+    setEditOtroLabel(otroDoc ? otroDoc.slice(5) : '');
     setEditForm({
       titulo: oferta.titulo,
-      descripcion: (oferta as any).descripcion || '',
-      requisitos: (oferta as any).requisitos || '',
+      descripcion: oferta.descripcion || '',
+      requisitos: oferta.requisitos || '',
       area: oferta.area || '',
       modalidad: oferta.modalidad,
       ciudad: oferta.ciudad || '',
@@ -249,7 +263,21 @@ export default function EmpresaDashboard() {
   }
 
   function toggleDocRequerido(tipo: string) {
-    setForm(prev => ({ ...prev, docs_requeridos: prev.docs_requeridos.includes(tipo) ? prev.docs_requeridos.filter(d => d !== tipo) : [...prev.docs_requeridos, tipo] }));
+    setForm(prev => {
+      const tiene = prev.docs_requeridos.some(d => parseDocTipo(d) === tipo);
+      if (tiene) return { ...prev, docs_requeridos: prev.docs_requeridos.filter(d => parseDocTipo(d) !== tipo) };
+      const valor = tipo === 'otro' ? (otroLabel.trim() ? `otro:${otroLabel.trim()}` : 'otro') : tipo;
+      return { ...prev, docs_requeridos: [...prev.docs_requeridos, valor] };
+    });
+  }
+
+  function toggleEditDocRequerido(tipo: string) {
+    setEditForm(prev => {
+      const tiene = prev.docs_requeridos.some(d => parseDocTipo(d) === tipo);
+      if (tiene) return { ...prev, docs_requeridos: prev.docs_requeridos.filter(d => parseDocTipo(d) !== tipo) };
+      const valor = tipo === 'otro' ? (editOtroLabel.trim() ? `otro:${editOtroLabel.trim()}` : 'otro') : tipo;
+      return { ...prev, docs_requeridos: [...prev.docs_requeridos, valor] };
+    });
   }
 
   function agregarPregunta() {
@@ -351,7 +379,7 @@ export default function EmpresaDashboard() {
                       <span>· {oferta.modalidad}</span>
                     </div>
                     {oferta.docs_requeridos?.length > 0 && (
-                      <p className="text-xs text-purple-600 mt-1">📋 Requiere: {oferta.docs_requeridos.map(d => DOCS_CONFIG.find(c => c.tipo === d)?.label).join(', ')}</p>
+                      <p className="text-xs text-purple-600 mt-1">📋 Requiere: {oferta.docs_requeridos.map(d => parseDocLabel(d)).join(', ')}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
@@ -415,10 +443,31 @@ export default function EmpresaDashboard() {
                 <label className="text-sm font-medium text-gray-700 block mb-2">Documentos requeridos</label>
                 <div className="space-y-2">
                   {DOCS_CONFIG.map(doc => (
-                    <label key={doc.tipo} className="flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox" checked={form.docs_requeridos.includes(doc.tipo)} onChange={() => toggleDocRequerido(doc.tipo)} className="w-4 h-4 accent-blue-600" />
-                      <span className="text-sm text-gray-700">{doc.label}</span>
-                    </label>
+                    <div key={doc.tipo}>
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox"
+                          checked={form.docs_requeridos.some(d => parseDocTipo(d) === doc.tipo)}
+                          onChange={() => toggleDocRequerido(doc.tipo)}
+                          className="w-4 h-4 accent-blue-600" />
+                        <span className="text-sm text-gray-700">{doc.label}</span>
+                      </label>
+                      {doc.tipo === 'otro' && form.docs_requeridos.some(d => parseDocTipo(d) === 'otro') && (
+                        <input
+                          value={otroLabel}
+                          onChange={e => {
+                            setOtroLabel(e.target.value);
+                            setForm(prev => ({
+                              ...prev,
+                              docs_requeridos: prev.docs_requeridos.map(d =>
+                                parseDocTipo(d) === 'otro' ? (e.target.value.trim() ? `otro:${e.target.value.trim()}` : 'otro') : d
+                              ),
+                            }));
+                          }}
+                          placeholder="¿Qué documento es? (ej: Carnet de salud)"
+                          className="ml-7 mt-1 w-64 border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -504,13 +553,31 @@ export default function EmpresaDashboard() {
                 <label className="text-sm font-medium text-gray-700 block mb-2">Documentos requeridos</label>
                 <div className="space-y-2">
                   {DOCS_CONFIG.map(doc => (
-                    <label key={doc.tipo} className="flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox"
-                        checked={editForm.docs_requeridos.includes(doc.tipo)}
-                        onChange={() => setEditForm(prev => ({ ...prev, docs_requeridos: prev.docs_requeridos.includes(doc.tipo) ? prev.docs_requeridos.filter(d => d !== doc.tipo) : [...prev.docs_requeridos, doc.tipo] }))}
-                        className="w-4 h-4 accent-blue-600" />
-                      <span className="text-sm text-gray-700">{doc.label}</span>
-                    </label>
+                    <div key={doc.tipo}>
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox"
+                          checked={editForm.docs_requeridos.some(d => parseDocTipo(d) === doc.tipo)}
+                          onChange={() => toggleEditDocRequerido(doc.tipo)}
+                          className="w-4 h-4 accent-blue-600" />
+                        <span className="text-sm text-gray-700">{doc.label}</span>
+                      </label>
+                      {doc.tipo === 'otro' && editForm.docs_requeridos.some(d => parseDocTipo(d) === 'otro') && (
+                        <input
+                          value={editOtroLabel}
+                          onChange={e => {
+                            setEditOtroLabel(e.target.value);
+                            setEditForm(prev => ({
+                              ...prev,
+                              docs_requeridos: prev.docs_requeridos.map(d =>
+                                parseDocTipo(d) === 'otro' ? (e.target.value.trim() ? `otro:${e.target.value.trim()}` : 'otro') : d
+                              ),
+                            }));
+                          }}
+                          placeholder="¿Qué documento es? (ej: Carnet de salud)"
+                          className="ml-7 mt-1 w-64 border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -692,9 +759,10 @@ export default function EmpresaDashboard() {
                         {ofertaSeleccionada?.docs_requeridos?.length > 0 && (
                           <div className="flex flex-wrap gap-1 mb-3">
                             {ofertaSeleccionada.docs_requeridos.map(tipo => {
-                              const tieneDoc = p.documentos?.some(d => d.tipo === tipo);
-                              const doc = p.documentos?.find(d => d.tipo === tipo);
-                              const label = DOCS_CONFIG.find(c => c.tipo === tipo)?.label || tipo;
+                              const tipoBase = parseDocTipo(tipo);
+                              const tieneDoc = p.documentos?.some(d => d.tipo === tipoBase);
+                              const doc = p.documentos?.find(d => d.tipo === tipoBase);
+                              const label = parseDocLabel(tipo);
                               return (
                                 <span key={tipo} className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${tieneDoc ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-600'}`}>
                                   {tieneDoc ? <Check size={10} /> : <X size={10} />}
@@ -854,6 +922,7 @@ export default function EmpresaDashboard() {
                 <div className="flex flex-wrap gap-2">
                   {videoModal.documentos!.map(doc => {
                     const label = DOCS_CONFIG.find(c => c.tipo === doc.tipo)?.label || doc.tipo;
+                    // label uses the fixed DOCS_CONFIG since doc.tipo comes from the candidate's upload
                     return (
                       <a key={doc.tipo} href={doc.file_url} target="_blank"
                         className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full hover:bg-green-200 transition-colors">
@@ -861,8 +930,8 @@ export default function EmpresaDashboard() {
                       </a>
                     );
                   })}
-                  {ofertaSeleccionada?.docs_requeridos?.filter(tipo => !videoModal.documentos?.some(d => d.tipo === tipo)).map(tipo => {
-                    const label = DOCS_CONFIG.find(c => c.tipo === tipo)?.label || tipo;
+                  {ofertaSeleccionada?.docs_requeridos?.filter(tipo => !videoModal.documentos?.some(d => d.tipo === parseDocTipo(tipo))).map(tipo => {
+                    const label = parseDocLabel(tipo);
                     return (
                       <span key={tipo} className="flex items-center gap-1 text-xs bg-red-50 text-red-500 px-2 py-1 rounded-full">
                         <X size={10} /> {label}

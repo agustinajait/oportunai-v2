@@ -145,6 +145,7 @@ enum TipoDocumento {
   antecedentes_penales
   manipulacion_alimentos
   libreta_sanitaria
+  registro_conducir
   otro
 }
 

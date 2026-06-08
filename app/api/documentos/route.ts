@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSessionFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-const TIPOS_VALIDOS = ['dni', 'antecedentes_penales', 'manipulacion_alimentos', 'libreta_sanitaria', 'otro'];
+const TIPOS_VALIDOS = ['dni', 'antecedentes_penales', 'manipulacion_alimentos', 'libreta_sanitaria', 'registro_conducir', 'otro'];
 
 export async function GET(req: NextRequest) {
   const session = await getSessionFromRequest(req);

@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { tipo, video_url, taller_id, oferta_id } = body;
+    const { tipo, video_url, taller_id, oferta_id, restart_count } = body;
 
     if (!tipo || !['video_cv', 'video_pitch'].includes(tipo)) {
       return NextResponse.json({ error: 'tipo inválido' }, { status: 400 });
@@ -17,6 +17,14 @@ export async function POST(req: NextRequest) {
 
     if (!video_url) {
       return NextResponse.json({ error: 'video_url requerida' }, { status: 400 });
+    }
+
+    // Incrementar contador de grabaciones si es video_cv principal
+    if (tipo === 'video_cv' && !taller_id && !oferta_id) {
+      await prisma.usuario.update({
+        where: { id: session.userId },
+        data: { grabaciones_cv: { increment: (restart_count ?? 0) + 1 } },
+      });
     }
 
     // Borrar video final anterior del mismo tipo/contexto

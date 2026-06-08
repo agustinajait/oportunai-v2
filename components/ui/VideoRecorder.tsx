@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import {
   Video, Mic, Circle, Square,
   ChevronRight, CheckCircle, AlertCircle, Loader2,
-  ArrowLeft, Clock, SkipForward
+  ArrowLeft, Clock, SkipForward, RotateCcw, Upload
 } from 'lucide-react';
 import type { SessionPayload } from '@/lib/auth';
 
@@ -23,7 +23,23 @@ interface Modulo {
   orden: number;
 }
 
-type Stage = 'preview' | 'countdown' | 'recording' | 'between' | 'uploading' | 'done' | 'error';
+type Stage = 'preview' | 'countdown' | 'recording' | 'between' | 'final_review' | 'uploading' | 'done' | 'error';
+
+function playBeep(freq = 660, duration = 0.12, vol = 0.25) {
+  try {
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
+  } catch {}
+}
 
 export default function VideoRecorder({
   modulos,
@@ -51,16 +67,19 @@ export default function VideoRecorder({
   const [timeLeft, setTimeLeft] = useState(0);
   const [uploadProgress, setUploadProgress] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [reviewVideoUrl, setReviewVideoUrl] = useState<string | null>(null);
+  const [restartCount, setRestartCount] = useState(0);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const startTimeRef = useRef<number>(0);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const reviewVideoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const lastBlobRef = useRef<Blob | null>(null);
   const isAdvancingRef = useRef(false);
   const handleModuleEndRef = useRef<() => void>(() => {});
+  const mimeTypeRef = useRef('video/webm');
 
   const [camError, setCamError] = useState<string | null>(null);
 
@@ -103,10 +122,16 @@ export default function VideoRecorder({
     };
   }, []);
 
+  // ── Cleanup review URL on unmount ─────────────────────────────────
+  useEffect(() => {
+    return () => { if (reviewVideoUrl) URL.revokeObjectURL(reviewVideoUrl); };
+  }, [reviewVideoUrl]);
+
   // ── Countdown ─────────────────────────────────────────────────────
   useEffect(() => {
     if (stage !== 'countdown') return;
     if (countdown === 0) { beginRecording(); return; }
+    playBeep(countdown === 1 ? 880 : 440, 0.1, 0.2);
     const t = setTimeout(() => setCountdown(c => c - 1), 1000);
     return () => clearTimeout(t);
   }, [stage, countdown]);
@@ -115,7 +140,6 @@ export default function VideoRecorder({
   useEffect(() => {
     if (stage !== 'recording') return;
     setTimeLeft(efectivaDuration);
-    startTimeRef.current = Date.now();
     timerRef.current = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
@@ -123,11 +147,17 @@ export default function VideoRecorder({
           handleModuleEndRef.current();
           return 0;
         }
+        if (prev <= 4) playBeep(440, 0.08, 0.15);
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(timerRef.current!);
   }, [stage, moduloIdx, efectivaDuration]);
+
+  // ── Snapshot del video grabado hasta ahora ────────────────────────
+  const snapshotBlob = useCallback((): Blob => {
+    return new Blob(chunksRef.current, { type: mimeTypeRef.current });
+  }, []);
 
   // ── Upload ────────────────────────────────────────────────────────
   const processAndUpload = useCallback(async (blob: Blob) => {
@@ -153,6 +183,7 @@ export default function VideoRecorder({
         body: JSON.stringify({
           tipo,
           video_url: urlData.publicUrl,
+          restart_count: restartCount,
           ...(tallerId ? { taller_id: tallerId } : {}),
           ...(ofertaId ? { oferta_id: ofertaId } : {}),
         }),
@@ -163,12 +194,13 @@ export default function VideoRecorder({
         throw new Error(j.error ?? 'Error al guardar el video');
       }
 
+      playBeep(880, 0.3, 0.3);
       setStage('done');
     } catch (err: any) {
       setUploadError(err.message);
       setStage('error');
     }
-  }, [session.userId, tipo, tallerId, ofertaId]);
+  }, [session.userId, tipo, tallerId, ofertaId, restartCount]);
 
   // ── Finalizar grabación ───────────────────────────────────────────
   const finalizeRecording = useCallback(() => {
@@ -178,11 +210,13 @@ export default function VideoRecorder({
     recorder.onstop = () => {
       const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
       lastBlobRef.current = blob;
-      setStage('uploading');
-      processAndUpload(blob);
+      if (reviewVideoUrl) URL.revokeObjectURL(reviewVideoUrl);
+      const url = URL.createObjectURL(blob);
+      setReviewVideoUrl(url);
+      setStage('final_review');
     };
     recorder.stop();
-  }, [processAndUpload]);
+  }, [reviewVideoUrl]);
 
   // ── Avanzar módulo o finalizar ────────────────────────────────────
   const handleModuleEnd = useCallback(() => {
@@ -191,21 +225,25 @@ export default function VideoRecorder({
 
     clearInterval(timerRef.current!);
     const nextIdx = moduloIdx + 1;
+    const recorder = recorderRef.current;
 
     if (nextIdx >= totalModulos) {
+      // Último módulo: finalizar y mostrar review completo
       finalizeRecording();
     } else {
-      // Pausar grabación durante la pantalla entre módulos
-      const recorder = recorderRef.current;
+      // Pausar y mostrar preview del video grabado hasta ahora
       if (recorder && recorder.state === 'recording') {
         recorder.pause();
       }
+      const snap = snapshotBlob();
+      if (reviewVideoUrl) URL.revokeObjectURL(reviewVideoUrl);
+      const url = URL.createObjectURL(snap);
+      setReviewVideoUrl(url);
       setModuloIdx(nextIdx);
       setStage('between');
     }
-  }, [moduloIdx, totalModulos, finalizeRecording]);
+  }, [moduloIdx, totalModulos, finalizeRecording, snapshotBlob, reviewVideoUrl]);
 
-  // Keep ref updated to avoid stale closure in timer
   useEffect(() => { handleModuleEndRef.current = handleModuleEnd; }, [handleModuleEnd]);
 
   // ── Comenzar / retomar grabación ──────────────────────────────────
@@ -215,22 +253,22 @@ export default function VideoRecorder({
 
     const recorder = recorderRef.current;
 
-    // Módulo siguiente: reanudar MediaRecorder pausado
     if (recorder && recorder.state === 'paused') {
       recorder.resume();
       setStage('recording');
       return;
     }
 
-    // Primer módulo: crear nuevo MediaRecorder
     chunksRef.current = [];
     const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
       ? 'video/webm;codecs=vp9,opus'
       : MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
+    mimeTypeRef.current = mimeType;
     const newRecorder = new MediaRecorder(streamRef.current, { mimeType });
     newRecorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
     newRecorder.start(250);
     recorderRef.current = newRecorder;
+    playBeep(880, 0.15, 0.3);
     setStage('recording');
   }, []);
 
@@ -248,10 +286,13 @@ export default function VideoRecorder({
     recorderRef.current = null;
     chunksRef.current = [];
     isAdvancingRef.current = false;
+    if (reviewVideoUrl) URL.revokeObjectURL(reviewVideoUrl);
+    setReviewVideoUrl(null);
     setModuloIdx(0);
     setCountdown(3);
     setUploadError(null);
     setUploadProgress('');
+    setRestartCount(c => c + 1);
     setStage('preview');
   };
 
@@ -299,8 +340,8 @@ export default function VideoRecorder({
       {!camError && (
         <div className="relative flex-1 overflow-hidden">
 
-          {/* VIDEO */}
-          {(stage !== 'uploading' && stage !== 'done' && stage !== 'error') && (
+          {/* VIDEO EN VIVO */}
+          {(stage !== 'uploading' && stage !== 'done' && stage !== 'error' && stage !== 'final_review') && (
             <video
               ref={videoRef}
               autoPlay
@@ -313,13 +354,13 @@ export default function VideoRecorder({
 
           {/* Overlay oscuro */}
           {(stage === 'preview' || stage === 'between' || stage === 'countdown') && (
-            <div className="absolute inset-0 bg-black/50 z-10" />
+            <div className="absolute inset-0 bg-black/60 z-10" />
           )}
 
-          {/* PREVIEW */}
+          {/* PREVIEW INICIAL */}
           {stage === 'preview' && modulo && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center">
-              <div className="bg-black/70 backdrop-blur rounded-3xl p-8 max-w-sm w-full">
+              <div className="bg-black/80 backdrop-blur rounded-3xl p-8 max-w-sm w-full">
                 <p className="text-white/50 text-sm mb-1">{tituloVideo} · {totalModulos} módulos</p>
                 <h2 className="font-display text-2xl font-semibold text-white mb-6">¿Listo para grabar?</h2>
                 <div className="space-y-2 mb-6 text-left">
@@ -343,13 +384,20 @@ export default function VideoRecorder({
             </div>
           )}
 
-          {/* COUNTDOWN */}
-          {stage === 'countdown' && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center">
-              <p className="text-white/60 text-sm mb-4 font-medium uppercase tracking-widest">
-                Módulo {moduloIdx + 1}/{totalModulos} · {modulo?.nombre_modulo}
-              </p>
-              <div key={countdown} className="text-9xl font-display font-bold text-white" style={{ animation: 'scaleIn 0.3s ease' }}>
+          {/* COUNTDOWN — tips prominentes */}
+          {stage === 'countdown' && modulo && (
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6">
+              {/* Tip destacado */}
+              <div className="w-full max-w-sm mb-8 bg-brand-600/90 backdrop-blur rounded-2xl px-6 py-5 text-center">
+                <p className="text-brand-200 text-xs font-semibold uppercase tracking-widest mb-2">
+                  Módulo {moduloIdx + 1}/{totalModulos} · {modulo.nombre_modulo}
+                </p>
+                <p className="text-white text-xl font-semibold leading-snug">
+                  {modulo.texto_guia}
+                </p>
+              </div>
+              {/* Contador */}
+              <div key={countdown} className="text-9xl font-display font-bold text-white drop-shadow-lg" style={{ animation: 'scaleIn 0.3s ease' }}>
                 {countdown === 0 ? '¡Ya!' : countdown}
               </div>
             </div>
@@ -358,17 +406,18 @@ export default function VideoRecorder({
           {/* GRABANDO */}
           {stage === 'recording' && modulo && (
             <div className="absolute inset-0 z-20 flex flex-col justify-between pointer-events-none">
-              <div className="m-4 bg-black/70 backdrop-blur-sm rounded-2xl px-5 py-4">
-                <div className="flex items-center justify-between mb-2">
+              {/* Tips en la parte superior */}
+              <div className="m-4 bg-black/75 backdrop-blur-sm rounded-2xl px-5 py-4">
+                <div className="flex items-center justify-between mb-3">
                   <span className="text-brand-400 text-xs font-semibold uppercase tracking-widest">
                     {moduloIdx + 1}/{totalModulos} · {modulo.nombre_modulo}
                   </span>
-                  <div className={`flex items-center gap-1.5 font-mono font-bold text-lg ${timerColor}`}>
+                  <div className={`flex items-center gap-1.5 font-mono font-bold text-xl ${timerColor}`}>
                     <Clock size={16} /> {timeLeft}s
                   </div>
                 </div>
-                <p className="text-white text-sm leading-relaxed font-medium">{modulo.texto_guia}</p>
-                <div className="mt-3 h-1 bg-white/10 rounded-full overflow-hidden">
+                <p className="text-white text-lg font-semibold leading-snug">{modulo.texto_guia}</p>
+                <div className="mt-3 h-1.5 bg-white/10 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-1000 ${tipo === 'video_cv' ? 'bg-brand-500' : 'bg-emerald-500'}`}
                     style={{ width: `${progressPct}%` }}
@@ -402,25 +451,79 @@ export default function VideoRecorder({
             </div>
           )}
 
-          {/* ENTRE MÓDULOS */}
+          {/* ENTRE MÓDULOS — preview del video grabado hasta ahora */}
           {stage === 'between' && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center">
-              <div className="bg-black/70 backdrop-blur rounded-3xl p-8 max-w-sm w-full">
-                <CheckCircle size={40} className="text-emerald-400 mx-auto mb-4" />
-                <p className="text-emerald-400 text-sm font-semibold mb-1 uppercase tracking-widest">
-                  Módulo {moduloIdx}/{totalModulos} completado
+            <div className="absolute inset-0 z-20 flex flex-col bg-ink-950 overflow-y-auto">
+              <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 gap-4">
+                <p className="text-emerald-400 text-sm font-semibold uppercase tracking-widest">
+                  Módulo {moduloIdx - 1 > 0 ? moduloIdx : 1} completado ✓
                 </p>
-                <h3 className="font-display text-xl font-semibold text-white mb-3">
-                  {modulos[moduloIdx - 1]?.nombre_modulo} ✓
-                </h3>
-                <div className="bg-white/5 rounded-xl px-4 py-3 mb-6 text-left">
-                  <p className="text-white/40 text-xs uppercase tracking-widest mb-1">Próximo</p>
-                  <p className="text-white font-medium">{modulos[moduloIdx]?.nombre_modulo}</p>
-                  <p className="text-white/40 text-xs mt-0.5">{modulos[moduloIdx]?.duracion_base}s</p>
+
+                {/* Video preview */}
+                {reviewVideoUrl && (
+                  <div className="w-full max-w-sm rounded-2xl overflow-hidden bg-black shadow-xl">
+                    <video
+                      ref={reviewVideoRef}
+                      src={reviewVideoUrl}
+                      controls
+                      playsInline
+                      className="w-full aspect-video object-cover"
+                    />
+                  </div>
+                )}
+
+                {/* Próximo módulo */}
+                <div className="w-full max-w-sm bg-white/5 rounded-2xl px-5 py-4 border border-white/10">
+                  <p className="text-white/40 text-xs uppercase tracking-widest mb-1">Próximo módulo</p>
+                  <p className="text-white font-semibold text-lg">{modulos[moduloIdx]?.nombre_modulo}</p>
+                  <p className="text-brand-300 text-sm mt-1 leading-snug">{modulos[moduloIdx]?.texto_guia}</p>
+                  <p className="text-white/30 text-xs mt-2">{modulos[moduloIdx]?.duracion_base}s</p>
                 </div>
-                <button onClick={startNextModulo} className="btn-primary w-full justify-center py-3.5 rounded-2xl">
-                  Continuar <ChevronRight size={18} />
-                </button>
+
+                <div className="w-full max-w-sm space-y-3">
+                  <button onClick={startNextModulo} className="btn-primary w-full justify-center py-3.5 rounded-2xl text-base">
+                    Continuar <ChevronRight size={18} />
+                  </button>
+                  <button onClick={restart} className="w-full flex items-center justify-center gap-2 text-white/40 hover:text-white text-sm py-2.5 transition-colors">
+                    <RotateCcw size={14} /> Empezar de nuevo
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* REVIEW FINAL — ver el video completo antes de subir */}
+          {stage === 'final_review' && (
+            <div className="absolute inset-0 z-20 flex flex-col bg-ink-950 overflow-y-auto">
+              <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 gap-4">
+                <div className="text-center">
+                  <CheckCircle size={32} className="text-emerald-400 mx-auto mb-2" />
+                  <h2 className="font-display text-2xl font-semibold text-white">¡Grabación lista!</h2>
+                  <p className="text-white/50 text-sm mt-1">Revisá tu video antes de subirlo</p>
+                </div>
+
+                {reviewVideoUrl && (
+                  <div className="w-full max-w-sm rounded-2xl overflow-hidden bg-black shadow-xl">
+                    <video
+                      src={reviewVideoUrl}
+                      controls
+                      playsInline
+                      className="w-full aspect-video object-cover"
+                    />
+                  </div>
+                )}
+
+                <div className="w-full max-w-sm space-y-3">
+                  <button
+                    onClick={() => lastBlobRef.current && processAndUpload(lastBlobRef.current)}
+                    className="btn-primary w-full justify-center py-3.5 rounded-2xl text-base"
+                  >
+                    <Upload size={18} /> Subir mi video
+                  </button>
+                  <button onClick={restart} className="w-full flex items-center justify-center gap-2 text-white/40 hover:text-white text-sm py-2.5 transition-colors">
+                    <RotateCcw size={14} /> Volver a grabar
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -443,7 +546,7 @@ export default function VideoRecorder({
               <div className="w-20 h-20 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mb-6">
                 <CheckCircle size={40} className="text-emerald-400" />
               </div>
-              <h2 className="font-display text-2xl font-semibold text-white mb-2">¡{tituloVideo} grabado!</h2>
+              <h2 className="font-display text-2xl font-semibold text-white mb-2">¡{tituloVideo} subido!</h2>
               <p className="text-white/50 text-sm max-w-sm mb-8">Tu video está listo y ya podés compartirlo.</p>
               <div className="space-y-3 w-full max-w-xs">
                 <button

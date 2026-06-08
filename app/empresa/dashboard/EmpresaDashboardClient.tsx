@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2 } from 'lucide-react';
+import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2, Pencil, ToggleLeft, ToggleRight } from 'lucide-react';
 
 const DOCS_CONFIG = [
   { tipo: 'dni', label: 'DNI' },
@@ -47,7 +47,8 @@ function extraerCiudad(direccion: string | null): string {
 }
 
 type Oferta = {
-  id: string; titulo: string; area: string | null; ciudad: string | null;
+  id: string; titulo: string; descripcion: string; requisitos: string | null;
+  area: string | null; ciudad: string | null;
   modalidad: string; estado: string; mensaje_whatsapp: string | null;
   docs_requeridos: string[]; preguntas_videocv: string[]; created_at: string;
   _count: { postulaciones: number };
@@ -80,10 +81,11 @@ type Empresa = {
 };
 
 export default function EmpresaDashboard() {
-  const [tab, setTab] = useState<'ofertas' | 'nueva' | 'postulantes' | 'perfil'>('ofertas');
+  const [tab, setTab] = useState<'ofertas' | 'nueva' | 'editar' | 'postulantes' | 'perfil'>('ofertas');
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const [postulantes, setPostulantes] = useState<Postulante[]>([]);
   const [ofertaSeleccionada, setOfertaSeleccionada] = useState<Oferta | null>(null);
+  const [ofertaEditando, setOfertaEditando] = useState<Oferta | null>(null);
   const [empresa, setEmpresa] = useState<Empresa | null>(null);
   const [loading, setLoading] = useState(false);
   const [perfilGuardado, setPerfilGuardado] = useState(false);
@@ -101,6 +103,13 @@ export default function EmpresaDashboard() {
     preguntas_videocv: [] as string[],
   });
   const [preguntaInput, setPreguntaInput] = useState('');
+  const [editForm, setEditForm] = useState({
+    titulo: '', descripcion: '', requisitos: '', area: '',
+    modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '',
+    docs_requeridos: [] as string[],
+    preguntas_videocv: [] as string[],
+  });
+  const [editPreguntaInput, setEditPreguntaInput] = useState('');
 
   const [perfilForm, setPerfilForm] = useState({
     nombre: '', descripcion: '', rubro: '', ciudad: '', sitio_web: '',
@@ -192,6 +201,51 @@ export default function EmpresaDashboard() {
       cargarOfertas();
     }
     setLoading(false);
+  }
+
+  function abrirEditar(oferta: Oferta) {
+    setOfertaEditando(oferta);
+    setEditForm({
+      titulo: oferta.titulo,
+      descripcion: (oferta as any).descripcion || '',
+      requisitos: (oferta as any).requisitos || '',
+      area: oferta.area || '',
+      modalidad: oferta.modalidad,
+      ciudad: oferta.ciudad || '',
+      mensaje_whatsapp: oferta.mensaje_whatsapp || '',
+      docs_requeridos: oferta.docs_requeridos || [],
+      preguntas_videocv: oferta.preguntas_videocv || [],
+    });
+    setEditPreguntaInput('');
+    setTab('editar');
+  }
+
+  async function guardarEdicion() {
+    if (!ofertaEditando) return;
+    setLoading(true);
+    const pendiente = editPreguntaInput.trim();
+    const formFinal = pendiente && !editForm.preguntas_videocv.includes(pendiente)
+      ? { ...editForm, preguntas_videocv: [...editForm.preguntas_videocv, pendiente] }
+      : editForm;
+    await fetch(`/api/ofertas/${ofertaEditando.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formFinal),
+    });
+    setTab('ofertas');
+    setOfertaEditando(null);
+    cargarOfertas();
+    setLoading(false);
+  }
+
+  async function toggleEstadoOferta(oferta: Oferta) {
+    const nuevoEstado = oferta.estado === 'activa' ? 'cerrada' : 'activa';
+    await fetch(`/api/ofertas/${oferta.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ estado: nuevoEstado }),
+    });
+    cargarOfertas();
   }
 
   function toggleDocRequerido(tipo: string) {
@@ -300,11 +354,20 @@ export default function EmpresaDashboard() {
                       <p className="text-xs text-purple-600 mt-1">📋 Requiere: {oferta.docs_requeridos.map(d => DOCS_CONFIG.find(c => c.tipo === d)?.label).join(', ')}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-center">
+                  <div className="flex items-center gap-2">
+                    <div className="text-center mr-2">
                       <div className="text-2xl font-bold text-blue-600">{oferta._count.postulaciones}</div>
                       <div className="text-xs text-gray-400">postulantes</div>
                     </div>
+                    <button onClick={() => toggleEstadoOferta(oferta)}
+                      title={oferta.estado === 'activa' ? 'Cerrar oferta' : 'Activar oferta'}
+                      className={`p-2 rounded-lg border transition-colors ${oferta.estado === 'activa' ? 'border-green-200 text-green-600 hover:bg-green-50' : 'border-gray-200 text-gray-400 hover:bg-gray-50'}`}>
+                      {oferta.estado === 'activa' ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                    </button>
+                    <button onClick={() => abrirEditar(oferta)}
+                      className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors" title="Editar oferta">
+                      <Pencil size={16} />
+                    </button>
                     <button onClick={() => verPostulantes(oferta)} className="border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">Ver pipeline →</button>
                   </div>
                 </div>
@@ -397,6 +460,111 @@ export default function EmpresaDashboard() {
                   {loading ? 'Publicando...' : 'Publicar oferta'}
                 </button>
                 <button onClick={() => setTab('ofertas')} className="border border-gray-200 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Editar oferta */}
+        {tab === 'editar' && ofertaEditando && (
+          <div className="bg-white rounded-xl border border-gray-200 p-6 max-w-xl">
+            <h2 className="text-lg font-semibold text-gray-900 mb-5">Editar oferta</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">Título *</label>
+                <input value={editForm.titulo} onChange={e => setEditForm({ ...editForm, titulo: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">Descripción *</label>
+                <textarea value={editForm.descripcion} onChange={e => setEditForm({ ...editForm, descripcion: e.target.value })} rows={4} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">Requisitos</label>
+                <textarea value={editForm.requisitos} onChange={e => setEditForm({ ...editForm, requisitos: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">Área</label>
+                  <input value={editForm.area} onChange={e => setEditForm({ ...editForm, area: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">Modalidad</label>
+                  <select value={editForm.modalidad} onChange={e => setEditForm({ ...editForm, modalidad: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="presencial">Presencial</option>
+                    <option value="remoto">Remoto</option>
+                    <option value="hibrido">Híbrido</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">Ciudad</label>
+                  <input value={editForm.ciudad} onChange={e => setEditForm({ ...editForm, ciudad: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-2">Documentos requeridos</label>
+                <div className="space-y-2">
+                  {DOCS_CONFIG.map(doc => (
+                    <label key={doc.tipo} className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox"
+                        checked={editForm.docs_requeridos.includes(doc.tipo)}
+                        onChange={() => setEditForm(prev => ({ ...prev, docs_requeridos: prev.docs_requeridos.includes(doc.tipo) ? prev.docs_requeridos.filter(d => d !== doc.tipo) : [...prev.docs_requeridos, doc.tipo] }))}
+                        className="w-4 h-4 accent-blue-600" />
+                      <span className="text-sm text-gray-700">{doc.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-2">Preguntas para el Video CV</label>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    value={editPreguntaInput}
+                    onChange={e => setEditPreguntaInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const p = editPreguntaInput.trim();
+                        if (p && !editForm.preguntas_videocv.includes(p)) {
+                          setEditForm(prev => ({ ...prev, preguntas_videocv: [...prev.preguntas_videocv, p] }));
+                          setEditPreguntaInput('');
+                        }
+                      }
+                    }}
+                    placeholder="Ej: ¿Cuál es tu experiencia en el rubro?"
+                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button type="button" onClick={() => {
+                    const p = editPreguntaInput.trim();
+                    if (p && !editForm.preguntas_videocv.includes(p)) {
+                      setEditForm(prev => ({ ...prev, preguntas_videocv: [...prev.preguntas_videocv, p] }));
+                      setEditPreguntaInput('');
+                    }
+                  }} className="border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-600">
+                    <Plus size={16} />
+                  </button>
+                </div>
+                {editForm.preguntas_videocv.length > 0 && (
+                  <div className="space-y-1.5">
+                    {editForm.preguntas_videocv.map((p, i) => (
+                      <div key={i} className="flex items-center gap-2 bg-blue-50 rounded-lg px-3 py-2">
+                        <span className="text-xs text-blue-700 flex-1">{i + 1}. {p}</span>
+                        <button type="button" onClick={() => setEditForm(prev => ({ ...prev, preguntas_videocv: prev.preguntas_videocv.filter((_, j) => j !== i) }))} className="text-blue-400 hover:text-red-500 transition-colors">
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">Mensaje WhatsApp (opcional)</label>
+                <textarea value={editForm.mensaje_whatsapp} onChange={e => setEditForm({ ...editForm, mensaje_whatsapp: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button onClick={guardarEdicion} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+                  {loading ? 'Guardando...' : 'Guardar cambios'}
+                </button>
+                <button onClick={() => { setTab('ofertas'); setOfertaEditando(null); }} className="border border-gray-200 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
               </div>
             </div>
           </div>

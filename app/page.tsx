@@ -1,7 +1,20 @@
 import Link from 'next/link';
-import { Video, Mic, Share2, ChevronRight, Sparkles, Building2 } from 'lucide-react';
+import { Video, Mic, Share2, ChevronRight, Sparkles, Building2, MapPin, Briefcase } from 'lucide-react';
+import { prisma } from '@/lib/prisma';
 
-export default function LandingPage() {
+const MODALIDAD_LABEL: Record<string, string> = {
+  presencial: 'Presencial',
+  remoto: 'Remoto',
+  hibrido: 'Híbrido',
+};
+
+export default async function LandingPage() {
+  const ofertasDestacadas = await prisma.oferta.findMany({
+    where: { estado: 'activa' },
+    include: { empresa: { select: { nombre: true, logo_url: true } } },
+    orderBy: { created_at: 'desc' },
+    take: 3,
+  });
   return (
     <div className="min-h-screen bg-ink-50 overflow-hidden">
       {/* Nav */}
@@ -95,6 +108,63 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+
+      {/* Ofertas destacadas */}
+      {ofertasDestacadas.length > 0 && (
+        <section className="max-w-6xl mx-auto px-6 pb-24">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="font-display text-2xl font-semibold text-ink-900">Ofertas de trabajo</h2>
+              <p className="text-ink-500 text-sm mt-1">Empresas buscando candidatos ahora</p>
+            </div>
+            <Link
+              href="/ofertas"
+              className="inline-flex items-center gap-1.5 text-brand-600 hover:text-brand-700 text-sm font-medium transition-colors"
+            >
+              Ver todas <ChevronRight size={15} />
+            </Link>
+          </div>
+
+          <div className="space-y-4">
+            {ofertasDestacadas.map((o) => (
+              <div key={o.id} className="card p-5 hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-ink-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {o.empresa.logo_url
+                      ? <img src={o.empresa.logo_url} alt={o.empresa.nombre} className="w-full h-full object-cover" />
+                      : <Building2 size={18} className="text-ink-400" />
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-ink-900 leading-tight">{o.titulo}</h3>
+                    <p className="text-brand-600 text-sm font-medium mt-0.5">{o.empresa.nombre}</p>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-ink-400 text-xs">
+                      {o.ciudad && <span className="flex items-center gap-1"><MapPin size={11} />{o.ciudad}</span>}
+                      <span className="flex items-center gap-1"><Briefcase size={11} />{MODALIDAD_LABEL[o.modalidad] ?? o.modalidad}</span>
+                      {o.area && <span>{o.area}</span>}
+                    </div>
+                  </div>
+                  <Link
+                    href={`/register?oferta_id=${o.id}`}
+                    className="btn-primary text-sm py-2 px-4 flex-shrink-0"
+                  >
+                    Postularme
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 text-center">
+            <Link
+              href="/ofertas"
+              className="inline-flex items-center gap-2 border border-brand-200 text-brand-700 font-medium px-6 py-3 rounded-2xl hover:bg-brand-50 transition-colors text-sm"
+            >
+              Ver todas las ofertas <ChevronRight size={16} />
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* Sección empresas */}
       <section className="max-w-6xl mx-auto px-6 pb-24">

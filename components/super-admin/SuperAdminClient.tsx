@@ -43,10 +43,64 @@ export default function SuperAdminClient({
   talleres: Taller[]; usuarios: Usuario[]; empresas: Empresa[]; session: SessionPayload;
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<'talleres' | 'usuarios' | 'empresas'>('talleres');
+  const [tab, setTab] = useState<'talleres' | 'usuarios' | 'empresas' | 'ofertas'>('talleres');
   const [talleres, setTalleres] = useState<Taller[]>(initTalleres);
   const [usuarios, setUsuarios] = useState<Usuario[]>(initUsuarios);
   const [empresas, setEmpresas] = useState<Empresa[]>(initEmpresas);
+
+  // ── Ofertas state ───────────────────────────────────────────────────
+  type OfertaAdmin = { id: string; titulo: string; descripcion: string; estado: string; modalidad: string; ciudad: string | null; area: string | null; created_at: string; empresa: { id: string; nombre: string }; _count: { postulaciones: number } };
+  const [ofertas, setOfertas] = useState<OfertaAdmin[]>([]);
+  const [ofertasLoaded, setOfertasLoaded] = useState(false);
+  const [creandoOferta, setCreandoOferta] = useState(false);
+  const [submittingOferta, setSubmittingOferta] = useState(false);
+  const [ofertaForm, setOfertaForm] = useState({
+    empresa_id: '',
+    empresa_nombre: '',
+    titulo: '',
+    descripcion: '',
+    requisitos: '',
+    area: '',
+    modalidad: 'presencial',
+    ciudad: '',
+  });
+
+  async function cargarOfertas() {
+    if (ofertasLoaded) return;
+    const res = await fetch('/api/super-admin/ofertas');
+    const data = await res.json();
+    if (data.ofertas) setOfertas(data.ofertas);
+    setOfertasLoaded(true);
+  }
+
+  async function crearOferta() {
+    if (!ofertaForm.titulo.trim() || !ofertaForm.descripcion.trim()) return;
+    if (!ofertaForm.empresa_id && !ofertaForm.empresa_nombre.trim()) return;
+    setSubmittingOferta(true);
+    const res = await fetch('/api/super-admin/ofertas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(ofertaForm),
+    });
+    const data = await res.json();
+    if (data.oferta) {
+      setOfertas(prev => [data.oferta, ...prev]);
+      setCreandoOferta(false);
+      setOfertaForm({ empresa_id: '', empresa_nombre: '', titulo: '', descripcion: '', requisitos: '', area: '', modalidad: 'presencial', ciudad: '' });
+    }
+    setSubmittingOferta(false);
+  }
+
+  async function toggleOfertaEstado(o: OfertaAdmin) {
+    const nuevoEstado = o.estado === 'activa' ? 'cerrada' : 'activa';
+    const res = await fetch('/api/super-admin/ofertas', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: o.id, estado: nuevoEstado }),
+    });
+    const data = await res.json();
+    if (data.oferta) setOfertas(prev => prev.map(x => x.id === o.id ? data.oferta : x));
+  }
 
   // ── Taller state ────────────────────────────────────────────────────
   const [expandedTaller, setExpandedTaller] = useState<string | null>(null);
@@ -247,8 +301,9 @@ export default function SuperAdminClient({
             { key: 'talleres', label: 'Talleres', icon: <BookOpen size={15} />, count: talleres.length },
             { key: 'usuarios', label: 'Usuarios', icon: <Users size={15} />, count: usuarios.length },
             { key: 'empresas', label: 'Empresas', icon: <Building2 size={15} />, count: empresas.length },
+            { key: 'ofertas', label: 'Ofertas', icon: <Briefcase size={15} />, count: ofertas.length },
           ].map(t => (
-            <button key={t.key} onClick={() => setTab(t.key as any)}
+            <button key={t.key} onClick={() => { setTab(t.key as any); if (t.key === 'ofertas') cargarOfertas(); }}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${tab === t.key ? 'bg-white text-ink-800 shadow-sm' : 'text-ink-500 hover:text-ink-700'}`}>
               {t.icon} {t.label}
               <span className="badge bg-ink-200 text-ink-600 ml-1">{t.count}</span>
@@ -594,6 +649,161 @@ export default function SuperAdminClient({
 
                   </div>
                 )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── TAB: OFERTAS ───────────────────────────────────────────── */}
+        {tab === 'ofertas' && (
+          <div className="space-y-4">
+            {/* Botón nueva oferta */}
+            {!creandoOferta ? (
+              <button onClick={() => setCreandoOferta(true)} className="btn-primary flex items-center gap-2">
+                <Plus size={16} /> Nueva oferta
+              </button>
+            ) : (
+              <div className="card p-6 space-y-4">
+                <h3 className="font-semibold text-ink-800">Crear oferta laboral</h3>
+
+                {/* Empresa */}
+                <div>
+                  <label className="block text-xs font-semibold text-ink-500 uppercase tracking-wider mb-1">Empresa</label>
+                  <select
+                    value={ofertaForm.empresa_id}
+                    onChange={e => setOfertaForm(p => ({ ...p, empresa_id: e.target.value, empresa_nombre: '' }))}
+                    className="input mb-2"
+                  >
+                    <option value="">— Seleccionar empresa existente —</option>
+                    {empresas.map(e => <option key={e.id} value={e.id}>{e.nombre}</option>)}
+                  </select>
+                  {!ofertaForm.empresa_id && (
+                    <input
+                      placeholder="O escribí el nombre de la empresa (se crea automáticamente)"
+                      value={ofertaForm.empresa_nombre}
+                      onChange={e => setOfertaForm(p => ({ ...p, empresa_nombre: e.target.value }))}
+                      className="input"
+                    />
+                  )}
+                </div>
+
+                {/* Título */}
+                <div>
+                  <label className="block text-xs font-semibold text-ink-500 uppercase tracking-wider mb-1">Título *</label>
+                  <input
+                    placeholder="Ej: Operario de producción"
+                    value={ofertaForm.titulo}
+                    onChange={e => setOfertaForm(p => ({ ...p, titulo: e.target.value }))}
+                    className="input"
+                  />
+                </div>
+
+                {/* Descripción */}
+                <div>
+                  <label className="block text-xs font-semibold text-ink-500 uppercase tracking-wider mb-1">Descripción *</label>
+                  <textarea
+                    placeholder="Describí el puesto, responsabilidades y condiciones..."
+                    value={ofertaForm.descripcion}
+                    onChange={e => setOfertaForm(p => ({ ...p, descripcion: e.target.value }))}
+                    rows={4}
+                    className="input resize-none"
+                  />
+                </div>
+
+                {/* Requisitos */}
+                <div>
+                  <label className="block text-xs font-semibold text-ink-500 uppercase tracking-wider mb-1">Requisitos</label>
+                  <textarea
+                    placeholder="Experiencia, estudios, habilidades requeridas..."
+                    value={ofertaForm.requisitos}
+                    onChange={e => setOfertaForm(p => ({ ...p, requisitos: e.target.value }))}
+                    rows={2}
+                    className="input resize-none"
+                  />
+                </div>
+
+                {/* Fila: área, modalidad, ciudad */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-ink-500 uppercase tracking-wider mb-1">Área</label>
+                    <input
+                      placeholder="Ej: Producción"
+                      value={ofertaForm.area}
+                      onChange={e => setOfertaForm(p => ({ ...p, area: e.target.value }))}
+                      className="input"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-ink-500 uppercase tracking-wider mb-1">Modalidad</label>
+                    <select
+                      value={ofertaForm.modalidad}
+                      onChange={e => setOfertaForm(p => ({ ...p, modalidad: e.target.value }))}
+                      className="input"
+                    >
+                      <option value="presencial">Presencial</option>
+                      <option value="remoto">Remoto</option>
+                      <option value="hibrido">Híbrido</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-ink-500 uppercase tracking-wider mb-1">Ciudad</label>
+                    <input
+                      placeholder="Ej: Buenos Aires"
+                      value={ofertaForm.ciudad}
+                      onChange={e => setOfertaForm(p => ({ ...p, ciudad: e.target.value }))}
+                      className="input"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={crearOferta}
+                    disabled={submittingOferta || !ofertaForm.titulo.trim() || !ofertaForm.descripcion.trim()}
+                    className="btn-primary flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {submittingOferta ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                    Publicar oferta
+                  </button>
+                  <button onClick={() => setCreandoOferta(false)} className="btn-ghost">Cancelar</button>
+                </div>
+              </div>
+            )}
+
+            {/* Lista de ofertas */}
+            {ofertas.length === 0 && ofertasLoaded && (
+              <div className="card p-12 text-center">
+                <Briefcase size={36} className="mx-auto mb-3 text-ink-300" />
+                <p className="text-ink-400">No hay ofertas todavía.</p>
+              </div>
+            )}
+
+            {ofertas.map(o => (
+              <div key={o.id} className="card px-5 py-4 flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`badge text-xs ${o.estado === 'activa' ? 'bg-emerald-100 text-emerald-700' : 'bg-ink-100 text-ink-500'}`}>
+                      {o.estado}
+                    </span>
+                    <span className="text-ink-400 text-xs">{o._count.postulaciones} postulaciones</span>
+                  </div>
+                  <p className="font-semibold text-ink-800 truncate">{o.titulo}</p>
+                  <p className="text-brand-600 text-sm">{o.empresa.nombre}</p>
+                  <p className="text-ink-400 text-xs mt-0.5">
+                    {[o.ciudad, o.modalidad, o.area].filter(Boolean).join(' · ')}
+                    {' · '}{new Date(o.created_at).toLocaleDateString('es-AR')}
+                  </p>
+                </div>
+                <button
+                  onClick={() => toggleOfertaEstado(o)}
+                  className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex-shrink-0 ${
+                    o.estado === 'activa'
+                      ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                      : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                  }`}
+                >
+                  {o.estado === 'activa' ? 'Cerrar' : 'Activar'}
+                </button>
               </div>
             ))}
           </div>

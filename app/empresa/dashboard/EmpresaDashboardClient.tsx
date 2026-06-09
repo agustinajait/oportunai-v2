@@ -81,7 +81,7 @@ type Postulante = {
     alfa_digital: string | null; alfa_score: number | null;
     videos: { id: string; video_url: string; tipo: string; created_at: string }[];
   };
-  video: { id: string; video_url: string; tipo: string };
+  video: { id: string; video_url: string; tipo: string; section_attempts?: { nombre: string; intentos: number }[] | null };
   documentos?: { tipo: string; file_url: string }[];
 };
 
@@ -866,7 +866,27 @@ export default function EmpresaDashboard() {
 
             {/* Video CV genérico */}
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1">Video CV</p>
-            <video src={videoModal.video.video_url} controls autoPlay className="w-full rounded-xl mb-4" />
+            <video src={videoModal.video.video_url} controls autoPlay className="w-full rounded-xl mb-3" />
+
+            {/* Intentos por sección */}
+            {videoModal.video.section_attempts && videoModal.video.section_attempts.length > 0 && (
+              <div className="bg-gray-50 rounded-xl px-4 py-3 mb-4 border border-gray-100">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">Intentos por sección</p>
+                <div className="space-y-1.5">
+                  {videoModal.video.section_attempts.map((s, i) => (
+                    <div key={i} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-700">{s.nombre}</span>
+                      <span className={`font-semibold tabular-nums ${
+                        s.intentos === 1 ? 'text-emerald-600' :
+                        s.intentos === 2 ? 'text-amber-600' : 'text-red-500'
+                      }`}>
+                        {s.intentos} {s.intentos === 1 ? 'intento' : 'intentos'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Video específico (respuestas a preguntas) */}
             {videoModal.usuario.videos?.[0] && (

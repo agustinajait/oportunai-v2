@@ -45,7 +45,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             },
           },
         },
-        video: { select: { id: true, video_url: true, tipo: true, created_at: true } },
+        video: { select: { id: true, video_url: true, tipo: true, created_at: true, section_attempts: true } },
       },
       orderBy: { created_at: 'desc' },
     });

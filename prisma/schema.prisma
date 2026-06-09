@@ -104,9 +104,10 @@ model Video {
   modulo_id       String?
   modulo_nombre   String?
   duracion_seg    Int?
-  taller_id       String?
-  oferta_id       String?
-  created_at      DateTime  @default(now())
+  taller_id        String?
+  oferta_id        String?
+  section_attempts Json?
+  created_at       DateTime  @default(now())
 
   usuario       Usuario       @relation(fields: [user_id], references: [id], onDelete: Cascade)
   taller        Taller?       @relation(fields: [taller_id], references: [id], onDelete: SetNull)

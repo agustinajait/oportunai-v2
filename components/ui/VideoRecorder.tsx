@@ -4,9 +4,8 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import {
-  Video, Mic, Circle, Square,
-  ChevronRight, CheckCircle, AlertCircle, Loader2,
-  ArrowLeft, Clock, SkipForward
+  Video, Mic, Circle, Square, ChevronRight, CheckCircle, AlertCircle,
+  Loader2, ArrowLeft, Clock, SkipForward, RotateCcw
 } from 'lucide-react';
 import type { SessionPayload } from '@/lib/auth';
 
@@ -23,14 +22,28 @@ interface Modulo {
   orden: number;
 }
 
-type Stage = 'preview' | 'countdown' | 'recording' | 'between' | 'uploading' | 'done' | 'error';
+type Stage = 'preview' | 'countdown' | 'recording' | 'section_review' | 'between' | 'uploading' | 'done' | 'error';
 
-interface RecordedChunk {
-  moduloId: string;
-  moduloNombre: string;
-  orden: number;
-  blob: Blob;
-  duracion: number;
+function playBeep(freq = 660, duration = 0.12, vol = 0.25) {
+  try {
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
+  } catch {}
+}
+
+function getMimeType(): string {
+  if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) return 'video/webm;codecs=vp9,opus';
+  if (MediaRecorder.isTypeSupported('video/webm')) return 'video/webm';
+  return 'video/mp4';
 }
 
 export default function VideoRecorder({
@@ -39,12 +52,16 @@ export default function VideoRecorder({
   tipo,
   tallerId,
   tallerNombre,
+  ofertaId,
+  ofertaNombre,
 }: {
   modulos: Modulo[];
   session: SessionPayload;
   tipo: 'video_cv' | 'video_pitch';
   tallerId?: string;
   tallerNombre?: string;
+  ofertaId?: string;
+  ofertaNombre?: string;
 }) {
   const router = useRouter();
   const tituloVideo = tipo === 'video_cv' ? 'Video CV' : 'Video Pitch';
@@ -53,31 +70,35 @@ export default function VideoRecorder({
   const [moduloIdx, setModuloIdx] = useState(0);
   const [countdown, setCountdown] = useState(3);
   const [timeLeft, setTimeLeft] = useState(0);
-  const [accumulated, setAccumulated] = useState(0);
   const [uploadProgress, setUploadProgress] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [reviewUrl, setReviewUrl] = useState<string | null>(null);
+  const [sectionAttempts, setSectionAttempts] = useState<number[]>(modulos.map(() => 0));
+  const [camError, setCamError] = useState<string | null>(null);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const startTimeRef = useRef<number>(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<BlobPart[]>([]);
-  const recordedRef = useRef<RecordedChunk[]>([]);
+  const chunksRef = useRef<Blob[]>([]);
+  const confirmedBlobsRef = useRef<Blob[]>([]);
+  const currentBlobRef = useRef<Blob | null>(null);
+  const sectionAttemptsRef = useRef<number[]>(modulos.map(() => 0));
+  const moduloIdxRef = useRef(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const sectionEndCalledRef = useRef(false);
 
-  const [camError, setCamError] = useState<string | null>(null);
+  useEffect(() => { moduloIdxRef.current = moduloIdx; }, [moduloIdx]);
 
   const modulo = modulos[moduloIdx];
   const totalModulos = modulos.length;
-  const efectivaDuration = modulo ? modulo.duracion_base + accumulated : 0;
+  const efectivaDuration = modulo?.duracion_base ?? 0;
 
   const timerColor =
     timeLeft > efectivaDuration * 0.4 ? 'text-emerald-400' :
     timeLeft > efectivaDuration * 0.2 ? 'text-amber-400' : 'text-red-400';
-
   const progressPct = modulo ? ((efectivaDuration - timeLeft) / efectivaDuration) * 100 : 0;
 
-  // ── Cámara ──────────────────────────────────────────────────────
+  // ── Cámara ────────────────────────────────────────────────────────
   useEffect(() => {
     let active = true;
     (async () => {
@@ -106,122 +127,123 @@ export default function VideoRecorder({
     };
   }, []);
 
-  // ── Countdown ───────────────────────────────────────────────────
+  // ── Cleanup review URL ────────────────────────────────────────────
+  useEffect(() => {
+    return () => { if (reviewUrl) URL.revokeObjectURL(reviewUrl); };
+  }, [reviewUrl]);
+
+  // ── Countdown ─────────────────────────────────────────────────────
   useEffect(() => {
     if (stage !== 'countdown') return;
-    if (countdown === 0) { beginRecording(); return; }
+    if (countdown === 0) { beginSectionRecording(); return; }
+    playBeep(countdown === 1 ? 880 : 440, 0.1, 0.2);
     const t = setTimeout(() => setCountdown(c => c - 1), 1000);
     return () => clearTimeout(t);
   }, [stage, countdown]);
 
-  // ── Timer ───────────────────────────────────────────────────────
+  // ── Timer ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (stage !== 'recording') return;
+    sectionEndCalledRef.current = false;
     setTimeLeft(efectivaDuration);
-    startTimeRef.current = Date.now();
     timerRef.current = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(timerRef.current!);
-          stopModulo(true);
+          endCurrentSection();
           return 0;
         }
+        if (prev <= 4) playBeep(440, 0.08, 0.15);
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [stage, moduloIdx]);
+  }, [stage, moduloIdx, efectivaDuration]);
 
-  // ── Grabar ──────────────────────────────────────────────────────
-  const beginRecording = useCallback(() => {
+  // ── Iniciar grabación de la sección actual ────────────────────────
+  const beginSectionRecording = useCallback(() => {
     if (!streamRef.current) return;
+
+    const idx = moduloIdxRef.current;
+    const newAttempts = [...sectionAttemptsRef.current];
+    newAttempts[idx] = (newAttempts[idx] ?? 0) + 1;
+    sectionAttemptsRef.current = newAttempts;
+    setSectionAttempts([...newAttempts]);
+
     chunksRef.current = [];
-    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
-      ? 'video/webm;codecs=vp9,opus'
-      : MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
+    const mimeType = getMimeType();
     const recorder = new MediaRecorder(streamRef.current, { mimeType });
     recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+    recorder.onstop = () => {
+      const blob = new Blob(chunksRef.current, { type: mimeType });
+      currentBlobRef.current = blob;
+      const url = URL.createObjectURL(blob);
+      setReviewUrl(url);
+      setStage('section_review');
+    };
     recorder.start(250);
     recorderRef.current = recorder;
+    playBeep(880, 0.15, 0.3);
     setStage('recording');
   }, []);
 
-  const stopModulo = useCallback((byTimer = false) => {
+  // ── Terminar sección (tiempo o botón) ─────────────────────────────
+  const endCurrentSection = useCallback(() => {
+    if (sectionEndCalledRef.current) return;
+    sectionEndCalledRef.current = true;
     clearInterval(timerRef.current!);
     const recorder = recorderRef.current;
-    if (!recorder || recorder.state === 'inactive') return;
+    if (recorder && recorder.state !== 'inactive') recorder.stop();
+  }, []);
 
-    const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000);
-    const usedTime = Math.min(elapsed, efectivaDuration);
-    const leftover = efectivaDuration - usedTime;
-
-    recorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
-      const chunk: RecordedChunk = {
-        moduloId: modulo.id,
-        moduloNombre: modulo.nombre_modulo,
-        orden: modulo.orden,
-        blob,
-        duracion: usedTime,
-      };
-      recordedRef.current = [...recordedRef.current, chunk];
-
-      const nextIdx = moduloIdx + 1;
-      if (nextIdx >= totalModulos) {
-        setStage('uploading');
-        processAndUpload(recordedRef.current);
-      } else {
-        setAccumulated(byTimer ? 0 : leftover);
-        setModuloIdx(nextIdx);
-        setStage('between');
-      }
-    };
-    recorder.stop();
-  }, [modulo, moduloIdx, totalModulos, efectivaDuration]);
-
-  const startNextModulo = () => {
+  // ── Regrabar la misma sección ─────────────────────────────────────
+  const handleRegrabar = useCallback(() => {
+    currentBlobRef.current = null;
+    setReviewUrl(null);
     setCountdown(3);
     setStage('countdown');
-  };
+  }, []);
 
-  // ── Merge en browser + upload a Supabase ────────────────────────
-  const processAndUpload = async (chunks: RecordedChunk[]) => {
+  // ── Upload del video final ────────────────────────────────────────
+  const uploadFinalVideo = useCallback(async () => {
     try {
-      setUploadProgress('Uniendo fragmentos...');
+      setStage('uploading');
+      setUploadProgress('Procesando video...');
 
-      // Merge: concatenar todos los blobs en uno solo
-      const allBlobs = chunks.map(c => c.blob);
-      const mimeType = allBlobs[0].type || 'video/webm';
-      const mergedBlob = new Blob(allBlobs, { type: mimeType });
+      const blobs = confirmedBlobsRef.current.filter((b): b is Blob => b instanceof Blob);
+      if (blobs.length === 0) throw new Error('No hay video para subir');
+
+      const mimeType = blobs[0].type ?? 'video/webm';
+      const finalBlob = new Blob(blobs, { type: mimeType });
       const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+      const filename = `${session.userId}/${tipo}-${Date.now()}.${ext}`;
 
       setUploadProgress('Subiendo video...');
-
-      // Upload a Supabase Storage
-      const filename = `${session.userId}/${tipo}-${Date.now()}.${ext}`;
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('videos')
-        .upload(filename, mergedBlob, {
-          contentType: mimeType,
-          upsert: true,
-        });
+        .upload(filename, finalBlob, { contentType: mimeType, upsert: true });
 
       if (error) throw new Error(error.message);
 
-      // Obtener URL pública
       const { data: urlData } = supabase.storage.from('videos').getPublicUrl(filename);
-      const videoUrl = urlData.publicUrl;
 
-      setUploadProgress('Guardando en base de datos...');
+      setUploadProgress('Guardando...');
+      const attempts = sectionAttemptsRef.current;
+      const sectionData = modulos.map((m, i) => ({
+        nombre: m.nombre_modulo,
+        intentos: attempts[i] ?? 1,
+      }));
 
-      // Guardar en DB via API
       const res = await fetch('/api/videos/merge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tipo,
-          video_url: videoUrl,
+          video_url: urlData.publicUrl,
+          section_attempts: sectionData,
+          restart_count: 0,
           ...(tallerId ? { taller_id: tallerId } : {}),
+          ...(ofertaId ? { oferta_id: ofertaId } : {}),
         }),
       });
 
@@ -230,24 +252,56 @@ export default function VideoRecorder({
         throw new Error(j.error ?? 'Error al guardar el video');
       }
 
+      playBeep(880, 0.3, 0.3);
       setStage('done');
     } catch (err: any) {
       setUploadError(err.message);
       setStage('error');
     }
-  };
+  }, [session.userId, tipo, tallerId, ofertaId, modulos]);
 
-  const restart = () => {
-    recordedRef.current = [];
+  // ── Confirmar sección y avanzar ───────────────────────────────────
+  const handleContinuar = useCallback(async () => {
+    const blob = currentBlobRef.current;
+    if (!blob) return;
+
+    confirmedBlobsRef.current[moduloIdx] = blob;
+    currentBlobRef.current = null;
+    setReviewUrl(null);
+
+    const nextIdx = moduloIdx + 1;
+    if (nextIdx >= totalModulos) {
+      await uploadFinalVideo();
+    } else {
+      setModuloIdx(nextIdx);
+      setStage('between');
+    }
+  }, [moduloIdx, totalModulos, uploadFinalVideo]);
+
+  // ── Empezar de cero ───────────────────────────────────────────────
+  const restart = useCallback(() => {
+    const recorder = recorderRef.current;
+    if (recorder && recorder.state !== 'inactive') {
+      recorder.onstop = null;
+      recorder.stop();
+    }
+    recorderRef.current = null;
+    chunksRef.current = [];
+    confirmedBlobsRef.current = [];
+    currentBlobRef.current = null;
+    sectionAttemptsRef.current = modulos.map(() => 0);
+    setReviewUrl(null);
     setModuloIdx(0);
-    setAccumulated(0);
     setCountdown(3);
+    setUploadError(null);
+    setUploadProgress('');
+    setSectionAttempts(modulos.map(() => 0));
     setStage('preview');
-  };
+  }, [modulos]);
 
-  // ══════════════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════
   // RENDER
-  // ══════════════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════
   return (
     <div className="h-screen bg-ink-900 flex flex-col overflow-hidden">
 
@@ -264,12 +318,11 @@ export default function VideoRecorder({
             {tipo === 'video_cv' ? <Video size={13} className="text-white" /> : <Mic size={13} className="text-white" />}
           </div>
           <span className="text-white font-medium text-sm">{tituloVideo}</span>
-          {tallerNombre && <p className="text-white/40 text-xs">{tallerNombre}</p>}
+          {(tallerNombre || ofertaNombre) && <p className="text-white/40 text-xs">{tallerNombre ?? ofertaNombre}</p>}
         </div>
         {stage === 'recording' ? (
           <div className="flex items-center gap-1.5 text-red-400 text-sm font-medium">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            REC
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" /> REC
           </div>
         ) : <div className="w-16" />}
       </div>
@@ -280,37 +333,48 @@ export default function VideoRecorder({
           <AlertCircle size={48} className="text-red-400 mb-4" />
           <p className="text-white font-medium mb-2">Sin acceso a la cámara</p>
           <p className="text-white/50 text-sm max-w-sm mb-6">{camError}</p>
-          <button onClick={() => router.push('/dashboard')} className="btn-secondary text-sm">
-            Volver al dashboard
-          </button>
+          <button onClick={() => router.push('/dashboard')} className="btn-secondary text-sm">Volver al dashboard</button>
         </div>
       )}
 
       {!camError && (
-        <div className="relative flex-1 overflow-hidden">
+        <div className="relative flex-1 overflow-hidden bg-black">
 
-          {/* VIDEO */}
-          {(stage !== 'uploading' && stage !== 'done' && stage !== 'error') && (
+          {/* CÁMARA EN VIVO — visible excepto en section_review y estados finales */}
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+              stage === 'section_review' || stage === 'uploading' || stage === 'done' || stage === 'error'
+                ? 'opacity-0 pointer-events-none'
+                : 'opacity-100'
+            }`}
+            style={{ transform: 'scaleX(-1)' }}
+          />
+
+          {/* VIDEO GRABADO — reemplaza la cámara en section_review */}
+          {stage === 'section_review' && reviewUrl && (
             <video
-              ref={videoRef}
+              src={reviewUrl}
               autoPlay
               playsInline
-              muted
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ transform: 'scaleX(-1)' }}
+              controls
+              className="absolute inset-0 w-full h-full object-cover bg-black"
             />
           )}
 
           {/* Overlay oscuro */}
           {(stage === 'preview' || stage === 'between' || stage === 'countdown') && (
-            <div className="absolute inset-0 bg-black/50 z-10" />
+            <div className="absolute inset-0 bg-black/60 z-10" />
           )}
 
-          {/* PREVIEW */}
+          {/* ── PREVIEW INICIAL ─────────────────────────────────────── */}
           {stage === 'preview' && modulo && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center">
-              <div className="bg-black/70 backdrop-blur rounded-3xl p-8 max-w-sm w-full">
-                <p className="text-white/50 text-sm mb-1">{tituloVideo} · {totalModulos} módulos</p>
+              <div className="bg-black/80 backdrop-blur rounded-3xl p-8 max-w-sm w-full">
+                <p className="text-white/50 text-sm mb-1">{tituloVideo} · {totalModulos} secciones</p>
                 <h2 className="font-display text-2xl font-semibold text-white mb-6">¿Listo para grabar?</h2>
                 <div className="space-y-2 mb-6 text-left">
                   {modulos.map((m, i) => (
@@ -323,9 +387,7 @@ export default function VideoRecorder({
                     </div>
                   ))}
                 </div>
-                <p className="text-white/40 text-xs mb-6">
-                  Si terminás un módulo antes de tiempo, los segundos pasan al siguiente.
-                </p>
+                <p className="text-white/40 text-xs mb-5">Después de cada sección podrás ver tu grabación y decidir si la repetís.</p>
                 <button
                   onClick={() => { setCountdown(3); setStage('countdown'); }}
                   className="btn-primary w-full justify-center text-base py-3.5 rounded-2xl"
@@ -336,40 +398,44 @@ export default function VideoRecorder({
             </div>
           )}
 
-          {/* COUNTDOWN */}
-          {stage === 'countdown' && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center">
-              <p className="text-white/60 text-sm mb-4 font-medium uppercase tracking-widest">
-                Módulo {moduloIdx + 1}/{totalModulos} · {modulo?.nombre_modulo}
-              </p>
-              <div key={countdown} className="text-9xl font-display font-bold text-white" style={{ animation: 'scaleIn 0.3s ease' }}>
+          {/* ── COUNTDOWN ───────────────────────────────────────────── */}
+          {stage === 'countdown' && modulo && (
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6">
+              <div className="w-full max-w-sm mb-8 bg-brand-600/90 backdrop-blur rounded-2xl px-6 py-5 text-center">
+                <p className="text-brand-200 text-xs font-semibold uppercase tracking-widest mb-2">
+                  Sección {moduloIdx + 1}/{totalModulos} · {modulo.nombre_modulo}
+                </p>
+                <p className="text-white text-xl font-semibold leading-snug">{modulo.texto_guia}</p>
+              </div>
+              <div
+                key={countdown}
+                className="text-9xl font-display font-bold text-white drop-shadow-lg"
+                style={{ animation: 'scaleIn 0.3s ease' }}
+              >
                 {countdown === 0 ? '¡Ya!' : countdown}
               </div>
             </div>
           )}
 
-          {/* GRABANDO */}
+          {/* ── GRABANDO ────────────────────────────────────────────── */}
           {stage === 'recording' && modulo && (
             <div className="absolute inset-0 z-20 flex flex-col justify-between pointer-events-none">
-              <div className="m-4 bg-black/70 backdrop-blur-sm rounded-2xl px-5 py-4">
-                <div className="flex items-center justify-between mb-2">
+              <div className="m-4 bg-black/75 backdrop-blur-sm rounded-2xl px-5 py-4">
+                <div className="flex items-center justify-between mb-3">
                   <span className="text-brand-400 text-xs font-semibold uppercase tracking-widest">
                     {moduloIdx + 1}/{totalModulos} · {modulo.nombre_modulo}
                   </span>
-                  <div className={`flex items-center gap-1.5 font-mono font-bold text-lg ${timerColor}`}>
+                  <div className={`flex items-center gap-1.5 font-mono font-bold text-xl ${timerColor}`}>
                     <Clock size={16} /> {timeLeft}s
                   </div>
                 </div>
-                <p className="text-white text-sm leading-relaxed font-medium">{modulo.texto_guia}</p>
-                <div className="mt-3 h-1 bg-white/10 rounded-full overflow-hidden">
+                <p className="text-white text-lg font-semibold leading-snug">{modulo.texto_guia}</p>
+                <div className="mt-3 h-1.5 bg-white/10 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-1000 ${tipo === 'video_cv' ? 'bg-brand-500' : 'bg-emerald-500'}`}
                     style={{ width: `${progressPct}%` }}
                   />
                 </div>
-                {accumulated > 0 && (
-                  <p className="text-brand-300 text-xs mt-2">+{accumulated}s acumulados del módulo anterior</p>
-                )}
               </div>
 
               <div className="flex items-center justify-center gap-2 pb-4">
@@ -383,13 +449,13 @@ export default function VideoRecorder({
 
               <div className="mx-4 mb-6 flex gap-3 pointer-events-auto">
                 <button
-                  onClick={() => stopModulo(false)}
+                  onClick={endCurrentSection}
                   className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur text-white font-medium py-4 rounded-2xl transition-colors border border-white/20"
                 >
-                  <SkipForward size={18} /> Finalizar módulo
+                  <SkipForward size={18} /> Terminar sección
                 </button>
                 <button
-                  onClick={() => stopModulo(false)}
+                  onClick={endCurrentSection}
                   className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-colors flex-shrink-0"
                 >
                   <Square size={22} className="text-white" fill="white" />
@@ -398,35 +464,59 @@ export default function VideoRecorder({
             </div>
           )}
 
-          {/* ENTRE MÓDULOS */}
-          {stage === 'between' && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center">
-              <div className="bg-black/70 backdrop-blur rounded-3xl p-8 max-w-sm w-full">
-                <CheckCircle size={40} className="text-emerald-400 mx-auto mb-4" />
-                <p className="text-emerald-400 text-sm font-semibold mb-1 uppercase tracking-widest">
-                  Módulo {moduloIdx}/{totalModulos} completado
+          {/* ── REVIEW DE SECCIÓN ────────────────────────────────────── */}
+          {stage === 'section_review' && modulo && (
+            <div className="absolute inset-0 z-20 flex flex-col justify-end">
+              <div className="bg-gradient-to-t from-black via-black/80 to-transparent px-4 pt-16 pb-6">
+                <p className="text-white/50 text-xs font-semibold uppercase tracking-widest text-center mb-1">
+                  Sección {moduloIdx + 1}/{totalModulos} · {modulo.nombre_modulo}
                 </p>
-                <h3 className="font-display text-xl font-semibold text-white mb-3">
-                  {modulos[moduloIdx - 1]?.nombre_modulo} ✓
-                </h3>
-                {accumulated > 0 && (
-                  <div className="bg-brand-500/20 border border-brand-500/30 rounded-xl px-4 py-3 mb-4">
-                    <p className="text-brand-300 text-sm font-medium">+{accumulated}s → pasan al próximo</p>
-                  </div>
-                )}
-                <div className="bg-white/5 rounded-xl px-4 py-3 mb-6 text-left">
-                  <p className="text-white/40 text-xs uppercase tracking-widest mb-1">Próximo</p>
-                  <p className="text-white font-medium">{modulos[moduloIdx]?.nombre_modulo}</p>
-                  <p className="text-white/40 text-xs mt-0.5">{modulos[moduloIdx]?.duracion_base + accumulated}s disponibles</p>
+                <p className="text-white/40 text-sm text-center mb-5">
+                  ¿Cómo te fue? Mirá el video y decidí.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleRegrabar}
+                    className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur text-white font-medium py-4 rounded-2xl transition-colors border border-white/20"
+                  >
+                    <RotateCcw size={16} /> Regrabar
+                  </button>
+                  <button
+                    onClick={handleContinuar}
+                    className="flex-1 btn-primary py-4 rounded-2xl justify-center"
+                  >
+                    {moduloIdx + 1 < totalModulos ? 'Confirmar' : 'Confirmar y subir'}
+                    <ChevronRight size={16} />
+                  </button>
                 </div>
-                <button onClick={startNextModulo} className="btn-primary w-full justify-center py-3.5 rounded-2xl">
-                  Continuar <ChevronRight size={18} />
+              </div>
+            </div>
+          )}
+
+          {/* ── ENTRE SECCIONES ──────────────────────────────────────── */}
+          {stage === 'between' && modulo && (
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6">
+              <div className="w-full max-w-sm bg-black/80 backdrop-blur rounded-3xl p-7">
+                <p className="text-emerald-400 text-xs font-semibold uppercase tracking-widest mb-5">
+                  Sección {moduloIdx} confirmada ✓
+                </p>
+                <p className="text-white/40 text-xs uppercase tracking-widest mb-1">Próxima sección</p>
+                <p className="text-white font-semibold text-xl mb-3">{modulo.nombre_modulo}</p>
+                <div className="bg-brand-600/20 border border-brand-500/30 rounded-xl px-4 py-3 mb-5">
+                  <p className="text-brand-200 text-base leading-relaxed font-medium">{modulo.texto_guia}</p>
+                </div>
+                <p className="text-white/30 text-xs mb-5">{modulo.duracion_base}s · Vas a poder verlo antes de confirmar</p>
+                <button
+                  onClick={() => { setCountdown(3); setStage('countdown'); }}
+                  className="btn-primary w-full justify-center py-3.5 rounded-2xl"
+                >
+                  Comenzar sección <ChevronRight size={18} />
                 </button>
               </div>
             </div>
           )}
 
-          {/* UPLOADING */}
+          {/* ── SUBIENDO ─────────────────────────────────────────────── */}
           {stage === 'uploading' && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center bg-ink-900">
               <div className="w-20 h-20 rounded-full bg-brand-600/20 flex items-center justify-center mb-6">
@@ -438,17 +528,20 @@ export default function VideoRecorder({
             </div>
           )}
 
-          {/* DONE */}
+          {/* ── LISTO ────────────────────────────────────────────────── */}
           {stage === 'done' && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center bg-ink-900">
               <div className="w-20 h-20 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mb-6">
                 <CheckCircle size={40} className="text-emerald-400" />
               </div>
-              <h2 className="font-display text-2xl font-semibold text-white mb-2">¡{tituloVideo} grabado!</h2>
-              <p className="text-white/50 text-sm max-w-sm mb-8">Tu video está listo y ya podés compartirlo.</p>
+              <h2 className="font-display text-2xl font-semibold text-white mb-2">¡{tituloVideo} listo!</h2>
+              <p className="text-white/50 text-sm max-w-sm mb-8">Tu video fue generado y guardado correctamente.</p>
               <div className="space-y-3 w-full max-w-xs">
-                <button onClick={() => router.push('/dashboard')} className="btn-primary w-full justify-center py-3.5 rounded-2xl">
-                  Ver mi dashboard
+                <button
+                  onClick={() => router.push(ofertaId ? `/dashboard?tab=ofertas&oferta_id=${ofertaId}` : '/dashboard')}
+                  className="btn-primary w-full justify-center py-3.5 rounded-2xl"
+                >
+                  {ofertaId ? 'Volver y postularme' : 'Ver mi dashboard'}
                 </button>
                 <button onClick={restart} className="w-full text-white/50 hover:text-white text-sm py-2.5 transition-colors">
                   Volver a grabar
@@ -457,17 +550,18 @@ export default function VideoRecorder({
             </div>
           )}
 
-          {/* ERROR */}
+          {/* ── ERROR ────────────────────────────────────────────────── */}
           {stage === 'error' && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center bg-ink-900">
               <AlertCircle size={48} className="text-red-400 mb-4" />
               <h2 className="font-display text-xl font-semibold text-white mb-2">Error al subir</h2>
               <p className="text-white/50 text-sm mb-6">{uploadError}</p>
-              <button onClick={() => processAndUpload(recordedRef.current)} className="btn-primary justify-center">
+              <button onClick={uploadFinalVideo} className="btn-primary justify-center">
                 Reintentar
               </button>
             </div>
           )}
+
         </div>
       )}
 

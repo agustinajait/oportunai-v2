@@ -7,6 +7,7 @@ import DashboardClient from './DashboardClient';
 export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect('/login');
+  if (session.role === 'empleador') redirect('/empresa/dashboard');
 
   const [usuario, tallersAsignados] = await Promise.all([
     prisma.usuario.findUnique({
@@ -19,6 +20,9 @@ export default async function DashboardPage() {
         bio: true,
         slug: true,
         role: true,
+        cv_datos: true,
+        alfa_digital: true,
+        alfa_score: true,
         created_at: true,
         videos: {
           where: { es_fragmento: false },

@@ -8,7 +8,7 @@ export default async function SuperAdminPage() {
   const session = await getSession();
   if (!session || session.role !== 'super_admin') redirect('/dashboard');
 
-  const [talleres, usuarios] = await Promise.all([
+  const [talleres, usuarios, empresas] = await Promise.all([
     prisma.taller.findMany({
       orderBy: { created_at: 'desc' },
       include: {
@@ -34,7 +34,24 @@ export default async function SuperAdminPage() {
         _count: { select: { videos: true } },
       },
     }),
+    prisma.empresa.findMany({
+      orderBy: { created_at: 'desc' },
+      include: {
+        miembros: {
+          include: {
+            usuario: {
+              select: { id: true, nombre_completo: true, email: true, telefono: true, role: true },
+            },
+          },
+        },
+        _count: { select: { ofertas: true } },
+        ofertas: {
+          orderBy: { created_at: 'desc' },
+          select: { id: true, titulo: true, estado: true, created_at: true, _count: { select: { postulaciones: true } } },
+        },
+      },
+    }),
   ]);
 
-  return <SuperAdminClient talleres={talleres as any} usuarios={usuarios as any} session={session} />;
+  return <SuperAdminClient talleres={talleres as any} usuarios={usuarios as any} empresas={empresas as any} session={session} />;
 }

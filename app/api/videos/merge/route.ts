@@ -9,23 +9,35 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { tipo, video_url, taller_id } = body;
+    const { tipo, video_url, taller_id, oferta_id, section_attempts, restart_count } = body;
 
     if (!tipo || !['video_cv', 'video_pitch'].includes(tipo)) {
-      return NextResponse.json({ error: 'tipo invÃ¡lido' }, { status: 400 });
+      return NextResponse.json({ error: 'tipo inválido' }, { status: 400 });
     }
-
     if (!video_url) {
       return NextResponse.json({ error: 'video_url requerida' }, { status: 400 });
     }
 
-    // Borrar video final anterior del mismo tipo
+    // Incrementar grabaciones_cv con el total de intentos de la sesión
+    if (tipo === 'video_cv' && !taller_id && !oferta_id) {
+      const totalIntentos = Array.isArray(section_attempts)
+        ? section_attempts.reduce((sum: number, s: any) => sum + (s.intentos ?? 1), 0)
+        : (restart_count ?? 0) + 1;
+
+      await prisma.usuario.update({
+        where: { id: session.userId },
+        data: { grabaciones_cv: { increment: totalIntentos } },
+      });
+    }
+
+    // Borrar video final anterior del mismo tipo/contexto
     await prisma.video.deleteMany({
       where: {
         user_id: session.userId,
         tipo: tipo as 'video_cv' | 'video_pitch',
         es_fragmento: false,
         taller_id: taller_id ?? null,
+        oferta_id: oferta_id ?? null,
       },
     });
 
@@ -37,7 +49,11 @@ export async function POST(req: NextRequest) {
         video_url,
         es_fragmento: false,
         taller_id: taller_id ?? undefined,
-        modulo_nombre: `${tipo === 'video_cv' ? 'Video CV' : 'Video Pitch'} â€” Final`,
+        oferta_id: oferta_id ?? undefined,
+        modulo_nombre: oferta_id
+          ? 'Video específico — Oferta'
+          : `${tipo === 'video_cv' ? 'Video CV' : 'Video Pitch'} — Final`,
+        section_attempts: section_attempts ?? undefined,
       },
     });
 
@@ -47,4 +63,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err.message ?? 'Error al guardar el video' }, { status: 500 });
   }
 }
-

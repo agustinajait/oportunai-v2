@@ -40,9 +40,11 @@ export default async function VideoCVPage({ params }: Props) {
       nombre_completo: true,
       bio: true,
       slug: true,
+      alfa_digital: true,
       email: true,
       telefono: true,
       direccion: true,
+      cv_datos: true,
       videos: {
         where: { tipo: 'video_cv', es_fragmento: false },
         orderBy: { created_at: 'desc' },

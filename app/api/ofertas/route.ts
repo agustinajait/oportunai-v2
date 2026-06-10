@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
     const body = await req.json();
-    const { titulo, descripcion, requisitos, area, modalidad, ciudad, mensaje_whatsapp } = body;
+    const { titulo, descripcion, requisitos, area, modalidad, ciudad, mensaje_whatsapp, docs_requeridos, preguntas_videocv } = body;
     if (!titulo || !descripcion) {
       return NextResponse.json({ error: 'Titulo y descripcion son requeridos' }, { status: 400 });
     }
@@ -56,6 +56,8 @@ export async function POST(req: NextRequest) {
         ciudad: ciudad || null,
         estado: 'activa',
         mensaje_whatsapp: mensaje_whatsapp || null,
+        docs_requeridos: docs_requeridos || [],
+        preguntas_videocv: preguntas_videocv || [],
       },
     });
     return NextResponse.json({ ok: true, oferta });

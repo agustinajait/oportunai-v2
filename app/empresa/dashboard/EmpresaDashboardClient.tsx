@@ -781,25 +781,32 @@ export default function EmpresaDashboard() {
                 <p className="text-gray-400">No hay postulantes en este estado</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {postulanteFiltrados.map(p => {
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                {/* Header tabla */}
+                <div className="hidden md:grid grid-cols-[180px_1fr_auto_160px] gap-4 px-4 py-2 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-400 uppercase tracking-wide">
+                  <span>Video CV</span>
+                  <span>Candidato</span>
+                  <span>Docs</span>
+                  <span>Estado</span>
+                </div>
+
+                {postulanteFiltrados.map((p, idx) => {
                   const pipelineInfo = getPipelineInfo(p.estado);
                   const Icon = pipelineInfo.icon;
                   const edad = calcularEdad(p.usuario.fecha_nacimiento);
                   const ciudad = p.usuario.direccion?.split(',').slice(-2).join(',').trim() || '';
                   return (
-                    <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                    <div key={p.id} className={`flex md:grid md:grid-cols-[180px_1fr_auto_160px] gap-4 items-center px-4 py-3 ${idx !== postulanteFiltrados.length - 1 ? 'border-b border-gray-100' : ''} hover:bg-gray-50 transition-colors`}>
+
+                      {/* Thumbnail video */}
                       <div
-                        className="relative bg-gray-900 cursor-pointer group"
-                        style={{ aspectRatio: '16/10' }}
-                        onClick={() => {
-                          setVideoModal(p);
-                          if (p.estado === 'pendiente') cambiarEstado(p.id, 'visto');
-                        }}
+                        className="relative bg-gray-900 rounded-xl overflow-hidden cursor-pointer group flex-shrink-0"
+                        style={{ width: 180, height: 101 }}
+                        onClick={() => { setVideoModal(p); if (p.estado === 'pendiente') cambiarEstado(p.id, 'visto'); }}
                       >
                         <video
                           src={p.video.video_url}
-                          className="w-full h-full object-cover transition-opacity group-hover:opacity-100 opacity-90"
+                          className="w-full h-full object-cover"
                           preload="metadata"
                           muted
                           playsInline
@@ -807,68 +814,77 @@ export default function EmpresaDashboard() {
                           onMouseEnter={e => (e.currentTarget as HTMLVideoElement).play().catch(() => {})}
                           onMouseLeave={e => { const v = e.currentTarget as HTMLVideoElement; v.pause(); v.currentTime = 0; }}
                         />
-                        {/* Play overlay — se oculta al hacer hover */}
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity group-hover:opacity-0">
-                          <div className="w-14 h-14 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
-                            <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[20px] border-l-white border-b-[10px] border-b-transparent ml-1" />
+                        <div className="absolute inset-0 flex items-center justify-center transition-opacity group-hover:opacity-0 pointer-events-none">
+                          <div className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                            <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[12px] border-l-white border-b-[6px] border-b-transparent ml-0.5" />
                           </div>
                         </div>
-                        {/* Hint texto al hover */}
-                        <div className="absolute inset-0 flex items-end justify-center pb-3 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span className="text-white text-xs bg-black/50 px-3 py-1 rounded-full">Click para ver completo</span>
-                        </div>
-                        <div className={`absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full ${pipelineInfo.color}`}>
-                          <Icon size={10} />
-                          {pipelineInfo.label}
+                        <div className="absolute bottom-1.5 right-1.5 pointer-events-none">
+                          <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${pipelineInfo.color}`}>
+                            <Icon size={9} />{pipelineInfo.label}
+                          </span>
                         </div>
                       </div>
 
-                      <div className="p-4">
-                        <h3 className="font-semibold text-gray-900">{p.usuario.nombre_completo}</h3>
-                        <div className="flex gap-2 text-xs text-gray-400 mt-1 mb-2">
-                          {edad && <span>🎂 {edad}</span>}
+                      {/* Info candidato */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-semibold text-gray-900 text-sm">{p.usuario.nombre_completo}</h3>
+                          {p.usuario.alfa_digital && (
+                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                              {p.usuario.alfa_digital === 'Perfil nativo digital' ? '🚀' : p.usuario.alfa_digital === 'Usuario digital activo' ? '⚡' : '🌱'}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex gap-3 text-xs text-gray-400 mt-0.5">
+                          {edad && <span>{edad}</span>}
                           {ciudad && <span>📍 {ciudad}</span>}
                         </div>
-                        {p.usuario.bio && <p className="text-xs text-gray-500 line-clamp-2 mb-2">{p.usuario.bio}</p>}
-                        {p.usuario.alfa_digital && (
-                          <span className="inline-block text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full mb-2">
-                            {p.usuario.alfa_digital === 'Perfil nativo digital' ? '🚀' : p.usuario.alfa_digital === 'Usuario digital activo' ? '⚡' : '🌱'} {p.usuario.alfa_digital}
-                          </span>
-                        )}
+                        {p.usuario.bio && <p className="text-xs text-gray-500 line-clamp-1 mt-1">{p.usuario.bio}</p>}
+                        <div className="flex gap-2 mt-2">
+                          <a href={`/u/${p.usuario.slug}/cv`} target="_blank"
+                            className="text-xs border border-blue-200 text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-50">
+                            Ver perfil
+                          </a>
+                          {ofertaSeleccionada?.mensaje_whatsapp && p.usuario.telefono && (
+                            <a href={whatsappUrl(p.usuario.telefono, ofertaSeleccionada.mensaje_whatsapp, p.usuario.nombre_completo)}
+                              target="_blank" className="text-xs bg-green-500 text-white px-2 py-1 rounded-lg hover:bg-green-600">
+                              WhatsApp
+                            </a>
+                          )}
+                        </div>
+                      </div>
 
-                        {ofertaSeleccionada?.docs_requeridos?.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mb-3">
-                            {ofertaSeleccionada.docs_requeridos.map(tipo => {
+                      {/* Documentos */}
+                      <div className="hidden md:flex flex-col gap-1">
+                        {ofertaSeleccionada?.docs_requeridos?.length > 0
+                          ? ofertaSeleccionada.docs_requeridos.map(tipo => {
                               const tipoBase = parseDocTipo(tipo);
                               const tieneDoc = p.documentos?.some(d => d.tipo === tipoBase);
                               const doc = p.documentos?.find(d => d.tipo === tipoBase);
                               const label = parseDocLabel(tipo);
                               return (
-                                <span key={tipo} className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${tieneDoc ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-600'}`}>
-                                  {tieneDoc ? <Check size={10} /> : <X size={10} />}
+                                <span key={tipo} className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 whitespace-nowrap ${tieneDoc ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-500'}`}>
+                                  {tieneDoc ? <Check size={9} /> : <X size={9} />}
                                   {tieneDoc && doc ? <a href={doc.file_url} target="_blank" className="hover:underline">{label}</a> : label}
                                 </span>
                               );
-                            })}
-                          </div>
-                        )}
+                            })
+                          : <span className="text-xs text-gray-300">—</span>
+                        }
+                      </div>
 
-                        <div className="flex gap-2 mb-3">
-                          <a href={`/u/${p.usuario.slug}/cv`} target="_blank"
-                            className="flex-1 text-center border border-blue-200 text-blue-600 py-1.5 rounded-lg text-xs hover:bg-blue-50">Ver perfil</a>
-                          {ofertaSeleccionada?.mensaje_whatsapp && (
-                            <a href={whatsappUrl(p.usuario.telefono, ofertaSeleccionada.mensaje_whatsapp, p.usuario.nombre_completo)}
-                              target="_blank" className="flex-1 text-center bg-green-500 text-white py-1.5 rounded-lg text-xs hover:bg-green-600">
-                              📱 WhatsApp
-                            </a>
-                          )}
-                        </div>
-
-                        <select value={p.estado} onChange={e => cambiarEstado(p.id, e.target.value)}
-                          className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      {/* Estado */}
+                      <div className="hidden md:block">
+                        <select
+                          value={p.estado}
+                          onChange={e => cambiarEstado(p.id, e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
                           {PIPELINE.map(s => <option key={s.estado} value={s.estado}>{s.label}</option>)}
                         </select>
                       </div>
+
                     </div>
                   );
                 })}

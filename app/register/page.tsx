@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Sparkles, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { registerSchema, RegisterInput } from '@/lib/validations';
 
 export default function RegisterPage() {
@@ -33,9 +33,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-9 h-9 bg-brand-600 rounded-xl flex items-center justify-center">
-              <Sparkles size={18} className="text-white" />
-            </div>
+            <img src="/logo.svg" alt="Oportunai" className="w-9 h-9" />
             <span className="font-display text-2xl font-semibold text-ink-800">Oportunai</span>
           </Link>
           <h1 className="font-display text-3xl font-light text-ink-900 mb-1">Creá tu perfil</h1>

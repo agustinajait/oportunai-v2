@@ -781,7 +781,7 @@ export default function EmpresaDashboard() {
                 <p className="text-gray-400">No hay postulantes en este estado</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {postulanteFiltrados.map(p => {
                   const pipelineInfo = getPipelineInfo(p.estado);
                   const Icon = pipelineInfo.icon;
@@ -789,13 +789,17 @@ export default function EmpresaDashboard() {
                   const ciudad = p.usuario.direccion?.split(',').slice(-2).join(',').trim() || '';
                   return (
                     <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                      <div className="relative bg-gray-900 aspect-video cursor-pointer" onClick={() => {
-                        setVideoModal(p);
-                        if (p.estado === 'pendiente') cambiarEstado(p.id, 'visto');
-                      }}>
+                      <div
+                        className="relative bg-gray-900 cursor-pointer group"
+                        style={{ aspectRatio: '16/10' }}
+                        onClick={() => {
+                          setVideoModal(p);
+                          if (p.estado === 'pendiente') cambiarEstado(p.id, 'visto');
+                        }}
+                      >
                         <video
                           src={p.video.video_url}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover transition-opacity group-hover:opacity-100 opacity-90"
                           preload="metadata"
                           muted
                           playsInline
@@ -803,10 +807,15 @@ export default function EmpresaDashboard() {
                           onMouseEnter={e => (e.currentTarget as HTMLVideoElement).play().catch(() => {})}
                           onMouseLeave={e => { const v = e.currentTarget as HTMLVideoElement; v.pause(); v.currentTime = 0; }}
                         />
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
-                            <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[16px] border-l-white border-b-[8px] border-b-transparent ml-1" />
+                        {/* Play overlay — se oculta al hacer hover */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity group-hover:opacity-0">
+                          <div className="w-14 h-14 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+                            <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[20px] border-l-white border-b-[10px] border-b-transparent ml-1" />
                           </div>
+                        </div>
+                        {/* Hint texto al hover */}
+                        <div className="absolute inset-0 flex items-end justify-center pb-3 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="text-white text-xs bg-black/50 px-3 py-1 rounded-full">Click para ver completo</span>
                         </div>
                         <div className={`absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full ${pipelineInfo.color}`}>
                           <Icon size={10} />

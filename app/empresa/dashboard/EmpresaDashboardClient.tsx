@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2, Pencil, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2, Pencil, ToggleLeft, ToggleRight, Globe, Copy, ExternalLink } from 'lucide-react';
 
 const DOCS_CONFIG = [
   { tipo: 'dni', label: 'DNI' },
@@ -99,6 +99,7 @@ export default function EmpresaDashboard() {
   const [empresa, setEmpresa] = useState<Empresa | null>(null);
   const [loading, setLoading] = useState(false);
   const [perfilGuardado, setPerfilGuardado] = useState(false);
+  const [linkCopiado, setLinkCopiado] = useState(false);
   const [videoModal, setVideoModal] = useState<Postulante | null>(null);
   const [filtroEstado, setFiltroEstado] = useState<string>('todos');
   const [filtroEdadMin, setFiltroEdadMin] = useState<string>('');
@@ -195,6 +196,15 @@ export default function EmpresaDashboard() {
       body: JSON.stringify({ postulacion_id, estado }),
     });
     setPostulantes(prev => prev.map(p => p.id === postulacion_id ? { ...p, estado } : p));
+  }
+
+  function copiarLink() {
+    if (!empresa?.slug) return;
+    const url = `${window.location.origin}/empresa/${empresa.slug}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setLinkCopiado(true);
+      setTimeout(() => setLinkCopiado(false), 2000);
+    });
   }
 
   async function crearOferta() {
@@ -350,6 +360,45 @@ export default function EmpresaDashboard() {
           </div>
           <button onClick={() => setTab('nueva')} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">+ Nueva oferta</button>
         </div>
+
+        {/* Banner página pública */}
+        {empresa?.slug && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 mb-6">
+            <div className="flex items-center gap-2 min-w-0">
+              <Globe size={15} className="text-teal-600 flex-shrink-0" />
+              <span className="text-sm text-teal-800 font-medium flex-shrink-0">Tu página pública:</span>
+              <a
+                href={`/empresa/${empresa.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-teal-600 hover:underline font-mono truncate flex items-center gap-1"
+              >
+                oportunai.com/empresa/{empresa.slug}
+                <ExternalLink size={12} className="flex-shrink-0" />
+              </a>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={copiarLink}
+                className="flex items-center gap-1.5 text-sm border border-teal-300 text-teal-700 px-3 py-1.5 rounded-lg hover:bg-teal-100 transition-colors"
+              >
+                <Copy size={13} />
+                {linkCopiado ? '¡Copiado!' : 'Copiar link'}
+              </button>
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(`Mirá nuestras ofertas de trabajo en ${empresa.nombre}: ${typeof window !== 'undefined' ? window.location.origin : ''}/empresa/${empresa.slug}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-sm bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 transition-colors"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+                Compartir
+              </a>
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-1 mb-6 bg-white border border-gray-200 rounded-lg p-1 w-fit">
           {tabs.map(t => (
@@ -799,7 +848,52 @@ export default function EmpresaDashboard() {
 
         {/* Tab: Perfil */}
         {tab === 'perfil' && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6 max-w-xl">
+          <div className="space-y-5 max-w-xl">
+            {/* Card página pública */}
+            {empresa?.slug && (
+              <div className="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <Globe size={15} className="text-teal-600" /> Página pública de tu empresa
+                </h3>
+                <p className="text-xs text-gray-500 mb-3">
+                  Esta es la página que podés compartir con candidatos. Mostrá todas tus ofertas activas y el perfil de tu empresa.
+                </p>
+                <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 mb-3">
+                  <span className="text-xs font-mono text-gray-600 flex-1 truncate">
+                    {typeof window !== 'undefined' ? window.location.origin : 'https://oportunai.com'}/empresa/{empresa.slug}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <a
+                    href={`/empresa/${empresa.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs border border-gray-200 text-gray-600 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <ExternalLink size={12} /> Ver página
+                  </a>
+                  <button
+                    onClick={copiarLink}
+                    className="flex items-center gap-1.5 text-xs border border-teal-300 text-teal-700 px-3 py-2 rounded-lg hover:bg-teal-50 transition-colors"
+                  >
+                    <Copy size={12} /> {linkCopiado ? '¡Copiado!' : 'Copiar link'}
+                  </button>
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(`Mirá nuestras ofertas de trabajo: ${typeof window !== 'undefined' ? window.location.origin : ''}/empresa/${empresa.slug}`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                    </svg>
+                    Compartir por WhatsApp
+                  </a>
+                </div>
+              </div>
+            )}
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-5">Perfil de empresa</h2>
             <div className="space-y-4">
               <div>
@@ -838,6 +932,7 @@ export default function EmpresaDashboard() {
                 {perfilGuardado ? '✓ Guardado' : loading ? 'Guardando...' : 'Guardar cambios'}
               </button>
             </div>
+          </div>
           </div>
         )}
       </div>

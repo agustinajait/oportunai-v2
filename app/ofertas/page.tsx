@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { Building2, MapPin, Briefcase, ChevronRight, Sparkles, ArrowLeft } from 'lucide-react';
+import { Building2, MapPin, Briefcase, ChevronRight, ArrowLeft } from 'lucide-react';
 
 const MODALIDAD_LABEL: Record<string, string> = {
   presencial: 'Presencial',
@@ -21,9 +21,7 @@ export default async function OfertasPage() {
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-            <Sparkles size={16} className="text-white" />
-          </div>
+          <img src="/logo.svg" alt="Oportunai" className="w-8 h-8" />
           <span className="font-display text-xl font-semibold text-ink-800">Oportunai</span>
         </Link>
         <div className="flex items-center gap-3">

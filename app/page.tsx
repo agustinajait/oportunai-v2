@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Video, Mic, Share2, ChevronRight, Sparkles, Building2, MapPin, Briefcase } from 'lucide-react';
+import { Video, Mic, Share2, ChevronRight, Building2, MapPin, Briefcase } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 
 const MODALIDAD_LABEL: Record<string, string> = {
@@ -20,9 +20,7 @@ export default async function LandingPage() {
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-            <Sparkles size={16} className="text-white" />
-          </div>
+          <img src="/logo.svg" alt="Oportunai" className="w-8 h-8" />
           <span className="font-display text-xl font-semibold text-ink-800">Oportunai</span>
         </div>
         <div className="flex items-center gap-3">
@@ -42,7 +40,7 @@ export default async function LandingPage() {
       {/* Hero */}
       <section className="max-w-6xl mx-auto px-6 pt-16 pb-24 text-center">
         <div className="inline-flex items-center gap-2 bg-brand-50 text-brand-700 text-sm font-medium px-4 py-1.5 rounded-full mb-8 border border-brand-200 animate-fade-in">
-          <Sparkles size={13} />
+          <img src="/logo.svg" alt="" className="w-3.5 h-3.5" />
           <span>Plataforma de capacitación laboral</span>
         </div>
 

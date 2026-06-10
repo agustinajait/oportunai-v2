@@ -46,10 +46,9 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
   const isCv     = tipo === 'cv';
   const firstName = usuario.nombre_completo.split(' ')[0];
 
-  // Build the profile URL dynamically (works on server and client)
-  const profileUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/u/${usuario.slug}/${tipo}`
-    : `/u/${usuario.slug}/${tipo}`;
+  // Build the profile URL using the configured app URL (avoids showing vercel deploy URLs)
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? (typeof window !== 'undefined' ? window.location.origin : '');
+  const profileUrl = `${appUrl}/u/${usuario.slug}/${tipo}`;
 
   const shareTitle = isCv
     ? `Video CV de ${usuario.nombre_completo}`

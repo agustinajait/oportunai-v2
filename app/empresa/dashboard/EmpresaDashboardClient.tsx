@@ -198,9 +198,11 @@ export default function EmpresaDashboard() {
     setPostulantes(prev => prev.map(p => p.id === postulacion_id ? { ...p, estado } : p));
   }
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? (typeof window !== 'undefined' ? window.location.origin : '');
+
   function copiarLink() {
     if (!empresa?.slug) return;
-    const url = `${window.location.origin}/empresa/${empresa.slug}`;
+    const url = `${appUrl}/empresa/${empresa.slug}`;
     navigator.clipboard.writeText(url).then(() => {
       setLinkCopiado(true);
       setTimeout(() => setLinkCopiado(false), 2000);
@@ -373,7 +375,7 @@ export default function EmpresaDashboard() {
                 rel="noopener noreferrer"
                 className="text-sm text-teal-600 hover:underline font-mono truncate flex items-center gap-1"
               >
-                oportunai.com/empresa/{empresa.slug}
+                {appUrl.replace(/https?:\/\//, '')}/empresa/{empresa.slug}
                 <ExternalLink size={12} className="flex-shrink-0" />
               </a>
             </div>
@@ -386,7 +388,7 @@ export default function EmpresaDashboard() {
                 {linkCopiado ? '¡Copiado!' : 'Copiar link'}
               </button>
               <a
-                href={`https://wa.me/?text=${encodeURIComponent(`Mirá nuestras ofertas de trabajo en ${empresa.nombre}: ${typeof window !== 'undefined' ? window.location.origin : ''}/empresa/${empresa.slug}`)}`}
+                href={`https://wa.me/?text=${encodeURIComponent(`Mirá nuestras ofertas de trabajo en ${empresa.nombre}: ${appUrl}/empresa/${empresa.slug}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 text-sm bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 transition-colors"
@@ -860,7 +862,7 @@ export default function EmpresaDashboard() {
                 </p>
                 <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 mb-3">
                   <span className="text-xs font-mono text-gray-600 flex-1 truncate">
-                    {typeof window !== 'undefined' ? window.location.origin : 'https://oportunai.com'}/empresa/{empresa.slug}
+                    {appUrl.replace(/https?:\/\//, '')}/empresa/{empresa.slug}
                   </span>
                 </div>
                 <div className="flex gap-2">
@@ -879,7 +881,7 @@ export default function EmpresaDashboard() {
                     <Copy size={12} /> {linkCopiado ? '¡Copiado!' : 'Copiar link'}
                   </button>
                   <a
-                    href={`https://wa.me/?text=${encodeURIComponent(`Mirá nuestras ofertas de trabajo: ${typeof window !== 'undefined' ? window.location.origin : ''}/empresa/${empresa.slug}`)}`}
+                    href={`https://wa.me/?text=${encodeURIComponent(`Mirá nuestras ofertas de trabajo: ${appUrl}/empresa/${empresa.slug}`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 text-xs bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition-colors"

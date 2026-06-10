@@ -16,6 +16,7 @@ import {
   BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck
 } from 'lucide-react';
 import OfertasTab from '@/components/ui/OfertasTab';
+import VideoThumbnail from '@/components/ui/VideoThumbnail';
 
 interface VideoItem {
   id: string; tipo: string; video_url: string; created_at: string;
@@ -600,18 +601,11 @@ export default function DashboardClient({
                   <div className="space-y-3">
                     {usuario.videos.filter(v => v.taller).map(v => (
                       <div key={v.id} className="flex items-center gap-3 bg-ink-50 rounded-xl p-3">
-                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${v.tipo === 'video_cv' ? 'bg-brand-100' : 'bg-emerald-100'}`}>
-                          {v.tipo === 'video_cv'
-                            ? <Video size={16} className="text-brand-600" />
-                            : <Mic size={16} className="text-emerald-600" />}
-                        </div>
+                        <VideoThumbnail src={v.video_url} size="sm" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-ink-700">{v.tipo === 'video_cv' ? 'Video CV' : 'Video Pitch'}</p>
                           <p className="text-xs text-ink-400 truncate">{v.taller?.nombre} · {new Date(v.created_at).toLocaleDateString('es-AR')}</p>
                         </div>
-                        <a href={v.video_url} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 flex-shrink-0">
-                          <ExternalLink size={15} />
-                        </a>
                       </div>
                     ))}
                   </div>

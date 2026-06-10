@@ -793,8 +793,17 @@ export default function EmpresaDashboard() {
                         setVideoModal(p);
                         if (p.estado === 'pendiente') cambiarEstado(p.id, 'visto');
                       }}>
-                        <video src={p.video.video_url} className="w-full h-full object-cover opacity-80" />
-                        <div className="absolute inset-0 flex items-center justify-center">
+                        <video
+                          src={p.video.video_url}
+                          className="w-full h-full object-cover"
+                          preload="metadata"
+                          muted
+                          playsInline
+                          loop
+                          onMouseEnter={e => (e.currentTarget as HTMLVideoElement).play().catch(() => {})}
+                          onMouseLeave={e => { const v = e.currentTarget as HTMLVideoElement; v.pause(); v.currentTime = 0; }}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
                             <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[16px] border-l-white border-b-[8px] border-b-transparent ml-1" />
                           </div>

@@ -8,6 +8,7 @@ import {
   Loader2, ChevronDown, ChevronUp, Clock, FileText
 } from 'lucide-react';
 import { SessionPayload } from '@/lib/auth';
+import VideoThumbnail from '@/components/ui/VideoThumbnail';
 
 interface ConfigItem {
   id: string; tipo_video: string; nombre_modulo: string;
@@ -17,6 +18,7 @@ interface UsuarioRow {
   id: string; nombre_completo: string; email: string; dni: string;
   role: string; slug: string; created_at: string;
   _count: { videos: number; archivos: number };
+  videos: { video_url: string }[];
 }
 
 export default function AdminClient({
@@ -204,30 +206,35 @@ export default function AdminClient({
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-ink-50 text-ink-400 font-medium">
-                    <th className="text-left px-6 py-3">Nombre</th>
-                    <th className="text-left px-6 py-3">Email</th>
-                    <th className="text-left px-6 py-3">DNI</th>
-                    <th className="text-left px-6 py-3">Rol</th>
-                    <th className="text-left px-6 py-3">Videos</th>
-                    <th className="text-left px-6 py-3">Fecha</th>
+                    <th className="text-left px-4 py-3">Video CV</th>
+                    <th className="text-left px-4 py-3">Nombre</th>
+                    <th className="text-left px-4 py-3">Email</th>
+                    <th className="text-left px-4 py-3">DNI</th>
+                    <th className="text-left px-4 py-3">Rol</th>
+                    <th className="text-left px-4 py-3">Fecha</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-ink-100">
                   {usuarios.map((u) => (
-                    <tr key={u.id} className="hover:bg-ink-50 transition-colors">
-                      <td className="px-6 py-4">
+                    <tr key={u.id} className="hover:bg-ink-50 transition-colors align-middle">
+                      <td className="px-4 py-3">
+                        {u.videos[0]
+                          ? <VideoThumbnail src={u.videos[0].video_url} size="sm" />
+                          : <div className="w-14 h-10 rounded-lg bg-ink-100 flex items-center justify-center"><Video size={14} className="text-ink-300" /></div>
+                        }
+                      </td>
+                      <td className="px-4 py-3">
                         <p className="font-medium text-ink-800">{u.nombre_completo}</p>
                         <p className="text-xs text-ink-400">/{u.slug}</p>
                       </td>
-                      <td className="px-6 py-4 text-ink-600">{u.email}</td>
-                      <td className="px-6 py-4 text-ink-600">{u.dni}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-3 text-ink-600">{u.email}</td>
+                      <td className="px-4 py-3 text-ink-600">{u.dni}</td>
+                      <td className="px-4 py-3">
                         <span className={`badge ${u.role === 'admin' ? 'bg-brand-100 text-brand-700' : 'bg-ink-100 text-ink-600'}`}>
                           {u.role}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-ink-600">{u._count.videos}</td>
-                      <td className="px-6 py-4 text-ink-400 text-xs">
+                      <td className="px-4 py-3 text-ink-400 text-xs">
                         {new Date(u.created_at).toLocaleDateString('es-AR')}
                       </td>
                     </tr>

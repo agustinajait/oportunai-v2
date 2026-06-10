@@ -411,11 +411,13 @@ export default function SuperAdminClient({
             {usuarios.map(u => (
               <div key={u.id} className="card overflow-hidden">
                 <button onClick={() => setExpandedUser(expandedUser === u.id ? null : u.id)}
-                  className="w-full flex items-center justify-between px-6 py-4 hover:bg-ink-50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center flex-shrink-0 font-semibold text-brand-700 text-sm">
-                      {u.nombre_completo.split(' ').map(n => n[0]).slice(0, 2).join('')}
-                    </div>
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-ink-50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    {/* Thumbnail inline */}
+                    {u.videos.find(v => v.tipo === 'video_cv')
+                      ? <VideoThumbnail src={u.videos.find(v => v.tipo === 'video_cv')!.video_url} size="sm" />
+                      : <div className="w-14 h-10 rounded-lg bg-ink-100 flex items-center justify-center flex-shrink-0"><Video size={14} className="text-ink-300" /></div>
+                    }
                     <div className="text-left">
                       <p className="font-medium text-ink-800">{u.nombre_completo}</p>
                       <p className="text-xs text-ink-400">{u.email} · DNI {u.dni}</p>

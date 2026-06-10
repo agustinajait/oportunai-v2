@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2, Pencil, ToggleLeft, ToggleRight, Globe, Copy, ExternalLink } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2, Pencil, ToggleLeft, ToggleRight, Globe, Copy, ExternalLink, LogOut } from 'lucide-react';
 
 const DOCS_CONFIG = [
   { tipo: 'dni', label: 'DNI' },
@@ -91,6 +92,7 @@ type Empresa = {
 };
 
 export default function EmpresaDashboard() {
+  const router = useRouter();
   const [tab, setTab] = useState<'ofertas' | 'nueva' | 'editar' | 'postulantes' | 'perfil'>('ofertas');
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const [postulantes, setPostulantes] = useState<Postulante[]>([]);
@@ -360,7 +362,16 @@ export default function EmpresaDashboard() {
               {empresa?.rubro && <p className="text-sm text-gray-500">{empresa.rubro}</p>}
             </div>
           </div>
-          <button onClick={() => setTab('nueva')} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">+ Nueva oferta</button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setTab('nueva')} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">+ Nueva oferta</button>
+            <button
+              onClick={async () => { await fetch('/api/auth/logout', { method: 'POST' }); router.push('/login'); router.refresh(); }}
+              className="flex items-center gap-1.5 border border-gray-200 text-gray-500 px-3 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+              title="Cerrar sesión"
+            >
+              <LogOut size={15} /> Salir
+            </button>
+          </div>
         </div>
 
         {/* Banner página pública */}

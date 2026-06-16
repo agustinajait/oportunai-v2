@@ -24,9 +24,15 @@ interface Modulo {
 
 type Stage = 'preview' | 'countdown' | 'recording' | 'section_review' | 'between' | 'uploading' | 'done' | 'error';
 
+let sharedAudioCtx: AudioContext | null = null;
+
 function playBeep(freq = 660, duration = 0.12, vol = 0.25) {
   try {
-    const ctx = new AudioContext();
+    if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+      sharedAudioCtx = new AudioContext();
+    }
+    const ctx = sharedAudioCtx;
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
@@ -170,16 +176,22 @@ export default function VideoRecorder({
     sectionAttemptsRef.current = newAttempts;
     setSectionAttempts([...newAttempts]);
 
+    sectionEndCalledRef.current = false;
     chunksRef.current = [];
     const mimeType = getMimeType();
     const recorder = new MediaRecorder(streamRef.current, { mimeType });
-    recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-    recorder.onstop = () => {
+    const finishSection = () => {
       const blob = new Blob(chunksRef.current, { type: mimeType });
       currentBlobRef.current = blob;
       const url = URL.createObjectURL(blob);
       setReviewUrl(url);
       setStage('section_review');
+    };
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+    recorder.onstop = finishSection;
+    recorder.onerror = (e) => {
+      console.error('MediaRecorder error', e);
+      finishSection();
     };
     recorder.start(250);
     recorderRef.current = recorder;
@@ -193,7 +205,25 @@ export default function VideoRecorder({
     sectionEndCalledRef.current = true;
     clearInterval(timerRef.current!);
     const recorder = recorderRef.current;
-    if (recorder && recorder.state !== 'inactive') recorder.stop();
+    if (!recorder || recorder.state === 'inactive') return;
+
+    // Salvaguarda: si el navegador no dispara onstop/ondataavailable a tiempo
+    // (se ha visto en algunas versiones de Chrome con streams reusados),
+    // forzamos el avance con lo que se haya capturado hasta ese momento.
+    const fallback = setTimeout(() => {
+      if (currentBlobRef.current) return; // onstop ya corrió
+      const mimeType = recorder.mimeType || 'video/webm';
+      const blob = new Blob(chunksRef.current, { type: mimeType });
+      currentBlobRef.current = blob;
+      setReviewUrl(URL.createObjectURL(blob));
+      setStage('section_review');
+    }, 2500);
+    const originalOnStop = recorder.onstop;
+    recorder.onstop = (ev) => {
+      clearTimeout(fallback);
+      if (typeof originalOnStop === 'function') (originalOnStop as any).call(recorder, ev);
+    };
+    recorder.stop();
   }, []);
 
   // ── Regrabar la misma sección ─────────────────────────────────────

@@ -46,7 +46,7 @@ export default async function VideoCVPage({ params }: Props) {
       direccion: true,
       cv_datos: true,
       videos: {
-        where: { tipo: 'video_cv', es_fragmento: false },
+        where: { tipo: 'video_cv', es_fragmento: false, oferta_id: null },
         orderBy: { created_at: 'desc' },
         take: 1,
       },

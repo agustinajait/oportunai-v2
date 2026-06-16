@@ -30,31 +30,47 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Borrar video final anterior del mismo tipo/contexto
-    await prisma.video.deleteMany({
-      where: {
-        user_id: session.userId,
-        tipo: tipo as 'video_cv' | 'video_pitch',
-        es_fragmento: false,
-        taller_id: taller_id ?? null,
-        oferta_id: oferta_id ?? null,
-      },
+    const videoAnteriorFilter = {
+      user_id: session.userId,
+      tipo: tipo as 'video_cv' | 'video_pitch',
+      es_fragmento: false,
+      taller_id: taller_id ?? null,
+      oferta_id: oferta_id ?? null,
+    };
+
+    const videosAnteriores = await prisma.video.findMany({
+      where: videoAnteriorFilter,
+      select: { id: true },
     });
 
-    // Guardar nuevo video final
-    const videoFinal = await prisma.video.create({
-      data: {
-        user_id: session.userId,
-        tipo: tipo as 'video_cv' | 'video_pitch',
-        video_url,
-        es_fragmento: false,
-        taller_id: taller_id ?? undefined,
-        oferta_id: oferta_id ?? undefined,
-        modulo_nombre: oferta_id
-          ? 'Video específico — Oferta'
-          : `${tipo === 'video_cv' ? 'Video CV' : 'Video Pitch'} — Final`,
-        section_attempts: section_attempts ?? undefined,
-      },
+    const videoFinal = await prisma.$transaction(async (tx) => {
+      const nuevo = await tx.video.create({
+        data: {
+          user_id: session.userId,
+          tipo: tipo as 'video_cv' | 'video_pitch',
+          video_url,
+          es_fragmento: false,
+          taller_id: taller_id ?? undefined,
+          oferta_id: oferta_id ?? undefined,
+          modulo_nombre: oferta_id
+            ? 'Video específico — Oferta'
+            : `${tipo === 'video_cv' ? 'Video CV' : 'Video Pitch'} — Final`,
+          section_attempts: section_attempts ?? undefined,
+        },
+      });
+
+      if (videosAnteriores.length > 0) {
+        const idsAnteriores = videosAnteriores.map(v => v.id);
+        // Repuntar postulaciones que referenciaban el video viejo antes de borrarlo
+        // (Postulacion.video_id tiene onDelete: Restrict)
+        await tx.postulacion.updateMany({
+          where: { video_id: { in: idsAnteriores } },
+          data: { video_id: nuevo.id },
+        });
+        await tx.video.deleteMany({ where: { id: { in: idsAnteriores } } });
+      }
+
+      return nuevo;
     });
 
     return NextResponse.json({ ok: true, videoId: videoFinal.id, videoUrl: video_url });

@@ -20,7 +20,7 @@ export default async function LandingPage() {
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
         <div className="flex items-center gap-2">
-          <img src="/logo.svg" alt="Oportunai" className="w-8 h-8" />
+          <img src="/logo.png" alt="Oportunai" className="w-8 h-8" />
           <span className="font-display text-xl font-semibold text-ink-800">Oportunai</span>
         </div>
         <div className="flex items-center gap-3">
@@ -40,7 +40,7 @@ export default async function LandingPage() {
       {/* Hero */}
       <section className="max-w-6xl mx-auto px-6 pt-16 pb-24 text-center">
         <div className="inline-flex items-center gap-2 bg-brand-50 text-brand-700 text-sm font-medium px-4 py-1.5 rounded-full mb-8 border border-brand-200 animate-fade-in">
-          <img src="/logo.svg" alt="" className="w-3.5 h-3.5" />
+          <img src="/logo.png" alt="" className="w-3.5 h-3.5" />
           <span>Plataforma de capacitación laboral</span>
         </div>
 

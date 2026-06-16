@@ -22,7 +22,7 @@ export default function Navbar({ session }: NavbarProps) {
     <nav className="bg-white border-b border-ink-100 sticky top-0 z-40">
       <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <img src="/logo.svg" alt="Oportunai" className="w-7 h-7" />
+          <img src="/logo.png" alt="Oportunai" className="w-7 h-7" />
           <span className="font-display text-lg font-semibold text-ink-800">Oportunai</span>
         </Link>
 

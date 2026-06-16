@@ -52,7 +52,7 @@ function LoginForm() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <img src="/logo.svg" alt="Oportunai" className="w-9 h-9" />
+            <img src="/logo.png" alt="Oportunai" className="w-9 h-9" />
             <span className="font-display text-2xl font-semibold text-ink-800">Oportunai</span>
           </Link>
           <h1 className="font-display text-3xl font-light text-ink-900 mb-1">Bienvenido/a</h1>

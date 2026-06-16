@@ -91,9 +91,19 @@ type Empresa = {
   descripcion: string | null; rubro: string | null; ciudad: string | null; sitio_web: string | null;
 };
 
+type CitaEmpresa = {
+  id: string; fecha: string; modalidad: string; lugar: string; mensaje: string | null; grupal: boolean;
+  oferta: { titulo: string } | null;
+  invitados: {
+    id: string; estado: string;
+    postulacion: { usuario: { nombre_completo: string; telefono: string } };
+  }[];
+};
+
 export default function EmpresaDashboard() {
   const router = useRouter();
-  const [tab, setTab] = useState<'ofertas' | 'nueva' | 'editar' | 'postulantes' | 'perfil'>('ofertas');
+  const [tab, setTab] = useState<'ofertas' | 'nueva' | 'editar' | 'postulantes' | 'perfil' | 'citas'>('ofertas');
+  const [citas, setCitas] = useState<CitaEmpresa[]>([]);
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const [postulantes, setPostulantes] = useState<Postulante[]>([]);
   const [ofertaSeleccionada, setOfertaSeleccionada] = useState<Oferta | null>(null);
@@ -149,6 +159,7 @@ export default function EmpresaDashboard() {
         return;
       }
       setCitaResultado(data.whatsappLinks ?? []);
+      cargarCitas();
     } catch {
       setCitaError('Error al agendar la cita');
     } finally {
@@ -185,7 +196,13 @@ export default function EmpresaDashboard() {
     nombre: '', descripcion: '', rubro: '', ciudad: '', sitio_web: '',
   });
 
-  useEffect(() => { cargarOfertas(); cargarEmpresa(); }, []);
+  useEffect(() => { cargarOfertas(); cargarEmpresa(); cargarCitas(); }, []);
+
+  async function cargarCitas() {
+    const res = await fetch('/api/empresa/citas');
+    const data = await res.json();
+    if (data.citas) setCitas(data.citas);
+  }
 
   async function cargarOfertas() {
     const res = await fetch('/api/empresa/ofertas');
@@ -399,8 +416,15 @@ export default function EmpresaDashboard() {
   const tabs = [
     { key: 'ofertas', label: 'Mis ofertas' },
     { key: 'postulantes', label: ofertaSeleccionada ? `Pipeline — ${ofertaSeleccionada.titulo}` : 'Pipeline' },
+    { key: 'citas', label: `Citas${citas.length > 0 ? ` (${citas.length})` : ''}` },
     { key: 'perfil', label: 'Perfil empresa' },
   ];
+
+  const citasPorDia = citas.reduce((acc, c) => {
+    const dia = new Date(c.fecha).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    (acc[dia] ??= []).push(c);
+    return acc;
+  }, {} as Record<string, CitaEmpresa[]>);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -965,6 +989,54 @@ export default function EmpresaDashboard() {
                   );
                 })}
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab: Citas */}
+        {tab === 'citas' && (
+          <div className="space-y-6 max-w-3xl">
+            {citas.length === 0 ? (
+              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                <p className="text-gray-400">Todavía no agendaste ninguna cita</p>
+              </div>
+            ) : (
+              Object.entries(citasPorDia).map(([dia, items]) => (
+                <div key={dia}>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2 capitalize">{dia}</h3>
+                  <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+                    {items.map(c => (
+                      <div key={c.id} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div className="w-16 flex-shrink-0 text-sm font-medium text-gray-900">
+                          {new Date(c.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${c.modalidad === 'presencial' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>
+                              {c.modalidad === 'presencial' ? 'Presencial' : 'Virtual'}
+                            </span>
+                            {c.grupal && <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">Grupal</span>}
+                            {c.oferta && <span className="text-xs text-gray-400">{c.oferta.titulo}</span>}
+                          </div>
+                          <p className="text-sm text-gray-600 mt-1 truncate">{c.lugar}</p>
+                          <div className="flex flex-wrap gap-1.5 mt-2">
+                            {c.invitados.map(inv => (
+                              <span key={inv.id} className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                                inv.estado === 'confirmada' ? 'bg-emerald-100 text-emerald-700' :
+                                inv.estado === 'rechazada' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'
+                              }`}>
+                                {inv.postulacion.usuario.nombre_completo}
+                                {inv.estado === 'confirmada' && ' ✓'}
+                                {inv.estado === 'rechazada' && ' ✕'}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
             )}
           </div>
         )}

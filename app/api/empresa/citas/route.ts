@@ -8,6 +8,36 @@ function formatFecha(fecha: Date) {
   return fecha.toLocaleString('es-AR', { dateStyle: 'full', timeStyle: 'short' });
 }
 
+export async function GET(req: NextRequest) {
+  try {
+    const session = await getSessionFromRequest(req);
+    if (!session || session.role !== 'empleador') {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    const miembro = await prisma.empresaMiembro.findFirst({ where: { usuario_id: session.userId } });
+    if (!miembro) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+
+    const citas = await prisma.cita.findMany({
+      where: { empresa_id: miembro.empresa_id },
+      include: {
+        oferta: { select: { titulo: true } },
+        invitados: {
+          include: {
+            postulacion: { include: { usuario: { select: { nombre_completo: true, telefono: true } } } },
+          },
+        },
+      },
+      orderBy: { fecha: 'asc' },
+    });
+
+    return NextResponse.json({ citas });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req);

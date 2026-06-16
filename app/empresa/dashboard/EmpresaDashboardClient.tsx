@@ -996,6 +996,12 @@ export default function EmpresaDashboard() {
         {/* Tab: Citas */}
         {tab === 'citas' && (
           <div className="space-y-6 max-w-3xl">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-500">Seleccioná candidatos desde el Pipeline para agendarles una cita.</p>
+              <button onClick={() => setTab('postulantes')} className="flex items-center gap-1.5 bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors flex-shrink-0">
+                <CalendarPlus size={14} /> Nueva cita
+              </button>
+            </div>
             {citas.length === 0 ? (
               <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
                 <p className="text-gray-400">Todavía no agendaste ninguna cita</p>

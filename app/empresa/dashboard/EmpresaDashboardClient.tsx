@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2, Pencil, ToggleLeft, ToggleRight, Globe, Copy, ExternalLink, LogOut } from 'lucide-react';
+import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2, Pencil, ToggleLeft, ToggleRight, Globe, Copy, ExternalLink, LogOut, CalendarPlus, Loader2 } from 'lucide-react';
 
 const DOCS_CONFIG = [
   { tipo: 'dni', label: 'DNI' },
@@ -108,6 +108,61 @@ export default function EmpresaDashboard() {
   const [filtroEdadMax, setFiltroEdadMax] = useState<string>('');
   const [filtroCiudad, setFiltroCiudad] = useState<string>('');
   const [filtroDocsCompletos, setFiltroDocsCompletos] = useState<boolean>(false);
+  const [seleccionados, setSeleccionados] = useState<Set<string>>(new Set());
+  const [citaModalOpen, setCitaModalOpen] = useState(false);
+  const [citaForm, setCitaForm] = useState({ fecha: '', hora: '', modalidad: 'virtual', lugar: '', mensaje: '' });
+  const [citaEnviando, setCitaEnviando] = useState(false);
+  const [citaResultado, setCitaResultado] = useState<{ candidato: string; telefono: string; url: string }[] | null>(null);
+  const [citaError, setCitaError] = useState<string | null>(null);
+
+  function toggleSeleccionado(id: string) {
+    setSeleccionados(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  async function enviarCita() {
+    if (!citaForm.fecha || !citaForm.hora || !citaForm.lugar) {
+      setCitaError('Completá la fecha, hora y lugar/link de la cita.');
+      return;
+    }
+    setCitaEnviando(true);
+    setCitaError(null);
+    try {
+      const res = await fetch('/api/empresa/citas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          postulacion_ids: Array.from(seleccionados),
+          oferta_id: ofertaSeleccionada?.id,
+          fecha: `${citaForm.fecha}T${citaForm.hora}`,
+          modalidad: citaForm.modalidad,
+          lugar: citaForm.lugar,
+          mensaje: citaForm.mensaje,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCitaError(data.error ?? 'Error al agendar la cita');
+        return;
+      }
+      setCitaResultado(data.whatsappLinks ?? []);
+    } catch {
+      setCitaError('Error al agendar la cita');
+    } finally {
+      setCitaEnviando(false);
+    }
+  }
+
+  function cerrarCitaModal() {
+    setCitaModalOpen(false);
+    setCitaResultado(null);
+    setCitaError(null);
+    setCitaForm({ fecha: '', hora: '', modalidad: 'virtual', lugar: '', mensaje: '' });
+    setSeleccionados(new Set());
+  }
 
   const [form, setForm] = useState({
     titulo: '', descripcion: '', requisitos: '', area: '',
@@ -776,6 +831,18 @@ export default function EmpresaDashboard() {
               )}
             </div>
 
+            {seleccionados.size > 0 && (
+              <div className="sticky top-2 z-10 mb-4 bg-gray-900 text-white rounded-xl px-4 py-3 flex items-center justify-between shadow-lg">
+                <span className="text-sm">{seleccionados.size} candidato{seleccionados.size !== 1 ? 's' : ''} seleccionado{seleccionados.size !== 1 ? 's' : ''}</span>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setSeleccionados(new Set())} className="text-xs text-gray-300 hover:text-white">Cancelar</button>
+                  <button onClick={() => setCitaModalOpen(true)} className="flex items-center gap-1.5 bg-teal-500 hover:bg-teal-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
+                    <CalendarPlus size={14} /> Agendar cita{seleccionados.size > 1 ? ' grupal' : ''}
+                  </button>
+                </div>
+              </div>
+            )}
+
             {postulanteFiltrados.length === 0 ? (
               <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
                 <p className="text-gray-400">No hay postulantes en este estado</p>
@@ -783,7 +850,8 @@ export default function EmpresaDashboard() {
             ) : (
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                 {/* Header tabla */}
-                <div className="hidden md:grid grid-cols-[180px_1fr_auto_160px] gap-4 px-4 py-2 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-400 uppercase tracking-wide">
+                <div className="hidden md:grid grid-cols-[28px_180px_1fr_auto_160px] gap-4 px-4 py-2 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-400 uppercase tracking-wide items-center">
+                  <span />
                   <span>Video CV</span>
                   <span>Candidato</span>
                   <span>Docs</span>
@@ -796,7 +864,15 @@ export default function EmpresaDashboard() {
                   const edad = calcularEdad(p.usuario.fecha_nacimiento);
                   const ciudad = p.usuario.direccion?.split(',').slice(-2).join(',').trim() || '';
                   return (
-                    <div key={p.id} className={`flex md:grid md:grid-cols-[180px_1fr_auto_160px] gap-4 items-center px-4 py-3 ${idx !== postulanteFiltrados.length - 1 ? 'border-b border-gray-100' : ''} hover:bg-gray-50 transition-colors`}>
+                    <div key={p.id} className={`flex md:grid md:grid-cols-[28px_180px_1fr_auto_160px] gap-4 items-center px-4 py-3 ${idx !== postulanteFiltrados.length - 1 ? 'border-b border-gray-100' : ''} hover:bg-gray-50 transition-colors`}>
+
+                      {/* Checkbox selección */}
+                      <input
+                        type="checkbox"
+                        checked={seleccionados.has(p.id)}
+                        onChange={() => toggleSeleccionado(p.id)}
+                        className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer flex-shrink-0"
+                      />
 
                       {/* Thumbnail video */}
                       <div
@@ -983,6 +1059,70 @@ export default function EmpresaDashboard() {
           </div>
         )}
       </div>
+
+      {/* Modal agendar cita */}
+      {citaModalOpen && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={cerrarCitaModal}>
+          <div className="bg-white rounded-2xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
+            {!citaResultado ? (
+              <>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">Agendar cita{seleccionados.size > 1 ? ' grupal' : ''}</h3>
+                <p className="text-xs text-gray-500 mb-4">{seleccionados.size} candidato{seleccionados.size !== 1 ? 's' : ''} invitado{seleccionados.size !== 1 ? 's' : ''}. Se les avisará por email y te damos un link de WhatsApp para confirmar.</p>
+                {citaError && <div className="bg-red-50 text-red-600 text-sm rounded-lg px-3 py-2 mb-3">{citaError}</div>}
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 block mb-1">Fecha</label>
+                      <input type="date" value={citaForm.fecha} onChange={e => setCitaForm({ ...citaForm, fecha: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 block mb-1">Hora</label>
+                      <input type="time" value={citaForm.hora} onChange={e => setCitaForm({ ...citaForm, hora: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Modalidad</label>
+                    <div className="flex gap-2">
+                      <button onClick={() => setCitaForm({ ...citaForm, modalidad: 'virtual' })} className={`flex-1 px-3 py-2 rounded-lg text-sm border ${citaForm.modalidad === 'virtual' ? 'bg-teal-50 border-teal-400 text-teal-700' : 'border-gray-200 text-gray-500'}`}>Virtual</button>
+                      <button onClick={() => setCitaForm({ ...citaForm, modalidad: 'presencial' })} className={`flex-1 px-3 py-2 rounded-lg text-sm border ${citaForm.modalidad === 'presencial' ? 'bg-teal-50 border-teal-400 text-teal-700' : 'border-gray-200 text-gray-500'}`}>Presencial</button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">{citaForm.modalidad === 'presencial' ? 'Dirección' : 'Link de videollamada'}</label>
+                    <input value={citaForm.lugar} onChange={e => setCitaForm({ ...citaForm, lugar: e.target.value })} placeholder={citaForm.modalidad === 'presencial' ? 'Av. Siempre Viva 123, CABA' : 'https://meet.google.com/...'} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Mensaje (opcional)</label>
+                    <textarea value={citaForm.mensaje} onChange={e => setCitaForm({ ...citaForm, mensaje: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-5">
+                  <button onClick={enviarCita} disabled={citaEnviando} className="flex-1 bg-teal-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-teal-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                    {citaEnviando ? <Loader2 size={14} className="animate-spin" /> : <CalendarPlus size={14} />}
+                    Enviar invitación
+                  </button>
+                  <button onClick={cerrarCitaModal} className="px-4 py-2.5 rounded-lg text-sm border border-gray-200 text-gray-600 hover:bg-gray-50">Cancelar</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2"><Check size={18} className="text-emerald-600" /> Cita agendada</h3>
+                <p className="text-xs text-gray-500 mb-4">Le mandamos un email a cada candidato. También podés enviarles el aviso por WhatsApp:</p>
+                <div className="space-y-2 mb-4">
+                  {citaResultado.map(w => (
+                    <a key={w.url} href={w.url} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center justify-between gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-sm text-green-700 hover:bg-green-100">
+                      <span>{w.candidato}</span>
+                      <span className="text-xs font-medium">Enviar WhatsApp →</span>
+                    </a>
+                  ))}
+                </div>
+                <button onClick={cerrarCitaModal} className="w-full bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200">Listo</button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Modal video */}
       {videoModal && (

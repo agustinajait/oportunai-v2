@@ -9,7 +9,7 @@ export default async function DashboardPage() {
   if (!session) redirect('/login');
   if (session.role === 'empleador') redirect('/empresa/dashboard');
 
-  const [usuario, tallersAsignados] = await Promise.all([
+  const [usuario, tallersAsignados, citas] = await Promise.all([
     prisma.usuario.findUnique({
       where: { id: session.userId },
       select: {
@@ -43,9 +43,21 @@ export default async function DashboardPage() {
       },
       orderBy: { asignado_en: 'desc' },
     }),
+    prisma.citaInvitado.findMany({
+      where: { postulacion: { usuario_id: session.userId } },
+      include: {
+        cita: {
+          include: {
+            empresa: { select: { nombre: true, logo_url: true } },
+            oferta: { select: { titulo: true } },
+          },
+        },
+      },
+      orderBy: { cita: { fecha: 'asc' } },
+    }),
   ]);
 
   if (!usuario) redirect('/login');
 
-  return <DashboardClient usuario={usuario as any} tallersAsignados={tallersAsignados as any} />;
+  return <DashboardClient usuario={usuario as any} tallersAsignados={tallersAsignados as any} citas={citas as any} />;
 }

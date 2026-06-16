@@ -13,7 +13,8 @@ const supabase = createClient(
 import {
   Video, Mic, FileText, Edit3, Check, X, Upload,
   ExternalLink, Copy, CheckCheck, Clock, Circle,
-  BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck
+  BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck,
+  CalendarDays, MapPin, Loader2
 } from 'lucide-react';
 import OfertasTab from '@/components/ui/OfertasTab';
 import VideoThumbnail from '@/components/ui/VideoThumbnail';
@@ -50,6 +51,20 @@ interface Documento {
   created_at: string;
 }
 
+interface CitaInvitado {
+  id: string;
+  estado: 'pendiente' | 'confirmada' | 'rechazada';
+  cita: {
+    fecha: string;
+    modalidad: 'presencial' | 'virtual';
+    lugar: string;
+    mensaje: string | null;
+    grupal: boolean;
+    empresa: { nombre: string; logo_url: string | null };
+    oferta: { titulo: string } | null;
+  };
+}
+
 const DOCS_CONFIG = [
   { tipo: 'dni', label: 'DNI', descripcion: 'Documento Nacional de Identidad' },
   { tipo: 'antecedentes_penales', label: 'Antecedentes Penales', descripcion: 'Certificado de antecedentes penales' },
@@ -62,15 +77,36 @@ const DOCS_CONFIG = [
 export default function DashboardClient({
   usuario,
   tallersAsignados,
+  citas,
 }: {
   usuario: Usuario;
   tallersAsignados: TallerUsuario[];
+  citas: CitaInvitado[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [tab, setTab] = useState<'perfil' | 'ofertas' | 'documentos'>(
+  const [tab, setTab] = useState<'perfil' | 'ofertas' | 'documentos' | 'citas'>(
     searchParams.get('tab') === 'ofertas' ? 'ofertas' : 'perfil'
   );
+  const [citasState, setCitasState] = useState<CitaInvitado[]>(citas);
+  const [respondiendo, setRespondiendo] = useState<string | null>(null);
+  const citasPendientes = citasState.filter(c => c.estado === 'pendiente').length;
+
+  async function responderCita(id: string, estado: 'confirmada' | 'rechazada') {
+    setRespondiendo(id);
+    try {
+      const res = await fetch(`/api/citas/${id}/responder`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado }),
+      });
+      if (res.ok) {
+        setCitasState(prev => prev.map(c => c.id === id ? { ...c, estado } : c));
+      }
+    } finally {
+      setRespondiendo(null);
+    }
+  }
   const initialOfertaId = searchParams.get('oferta_id') ?? undefined;
   const [bio, setBio] = useState(usuario.bio ?? '');
   const [editingBio, setEditingBio] = useState(false);
@@ -278,8 +314,83 @@ export default function DashboardClient({
               <Briefcase size={14} />
               Ofertas
             </button>
+            <button
+              onClick={() => setTab('citas')}
+              className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                tab === 'citas' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
+              }`}
+            >
+              <CalendarDays size={14} />
+              Citas
+              {citasPendientes > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                  {citasPendientes}
+                </span>
+              )}
+            </button>
           </div>
         </div>
+
+        {/* Tab Citas */}
+        {tab === 'citas' && (
+          <div className="max-w-2xl space-y-4">
+            {citasState.length === 0 && (
+              <div className="card p-8 text-center text-ink-400">
+                <CalendarDays size={32} className="mx-auto mb-2 opacity-40" />
+                <p>Todavía no tenés citas o entrevistas agendadas</p>
+              </div>
+            )}
+            {citasState.map(c => (
+              <div key={c.id} className="card p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <p className="font-medium text-ink-800">{c.cita.empresa.nombre}</p>
+                    {c.cita.oferta && <p className="text-xs text-ink-400">{c.cita.oferta.titulo}</p>}
+                  </div>
+                  <span className={`badge ${
+                    c.estado === 'confirmada' ? 'bg-emerald-100 text-emerald-700' :
+                    c.estado === 'rechazada' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    {c.estado === 'confirmada' ? 'Confirmada' : c.estado === 'rechazada' ? 'Rechazada' : 'Pendiente'}
+                  </span>
+                </div>
+                <div className="space-y-1.5 text-sm text-ink-600 mb-4">
+                  <p className="flex items-center gap-2">
+                    <Clock size={14} className="text-ink-400" />
+                    {new Date(c.cita.fecha).toLocaleString('es-AR', { dateStyle: 'full', timeStyle: 'short' })}
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <MapPin size={14} className="text-ink-400" />
+                    {c.cita.modalidad === 'presencial' ? c.cita.lugar : (
+                      <a href={c.cita.lugar} target="_blank" className="text-brand-600 underline">{c.cita.lugar}</a>
+                    )}
+                    <span className="text-ink-400 text-xs">({c.cita.modalidad === 'presencial' ? 'presencial' : 'virtual'}{c.cita.grupal ? ' · grupal' : ''})</span>
+                  </p>
+                  {c.cita.mensaje && <p className="text-ink-500 italic">"{c.cita.mensaje}"</p>}
+                </div>
+                {c.estado === 'pendiente' && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => responderCita(c.id, 'confirmada')}
+                      disabled={respondiendo === c.id}
+                      className="btn-primary py-1.5 px-4 text-sm"
+                    >
+                      {respondiendo === c.id ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                      Confirmar
+                    </button>
+                    <button
+                      onClick={() => responderCita(c.id, 'rechazada')}
+                      disabled={respondiendo === c.id}
+                      className="btn-ghost py-1.5 px-4 text-sm"
+                    >
+                      <X size={14} /> Rechazar
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Tab Ofertas */}
         {tab === 'ofertas' && (

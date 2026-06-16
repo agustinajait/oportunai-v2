@@ -177,6 +177,7 @@ model Empresa {
 
   miembros  EmpresaMiembro[]
   ofertas   Oferta[]
+  citas     Cita[]
 }
 
 model EmpresaMiembro {
@@ -217,6 +218,7 @@ model Oferta {
   empresa            Empresa       @relation(fields: [empresa_id], references: [id], onDelete: Cascade)
   postulaciones      Postulacion[]
   videos_especificos Video[]
+  citas              Cita[]
 }
 
 enum Modalidad {
@@ -244,6 +246,7 @@ model Postulacion {
   oferta  Oferta  @relation(fields: [oferta_id], references: [id], onDelete: Cascade)
   usuario Usuario @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
   video   Video   @relation(fields: [video_id], references: [id], onDelete: Restrict)
+  citas   CitaInvitado[]
 
   @@unique([oferta_id, usuario_id])
 }
@@ -257,4 +260,45 @@ enum EstadoPostulacion {
   contratado
   bolsa_talentos
   descartado
+}
+
+model Cita {
+  id          String        @id @default(cuid())
+  empresa_id  String
+  oferta_id   String?
+  fecha       DateTime
+  modalidad   CitaModalidad @default(virtual)
+  lugar       String
+  mensaje     String?
+  grupal      Boolean       @default(false)
+  created_at  DateTime      @default(now())
+
+  empresa   Empresa        @relation(fields: [empresa_id], references: [id], onDelete: Cascade)
+  oferta    Oferta?        @relation(fields: [oferta_id], references: [id], onDelete: SetNull)
+  invitados CitaInvitado[]
+}
+
+enum CitaModalidad {
+  presencial
+  virtual
+}
+
+model CitaInvitado {
+  id             String     @id @default(cuid())
+  cita_id        String
+  postulacion_id String
+  estado         EstadoCita @default(pendiente)
+  respondido_en  DateTime?
+  created_at     DateTime   @default(now())
+
+  cita        Cita        @relation(fields: [cita_id], references: [id], onDelete: Cascade)
+  postulacion Postulacion @relation(fields: [postulacion_id], references: [id], onDelete: Cascade)
+
+  @@unique([cita_id, postulacion_id])
+}
+
+enum EstadoCita {
+  pendiente
+  confirmada
+  rechazada
 }

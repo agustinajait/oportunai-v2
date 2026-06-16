@@ -52,6 +52,70 @@ function getMimeType(): string {
   return 'video/mp4';
 }
 
+// Concatenar blobs WebM crudos produce un contenedor inválido (cada blob trae
+// su propio header), por eso se "re-grababan" en serie sobre un canvas para
+// obtener un único archivo continuo y reproducible.
+async function combineRecordings(blobs: Blob[]): Promise<Blob> {
+  if (blobs.length === 1) return blobs[0];
+
+  const canvas = document.createElement('canvas');
+  const ctx2d = canvas.getContext('2d')!;
+  const audioCtx = new AudioContext();
+  await audioCtx.resume().catch(() => {});
+  const dest = audioCtx.createMediaStreamDestination();
+
+  const probe = document.createElement('video');
+  probe.src = URL.createObjectURL(blobs[0]);
+  probe.muted = true;
+  await new Promise(res => { probe.onloadedmetadata = res; });
+  canvas.width = probe.videoWidth || 1280;
+  canvas.height = probe.videoHeight || 720;
+  URL.revokeObjectURL(probe.src);
+
+  const canvasStream = (canvas as any).captureStream(30) as MediaStream;
+  const combinedStream = new MediaStream([
+    ...canvasStream.getVideoTracks(),
+    ...dest.stream.getAudioTracks(),
+  ]);
+
+  const mimeType = getMimeType();
+  const recorder = new MediaRecorder(combinedStream, { mimeType });
+  const outChunks: Blob[] = [];
+  recorder.ondataavailable = e => { if (e.data.size > 0) outChunks.push(e.data); };
+  const finished = new Promise<Blob>(resolve => {
+    recorder.onstop = () => resolve(new Blob(outChunks, { type: mimeType }));
+  });
+  recorder.start(250);
+
+  for (const blob of blobs) {
+    const videoEl = document.createElement('video');
+    videoEl.src = URL.createObjectURL(blob);
+    videoEl.muted = true;
+    videoEl.playsInline = true;
+    await new Promise(res => { videoEl.onloadedmetadata = res; });
+
+    const source = audioCtx.createMediaElementSource(videoEl);
+    source.connect(dest);
+
+    let rafId = 0;
+    const draw = () => {
+      ctx2d.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+      rafId = requestAnimationFrame(draw);
+    };
+    draw();
+
+    await videoEl.play();
+    await new Promise(res => { videoEl.onended = res; });
+    cancelAnimationFrame(rafId);
+    source.disconnect();
+    URL.revokeObjectURL(videoEl.src);
+  }
+
+  recorder.stop();
+  audioCtx.close().catch(() => {});
+  return finished;
+}
+
 export default function VideoRecorder({
   modulos,
   session,
@@ -243,8 +307,8 @@ export default function VideoRecorder({
       const blobs = confirmedBlobsRef.current.filter((b): b is Blob => b instanceof Blob);
       if (blobs.length === 0) throw new Error('No hay video para subir');
 
-      const mimeType = blobs[0].type ?? 'video/webm';
-      const finalBlob = new Blob(blobs, { type: mimeType });
+      const finalBlob = await combineRecordings(blobs);
+      const mimeType = finalBlob.type || blobs[0].type || 'video/webm';
       const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
       const filename = `${session.userId}/${tipo}-${Date.now()}.${ext}`;
 

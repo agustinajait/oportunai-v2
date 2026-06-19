@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { Video, Mic, Share2, ChevronRight, Building2, MapPin, Briefcase } from 'lucide-react';
 import { prisma } from '@/lib/prisma';

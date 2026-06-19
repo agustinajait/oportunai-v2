@@ -61,6 +61,7 @@ type Oferta = {
   id: string; titulo: string; descripcion: string; requisitos: string | null;
   area: string | null; ciudad: string | null;
   modalidad: string; estado: string; mensaje_whatsapp: string | null;
+  nombre_marca: string | null; logo_url: string | null;
   docs_requeridos: string[]; preguntas_videocv: string[]; created_at: string;
   _count: { postulaciones: number };
 };
@@ -178,18 +179,22 @@ export default function EmpresaDashboard() {
   const [form, setForm] = useState({
     titulo: '', descripcion: '', requisitos: '', area: '',
     modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '',
+    nombre_marca: '', logo_url: '',
     docs_requeridos: [] as string[],
     preguntas_videocv: [] as string[],
   });
+  const [logoUploadingNueva, setLogoUploadingNueva] = useState(false);
   const [preguntaInput, setPreguntaInput] = useState('');
   const [otroLabel, setOtroLabel] = useState('');
   const [editOtroLabel, setEditOtroLabel] = useState('');
   const [editForm, setEditForm] = useState({
     titulo: '', descripcion: '', requisitos: '', area: '',
     modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '',
+    nombre_marca: '', logo_url: '',
     docs_requeridos: [] as string[],
     preguntas_videocv: [] as string[],
   });
+  const [logoUploadingEditar, setLogoUploadingEditar] = useState(false);
   const [editPreguntaInput, setEditPreguntaInput] = useState('');
 
   const [perfilForm, setPerfilForm] = useState({
@@ -293,7 +298,7 @@ export default function EmpresaDashboard() {
     const res = await fetch('/api/ofertas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formFinal) });
     const data = await res.json();
     if (data.ok) {
-      setForm({ titulo: '', descripcion: '', requisitos: '', area: '', modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '', docs_requeridos: [], preguntas_videocv: [] });
+      setForm({ titulo: '', descripcion: '', requisitos: '', area: '', modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '', nombre_marca: '', logo_url: '', docs_requeridos: [], preguntas_videocv: [] });
       setPreguntaInput('');
       setTab('ofertas');
       cargarOfertas();
@@ -313,6 +318,8 @@ export default function EmpresaDashboard() {
       modalidad: oferta.modalidad,
       ciudad: oferta.ciudad || '',
       mensaje_whatsapp: oferta.mensaje_whatsapp || '',
+      nombre_marca: oferta.nombre_marca || '',
+      logo_url: oferta.logo_url || '',
       docs_requeridos: oferta.docs_requeridos || [],
       preguntas_videocv: oferta.preguntas_videocv || [],
     });
@@ -645,6 +652,34 @@ export default function EmpresaDashboard() {
                 <textarea value={form.mensaje_whatsapp} onChange={e => setForm({ ...form, mensaje_whatsapp: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 <p className="text-xs text-gray-400 mt-1">Se enviará: "Hola [nombre], te contacto desde [empresa]. [tu mensaje]"</p>
               </div>
+              <div className="border-t border-gray-100 pt-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">Marca (opcional)</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Nombre de la marca</label>
+                    <input value={form.nombre_marca} onChange={e => setForm({ ...form, nombre_marca: e.target.value })} placeholder={empresa?.nombre ?? ''} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Logo de la marca</label>
+                    {form.logo_url && <img src={form.logo_url} alt="preview" className="w-10 h-10 rounded-lg object-cover mb-1 border border-gray-200" />}
+                    <label className="cursor-pointer flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+                      <input type="file" accept="image/*" className="hidden" disabled={logoUploadingNueva} onChange={async e => {
+                        const file = e.target.files?.[0]; if (!file) return;
+                        setLogoUploadingNueva(true);
+                        const { createClient } = await import('@supabase/supabase-js');
+                        const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+                        const ext = file.name.split('.').pop() || 'jpg';
+                        const filename = `logos/oferta-${Date.now()}.${ext}`;
+                        const { error } = await sb.storage.from('videos').upload(filename, file, { contentType: file.type, upsert: true });
+                        if (!error) { const { data } = sb.storage.from('videos').getPublicUrl(filename); setForm(f => ({ ...f, logo_url: data.publicUrl })); }
+                        setLogoUploadingNueva(false);
+                      }} />
+                      {logoUploadingNueva ? 'Subiendo...' : (form.logo_url ? 'Cambiar' : 'Subir logo')}
+                    </label>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Si esta oferta es de una submarca del grupo, podés poner su nombre y logo propio.</p>
+              </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={crearOferta} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
                   {loading ? 'Publicando...' : 'Publicar oferta'}
@@ -767,6 +802,34 @@ export default function EmpresaDashboard() {
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Mensaje WhatsApp (opcional)</label>
                 <textarea value={editForm.mensaje_whatsapp} onChange={e => setEditForm({ ...editForm, mensaje_whatsapp: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div className="border-t border-gray-100 pt-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">Marca (opcional)</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Nombre de la marca</label>
+                    <input value={editForm.nombre_marca} onChange={e => setEditForm({ ...editForm, nombre_marca: e.target.value })} placeholder={empresa?.nombre ?? ''} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Logo de la marca</label>
+                    {editForm.logo_url && <img src={editForm.logo_url} alt="preview" className="w-10 h-10 rounded-lg object-cover mb-1 border border-gray-200" />}
+                    <label className="cursor-pointer flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+                      <input type="file" accept="image/*" className="hidden" disabled={logoUploadingEditar} onChange={async e => {
+                        const file = e.target.files?.[0]; if (!file) return;
+                        setLogoUploadingEditar(true);
+                        const { createClient } = await import('@supabase/supabase-js');
+                        const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+                        const ext = file.name.split('.').pop() || 'jpg';
+                        const filename = `logos/oferta-${Date.now()}.${ext}`;
+                        const { error } = await sb.storage.from('videos').upload(filename, file, { contentType: file.type, upsert: true });
+                        if (!error) { const { data } = sb.storage.from('videos').getPublicUrl(filename); setEditForm(f => ({ ...f, logo_url: data.publicUrl })); }
+                        setLogoUploadingEditar(false);
+                      }} />
+                      {logoUploadingEditar ? 'Subiendo...' : (editForm.logo_url ? 'Cambiar' : 'Subir logo')}
+                    </label>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Si esta oferta es de una submarca del grupo, podés poner su nombre y logo propio.</p>
               </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={guardarEdicion} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">

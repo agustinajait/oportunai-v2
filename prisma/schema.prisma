@@ -210,6 +210,8 @@ model Oferta {
   ciudad           String?
   estado           EstadoOferta @default(activa)
   mensaje_whatsapp String?
+  nombre_marca     String?
+  logo_url         String?
   docs_requeridos   String[]     @default([])
   preguntas_videocv String[]     @default([])
   created_at        DateTime     @default(now())

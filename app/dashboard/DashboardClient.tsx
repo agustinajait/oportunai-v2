@@ -14,7 +14,7 @@ import {
   Video, Mic, FileText, Edit3, Check, X, Upload,
   ExternalLink, Copy, CheckCheck, Clock, Circle,
   BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck,
-  CalendarDays, MapPin, Loader2
+  CalendarDays, MapPin, Loader2, Plus, GraduationCap, Briefcase as BriefcaseIcon, Wrench
 } from 'lucide-react';
 import OfertasTab from '@/components/ui/OfertasTab';
 import VideoThumbnail from '@/components/ui/VideoThumbnail';
@@ -41,6 +41,7 @@ interface Usuario {
   bio: string | null; slug: string; role: 'super_admin' | 'admin' | 'user';
   cv_datos: CvDatos | null;
   alfa_digital: string | null; alfa_score: number | null;
+  fecha_nacimiento: string | null;
   created_at: string; videos: VideoItem[]; archivos: Archivo[];
 }
 
@@ -116,6 +117,44 @@ export default function DashboardClient({
   const [uploadMsg, setUploadMsg] = useState<string | null>(null);
   const [analyzingCV, setAnalyzingCV] = useState(false);
   const [cvDatos, setCvDatos] = useState<CvDatos | null>(usuario.cv_datos);
+
+  // Formulario de datos del perfil
+  const [editandoDatos, setEditandoDatos] = useState(false);
+  const [guardandoDatos, setGuardandoDatos] = useState(false);
+  const [datosMsgOk, setDatosMsgOk] = useState(false);
+  const [fechaNac, setFechaNac] = useState(
+    usuario.fecha_nacimiento ? new Date(usuario.fecha_nacimiento).toISOString().slice(0, 10) : ''
+  );
+  const [resumenPerfil, setResumenPerfil] = useState(usuario.cv_datos?.resumen ?? '');
+  const [experiencias, setExperiencias] = useState<{ empresa: string; cargo: string; periodo: string; descripcion: string }[]>(
+    usuario.cv_datos?.experiencia ?? []
+  );
+  const [educaciones, setEducaciones] = useState<{ institucion: string; titulo: string; periodo: string }[]>(
+    usuario.cv_datos?.educacion ?? []
+  );
+  const [habilidades, setHabilidades] = useState<string[]>(usuario.cv_datos?.habilidades ?? []);
+  const [habilidadInput, setHabilidadInput] = useState('');
+
+  async function guardarDatos() {
+    setGuardandoDatos(true);
+    const nuevoCvDatos: CvDatos = {
+      ...(usuario.cv_datos ?? {}),
+      resumen: resumenPerfil || undefined,
+      experiencia: experiencias.length ? experiencias : undefined,
+      educacion: educaciones.length ? educaciones : undefined,
+      habilidades: habilidades.length ? habilidades : undefined,
+    };
+    await fetch('/api/users/perfil', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fecha_nacimiento: fechaNac || null, cv_datos: nuevoCvDatos }),
+    });
+    setCvDatos(nuevoCvDatos);
+    setGuardandoDatos(false);
+    setEditandoDatos(false);
+    setDatosMsgOk(true);
+    setTimeout(() => setDatosMsgOk(false), 3000);
+  }
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
   const [docMsg, setDocMsg] = useState<string | null>(null);
@@ -680,6 +719,147 @@ export default function DashboardClient({
 
             {/* ── Columna derecha (2 cols) ───────────────────────── */}
             <div className="lg:col-span-2 space-y-5">
+
+              {/* ── Mis datos ──────────────────────────────────────── */}
+              <div className="card p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-semibold text-ink-800">Mis datos</h2>
+                  {datosMsgOk && <span className="text-xs text-emerald-600 font-medium">Guardado ✓</span>}
+                  {!editandoDatos ? (
+                    <button onClick={() => setEditandoDatos(true)} className="btn-ghost py-1 px-2 text-xs gap-1">
+                      <Edit3 size={13} /> Editar
+                    </button>
+                  ) : (
+                    <div className="flex gap-1">
+                      <button onClick={guardarDatos} disabled={guardandoDatos} className="btn-ghost py-1 px-2 text-xs gap-1 text-brand-600">
+                        <Check size={13} /> {guardandoDatos ? '...' : 'Guardar'}
+                      </button>
+                      <button onClick={() => setEditandoDatos(false)} className="btn-ghost py-1 px-2 text-xs gap-1 text-red-500">
+                        <X size={13} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {!editandoDatos ? (
+                  <div className="space-y-4 text-sm text-ink-600">
+                    {fechaNac && <p><span className="text-ink-400">Fecha de nacimiento:</span> {new Date(fechaNac + 'T00:00:00').toLocaleDateString('es-AR')}</p>}
+                    {resumenPerfil && <p className="leading-relaxed">{resumenPerfil}</p>}
+                    {experiencias.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest mb-2 flex items-center gap-1"><BriefcaseIcon size={12} /> Experiencia</p>
+                        <div className="space-y-1.5">
+                          {experiencias.map((e, i) => (
+                            <div key={i} className="bg-ink-50 rounded-lg px-3 py-2">
+                              <p className="font-medium text-ink-700">{e.cargo} <span className="text-ink-400 font-normal">en {e.empresa}</span></p>
+                              {e.periodo && <p className="text-xs text-ink-400">{e.periodo}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {educaciones.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest mb-2 flex items-center gap-1"><GraduationCap size={12} /> Educación</p>
+                        <div className="space-y-1.5">
+                          {educaciones.map((e, i) => (
+                            <div key={i} className="bg-ink-50 rounded-lg px-3 py-2">
+                              <p className="font-medium text-ink-700">{e.titulo} <span className="text-ink-400 font-normal">— {e.institucion}</span></p>
+                              {e.periodo && <p className="text-xs text-ink-400">{e.periodo}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {habilidades.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest mb-2 flex items-center gap-1"><Wrench size={12} /> Habilidades</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {habilidades.map((h, i) => <span key={i} className="text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full">{h}</span>)}
+                        </div>
+                      </div>
+                    )}
+                    {!fechaNac && !resumenPerfil && !experiencias.length && !educaciones.length && !habilidades.length && (
+                      <p className="text-ink-300 italic text-sm">Completá tus datos para que las empresas te conozcan mejor.</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-5">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-medium text-ink-600 block mb-1">Fecha de nacimiento</label>
+                        <input type="date" value={fechaNac} onChange={e => setFechaNac(e.target.value)} className="input-field text-sm" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-medium text-ink-600 block mb-1">Resumen profesional</label>
+                      <textarea value={resumenPerfil} onChange={e => setResumenPerfil(e.target.value)} rows={3} placeholder="Describí brevemente tu perfil y objetivos..." className="input-field resize-none text-sm" />
+                    </div>
+
+                    {/* Experiencia */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-xs font-medium text-ink-600 flex items-center gap-1"><BriefcaseIcon size={12} /> Experiencia laboral</label>
+                        <button onClick={() => setExperiencias(p => [...p, { empresa: '', cargo: '', periodo: '', descripcion: '' }])} className="text-xs text-brand-600 hover:underline flex items-center gap-1"><Plus size={12} /> Agregar</button>
+                      </div>
+                      <div className="space-y-2">
+                        {experiencias.map((e, i) => (
+                          <div key={i} className="bg-ink-50 rounded-xl p-3 space-y-2">
+                            <div className="grid grid-cols-2 gap-2">
+                              <input value={e.cargo} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, cargo: ev.target.value } : x))} placeholder="Cargo / puesto" className="input-field text-xs py-1.5" />
+                              <input value={e.empresa} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, empresa: ev.target.value } : x))} placeholder="Empresa" className="input-field text-xs py-1.5" />
+                            </div>
+                            <div className="flex gap-2">
+                              <input value={e.periodo} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, periodo: ev.target.value } : x))} placeholder="Período (ej: 2020–2023)" className="input-field text-xs py-1.5 flex-1" />
+                              <button onClick={() => setExperiencias(p => p.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-600 px-2"><X size={14} /></button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Educación */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-xs font-medium text-ink-600 flex items-center gap-1"><GraduationCap size={12} /> Educación</label>
+                        <button onClick={() => setEducaciones(p => [...p, { institucion: '', titulo: '', periodo: '' }])} className="text-xs text-brand-600 hover:underline flex items-center gap-1"><Plus size={12} /> Agregar</button>
+                      </div>
+                      <div className="space-y-2">
+                        {educaciones.map((e, i) => (
+                          <div key={i} className="bg-ink-50 rounded-xl p-3 space-y-2">
+                            <div className="grid grid-cols-2 gap-2">
+                              <input value={e.titulo} onChange={ev => setEducaciones(p => p.map((x, j) => j === i ? { ...x, titulo: ev.target.value } : x))} placeholder="Título / carrera" className="input-field text-xs py-1.5" />
+                              <input value={e.institucion} onChange={ev => setEducaciones(p => p.map((x, j) => j === i ? { ...x, institucion: ev.target.value } : x))} placeholder="Institución" className="input-field text-xs py-1.5" />
+                            </div>
+                            <div className="flex gap-2">
+                              <input value={e.periodo} onChange={ev => setEducaciones(p => p.map((x, j) => j === i ? { ...x, periodo: ev.target.value } : x))} placeholder="Período (ej: 2018–2022)" className="input-field text-xs py-1.5 flex-1" />
+                              <button onClick={() => setEducaciones(p => p.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-600 px-2"><X size={14} /></button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Habilidades */}
+                    <div>
+                      <label className="text-xs font-medium text-ink-600 block mb-2 flex items-center gap-1"><Wrench size={12} /> Habilidades</label>
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {habilidades.map((h, i) => (
+                          <span key={i} className="flex items-center gap-1 text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full">
+                            {h} <button onClick={() => setHabilidades(p => p.filter((_, j) => j !== i))} className="text-brand-400 hover:text-red-500"><X size={10} /></button>
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <input value={habilidadInput} onChange={e => setHabilidadInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && habilidadInput.trim()) { setHabilidades(p => [...p, habilidadInput.trim()]); setHabilidadInput(''); e.preventDefault(); }}} placeholder="Escribí una habilidad y presioná Enter" className="input-field text-xs py-1.5 flex-1" />
+                        <button onClick={() => { if (habilidadInput.trim()) { setHabilidades(p => [...p, habilidadInput.trim()]); setHabilidadInput(''); }}} className="btn-ghost text-xs py-1.5 px-3"><Plus size={13} /></button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <VideoCard
                 tipo="video_cv" titulo="Video CV"
                 descripcion="Presentá tu perfil laboral en 4 módulos guiados"

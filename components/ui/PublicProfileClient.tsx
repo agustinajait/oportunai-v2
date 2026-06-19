@@ -4,8 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import {
   Sparkles, Video, Mic, Phone, Mail, MapPin,
-  Download, Eye, EyeOff, Share2, Check, Copy,
-  User, ChevronRight, FileVideo, Link2
+  Download, Eye, EyeOff, Share2, Check,
+  User, ChevronRight, FileVideo, Link2,
+  Briefcase, GraduationCap, Wrench, Calendar
 } from 'lucide-react';
 
 interface VideoItem { id: string; tipo: string; video_url: string; created_at: string }
@@ -26,9 +27,26 @@ interface UsuarioPublico {
   telefono: string;
   direccion: string;
   alfa_digital?: string | null;
+  alfa_score?: number | null;
+  fecha_nacimiento?: string | null;
   cv_datos?: CvDatos | null;
   videos: VideoItem[];
   archivos: ArchivoItem[];
+}
+
+function calcularEdad(fechaNac: string | null | undefined): number | null {
+  if (!fechaNac) return null;
+  const hoy = new Date();
+  const nac = new Date(fechaNac);
+  let edad = hoy.getFullYear() - nac.getFullYear();
+  if (hoy.getMonth() < nac.getMonth() || (hoy.getMonth() === nac.getMonth() && hoy.getDate() < nac.getDate())) edad--;
+  return edad;
+}
+
+function extraerCiudad(direccion: string | null | undefined): string {
+  if (!direccion) return '';
+  const partes = direccion.split(',');
+  return partes.length >= 2 ? partes[partes.length - 2].trim() : partes[0].trim();
 }
 
 interface Props {
@@ -315,56 +333,99 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
           </div>
         </div>
 
-        {/* ── CV ANALIZADO ─────────────────────────────────────── */}
-        {usuario.cv_datos && (
-          <div className="card p-5 space-y-3">
-            <h3 className="font-medium text-ink-800 text-sm">CV analizado</h3>
-            {usuario.cv_datos.resumen && (
-              <p className="text-sm text-ink-600 leading-relaxed">{usuario.cv_datos.resumen}</p>
-            )}
-            {(usuario.cv_datos.experiencia?.length ?? 0) > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-ink-400 uppercase tracking-widest mb-1.5">Experiencia</p>
-                <div className="space-y-1">
-                  {usuario.cv_datos.experiencia!.map((e, i) => (
-                    <div key={i} className="text-sm text-ink-600">
-                      <span className="font-medium text-ink-800">{e.cargo}</span> — {e.empresa}
-                      <span className="text-ink-400 text-xs ml-1">({e.periodo})</span>
-                    </div>
-                  ))}
+        {/* ── PERFIL / CV GENERADO ──────────────────────────────── */}
+        {(() => {
+          const edad = calcularEdad(usuario.fecha_nacimiento);
+          const ciudad = extraerCiudad(usuario.direccion);
+          const cv = usuario.cv_datos;
+          const tieneContenido = edad || ciudad || cv?.resumen || (cv?.experiencia?.length ?? 0) > 0
+            || (cv?.educacion?.length ?? 0) > 0 || (cv?.habilidades?.length ?? 0) > 0
+            || (cv?.idiomas?.length ?? 0) > 0;
+          if (!tieneContenido) return null;
+          return (
+            <div className="card p-5 space-y-4">
+              <h3 className="font-semibold text-ink-800">Perfil del candidato</h3>
+
+              {/* Datos básicos */}
+              {(edad || ciudad) && (
+                <div className="flex flex-wrap gap-3">
+                  {edad && (
+                    <span className="flex items-center gap-1.5 text-sm text-ink-600 bg-ink-50 rounded-lg px-3 py-1.5">
+                      <Calendar size={13} className="text-ink-400" /> {edad} años
+                    </span>
+                  )}
+                  {ciudad && (
+                    <span className="flex items-center gap-1.5 text-sm text-ink-600 bg-ink-50 rounded-lg px-3 py-1.5">
+                      <MapPin size={13} className="text-ink-400" /> {ciudad}
+                    </span>
+                  )}
                 </div>
-              </div>
-            )}
-            {(usuario.cv_datos.educacion?.length ?? 0) > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-ink-400 uppercase tracking-widest mb-1.5">Educación</p>
-                {usuario.cv_datos.educacion!.map((e, i) => (
-                  <div key={i} className="text-sm text-ink-600">
-                    <span className="font-medium text-ink-800">{e.titulo}</span> — {e.institucion}
-                    <span className="text-ink-400 text-xs ml-1">({e.periodo})</span>
+              )}
+
+              {/* Resumen */}
+              {cv?.resumen && (
+                <p className="text-sm text-ink-600 leading-relaxed">{cv.resumen}</p>
+              )}
+
+              {/* Experiencia */}
+              {(cv?.experiencia?.length ?? 0) > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-ink-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    <Briefcase size={12} /> Experiencia
+                  </p>
+                  <div className="space-y-2">
+                    {cv!.experiencia!.map((e, i) => (
+                      <div key={i} className="bg-ink-50 rounded-xl px-3 py-2.5">
+                        <p className="text-sm font-medium text-ink-800">{e.cargo}</p>
+                        <p className="text-xs text-ink-500">{e.empresa}{e.periodo ? ` · ${e.periodo}` : ''}</p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-            {(usuario.cv_datos.habilidades?.length ?? 0) > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {usuario.cv_datos.habilidades!.map((h, i) => (
-                  <span key={i} className="text-xs bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full">{h}</span>
-                ))}
-              </div>
-            )}
-            {(usuario.cv_datos.idiomas?.length ?? 0) > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-ink-400 uppercase tracking-widest mb-1.5">Idiomas</p>
+                </div>
+              )}
+
+              {/* Educación */}
+              {(cv?.educacion?.length ?? 0) > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-ink-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    <GraduationCap size={12} /> Educación
+                  </p>
+                  <div className="space-y-2">
+                    {cv!.educacion!.map((e, i) => (
+                      <div key={i} className="bg-ink-50 rounded-xl px-3 py-2.5">
+                        <p className="text-sm font-medium text-ink-800">{e.titulo}</p>
+                        <p className="text-xs text-ink-500">{e.institucion}{e.periodo ? ` · ${e.periodo}` : ''}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Habilidades */}
+              {(cv?.habilidades?.length ?? 0) > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-ink-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    <Wrench size={12} /> Habilidades
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {cv!.habilidades!.map((h, i) => (
+                      <span key={i} className="text-xs bg-brand-100 text-brand-700 px-2.5 py-1 rounded-full">{h}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Idiomas */}
+              {(cv?.idiomas?.length ?? 0) > 0 && (
                 <div className="flex flex-wrap gap-1.5">
-                  {usuario.cv_datos.idiomas!.map((l, i) => (
-                    <span key={i} className="text-xs bg-ink-100 text-ink-600 px-2 py-0.5 rounded-full">{l}</span>
+                  {cv!.idiomas!.map((l, i) => (
+                    <span key={i} className="text-xs bg-ink-100 text-ink-600 px-2.5 py-1 rounded-full">{l}</span>
                   ))}
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          );
+        })()}
 
         {/* ── SWITCH CV / PITCH ─────────────────────────────────── */}
         <div className="card p-4 flex items-center justify-between">

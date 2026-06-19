@@ -41,6 +41,8 @@ export default async function VideoCVPage({ params }: Props) {
       bio: true,
       slug: true,
       alfa_digital: true,
+      alfa_score: true,
+      fecha_nacimiento: true,
       email: true,
       telefono: true,
       direccion: true,

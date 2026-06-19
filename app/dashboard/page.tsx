@@ -23,6 +23,7 @@ export default async function DashboardPage() {
         cv_datos: true,
         alfa_digital: true,
         alfa_score: true,
+        fecha_nacimiento: true,
         created_at: true,
         videos: {
           where: { es_fragmento: false },

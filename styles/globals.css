@@ -1,17 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --font-display: 'Fraunces', serif;
+  --font-display: 'Syne', sans-serif;
   --font-body: 'DM Sans', sans-serif;
 }
 
 @layer base {
   * { box-sizing: border-box; }
   html { font-family: var(--font-body); }
-  body { @apply bg-ink-50 text-ink-800; }
+  body { @apply bg-brand-50 text-ink-900; }
   h1, h2, h3 { font-family: var(--font-display); }
 }
 
@@ -26,15 +26,15 @@
   }
   .btn-ghost {
     @apply inline-flex items-center gap-2 px-4 py-2 text-ink-600 font-medium rounded-lg
-           hover:bg-ink-100 active:scale-95 transition-all duration-150;
+           hover:bg-brand-50 active:scale-95 transition-all duration-150;
   }
   .input-field {
     @apply w-full px-4 py-3 bg-white border border-ink-200 rounded-xl text-ink-800
-           placeholder-ink-400 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent
+           placeholder-ink-400 focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-transparent
            transition-all duration-150;
   }
   .card {
-    @apply bg-white rounded-2xl border border-ink-100 shadow-sm;
+    @apply bg-white rounded-2xl border border-brand-100 shadow-sm;
   }
   .label {
     @apply block text-sm font-medium text-ink-600 mb-1.5;

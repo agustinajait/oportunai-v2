@@ -107,6 +107,7 @@ export default async function LandingPage() {
       </nav>
 
       {/* ── HERO SPLIT ── */}
+      <div className={s.heroOuter}>
       <section className={s.heroSplit}>
         <div className={`${s.panel} ${s.panelCandidato}`}>
           <div>
@@ -143,8 +144,10 @@ export default async function LandingPage() {
           </div>
         </div>
       </section>
+      </div>
 
       {/* ── STATS ROW ── */}
+      <div className={s.statsOuter}>
       <div className={s.statsRow}>
         <div className={s.stat}>
           <div className={s.statN}>{fmtNum(totalCandidatos)}</div>
@@ -159,6 +162,7 @@ export default async function LandingPage() {
           <div className={s.statL}>Ofertas activas hoy</div>
         </div>
       </div>
+      </div>
 
       {/* ── CAP STRIP ── */}
       <div className={s.capStrip}>
@@ -171,6 +175,7 @@ export default async function LandingPage() {
       </div>
 
       {/* ── NICHOS ── */}
+      <div className={s.nichosOuter}>
       <div className={s.nichos}>
         {sectores.map((sec) => (
           <Link key={sec.label} href={sec.href} className={s.nicho}>
@@ -183,6 +188,7 @@ export default async function LandingPage() {
             <div className={s.nichoGo}>Ver ofertas <ChevronRight size={13} /></div>
           </Link>
         ))}
+      </div>
       </div>
 
       {/* ── STEPS ── */}

@@ -3,48 +3,45 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Oportunai — Preview Hero</title>
+<title>Oportunai — Preview Hero v2 (light + split)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:         #09090B;
-  --surface:    rgba(255,255,255,0.03);
-  --border:     rgba(255,255,255,0.08);
-  --border-md:  rgba(255,255,255,0.12);
-  --text-1:     #F4F4F5;
-  --text-2:     #A1A1AA;
-  --text-3:     #52525B;
-  --accent-1:   #6D5AE6;
-  --accent-2:   #9B87F5;
-  --teal:       #14C7A8;
+  --bg:        #F7F7FC;
+  --white:     #ffffff;
+  --border:    rgba(0,0,0,0.07);
+  --text-1:    #111118;
+  --text-2:    #6B6B80;
+  --text-3:    #A0A0B0;
+
+  /* Candidato — violeta */
+  --v1: #4B33CC;
+  --v2: #6248EA;
+
+  /* Empresa — teal */
+  --t1: #0CA898;
+  --t2: #14C7A8;
 }
 
-body {
-  background: var(--bg);
-  font-family: 'DM Sans', sans-serif;
-  color: var(--text-1);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+html { font-family: 'DM Sans', sans-serif; color: var(--text-1); background: var(--bg); }
 
-/* ── NAV ── */
+/* ─── NAV ─── */
 nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 40px;
-  height: 60px;
+  height: 62px;
+  padding: 0 36px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(9,9,11,0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 
 .logo {
@@ -55,273 +52,255 @@ nav {
 }
 
 .logo-mark {
-  width: 30px;
-  height: 30px;
+  width: 30px; height: 30px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #5B3FE0, #8B5CF6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: linear-gradient(135deg, var(--v1), var(--v2));
+  display: flex; align-items: center; justify-content: center;
 }
-
-.logo-mark svg { display: block; }
 
 .logo-text {
   font-family: 'Poppins', sans-serif;
   font-size: 15px;
   font-weight: 700;
   color: var(--text-1);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
 }
 
-.nav-links {
+.nav-links { display: flex; align-items: center; gap: 4px; }
+
+.nav-link {
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+}
+.nav-link:hover { color: var(--text-1); background: rgba(0,0,0,0.04); }
+
+.nav-cta {
+  padding: 8px 18px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--v1), var(--v2));
+  color: #fff;
+  text-decoration: none;
+  transition: opacity 0.2s, transform 0.2s;
+  margin-left: 4px;
+}
+.nav-cta:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ─── HERO SPLIT ─── */
+.hero-wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 24px 0;
+}
+
+.hero-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.04),
+    0 8px 32px rgba(0,0,0,0.06),
+    0 0 0 1px rgba(0,0,0,0.05);
+}
+
+/* ─── PANEL base ─── */
+.panel {
+  padding: 3.5rem 3rem;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative glows inside panels */
+.panel::before {
+  content: '';
+  position: absolute;
+  top: -80px; right: -80px;
+  width: 260px; height: 260px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.09);
+  pointer-events: none;
+}
+.panel::after {
+  content: '';
+  position: absolute;
+  bottom: -60px; left: -60px;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  pointer-events: none;
+}
+
+/* Candidato */
+.panel-v {
+  background:
+    radial-gradient(ellipse 80% 60% at 80% -10%, rgba(255,255,255,0.12) 0%, transparent 55%),
+    linear-gradient(145deg, var(--v1) 0%, #5340DE 50%, var(--v2) 100%);
+}
+
+/* Empresa */
+.panel-t {
+  background:
+    radial-gradient(ellipse 80% 60% at 80% -10%, rgba(255,255,255,0.12) 0%, transparent 55%),
+    linear-gradient(145deg, var(--t1) 0%, #13B89A 50%, var(--t2) 100%);
+  border-left: 1px solid rgba(255,255,255,0.15);
+}
+
+/* Panel content */
+.panel-eyebrow {
   display: flex;
   align-items: center;
   gap: 6px;
-}
-
-.btn-nav {
-  padding: 7px 15px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  font-family: 'DM Sans', sans-serif;
-  cursor: pointer;
-  text-decoration: none;
-  color: var(--text-2);
-  background: none;
-  border: none;
-  transition: color 0.15s;
-}
-.btn-nav:hover { color: var(--text-1); }
-
-.btn-nav-outline {
-  padding: 7px 15px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  font-family: 'DM Sans', sans-serif;
-  cursor: pointer;
-  text-decoration: none;
-  color: var(--text-1);
-  background: var(--surface);
-  border: 1px solid var(--border-md);
-  transition: all 0.15s;
-}
-.btn-nav-outline:hover {
-  background: rgba(255,255,255,0.07);
-  border-color: rgba(255,255,255,0.2);
-}
-
-/* ── HERO ── */
-.hero {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 100px 24px 80px;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Glow radial detrás del título */
-.hero::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 900px;
-  height: 600px;
-  background: radial-gradient(ellipse 70% 55% at 50% 0%,
-    rgba(91,63,224,0.18) 0%,
-    transparent 65%);
-  pointer-events: none;
-}
-
-/* Segundo glow teal sutil */
-.hero::after {
-  content: '';
-  position: absolute;
-  bottom: 0; right: 10%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(ellipse 60% 60% at 80% 100%,
-    rgba(20,199,168,0.07) 0%,
-    transparent 70%);
-  pointer-events: none;
-}
-
-/* Badge eyebrow */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: rgba(109,90,230,0.1);
-  border: 1px solid rgba(109,90,230,0.28);
-  border-radius: 999px;
-  padding: 5px 14px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #B39DFF;
-  letter-spacing: 0.05em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  margin-bottom: 32px;
-  position: relative;
-  z-index: 1;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 1.25rem;
 }
 
-.badge-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent-2);
-  animation: pulse 2s ease infinite;
-}
-
-@keyframes pulse {
-  0%,100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
-}
-
-/* H1 */
-h1 {
+.panel-h {
   font-family: 'Poppins', sans-serif;
-  font-size: clamp(42px, 6vw, 72px);
+  font-size: 52px;
   font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -0.04em;
-  color: var(--text-1);
-  margin-bottom: 22px;
-  position: relative;
-  z-index: 1;
-  max-width: 720px;
-}
-
-.gradient-text {
-  background: linear-gradient(90deg, #9B87F5 0%, #6D5AE6 45%, #14C7A8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Subtitle */
-.subtitle {
-  font-size: 17px;
-  color: var(--text-2);
-  line-height: 1.7;
-  max-width: 500px;
-  margin-bottom: 44px;
+  line-height: 1.0;
+  letter-spacing: -0.035em;
+  color: #fff;
+  margin-bottom: 1rem;
   position: relative;
   z-index: 1;
 }
 
-/* CTA buttons */
-.cta-group {
-  display: flex;
-  gap: 12px;
-  align-items: center;
+.panel-sub {
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: rgba(255,255,255,0.72);
+  max-width: 300px;
   position: relative;
   z-index: 1;
-  flex-wrap: wrap;
-  justify-content: center;
+  margin-bottom: 2.25rem;
 }
 
-.btn-primary {
+/* CTAs */
+.panel-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 26px;
-  border-radius: 10px;
+  padding: 13px 22px;
+  border-radius: 11px;
   font-size: 14px;
   font-weight: 600;
   font-family: 'DM Sans', sans-serif;
-  color: #fff;
-  background: linear-gradient(135deg, #5B3FE0 0%, #8B5CF6 100%);
-  border: none;
-  cursor: pointer;
   text-decoration: none;
-  transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
-  box-shadow: 0 0 0 rgba(109,90,230,0);
-}
-
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 28px rgba(109,90,230,0.4), 0 4px 12px rgba(0,0,0,0.3);
-}
-
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 26px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  font-family: 'DM Sans', sans-serif;
-  color: var(--text-1);
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--border-md);
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-.btn-secondary:hover {
-  background: rgba(255,255,255,0.08);
-  border-color: rgba(255,255,255,0.2);
-  transform: translateY(-1px);
-}
-
-/* Stats divider */
-.stats-divider {
+  width: fit-content;
   position: relative;
   z-index: 1;
-  margin-top: 64px;
-  display: flex;
-  align-items: center;
-  gap: 0;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-  overflow: hidden;
-  backdrop-filter: blur(8px);
+  transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+  background: rgba(255,255,255,0.97);
 }
 
-.stat-item {
-  padding: 16px 32px;
-  text-align: center;
+.panel-btn-v { color: var(--v1); }
+.panel-btn-t { color: var(--t1); }
+
+.panel-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+  background: #fff;
+}
+
+/* Decorative watermark icon */
+.panel-decor {
+  position: absolute;
+  bottom: 18px; right: 22px;
+  opacity: 0.1;
+  z-index: 0;
+  color: #fff;
+  pointer-events: none;
+}
+
+/* ─── STATS ─── */
+.stats-wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+}
+
+.stat {
+  padding: 1.5rem 28px;
   border-right: 1px solid var(--border);
 }
-
-.stat-item:last-child { border-right: none; }
+.stat:last-child { border-right: none; }
 
 .stat-n {
   font-family: 'Poppins', sans-serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-1);
-  letter-spacing: -0.03em;
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--v1);
+  letter-spacing: -0.04em;
   line-height: 1;
 }
 
 .stat-l {
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--text-3);
-  margin-top: 3px;
+  margin-top: 4px;
   font-weight: 500;
 }
 
-/* ── NOTA ── */
-.preview-note {
+/* ─── BOTTOM PAGE PREVIEW ─── */
+.page-bg-demo {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 48px 24px 32px;
   text-align: center;
-  padding: 16px;
-  border-top: 1px solid var(--border);
+}
+
+.next-section-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
   color: var(--text-3);
-  background: rgba(255,255,255,0.02);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 16px;
 }
+
+/* ─── NOTE ─── */
+.preview-note {
+  text-align: center;
+  padding: 14px;
+  font-size: 12px;
+  color: var(--text-3);
+  border-top: 1px solid var(--border);
+  background: var(--white);
+  margin-top: 48px;
+}
+
+/* ─── ICON INLINE ─── */
+svg { display: block; flex-shrink: 0; }
+
 </style>
 </head>
 <body>
@@ -330,73 +309,109 @@ h1 {
 <nav>
   <a href="#" class="logo">
     <div class="logo-mark">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+      <!-- Video icon -->
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
       </svg>
     </div>
     <span class="logo-text">OPORTUNAI</span>
   </a>
   <div class="nav-links">
-    <a href="#" class="btn-nav">Capacitaciones</a>
-    <a href="#" class="btn-nav">Iniciar sesión</a>
-    <a href="#" class="btn-nav-outline">Empezar gratis</a>
+    <a href="#" class="nav-link">Capacitaciones</a>
+    <a href="#" class="nav-link">Iniciar sesión</a>
+    <a href="#" class="nav-cta">Empezar gratis</a>
   </div>
 </nav>
 
-<!-- HERO -->
-<section class="hero">
+<!-- HERO SPLIT -->
+<div class="hero-wrap">
+  <div class="hero-split">
 
-  <!-- Badge -->
-  <div class="badge">
-    <span class="badge-dot"></span>
-    Plataforma de empleo con Video CV
+    <!-- CANDIDATO -->
+    <div class="panel panel-v">
+      <div>
+        <p class="panel-eyebrow">
+          <!-- HardHat icon -->
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 20h20"/><path d="M12 2a8 8 0 0 1 8 8H4a8 8 0 0 1 8-8z"/><path d="M4 20v-4a8 8 0 0 1 8-8 8 8 0 0 1 8 8v4"/>
+          </svg>
+          Para candidatos
+        </p>
+        <h1 class="panel-h">Buscás<br/>trabajo.</h1>
+        <p class="panel-sub">Grabás 60 segundos desde el celular. Las empresas te ven y te llaman. Sin CV, sin papeles.</p>
+      </div>
+      <a href="#" class="panel-btn panel-btn-v">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+        </svg>
+        Crear mi Video CV
+      </a>
+      <!-- Decor -->
+      <div class="panel-decor">
+        <svg width="160" height="160" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 20h20"/><path d="M12 2a8 8 0 0 1 8 8H4a8 8 0 0 1 8-8z"/><path d="M4 20v-4a8 8 0 0 1 8-8 8 8 0 0 1 8 8v4"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- EMPRESA -->
+    <div class="panel panel-t">
+      <div>
+        <p class="panel-eyebrow">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+          Para empresas
+        </p>
+        <h1 class="panel-h">Buscás<br/>personal.</h1>
+        <p class="panel-sub">Publicás la oferta, recibís videos y elegís. Más rápido, menos entrevistas perdidas.</p>
+      </div>
+      <a href="#" class="panel-btn panel-btn-t">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+        Registrar mi empresa
+      </a>
+      <!-- Decor -->
+      <div class="panel-decor">
+        <svg width="160" height="160" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 17a1 1 0 0 1 .117.006l.055.006a2 2 0 0 1-.172 3.988H8v2a1 1 0 0 1-1.993.117L6 23v-2H4a2 2 0 0 1-.172-3.988l.117-.006L4 17h7z"/>
+          <path d="M13 6a1 1 0 0 1 .993.883L14 7v2h2a2 2 0 0 1 .172 3.988L16 13h-2v2a1 1 0 0 1-1.993.117L12 15v-2h-2a2 2 0 0 1-.172-3.988L10 9h2V7a1 1 0 0 1 1-1z"/>
+          <path d="M3 3l18 18"/>
+        </svg>
+      </div>
+    </div>
+
   </div>
+</div>
 
-  <!-- H1 -->
-  <h1>
-    Encontrá trabajo.<br/>
-    O encontrá <span class="gradient-text">talento.</span>
-  </h1>
-
-  <!-- Subtitle -->
-  <p class="subtitle">
-    Grabás 60 segundos desde el celular y las empresas te ven y te llaman.
-    Sin CV, sin papeles. Completamente gratis.
-  </p>
-
-  <!-- CTAs -->
-  <div class="cta-group">
-    <a href="#" class="btn-primary">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-      Crear mi Video CV
-    </a>
-    <a href="#" class="btn-secondary">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-      Soy empresa
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-    </a>
-  </div>
-
-  <!-- Stats -->
-  <div class="stats-divider">
-    <div class="stat-item">
-      <div class="stat-n">+10K</div>
+<!-- STATS -->
+<div class="stats-wrap">
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-n">+16</div>
       <div class="stat-l">Personas registradas</div>
     </div>
-    <div class="stat-item">
-      <div class="stat-n">+800</div>
-      <div class="stat-l">Empresas activas</div>
+    <div class="stat">
+      <div class="stat-n">+7</div>
+      <div class="stat-l">Empresas registradas</div>
     </div>
-    <div class="stat-item">
-      <div class="stat-n">106</div>
-      <div class="stat-l">Ofertas hoy</div>
+    <div class="stat">
+      <div class="stat-n">12</div>
+      <div class="stat-l">Ofertas activas hoy</div>
     </div>
   </div>
+</div>
 
-</section>
+<!-- Hint próxima sección -->
+<div class="page-bg-demo">
+  <div class="next-section-hint">
+    ↓ &nbsp; Continúan: nichos, steps, capacitaciones… (misma dirección visual)
+  </div>
+</div>
 
 <div class="preview-note">
-  Preview · Solo sección Hero · Los números son placeholder — en producción vienen de la DB
+  Preview · Hero + Stats · Modo claro · Split mantenido · Tipografía Poppins
 </div>
 
 </body>

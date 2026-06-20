@@ -7,20 +7,31 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['var(--font-display)', 'serif'],
+        display: ['var(--font-display)', 'sans-serif'],
         body: ['var(--font-body)', 'sans-serif'],
       },
       colors: {
         brand: {
-          50:  '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
+          50:  '#F8F7FD',
+          100: '#ECE9FB',
+          200: '#D5CCFA',
+          300: '#B8A9F5',
+          400: '#9B86F0',
+          500: '#7A62E8',
+          600: '#5B3FE0',
+          700: '#4A30C4',
+          800: '#3A23A8',
+          900: '#2A1880',
+        },
+        teal: {
+          50:  '#E3FAF4',
+          100: '#C0F4E8',
+          200: '#87EDD4',
+          300: '#47E2BE',
+          400: '#14C7A8',
+          500: '#0E9C82',
+          600: '#0A7A66',
+          700: '#075A4D',
         },
         ink: {
           50:  '#f8f7f4',

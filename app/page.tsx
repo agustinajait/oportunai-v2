@@ -1,214 +1,301 @@
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
-import { Video, Mic, Share2, ChevronRight, Building2, MapPin, Briefcase } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
+import s from './landing.module.css';
 
-const MODALIDAD_LABEL: Record<string, string> = {
-  presencial: 'Presencial',
-  remoto: 'Remoto',
-  hibrido: 'Híbrido',
-};
+const SECTORES = [
+  {
+    label: 'Estaciones de servicio',
+    desc:  'Playeros, cajeros, supervisores',
+    icon:  '⛽',
+    href:  '/ofertas',
+    keys:  ['estacion', 'playero', 'nafta', 'combustible', 'playa de'],
+  },
+  {
+    label: 'Empresas de limpieza',
+    desc:  'Operarios, supervisores',
+    icon:  '✨',
+    href:  '/ofertas',
+    keys:  ['limpieza', 'aseo', 'cleaning', 'higiene'],
+  },
+  {
+    label: 'Comidas rápidas',
+    desc:  'Cocina, atención, caja',
+    icon:  '🍔',
+    href:  '/ofertas',
+    keys:  ['gastronomia', 'gastronomía', 'comida', 'restaurant', 'cocina', 'food', 'hamburgue', 'pizza', 'fast food'],
+  },
+];
+
+const TALLER_ICONS = [
+  { bg: '#ECE9FB', ico: '⛽', rubro: 'Estación de servicio' },
+  { bg: '#E3FAF4', ico: '✨', rubro: 'Limpieza' },
+  { bg: '#FFF3E8', ico: '🍔', rubro: 'Comidas rápidas' },
+];
+
+const CAP_FALLBACK = [
+  { icon: '⛽', bg: '#ECE9FB', rubro: 'Estación de servicio', titulo: 'Atención al cliente en la playa', dur: '8 min',  emp: 'YPF' },
+  { icon: '✨', bg: '#E3FAF4', rubro: 'Limpieza',             titulo: 'Técnicas de limpieza profesional', dur: '12 min', emp: 'Propia empresa' },
+  { icon: '🍔', bg: '#FFF3E8', rubro: 'Comidas rápidas',      titulo: 'Atención y manejo de caja',        dur: '10 min', emp: 'Empresa local' },
+];
+
+function countSector(ofertas: { area: string | null; titulo: string }[], keys: string[]) {
+  return ofertas.filter(o =>
+    keys.some(k => `${o.area ?? ''} ${o.titulo}`.toLowerCase().includes(k))
+  ).length;
+}
+
+function fmtNum(n: number): string {
+  if (n >= 10000) return `+${Math.floor(n / 1000)}K`;
+  if (n > 0) return `+${n}`;
+  return '0';
+}
 
 export default async function LandingPage() {
-  const ofertasDestacadas = await prisma.oferta.findMany({
-    where: { estado: 'activa' },
-    include: { empresa: { select: { nombre: true, logo_url: true } } },
-    orderBy: { created_at: 'desc' },
-    take: 3,
-  });
+  const [totalCandidatos, totalEmpresas, ofertasActivas, talleres] = await Promise.all([
+    prisma.usuario.count({ where: { role: 'user' } }),
+    prisma.empresa.count({ where: { activa: true } }),
+    prisma.oferta.findMany({
+      where: { estado: 'activa' },
+      select: { id: true, titulo: true, area: true },
+    }),
+    prisma.taller.findMany({
+      where: { activo: true },
+      select: { id: true, nombre: true, descripcion: true },
+      take: 3,
+    }),
+  ]);
+
+  const totalOfertas = ofertasActivas.length;
+  const sectores = SECTORES.map(sec => ({
+    ...sec,
+    count: countSector(ofertasActivas, sec.keys),
+  }));
+
   return (
-    <div className="min-h-screen bg-ink-50 overflow-hidden">
-      {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
-        <div className="flex items-center gap-2">
-          <img src="/logo.svg" alt="Oportunai" className="w-8 h-8" />
-          <span className="font-display text-xl font-semibold text-ink-800">Oportunai</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/register-empresa" className="flex items-center gap-1.5 text-sm text-ink-600 hover:text-brand-600 transition-colors font-medium">
-            <Building2 size={15} />
-            Soy empresa
-          </Link>
-          <Link href="/login" className="btn-ghost text-sm">
-            Iniciar sesión
-          </Link>
-          <Link href="/register" className="btn-primary text-sm py-2">
-            Registrarse
-          </Link>
+    <div className={s.wrapper}>
+
+      {/* ── NAV ── */}
+      <nav className={s.nav}>
+        <Link href="/" className={s.logo}>
+          <div className={s.logoMark}>
+            <img src="/logo.png" alt="Oportunai" className={s.logoImg} />
+          </div>
+          <span className={s.logoText}>OPORTUNAI</span>
+        </Link>
+        <div className={s.navLinks}>
+          <Link href="/ofertas" className={s.btnGhost}>🎓 Capacitaciones</Link>
+          <Link href="/login" className={s.btnGhost}>Iniciar sesión</Link>
+          <Link href="/register" className={s.btnFill}>Empezar gratis</Link>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="max-w-6xl mx-auto px-6 pt-16 pb-24 text-center">
-        <div className="inline-flex items-center gap-2 bg-brand-50 text-brand-700 text-sm font-medium px-4 py-1.5 rounded-full mb-8 border border-brand-200 animate-fade-in">
-          <img src="/logo.svg" alt="" className="w-3.5 h-3.5" />
-          <span>Plataforma de capacitación laboral</span>
+      {/* ── HERO SPLIT ── */}
+      <section className={s.heroSplit}>
+        <div className={`${s.panel} ${s.panelCandidato}`}>
+          <div>
+            <p className={s.panelTag}>👷 Para candidatos</p>
+            <h1 className={s.panelH}>Buscás<br/>trabajo.</h1>
+            <p className={s.panelSub}>Grabás 60 segundos desde el celular. Las empresas te ven y te llaman. Sin CV. Sin papeles.</p>
+          </div>
+          <Link href="/register" className={`${s.panelCta} ${s.candidatoCta}`}>🎥 Crear mi Video CV</Link>
+          <div className={s.panelEmoji}>👷</div>
         </div>
-
-        <h1
-          className="font-display text-5xl md:text-7xl font-light text-ink-900 leading-tight mb-6"
-          style={{ animationDelay: '0.1s' }}
-        >
-          Creá tu{' '}
-          <span className="text-brand-600 font-semibold italic">Video CV</span>
-          <br />o{' '}
-          <span className="text-brand-600 font-semibold italic">Video Pitch</span>
-          <br />
-          <span className="text-ink-400 font-light">en minutos</span>
-        </h1>
-
-        <p className="text-ink-500 text-lg md:text-xl max-w-xl mx-auto mb-12 leading-relaxed animate-fade-up" style={{ animationDelay: '0.2s' }}>
-          Presentate con video, compartí tu perfil y destacate en el mercado laboral o como emprendedor.
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up" style={{ animationDelay: '0.3s' }}>
-          <Link href="/register?tipo=cv" className="btn-primary text-base px-8 py-4 rounded-2xl shadow-lg shadow-brand-200">
-            <Video size={18} />
-            Crear mi Video CV
-            <ChevronRight size={16} />
-          </Link>
-          <Link href="/register?tipo=pitch" className="btn-secondary text-base px-8 py-4 rounded-2xl">
-            <Mic size={18} />
-            Crear mi Video Pitch
-          </Link>
+        <div className={`${s.panel} ${s.panelEmpresa}`}>
+          <div>
+            <p className={s.panelTag}>🏢 Para empresas</p>
+            <h1 className={s.panelH}>Buscás<br/>personal.</h1>
+            <p className={s.panelSub}>Publicás la oferta, recibís videos y elegís. Más rápido, menos entrevistas perdidas.</p>
+          </div>
+          <Link href="/register-empresa" className={`${s.panelCta} ${s.empresaCta}`}>🏢 Registrar mi empresa</Link>
+          <div className={s.panelEmoji}>🤝</div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="max-w-6xl mx-auto px-6 pb-24">
-        <div className="grid md:grid-cols-3 gap-6">
+      {/* ── STATS ROW ── */}
+      <div className={s.statsRow}>
+        <div className={s.stat}>
+          <div className={s.statN}>{fmtNum(totalCandidatos)}</div>
+          <div className={s.statL}>Personas registradas</div>
+        </div>
+        <div className={s.stat}>
+          <div className={s.statN}>{fmtNum(totalEmpresas)}</div>
+          <div className={s.statL}>Empresas registradas</div>
+        </div>
+        <div className={s.stat}>
+          <div className={s.statN}>{totalOfertas || '0'}</div>
+          <div className={s.statL}>Ofertas activas hoy</div>
+        </div>
+      </div>
+
+      {/* ── CAP STRIP ── */}
+      <div className={s.capStrip}>
+        <div>
+          <p className={s.capStripTag}>✦ Exclusivo Oportunai</p>
+          <h2 className={s.capStripH}>Aprendé antes de arrancar.<br/>Gratis.</h2>
+          <p className={s.capStripP}>Capacitaciones en video para estaciones de servicio, limpieza y comidas rápidas. Cargadas por las mismas empresas que buscan personal.</p>
+        </div>
+        <Link href="/ofertas" className={s.capStripBtn}>Ver capacitaciones →</Link>
+      </div>
+
+      {/* ── NICHOS ── */}
+      <div className={s.nichos}>
+        {sectores.map((sec) => (
+          <Link key={sec.label} href={sec.href} className={s.nicho}>
+            <span className={s.nichoIco}>{sec.icon}</span>
+            <div className={s.nichoNum}>{sec.count}</div>
+            <div className={s.nichoName}>{sec.label}</div>
+            <div className={s.nichoDesc}>{sec.desc}</div>
+            <div className={s.nichoGo}>Ver ofertas →</div>
+          </Link>
+        ))}
+      </div>
+
+      {/* ── STEPS ── */}
+      <section className={`${s.sec} ${s.secAlt}`}>
+        <p className={s.eyebrow}>Cómo funciona</p>
+        <h2 className={s.secH}>Tres pasos desde el celular</h2>
+        <div className={s.steps}>
           {[
-            {
-              icon: Video,
-              title: 'Video CV',
-              desc: 'Presentate visualmente: estudios, experiencia y motivación en menos de 60 segundos.',
-              color: 'bg-brand-50 text-brand-600',
-            },
-            {
-              icon: Mic,
-              title: 'Video Pitch',
-              desc: 'Mostrá tu emprendimiento: problema, solución, producto y cierre en 60 segundos.',
-              color: 'bg-emerald-50 text-emerald-600',
-            },
-            {
-              icon: Share2,
-              title: 'Compartí tu perfil',
-              desc: 'Cada usuario tiene su URL pública optimizada para compartir por WhatsApp y redes.',
-              color: 'bg-amber-50 text-amber-600',
-            },
-          ].map((f) => (
-            <div key={f.title} className="card p-6 hover:shadow-md transition-shadow">
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-4 ${f.color}`}>
-                <f.icon size={22} />
-              </div>
-              <h3 className="font-display text-lg font-semibold text-ink-800 mb-2">{f.title}</h3>
-              <p className="text-ink-500 text-sm leading-relaxed">{f.desc}</p>
+            { n: '01', ico: '🎥', t: 'Grabás tu Video CV',     d: '4 preguntas guiadas, 15 segundos cada una. Solo el celular.' },
+            { n: '02', ico: '📲', t: 'Te postulás en un clic', d: 'Elegís la oferta y mandás tu video. Sin papeles, sin email.' },
+            { n: '03', ico: '📞', t: 'La empresa te llama',    d: 'Vieron tu video, te conocen, te avisan por WhatsApp.' },
+          ].map(step => (
+            <div key={step.n} className={s.step}>
+              <div className={s.stepN}>{step.n}</div>
+              <span className={s.stepIco}>{step.ico}</span>
+              <div className={s.stepT}>{step.t}</div>
+              <div className={s.stepD}>{step.d}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Ofertas destacadas */}
-      {ofertasDestacadas.length > 0 && (
-        <section className="max-w-6xl mx-auto px-6 pb-24">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="font-display text-2xl font-semibold text-ink-900">Ofertas de trabajo</h2>
-              <p className="text-ink-500 text-sm mt-1">Empresas buscando candidatos ahora</p>
-            </div>
-            <Link
-              href="/ofertas"
-              className="inline-flex items-center gap-1.5 text-brand-600 hover:text-brand-700 text-sm font-medium transition-colors"
-            >
-              Ver todas <ChevronRight size={15} />
-            </Link>
+      {/* ── CAPACITACIONES ── */}
+      <section className={s.sec}>
+        <div className={s.secHead}>
+          <div>
+            <p className={s.eyebrow}>🎓 Capacitaciones gratuitas</p>
+            <h2 className={s.secH} style={{ marginBottom: 4 }}>Entrá capacitado<br/>desde el día uno.</h2>
           </div>
-
-          <div className="space-y-4">
-            {ofertasDestacadas.map((o) => (
-              <div key={o.id} className="card p-5 hover:shadow-md transition-shadow">
-                <div className="flex items-start gap-4">
-                  <div className="w-11 h-11 rounded-xl bg-ink-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    {o.empresa.logo_url
-                      ? <img src={o.empresa.logo_url} alt={o.empresa.nombre} className="w-full h-full object-cover" />
-                      : <Building2 size={18} className="text-ink-400" />
-                    }
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-ink-900 leading-tight">{o.titulo}</h3>
-                    <p className="text-brand-600 text-sm font-medium mt-0.5">{o.empresa.nombre}</p>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-ink-400 text-xs">
-                      {o.ciudad && <span className="flex items-center gap-1"><MapPin size={11} />{o.ciudad}</span>}
-                      <span className="flex items-center gap-1"><Briefcase size={11} />{MODALIDAD_LABEL[o.modalidad] ?? o.modalidad}</span>
-                      {o.area && <span>{o.area}</span>}
+          <Link href="/ofertas" className={s.verMas}>Ver todas →</Link>
+        </div>
+        <div className={s.capGrid}>
+          {talleres.length > 0
+            ? talleres.map((t, i) => {
+                const th = TALLER_ICONS[i % TALLER_ICONS.length];
+                return (
+                  <div key={t.id} className={s.capCard}>
+                    <div className={s.capThumb} style={{ background: th.bg }}>
+                      {th.ico}
+                      <div className={s.capPlay}>▶ Disponible · Gratis</div>
+                    </div>
+                    <div className={s.capBody}>
+                      <div className={s.capRubro}>{th.rubro}</div>
+                      <div className={s.capTitle}>{t.nombre}</div>
+                      {t.descripcion && (
+                        <div className={s.capMeta}>{t.descripcion.slice(0, 55)}{t.descripcion.length > 55 ? '…' : ''}</div>
+                      )}
                     </div>
                   </div>
-                  <Link
-                    href={`/register?oferta_id=${o.id}`}
-                    className="btn-primary text-sm py-2 px-4 flex-shrink-0"
-                  >
-                    Postularme
-                  </Link>
+                );
+              })
+            : CAP_FALLBACK.map(c => (
+                <div key={c.titulo} className={s.capCard}>
+                  <div className={s.capThumb} style={{ background: c.bg }}>
+                    {c.icon}
+                    <div className={s.capPlay}>▶ {c.dur} · Gratis</div>
+                  </div>
+                  <div className={s.capBody}>
+                    <div className={s.capRubro}>{c.rubro}</div>
+                    <div className={s.capTitle}>{c.titulo}</div>
+                    <div className={s.capMeta}>
+                      <span>⏱ {c.dur}</span>
+                      <span className={s.capEmpresa}>{c.emp}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 text-center">
-            <Link
-              href="/ofertas"
-              className="inline-flex items-center gap-2 border border-brand-200 text-brand-700 font-medium px-6 py-3 rounded-2xl hover:bg-brand-50 transition-colors text-sm"
-            >
-              Ver todas las ofertas <ChevronRight size={16} />
-            </Link>
-          </div>
-        </section>
-      )}
-
-      {/* Sección empresas */}
-      <section className="max-w-6xl mx-auto px-6 pb-24">
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-10 flex flex-col md:flex-row items-center justify-between gap-8">
-          <div>
-            <div className="flex items-center gap-2 text-blue-600 font-medium text-sm mb-3">
-              <Building2 size={16} />
-              Para empresas
-            </div>
-            <h2 className="font-display text-3xl font-semibold text-ink-900 mb-3">
-              ¿Buscás talento?
-            </h2>
-            <p className="text-ink-500 text-base max-w-md leading-relaxed">
-              Publicá ofertas de trabajo y recibí postulaciones con Video CV. Conocé a los candidatos antes de la entrevista.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 shrink-0">
-            <Link
-              href="/register-empresa"
-              className="inline-flex items-center gap-2 bg-blue-600 text-white font-semibold px-8 py-4 rounded-2xl hover:bg-blue-700 transition-colors"
-            >
-              <Building2 size={18} />
-              Registrar empresa
-              <ChevronRight size={16} />
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center gap-2 border border-gray-200 text-gray-600 px-8 py-3 rounded-2xl hover:bg-gray-50 transition-colors text-sm"
-            >
-              Ya tengo cuenta
-            </Link>
-          </div>
+              ))
+          }
         </div>
       </section>
 
-      {/* CTA footer */}
-      <section className="bg-brand-600 py-16 px-6 text-center">
-        <h2 className="font-display text-3xl md:text-4xl font-semibold text-white mb-4">
-          ¿Listo para destacarte?
-        </h2>
-        <p className="text-brand-200 mb-8">Registrate gratis y creá tu perfil hoy.</p>
-        <Link href="/register" className="inline-flex items-center gap-2 bg-white text-brand-700 font-semibold px-8 py-4 rounded-2xl hover:bg-brand-50 transition-colors">
-          Empezar ahora
-          <ChevronRight size={18} />
-        </Link>
+      {/* ── ALFA DIGITAL ── */}
+      <section className={`${s.sec} ${s.secAlt}`}>
+        <p className={s.eyebrow}>📱 Para candidatos</p>
+        <h2 className={s.secH}>¿Cómo usás la tecnología?<br/>Contanos y destacate.</h2>
+        <div className={s.alfaGrid}>
+          {[
+            { ico: '📱', t: 'Celular y conectividad',  d: 'Contás si tenés datos y usás WhatsApp para el trabajo.',  badge: '⚡ En tu perfil' },
+            { ico: '💳', t: 'Pagos digitales',          d: 'Mercado Pago, billetera virtual, transferencias.',         badge: '⚡ En tu perfil' },
+            { ico: '🤖', t: 'Inteligencia artificial',  d: 'Si conocés ChatGPT u otras IAs, lo valoran mucho.',        badge: '🚀 Nativo digital' },
+            { ico: '📲', t: 'Apps del día a día',       d: 'Rappi, PedidosYa, Uber — mostrá que te movés bien.',       badge: '⚡ En tu perfil' },
+          ].map(a => (
+            <div key={a.t} className={s.alfaCard}>
+              <div className={s.alfaIco}>{a.ico}</div>
+              <div>
+                <div className={s.alfaT}>{a.t}</div>
+                <div className={s.alfaD}>{a.d}</div>
+                <div className={s.alfaBadge}>{a.badge}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className={s.alfaNote}>
+          💡 <strong>¿Para qué sirve?</strong> Los empleadores ven un badge en tu perfil: &quot;Nativo digital&quot;, &quot;Usuario activo&quot; o &quot;En desarrollo digital&quot;. Ninguna respuesta está mal — ayuda a las empresas a entenderte mejor.
+        </div>
       </section>
+
+      {/* ── EMPRESA SPLIT ── */}
+      <section className={s.empSplit}>
+        <div className={s.empL}>
+          <div>
+            <p className={`${s.eyebrow} ${s.empLEyebrow}`}>Para empresas</p>
+            <h2 className={`${s.secH} ${s.empLH}`}>Conocés al candidato<br/>antes de llamarlo.<br/>Y llega capacitado.</h2>
+            <p className={s.empLP}>Subís tus propias capacitaciones y recibís candidatos preparados. Menos entrevistas perdidas, más contrataciones exitosas.</p>
+          </div>
+          <Link href="/register-empresa" className={s.empLBtn}>🏢 Registrar mi empresa →</Link>
+        </div>
+        <div className={s.empR}>
+          {[
+            { ico: '🎥', t: 'Ves el video antes de entrevistar', d: 'Conocés la actitud del candidato antes de llamarlo.' },
+            { ico: '🎓', t: 'Subís tus propias capacitaciones',   d: 'Cargás videos para tu rubro y los candidatos los ven.' },
+            { ico: '📋', t: 'Pipeline de selección',              d: 'Pendiente, contactado, contratado en un tablero.' },
+            { ico: '🔄', t: 'Hecho para alta rotación',           d: 'Estaciones, limpieza, gastronomía — siempre hay vacantes.' },
+          ].map(f => (
+            <div key={f.t} className={s.efeat}>
+              <div className={s.efeatIco}>{f.ico}</div>
+              <div>
+                <div className={s.efeatT}>{f.t}</div>
+                <div className={s.efeatD}>{f.d}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── CTA FINAL ── */}
+      <section className={s.ctaFinal}>
+        <p className={s.ctaTag}>✦ Gratis · Desde el celular · 2 minutos</p>
+        <h2 className={s.ctaH}>Empezá hoy.<br/>Tu oportunidad<br/>te espera.</h2>
+        <p className={s.ctaSub}>Miles de personas en estaciones, limpieza<br/>y comidas rápidas ya encontraron trabajo.</p>
+        <div className={s.ctaBtns}>
+          <Link href="/register" className={s.ctaBtnP}>🎥 Crear mi Video CV</Link>
+          <Link href="/register-empresa" className={s.ctaBtnS}>🏢 Soy empresa</Link>
+        </div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer className={s.foot}>
+        <span className={s.footBrand}>OPORTUNAI</span>
+        <div className={s.footLinks}>
+          <Link href="#" className={s.footLink}>Privacidad</Link>
+          <Link href="#" className={s.footLink}>Contacto</Link>
+          <Link href="/register-empresa" className={s.footLink}>Para empresas</Link>
+        </div>
+        <span className={s.footCopy}>2026 · Video CV y capacitaciones</span>
+      </footer>
+
     </div>
   );
 }

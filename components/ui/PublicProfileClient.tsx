@@ -350,87 +350,104 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
           const tieneContenido = edad || ciudad || cv?.resumen || (cv?.experiencia?.length ?? 0) > 0
             || (cv?.educacion?.length ?? 0) > 0 || (cv?.habilidades?.length ?? 0) > 0
             || (cv?.idiomas?.length ?? 0) > 0;
-          if (!tieneContenido) return null;
           return (
             <div className="card p-5 space-y-4">
-              <h3 className="font-semibold text-ink-800">Perfil del candidato</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-ink-800 flex items-center gap-2">
+                  <Briefcase size={15} className="text-brand-500" />
+                  Perfil del candidato
+                </h3>
+                {tieneContenido && (
+                  <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <Check size={10} strokeWidth={3} /> CV cargado
+                  </span>
+                )}
+              </div>
 
-              {/* Datos básicos */}
-              {(edad || ciudad) && (
-                <div className="flex flex-wrap gap-3">
-                  {edad && (
-                    <span className="flex items-center gap-1.5 text-sm text-ink-600 bg-ink-50 rounded-lg px-3 py-1.5">
-                      <Calendar size={13} className="text-ink-400" /> {edad} años
-                    </span>
+              {!tieneContenido ? (
+                <p className="text-sm text-ink-300 italic">
+                  Este candidato aún no completó su perfil profesional.
+                </p>
+              ) : (
+                <>
+                  {/* Datos básicos */}
+                  {(edad || ciudad) && (
+                    <div className="flex flex-wrap gap-3">
+                      {edad && (
+                        <span className="flex items-center gap-1.5 text-sm text-ink-600 bg-ink-50 rounded-lg px-3 py-1.5">
+                          <Calendar size={13} className="text-ink-400" /> {edad} años
+                        </span>
+                      )}
+                      {ciudad && (
+                        <span className="flex items-center gap-1.5 text-sm text-ink-600 bg-ink-50 rounded-lg px-3 py-1.5">
+                          <MapPin size={13} className="text-ink-400" /> {ciudad}
+                        </span>
+                      )}
+                    </div>
                   )}
-                  {ciudad && (
-                    <span className="flex items-center gap-1.5 text-sm text-ink-600 bg-ink-50 rounded-lg px-3 py-1.5">
-                      <MapPin size={13} className="text-ink-400" /> {ciudad}
-                    </span>
+
+                  {/* Resumen */}
+                  {cv?.resumen && (
+                    <p className="text-sm text-ink-600 leading-relaxed">{cv.resumen}</p>
                   )}
-                </div>
-              )}
 
-              {/* Resumen */}
-              {cv?.resumen && (
-                <p className="text-sm text-ink-600 leading-relaxed">{cv.resumen}</p>
-              )}
-
-              {/* Experiencia */}
-              {(cv?.experiencia?.length ?? 0) > 0 && (
-                <div>
-                  <p className="text-xs font-semibold text-ink-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                    <Briefcase size={12} /> Experiencia
-                  </p>
-                  <div className="space-y-2">
-                    {cv!.experiencia!.map((e, i) => (
-                      <div key={i} className="bg-ink-50 rounded-xl px-3 py-2.5">
-                        <p className="text-sm font-medium text-ink-800">{e.cargo}</p>
-                        <p className="text-xs text-ink-500">{e.empresa}{e.periodo ? ` · ${e.periodo}` : ''}</p>
+                  {/* Experiencia */}
+                  {(cv?.experiencia?.length ?? 0) > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-ink-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                        <Briefcase size={12} /> Experiencia
+                      </p>
+                      <div className="space-y-2">
+                        {cv!.experiencia!.map((e, i) => (
+                          <div key={i} className="bg-ink-50 rounded-xl px-3 py-2.5">
+                            <p className="text-sm font-medium text-ink-800">{e.cargo}</p>
+                            <p className="text-xs text-ink-500">{e.empresa}{e.periodo ? ` · ${e.periodo}` : ''}</p>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                    </div>
+                  )}
 
-              {/* Educación */}
-              {(cv?.educacion?.length ?? 0) > 0 && (
-                <div>
-                  <p className="text-xs font-semibold text-ink-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                    <GraduationCap size={12} /> Educación
-                  </p>
-                  <div className="space-y-2">
-                    {cv!.educacion!.map((e, i) => (
-                      <div key={i} className="bg-ink-50 rounded-xl px-3 py-2.5">
-                        <p className="text-sm font-medium text-ink-800">{e.titulo}</p>
-                        <p className="text-xs text-ink-500">{e.institucion}{e.periodo ? ` · ${e.periodo}` : ''}</p>
+                  {/* Educación */}
+                  {(cv?.educacion?.length ?? 0) > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-ink-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                        <GraduationCap size={12} /> Educación
+                      </p>
+                      <div className="space-y-2">
+                        {cv!.educacion!.map((e, i) => (
+                          <div key={i} className="bg-ink-50 rounded-xl px-3 py-2.5">
+                            <p className="text-sm font-medium text-ink-800">{e.titulo}</p>
+                            <p className="text-xs text-ink-500">{e.institucion}{e.periodo ? ` · ${e.periodo}` : ''}</p>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                    </div>
+                  )}
 
-              {/* Habilidades */}
-              {(cv?.habilidades?.length ?? 0) > 0 && (
-                <div>
-                  <p className="text-xs font-semibold text-ink-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                    <Wrench size={12} /> Habilidades
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {cv!.habilidades!.map((h, i) => (
-                      <span key={i} className="text-xs bg-brand-100 text-brand-700 px-2.5 py-1 rounded-full">{h}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
+                  {/* Habilidades */}
+                  {(cv?.habilidades?.length ?? 0) > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-ink-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                        <Wrench size={12} /> Habilidades
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {cv!.habilidades!.map((h, i) => (
+                          <span key={i} className="text-xs bg-brand-100 text-brand-700 px-2.5 py-1 rounded-full">{h}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-              {/* Idiomas */}
-              {(cv?.idiomas?.length ?? 0) > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {cv!.idiomas!.map((l, i) => (
-                    <span key={i} className="text-xs bg-ink-100 text-ink-600 px-2.5 py-1 rounded-full">{l}</span>
-                  ))}
-                </div>
+                  {/* Idiomas */}
+                  {(cv?.idiomas?.length ?? 0) > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {cv!.idiomas!.map((l, i) => (
+                        <span key={i} className="text-xs bg-ink-100 text-ink-600 px-2.5 py-1 rounded-full">{l}</span>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           );

@@ -1004,6 +1004,17 @@ export default function EmpresaDashboard() {
                           {ciudad && <span>📍 {ciudad}</span>}
                         </div>
                         {p.usuario.bio && <p className="text-xs text-gray-500 line-clamp-1 mt-1">{p.usuario.bio}</p>}
+                        {/* Habilidades rápidas si tiene CV */}
+                        {(p.usuario.cv_datos?.habilidades?.length ?? 0) > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {p.usuario.cv_datos!.habilidades!.slice(0, 3).map((h, i) => (
+                              <span key={i} className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">{h}</span>
+                            ))}
+                            {(p.usuario.cv_datos!.habilidades!.length ?? 0) > 3 && (
+                              <span className="text-xs text-gray-400">+{p.usuario.cv_datos!.habilidades!.length - 3}</span>
+                            )}
+                          </div>
+                        )}
                         <div className="flex gap-2 mt-2">
                           <a href={`/u/${p.usuario.slug}/cv`} target="_blank"
                             className="text-xs border border-blue-200 text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-50">
@@ -1319,44 +1330,61 @@ export default function EmpresaDashboard() {
               </div>
             )}
 
-            {/* CV analizado */}
-            {videoModal.usuario.cv_datos && (
-              <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-3">
-                <p className="text-xs font-semibold text-gray-700 uppercase tracking-widest">CV</p>
-                {videoModal.usuario.cv_datos.resumen && (
-                  <p className="text-sm text-gray-700 leading-relaxed">{videoModal.usuario.cv_datos.resumen}</p>
-                )}
-                {(videoModal.usuario.cv_datos.experiencia?.length ?? 0) > 0 && (
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 mb-1">Experiencia</p>
-                    <div className="space-y-1">
-                      {videoModal.usuario.cv_datos.experiencia!.map((e, i) => (
-                        <div key={i} className="text-xs text-gray-600">
-                          <span className="font-medium">{e.cargo}</span> — {e.empresa} <span className="text-gray-400">({e.periodo})</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {(videoModal.usuario.cv_datos.educacion?.length ?? 0) > 0 && (
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 mb-1">Educación</p>
-                    {videoModal.usuario.cv_datos.educacion!.map((e, i) => (
-                      <div key={i} className="text-xs text-gray-600">
-                        <span className="font-medium">{e.titulo}</span> — {e.institucion} <span className="text-gray-400">({e.periodo})</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {(videoModal.usuario.cv_datos.habilidades?.length ?? 0) > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {videoModal.usuario.cv_datos.habilidades!.map((h, i) => (
-                      <span key={i} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{h}</span>
-                    ))}
-                  </div>
+            {/* CV del candidato */}
+            <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-gray-700 uppercase tracking-widest">CV del candidato</p>
+                {videoModal.usuario.cv_datos ? (
+                  <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">✓ CV cargado</span>
+                ) : (
+                  <span className="text-xs bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">Sin CV</span>
                 )}
               </div>
-            )}
+              {!videoModal.usuario.cv_datos ? (
+                <p className="text-xs text-gray-400 italic">Este candidato aún no cargó su CV en la plataforma.</p>
+              ) : (
+                <>
+                  {videoModal.usuario.cv_datos.resumen && (
+                    <p className="text-sm text-gray-700 leading-relaxed">{videoModal.usuario.cv_datos.resumen}</p>
+                  )}
+                  {(videoModal.usuario.cv_datos.experiencia?.length ?? 0) > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 mb-1.5">Experiencia</p>
+                      <div className="space-y-1.5">
+                        {videoModal.usuario.cv_datos.experiencia!.map((e, i) => (
+                          <div key={i} className="bg-white rounded-lg px-3 py-2 text-xs text-gray-600">
+                            <span className="font-medium text-gray-800">{e.cargo}</span>
+                            <span className="text-gray-400"> — {e.empresa}</span>
+                            {e.periodo && <span className="text-gray-400"> · {e.periodo}</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {(videoModal.usuario.cv_datos.educacion?.length ?? 0) > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 mb-1.5">Educación</p>
+                      <div className="space-y-1.5">
+                        {videoModal.usuario.cv_datos.educacion!.map((e, i) => (
+                          <div key={i} className="bg-white rounded-lg px-3 py-2 text-xs text-gray-600">
+                            <span className="font-medium text-gray-800">{e.titulo}</span>
+                            <span className="text-gray-400"> — {e.institucion}</span>
+                            {e.periodo && <span className="text-gray-400"> · {e.periodo}</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {(videoModal.usuario.cv_datos.habilidades?.length ?? 0) > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {videoModal.usuario.cv_datos.habilidades!.map((h, i) => (
+                        <span key={i} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{h}</span>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
 
             {/* Documentos */}
             {(videoModal.documentos?.length ?? 0) > 0 && (

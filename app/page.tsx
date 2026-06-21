@@ -115,7 +115,7 @@ export default async function LandingPage() {
               <HardHat size={13} strokeWidth={2} />
               Para candidatos
             </p>
-            <h1 className={s.panelH}>Buscás<br/>trabajo.</h1>
+            <h1 className={s.panelH}>Buscás<br/><span className={s.panelHPill}>trabajo.</span></h1>
             <p className={s.panelSub}>Grabás 60 segundos desde el celular. Las empresas te ven y te llaman. Sin CV, sin papeles.</p>
           </div>
           <Link href="/register" className={`${s.panelCta} ${s.candidatoCta}`}>
@@ -132,7 +132,7 @@ export default async function LandingPage() {
               <Building2 size={13} strokeWidth={2} />
               Para empresas
             </p>
-            <h1 className={s.panelH}>Buscás<br/>personal.</h1>
+            <h1 className={s.panelH}>Buscás<br/><span className={s.panelHPill}>personal.</span></h1>
             <p className={s.panelSub}>Publicás la oferta, recibís videos y elegís. Más rápido, menos entrevistas perdidas.</p>
           </div>
           <Link href="/register-empresa" className={`${s.panelCta} ${s.empresaCta}`}>
@@ -192,15 +192,15 @@ export default async function LandingPage() {
       </div>
 
       {/* ── STEPS ── */}
-      <section className={`${s.sec} ${s.secAlt}`}>
+      <section className={`${s.sec} ${s.secDark}`}>
         <p className={s.eyebrow}>Cómo funciona</p>
-        <h2 className={s.secH}>Tres pasos desde el celular</h2>
+        <h2 className={s.secH}>Tres pasos<br/><span className={s.secHPill}>desde el celular</span></h2>
         <div className={s.steps}>
           {[
-            { n: '01', Icon: Video,       t: 'Grabás tu Video CV',     d: '4 preguntas guiadas, 15 segundos cada una. Solo el celular.' },
-            { n: '02', Icon: Smartphone,  t: 'Te postulás en un clic', d: 'Elegís la oferta y mandás tu video. Sin papeles, sin email.' },
-            { n: '03', Icon: PhoneCall,   t: 'La empresa te llama',    d: 'Vieron tu video, te conocen, te avisan por WhatsApp.' },
-          ].map(step => (
+            { n: '01', Icon: Video,      t: 'Grabás tu Video CV',     d: '4 preguntas guiadas, 15 segundos cada una. Solo el celular.' },
+            { n: '02', Icon: Smartphone, t: 'Te postulás en un clic', d: 'Elegís la oferta y mandás tu video. Sin papeles, sin email.' },
+            { n: '03', Icon: PhoneCall,  t: 'La empresa te llama',    d: 'Vieron tu video, te conocen, te avisan por WhatsApp.' },
+          ].flatMap((step, i, arr) => [
             <div key={step.n} className={s.step}>
               <div className={s.stepN}>{step.n}</div>
               <div className={s.stepIco}>
@@ -208,8 +208,11 @@ export default async function LandingPage() {
               </div>
               <div className={s.stepT}>{step.t}</div>
               <div className={s.stepD}>{step.d}</div>
-            </div>
-          ))}
+            </div>,
+            i < arr.length - 1
+              ? <div key={`c${i}`} className={s.stepConnect}><div className={s.stepConnectLine}/></div>
+              : null,
+          ])}
         </div>
       </section>
 

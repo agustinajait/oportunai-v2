@@ -172,7 +172,7 @@ export default async function LandingPage() {
           <h2 className={s.capStripH}>Aprendé antes de arrancar. Gratis.</h2>
           <p className={s.capStripP}>Capacitaciones en video para estaciones de servicio, limpieza y comidas rápidas. Cargadas por las mismas empresas que buscan personal.</p>
         </div>
-        <Link href="/ofertas" className={s.capStripBtn}>Ver capacitaciones →</Link>
+        <Link href="/register" className={s.capStripBtn}>Ver capacitaciones →</Link>
       </div>
 
       {/* ── NICHOS ── */}
@@ -230,14 +230,14 @@ export default async function LandingPage() {
             <p className={s.eyebrow}>Capacitaciones gratuitas</p>
             <h2 className={s.secH} style={{ marginBottom: 0 }}>Entrá capacitado<br/>desde el día uno.</h2>
           </div>
-          <Link href="/ofertas" className={s.verMas}>Ver todas →</Link>
+          <Link href="/register" className={s.verMas}>Ver todas →</Link>
         </div>
         <div className={s.capGrid}>
           {talleres.length > 0
             ? talleres.map((t, i) => {
                 const th = TALLER_ICONS[i % TALLER_ICONS.length];
                 return (
-                  <div key={t.id} className={s.capCard}>
+                  <Link key={t.id} href="/register" className={s.capCard}>
                     <div className={s.capThumb} style={{ background: th.bg }}>
                       <div className={s.capThumbIcon}>
                         <th.Icon size={44} strokeWidth={1} color={th.color} />
@@ -253,11 +253,11 @@ export default async function LandingPage() {
                         <div className={s.capMeta}>{t.descripcion.slice(0, 55)}{t.descripcion.length > 55 ? '…' : ''}</div>
                       )}
                     </div>
-                  </div>
+                  </Link>
                 );
               })
             : CAP_FALLBACK.map(c => (
-                <div key={c.titulo} className={s.capCard}>
+                <Link key={c.titulo} href="/register" className={s.capCard}>
                   <div className={s.capThumb} style={{ background: c.bg }}>
                     <div className={s.capThumbIcon}>
                       <c.Icon size={44} strokeWidth={1} color={c.color} />
@@ -274,7 +274,7 @@ export default async function LandingPage() {
                       <span className={s.capEmpresa}>{c.emp}</span>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))
           }
         </div>

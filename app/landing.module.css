@@ -105,6 +105,140 @@
     linear-gradient(145deg, #3A28B8 0%, #5237D8 35%, #5B3FE0 65%, #6A4BF5 100%);
 }
 
+/* ── CANDIDATO PANEL — layout con foto ── */
+.panelCandidato {
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  min-height: 500px !important;
+}
+
+/* Área interior: texto izquierda + foto derecha */
+.panelInner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 2.75rem 2.25rem 1.5rem;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.panelTextSide {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.panelSubAccent { color: #14C7A8; font-weight: 600; }
+
+.panelCtaFull {
+  width: 100%; justify-content: center; margin-top: 1.25rem;
+}
+
+/* Lado foto */
+.panelPhotoSide {
+  width: 160px;
+  flex-shrink: 0;
+  position: relative;
+  margin-top: 0.25rem;
+}
+
+.panelPhotoCircle {
+  width: 160px; height: 210px;
+  border-radius: 90px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.15);
+  border: 2px solid rgba(255,255,255,0.2);
+}
+
+.panelPhoto {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
+}
+
+/* REC card flotante */
+.recCard {
+  position: absolute;
+  bottom: -20px; right: -14px;
+  background: rgba(15,14,30,0.65);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 14px;
+  padding: 10px 13px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  width: 130px;
+  z-index: 2;
+}
+
+.recHeader {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 700;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.recDot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #FF3B30; flex-shrink: 0;
+  animation: recBlink 1.2s ease-in-out infinite;
+}
+
+@keyframes recBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+
+.recTimer {
+  font-family: 'Poppins', sans-serif;
+  font-size: 28px; font-weight: 800;
+  color: #fff; letter-spacing: -0.03em;
+  line-height: 1; margin-bottom: 3px;
+}
+
+.recText {
+  font-size: 10px; color: rgba(255,255,255,0.55);
+  line-height: 1.35; margin-bottom: 8px;
+}
+
+.recBtn {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: #FF3B30;
+  box-shadow: 0 0 0 4px rgba(255,59,48,0.22);
+}
+
+/* Strip de sectores al fondo del panel */
+.panelSectors {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 2.25rem;
+  background: rgba(0,0,0,0.22);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  position: relative;
+  z-index: 1;
+  flex-wrap: wrap;
+}
+
+.panelSectorText {
+  font-size: 12px; color: rgba(255,255,255,0.72);
+  line-height: 1.45; flex: 1; min-width: 120px;
+}
+.panelSectorText strong { color: #fff; }
+
+.panelSectorIcons { display: flex; gap: 1.25rem; flex-shrink: 0; }
+
+.panelSectorItem {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 3px;
+}
+
+.panelSectorEmoji { font-size: 22px; line-height: 1; }
+.panelSectorLabel  { font-size: 10px; color: rgba(255,255,255,0.6); font-weight: 500; text-align: center; }
+
 /* Teal — empresa */
 .panelEmpresa {
   background:
@@ -674,7 +808,19 @@
   .heroSplit { grid-template-columns: 1fr; border-radius: 18px; }
   .panelEmpresa { border-left: none; border-top: 1px solid rgba(255,255,255,0.12); }
   .panel { padding: 2.5rem 1.75rem; min-height: 320px; }
-  .panelH { font-size: 42px; }
+  .panelH { font-size: 40px; }
+
+  /* Candidato mobile */
+  .panelInner { padding: 2rem 1.5rem 1.25rem; gap: 0.75rem; }
+  .panelPhotoSide { width: 130px; }
+  .panelPhotoCircle { width: 130px; height: 170px; }
+  .recCard { width: 110px; bottom: -16px; right: -10px; }
+  .recTimer { font-size: 22px; }
+  .panelCtaFull { margin-top: 1rem; }
+  .panelSectors { padding: 0.75rem 1.5rem; gap: 0.75rem; }
+  .panelSectorText { font-size: 11px; }
+  .panelSectorEmoji { font-size: 18px; }
+  .panelSectorLabel { font-size: 9px; }
 
   .statsOuter { padding: 0 16px; }
   .statsRow { grid-template-columns: 1fr; }

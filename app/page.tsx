@@ -111,21 +111,62 @@ export default async function LandingPage() {
       <div className={s.heroOuter}>
       <section className={s.heroSplit}>
         <div className={`${s.panel} ${s.panelCandidato}`}>
-          <div>
-            <p className={s.panelTag}>
-              <HardHat size={13} strokeWidth={2} />
-              Para candidatos
+
+          {/* Texto + foto */}
+          <div className={s.panelInner}>
+            <div className={s.panelTextSide}>
+              <p className={s.panelTag}>
+                <HardHat size={13} strokeWidth={2} />
+                Para candidatos
+              </p>
+              <h1 className={s.panelH}>Buscás<br/><span className={s.panelHPill}>trabajo.</span></h1>
+              <p className={s.panelSub}>
+                Grabás 60 segundos desde el celular. Las empresas te ven y te llaman.{' '}
+                <span className={s.panelSubAccent}>Sin CV. Sin papeles.</span>
+              </p>
+              <Link href="/register" className={`${s.panelCta} ${s.candidatoCta} ${s.panelCtaFull}`}>
+                <Video size={16} strokeWidth={2} />
+                Crear mi Video CV
+              </Link>
+            </div>
+
+            <div className={s.panelPhotoSide}>
+              <div className={s.panelPhotoCircle}>
+                {/* Agregá una foto en /public/candidato.jpg */}
+                <img src="/candidato.jpg" alt="Candidato grabando Video CV" className={s.panelPhoto} />
+              </div>
+              {/* Card REC flotante */}
+              <div className={s.recCard}>
+                <div className={s.recHeader}>
+                  <span className={s.recDot} /> REC
+                </div>
+                <div className={s.recTimer}>00:60</div>
+                <p className={s.recText}>Contanos quién sos y qué buscás.</p>
+                <div className={s.recBtn} />
+              </div>
+            </div>
+          </div>
+
+          {/* Strip sectores */}
+          <div className={s.panelSectors}>
+            <p className={s.panelSectorText}>
+              Buscás trabajo en hamburguesas, estaciones de servicio o limpieza.{' '}
+              <strong>¡Es acá!</strong>
             </p>
-            <h1 className={s.panelH}>Buscás<br/><span className={s.panelHPill}>trabajo.</span></h1>
-            <p className={s.panelSub}>Grabás 60 segundos desde el celular. Las empresas te ven y te llaman. Sin CV, sin papeles.</p>
+            <div className={s.panelSectorIcons}>
+              {[
+                { emoji: '🍔', label: 'Hamburguesas' },
+                { emoji: '⛽', label: 'Estaciones' },
+                { emoji: '🧹', label: 'Limpieza' },
+              ].map(item => (
+                <div key={item.label} className={s.panelSectorItem}>
+                  <span className={s.panelSectorEmoji}>{item.emoji}</span>
+                  <span className={s.panelSectorLabel}>{item.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
-          <Link href="/register" className={`${s.panelCta} ${s.candidatoCta}`}>
-            <Video size={16} strokeWidth={2} />
-            Crear mi Video CV
-          </Link>
-          <div className={s.panelDecor}>
-            <HardHat size={140} strokeWidth={0.75} />
-          </div>
+
         </div>
         <div className={`${s.panel} ${s.panelEmpresa}`}>
           <div>

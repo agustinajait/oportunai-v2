@@ -302,13 +302,13 @@ export default async function LandingPage() {
       {/* ── ALFA DIGITAL ── */}
       <section className={`${s.sec} ${s.secAlt}`}>
         <p className={s.eyebrow}>Para candidatos</p>
-        <h2 className={s.secH}>¿Cómo usás la tecnología?<br/>Contanos y destacate.</h2>
+        <h2 className={s.secH}>Test de Nativo Digital.<br/>Completalo y destacate.</h2>
         <div className={s.alfaGrid}>
           {[
-            { Icon: Smartphone,  t: 'Celular y conectividad', d: 'Contás si tenés datos y usás WhatsApp para el trabajo.',  badge: 'En tu perfil' },
-            { Icon: CreditCard,  t: 'Pagos digitales',         d: 'Mercado Pago, billetera virtual, transferencias.',         badge: 'En tu perfil' },
-            { Icon: Bot,         t: 'Inteligencia artificial', d: 'Si conocés ChatGPT u otras IAs, lo valoran mucho.',        badge: 'Nativo digital' },
-            { Icon: LayoutGrid,  t: 'Apps del día a día',      d: 'Rappi, PedidosYa, Uber — mostrá que te movés bien.',       badge: 'En tu perfil' },
+            { Icon: Smartphone,  t: 'Celular y conectividad', d: '¿Cómo usás el teléfono en tu vida diaria?',      badge: 'Suma a tu perfil' },
+            { Icon: CreditCard,  t: 'Pagos y finanzas',        d: '¿Manejás herramientas de pago digital?',          badge: 'Suma a tu perfil' },
+            { Icon: Bot,         t: 'Nuevas tecnologías',      d: '¿Conocés y usás las últimas herramientas?',        badge: 'Nativo digital' },
+            { Icon: LayoutGrid,  t: 'Apps cotidianas',         d: '¿Qué apps forman parte de tu rutina?',             badge: 'Suma a tu perfil' },
           ].map(a => (
             <div key={a.t} className={s.alfaCard}>
               <div className={s.alfaIco}>
@@ -323,7 +323,7 @@ export default async function LandingPage() {
           ))}
         </div>
         <div className={s.alfaNote}>
-          <strong>¿Para qué sirve?</strong> Los empleadores ven un badge en tu perfil: &quot;Nativo digital&quot;, &quot;Usuario activo&quot; o &quot;En desarrollo digital&quot;. Ninguna respuesta está mal — ayuda a las empresas a entenderte mejor.
+          <strong>¿Cómo funciona?</strong> Respondés 4 preguntas rápidas y tu perfil suma un badge visible para las empresas. Más de dos minutos no te lleva.
         </div>
       </section>
 

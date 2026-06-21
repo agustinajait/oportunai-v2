@@ -33,6 +33,7 @@ fecha_nacimiento DateTime?
   taller_usuarios  TallerUsuario[]
   postulaciones    Postulacion[]
   empresa_miembros EmpresaMiembro[]
+  referencias      Referencia[]
 }
 
 enum Role {
@@ -303,4 +304,18 @@ enum EstadoCita {
   pendiente
   confirmada
   rechazada
+}
+
+model Referencia {
+  id               String    @id @default(cuid())
+  usuario_id       String
+  empresa_nombre   String
+  referidor_nombre String
+  token            String    @unique @default(cuid())
+  estado           String    @default("pendiente")
+  fecha_validada   DateTime?
+  mensaje          String?
+  created_at       DateTime  @default(now())
+
+  usuario          Usuario   @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
 }

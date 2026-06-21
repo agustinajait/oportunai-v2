@@ -14,7 +14,8 @@ import {
   Video, Mic, FileText, Edit3, Check, X, Upload,
   ExternalLink, Copy, CheckCheck, Clock, Circle,
   BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck,
-  CalendarDays, MapPin, Loader2, Plus, GraduationCap, Briefcase as BriefcaseIcon, Wrench
+  CalendarDays, MapPin, Loader2, Plus, GraduationCap, Briefcase as BriefcaseIcon, Wrench,
+  Star, Building2, Link2, Trash2
 } from 'lucide-react';
 import OfertasTab from '@/components/ui/OfertasTab';
 import VideoThumbnail from '@/components/ui/VideoThumbnail';
@@ -28,6 +29,15 @@ interface Archivo { id: string; file_url: string; file_type: string; created_at:
 interface TallerModulo { id: string; tipo_video: string; nombre_modulo: string; duracion_base: number; texto_guia: string; orden: number; }
 interface Taller { id: string; nombre: string; descripcion: string | null; habilita_cv: boolean; habilita_pitch: boolean; modulos: TallerModulo[]; }
 interface TallerUsuario { taller: Taller; estado: string; asignado_en: string; }
+interface Referencia {
+  id: string;
+  empresa_nombre: string;
+  referidor_nombre: string;
+  token: string;
+  estado: string;
+  created_at: string;
+}
+
 interface CvDatos {
   resumen?: string;
   experiencia?: { empresa: string; cargo: string; periodo: string; descripcion: string }[];
@@ -163,6 +173,15 @@ export default function DashboardClient({
   const [selectedTipo, setSelectedTipo] = useState<'video_cv' | 'video_pitch'>('video_cv');
   const [alfaBadge, setAlfaBadge] = useState(usuario.alfa_digital);
 
+  // Referencias
+  const [referencias, setReferencias] = useState<Referencia[]>([]);
+  const [loadingRefs, setLoadingRefs] = useState(false);
+  const [refEmpresa, setRefEmpresa] = useState('');
+  const [refNombre, setRefNombre] = useState('');
+  const [addingRef, setAddingRef] = useState(false);
+  const [refMsg, setRefMsg] = useState<string | null>(null);
+  const [copiedRef, setCopiedRef] = useState<string | null>(null);
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
   const cvUrl = `${appUrl}/u/${usuario.slug}/cv`;
   const pitchUrl = `${appUrl}/u/${usuario.slug}/pitch`;
@@ -173,7 +192,50 @@ export default function DashboardClient({
 
   useEffect(() => {
     if (tab === 'documentos') cargarDocumentos();
+    if (tab === 'perfil' && referencias.length === 0) cargarReferencias();
   }, [tab]);
+
+  async function cargarReferencias() {
+    setLoadingRefs(true);
+    const res = await fetch('/api/referencias');
+    const data = await res.json();
+    if (data.referencias) setReferencias(data.referencias);
+    setLoadingRefs(false);
+  }
+
+  async function agregarReferencia() {
+    if (!refEmpresa.trim() || !refNombre.trim()) return;
+    setAddingRef(true);
+    setRefMsg(null);
+    const res = await fetch('/api/referencias', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ empresa_nombre: refEmpresa, referidor_nombre: refNombre }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      setReferencias(p => [data.referencia, ...p]);
+      setRefEmpresa('');
+      setRefNombre('');
+      setRefMsg('Referencia agregada. ¡Compartí el link con tu referente!');
+    } else {
+      setRefMsg(data.error ?? 'Error al agregar');
+    }
+    setAddingRef(false);
+    setTimeout(() => setRefMsg(null), 5000);
+  }
+
+  async function eliminarReferencia(id: string) {
+    await fetch(`/api/referencias/${id}`, { method: 'DELETE' });
+    setReferencias(p => p.filter(r => r.id !== id));
+  }
+
+  function copyRefLink(token: string) {
+    const url = `${appUrl}/validar/${token}`;
+    navigator.clipboard.writeText(url);
+    setCopiedRef(token);
+    setTimeout(() => setCopiedRef(null), 2500);
+  }
 
   async function cargarDocumentos() {
     const res = await fetch('/api/documentos');
@@ -577,6 +639,117 @@ export default function DashboardClient({
                       Empezar →
                     </Link>
                   </div>
+                )}
+              </div>
+
+              {/* Referencias */}
+              <div className="card p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Star size={16} className="text-amber-500" />
+                  <h2 className="font-semibold text-ink-800">Referencias laborales</h2>
+                  {referencias.filter(r => r.estado === 'validada').length > 0 && (
+                    <span className="ml-auto badge bg-amber-100 text-amber-700 flex items-center gap-1">
+                      <Star size={10} fill="currentColor" />
+                      {referencias.filter(r => r.estado === 'validada').length} verificadas
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-xs text-ink-400 mb-4 leading-relaxed">
+                  Agregá un ex-jefe o empleador como referente. Te damos un link para que lo comparta por WhatsApp. Cuando valida, aparece ⭐ en tu perfil.
+                </p>
+
+                {/* Formulario agregar */}
+                <div className="space-y-2 mb-4">
+                  <input
+                    value={refEmpresa}
+                    onChange={e => setRefEmpresa(e.target.value)}
+                    placeholder="Nombre de la empresa"
+                    className="input-field text-sm"
+                  />
+                  <input
+                    value={refNombre}
+                    onChange={e => setRefNombre(e.target.value)}
+                    placeholder="Nombre del referente (jefe, supervisor...)"
+                    className="input-field text-sm"
+                    onKeyDown={e => { if (e.key === 'Enter') agregarReferencia(); }}
+                  />
+                  <button
+                    onClick={agregarReferencia}
+                    disabled={addingRef || !refEmpresa.trim() || !refNombre.trim()}
+                    className="btn-primary w-full justify-center text-sm py-2 disabled:opacity-50"
+                  >
+                    {addingRef
+                      ? <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                      : <Plus size={14} />
+                    }
+                    Agregar referente
+                  </button>
+                </div>
+
+                {refMsg && (
+                  <p className={`text-xs rounded-lg px-3 py-2 mb-3 ${refMsg.includes('Error') ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                    {refMsg}
+                  </p>
+                )}
+
+                {/* Lista */}
+                {loadingRefs ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 size={16} className="animate-spin text-ink-300" />
+                  </div>
+                ) : referencias.length > 0 ? (
+                  <div className="space-y-2 pt-2 border-t border-ink-100">
+                    {referencias.map(r => (
+                      <div key={r.id} className="bg-ink-50 rounded-xl p-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start gap-2 min-w-0">
+                            <Building2 size={14} className="text-ink-400 mt-0.5 flex-shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-ink-800 truncate">{r.empresa_nombre}</p>
+                              <p className="text-xs text-ink-400 truncate">{r.referidor_nombre}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            {r.estado === 'validada' ? (
+                              <span className="badge bg-emerald-100 text-emerald-700 flex items-center gap-1">
+                                <Check size={10} strokeWidth={3} /> Verificado
+                              </span>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => copyRefLink(r.token)}
+                                  className="flex items-center gap-1 text-xs text-brand-600 bg-brand-50 hover:bg-brand-100 px-2 py-1 rounded-lg transition-colors"
+                                  title="Copiar link de validación"
+                                >
+                                  {copiedRef === r.token
+                                    ? <><CheckCheck size={12} className="text-emerald-600" /> Copiado</>
+                                    : <><Link2 size={12} /> Link</>
+                                  }
+                                </button>
+                                <button
+                                  onClick={() => eliminarReferencia(r.id)}
+                                  className="text-red-400 hover:text-red-600 p-1"
+                                  title="Eliminar"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        {r.estado !== 'validada' && (
+                          <p className="text-xs text-ink-400 mt-1.5 pl-5">
+                            Pendiente de validación — compartí el link con {r.referidor_nombre.split(' ')[0]}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-ink-300 italic text-center py-2">
+                    Aún no tenés referencias. ¡Agregá la primera!
+                  </p>
                 )}
               </div>
 

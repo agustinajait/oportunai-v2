@@ -6,11 +6,13 @@ import {
   Sparkles, Video, Mic, Phone, Mail, MapPin,
   Download, Eye, EyeOff, Share2, Check,
   User, ChevronRight, FileVideo, Link2,
-  Briefcase, GraduationCap, Wrench, Calendar
+  Briefcase, GraduationCap, Wrench, Calendar,
+  ShieldCheck, Building2, Star
 } from 'lucide-react';
 
 interface VideoItem { id: string; tipo: string; video_url: string; created_at: string }
 interface ArchivoItem { id: string; file_url: string; file_type: string }
+interface ReferenciaItem { id: string; empresa_nombre: string; referidor_nombre: string; mensaje: string | null; fecha_validada: string | null }
 interface CvDatos {
   resumen?: string;
   experiencia?: { empresa: string; cargo: string; periodo: string }[];
@@ -32,6 +34,7 @@ interface UsuarioPublico {
   cv_datos?: CvDatos | null;
   videos: VideoItem[];
   archivos: ArchivoItem[];
+  referencias?: ReferenciaItem[];
 }
 
 function calcularEdad(fechaNac: string | null | undefined): number | null {
@@ -175,6 +178,12 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                     <span className="badge bg-purple-100 text-purple-700 flex items-center gap-1">
                       {usuario.alfa_digital === 'Perfil nativo digital' ? '🚀' : usuario.alfa_digital === 'Usuario digital activo' ? '⚡' : '🌱'}
                       {usuario.alfa_digital}
+                    </span>
+                  )}
+                  {(usuario.referencias?.length ?? 0) > 0 && (
+                    <span className="badge bg-amber-100 text-amber-700 flex items-center gap-1">
+                      <Star size={11} fill="currentColor" />
+                      {usuario.referencias!.length} {usuario.referencias!.length === 1 ? 'referencia' : 'referencias'} verificadas
                     </span>
                   )}
                 </div>
@@ -426,6 +435,43 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
             </div>
           );
         })()}
+
+        {/* ── REFERENCIAS VERIFICADAS ───────────────────────────── */}
+        {(usuario.referencias?.length ?? 0) > 0 && (
+          <div className="card p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <ShieldCheck size={16} className="text-amber-500" />
+              <h3 className="font-semibold text-ink-800">Referencias verificadas</h3>
+              <span className="ml-auto badge bg-amber-100 text-amber-700 flex items-center gap-1">
+                <Star size={10} fill="currentColor" />
+                {usuario.referencias!.length}
+              </span>
+            </div>
+            <div className="space-y-3">
+              {usuario.referencias!.map(r => (
+                <div key={r.id} className="bg-ink-50 rounded-xl p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Building2 size={15} className="text-amber-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-ink-800 text-sm">{r.empresa_nombre}</p>
+                        <p className="text-xs text-ink-400">{r.referidor_nombre}</p>
+                      </div>
+                    </div>
+                    <span className="flex items-center gap-1 text-xs text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex-shrink-0">
+                      <Check size={10} strokeWidth={3} /> Verificado
+                    </span>
+                  </div>
+                  {r.mensaje && (
+                    <p className="text-sm text-ink-600 italic leading-relaxed pl-12">"{r.mensaje}"</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── SWITCH CV / PITCH ─────────────────────────────────── */}
         <div className="card p-4 flex items-center justify-between">

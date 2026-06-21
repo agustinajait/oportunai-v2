@@ -7,6 +7,7 @@ import {
   CreditCard, Bot, LayoutGrid,
   GraduationCap, ClipboardList, RefreshCw,
   HardHat, Handshake, Building2, ChevronRight,
+  Target, Smile, Play, Send, CircleCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import s from './landing.module.css';
@@ -193,18 +194,20 @@ export default async function LandingPage() {
 
       {/* ── STEPS ── */}
       <section className={`${s.sec} ${s.secDark}`}>
-        <p className={s.eyebrow}>Cómo funciona</p>
-        <h2 className={s.secH}>Tres pasos<br/><span className={s.secHPill}>desde el celular</span></h2>
+        <p className={s.eyebrow}>Es simple,</p>
+        <h2 className={s.secH}>Oportunai te guía<br/><span className={s.secHPill}>paso a paso</span></h2>
         <div className={s.steps}>
           {[
-            { n: '01', Icon: Video,      t: 'Grabás tu Video CV',     d: '4 preguntas guiadas, 15 segundos cada una. Solo el celular.' },
-            { n: '02', Icon: Smartphone, t: 'Te postulás en un clic', d: 'Elegís la oferta y mandás tu video. Sin papeles, sin email.' },
-            { n: '03', Icon: PhoneCall,  t: 'La empresa te llama',    d: 'Vieron tu video, te conocen, te avisan por WhatsApp.' },
+            { n: '1', Icon: Target,     t: 'Preparáte',       d: 'Pensá qué querés contar y qué te hace único/a.' },
+            { n: '2', Icon: Smartphone, t: 'Grabá',            d: 'Usá tu celular. 60 segundos son suficientes.' },
+            { n: '3', Icon: Smile,      t: 'Mostrate',         d: 'Sé claro/a, auténtico/a y hablá de tu experiencia.' },
+            { n: '4', Icon: Play,       t: 'Revisá',           d: 'Mirá tu video, asegurate que se escuche y entienda.' },
+            { n: '5', Icon: Send,       t: 'Enviá y conectá',  d: 'Las empresas te ven y te llaman. Sin CV. Sin papeles.' },
           ].flatMap((step, i, arr) => [
             <div key={step.n} className={s.step}>
-              <div className={s.stepN}>{step.n}</div>
+              <div className={s.stepBadge}>{step.n}</div>
               <div className={s.stepIco}>
-                <step.Icon size={22} strokeWidth={1.75} />
+                <step.Icon size={28} strokeWidth={1.75} />
               </div>
               <div className={s.stepT}>{step.t}</div>
               <div className={s.stepD}>{step.d}</div>
@@ -213,6 +216,10 @@ export default async function LandingPage() {
               ? <div key={`c${i}`} className={s.stepConnect}><div className={s.stepConnectLine}/></div>
               : null,
           ])}
+        </div>
+        <div className={s.stepsTagline}>
+          <CircleCheck size={20} strokeWidth={2} />
+          Más auténtico. Más rápido. Más vos. <strong>Mejores oportunidades.</strong>
         </div>
       </section>
 

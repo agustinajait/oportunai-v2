@@ -13,13 +13,11 @@ import type { LucideIcon } from 'lucide-react';
 import s from './landing.module.css';
 
 interface Sector {
-  label:    string;
-  desc:     string;
-  Icon:     LucideIcon;
-  emoji:    string;
-  icoBg:    string;
-  href:     string;
-  keys:     string[];
+  label: string;
+  desc:  string;
+  Icon:  LucideIcon;
+  href:  string;
+  keys:  string[];
 }
 
 const SECTORES: Sector[] = [
@@ -27,8 +25,6 @@ const SECTORES: Sector[] = [
     label: 'Estaciones de servicio',
     desc:  'Playeros, cajeros, supervisores',
     Icon:  Fuel,
-    emoji: '⛽',
-    icoBg: '#FFE9E2',
     href:  '/ofertas',
     keys:  ['estacion', 'playero', 'nafta', 'combustible', 'playa de'],
   },
@@ -36,8 +32,6 @@ const SECTORES: Sector[] = [
     label: 'Empresas de limpieza',
     desc:  'Operarios, supervisores',
     Icon:  Sparkles,
-    emoji: '🧹',
-    icoBg: '#E2EEFF',
     href:  '/ofertas',
     keys:  ['limpieza', 'aseo', 'cleaning', 'higiene'],
   },
@@ -45,23 +39,21 @@ const SECTORES: Sector[] = [
     label: 'Comidas rápidas',
     desc:  'Cocina, atención, caja',
     Icon:  UtensilsCrossed,
-    emoji: '🍔',
-    icoBg: '#FFF5D6',
     href:  '/ofertas',
     keys:  ['gastronomia', 'gastronomía', 'comida', 'restaurant', 'cocina', 'food', 'hamburgue', 'pizza'],
   },
 ];
 
 const TALLER_ICONS = [
-  { bg: '#FFE9E2', rubro: 'Estación de servicio', emoji: '⛽' },
-  { bg: '#E2EEFF', rubro: 'Limpieza',             emoji: '🧹' },
-  { bg: '#FFF5D6', rubro: 'Comidas rápidas',       emoji: '🍔' },
+  { bg: '#ECE9FB', color: '#5B3FE0', rubro: 'Estación de servicio',  Icon: Fuel },
+  { bg: '#E3FAF4', color: '#0E9C82', rubro: 'Limpieza',              Icon: Sparkles },
+  { bg: '#FFF3E8', color: '#D97706', rubro: 'Comidas rápidas',        Icon: UtensilsCrossed },
 ];
 
 const CAP_FALLBACK = [
-  { bg: '#FFE9E2', rubro: 'Estación de servicio', emoji: '⛽', titulo: 'Atención al cliente en la playa',   dur: '8 min',  emp: 'YPF'           },
-  { bg: '#E2EEFF', rubro: 'Limpieza',             emoji: '🧹', titulo: 'Técnicas de limpieza profesional', dur: '12 min', emp: 'Propia empresa' },
-  { bg: '#FFF5D6', rubro: 'Comidas rápidas',       emoji: '🍔', titulo: 'Atención y manejo de caja',        dur: '10 min', emp: 'Empresa local'  },
+  { bg: '#ECE9FB', color: '#5B3FE0', rubro: 'Estación de servicio',  titulo: 'Atención al cliente en la playa',   dur: '8 min',  emp: 'YPF',           Icon: Fuel },
+  { bg: '#E3FAF4', color: '#0E9C82', rubro: 'Limpieza',              titulo: 'Técnicas de limpieza profesional', dur: '12 min', emp: 'Propia empresa', Icon: Sparkles },
+  { bg: '#FFF3E8', color: '#D97706', rubro: 'Comidas rápidas',        titulo: 'Atención y manejo de caja',        dur: '10 min', emp: 'Empresa local',  Icon: UtensilsCrossed },
 ];
 
 function countSector(ofertas: { area: string | null; titulo: string }[], keys: string[]) {
@@ -188,8 +180,8 @@ export default async function LandingPage() {
       <div className={s.nichos}>
         {sectores.map((sec) => (
           <Link key={sec.label} href={sec.href} className={s.nicho}>
-            <div className={s.nichoIco} style={{ background: sec.icoBg }}>
-              <span className={s.nichoEmoji}>{sec.emoji}</span>
+            <div className={s.nichoIco}>
+              <sec.Icon size={22} strokeWidth={1.75} />
             </div>
             <div className={s.nichoNum}>{sec.count}</div>
             <div className={s.nichoName}>{sec.label}</div>
@@ -247,7 +239,9 @@ export default async function LandingPage() {
                 return (
                   <div key={t.id} className={s.capCard}>
                     <div className={s.capThumb} style={{ background: th.bg }}>
-                      <span className={s.capThumbEmoji}>{th.emoji}</span>
+                      <div className={s.capThumbIcon}>
+                        <th.Icon size={44} strokeWidth={1} color={th.color} />
+                      </div>
                       <div className={s.capPlay}>
                         <Video size={12} /> Disponible · Gratis
                       </div>
@@ -265,7 +259,9 @@ export default async function LandingPage() {
             : CAP_FALLBACK.map(c => (
                 <div key={c.titulo} className={s.capCard}>
                   <div className={s.capThumb} style={{ background: c.bg }}>
-                    <span className={s.capThumbEmoji}>{c.emoji}</span>
+                    <div className={s.capThumbIcon}>
+                      <c.Icon size={44} strokeWidth={1} color={c.color} />
+                    </div>
                     <div className={s.capPlay}>
                       <Video size={12} /> {c.dur} · Gratis
                     </div>

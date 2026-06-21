@@ -278,12 +278,11 @@
 }
 
 .nichoIco {
-  width: 52px; height: 52px; border-radius: 14px;
+  width: 44px; height: 44px; border-radius: 12px;
+  background: linear-gradient(135deg, rgba(91,63,224,0.12), rgba(109,72,240,0.18));
   display: flex; align-items: center; justify-content: center;
-  margin-bottom: 14px;
-  /* bg set per-sector via inline style */
+  color: #5B3FE0; margin-bottom: 14px;
 }
-.nichoEmoji { font-size: 26px; line-height: 1; }
 
 .nichoNum {
   font-family: 'Poppins', sans-serif;
@@ -452,11 +451,11 @@
 }
 
 .capThumb {
-  height: 120px;
+  height: 110px;
   display: flex; align-items: center; justify-content: center;
   position: relative;
 }
-.capThumbEmoji { font-size: 52px; line-height: 1; }
+.capThumbIcon { opacity: 0.65; }
 
 .capPlay {
   position: absolute; bottom: 0; left: 0; right: 0;

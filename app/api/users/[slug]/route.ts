@@ -14,6 +14,10 @@ export async function GET(
       nombre_completo: true,
       bio: true,
       slug: true,
+      alfa_digital: true,
+      alfa_score: true,
+      fecha_nacimiento: true,
+      cv_datos: true,
       // Only return final (merged) videos, not intermediate fragments
       videos: {
         where: { es_fragmento: false },
@@ -24,6 +28,11 @@ export async function GET(
         orderBy: { created_at: 'desc' },
         take: 1,
         select: { id: true, file_url: true, file_type: true },
+      },
+      referencias: {
+        where: { estado: 'validada' },
+        orderBy: { fecha_validada: 'desc' },
+        select: { id: true, empresa_nombre: true, referidor_nombre: true, referidor_cargo: true, referidor_email: true, mensaje: true, fecha_validada: true },
       },
     },
   });

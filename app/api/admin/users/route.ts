@@ -20,6 +20,12 @@ export async function GET() {
       slug: true,
       created_at: true,
       _count: { select: { videos: true, archivos: true } },
+      videos: {
+        where: { tipo: 'video_cv', es_fragmento: false },
+        select: { video_url: true },
+        orderBy: { created_at: 'desc' },
+        take: 1,
+      },
     },
   });
 

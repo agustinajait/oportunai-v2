@@ -21,7 +21,7 @@ export default async function OfertasPage() {
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
         <Link href="/" className="flex items-center gap-2">
-          <img src="/logo.svg" alt="Oportunai" className="w-8 h-8" />
+          <img src="/logo.png" alt="Oportunai" className="w-8 h-8" />
           <span className="font-display text-xl font-semibold text-ink-800">Oportunai</span>
         </Link>
         <div className="flex items-center gap-3">
@@ -52,17 +52,17 @@ export default async function OfertasPage() {
               <div key={o.id} className="card p-6 hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4 flex-1 min-w-0">
-                    {/* Logo empresa */}
+                    {/* Logo marca o empresa */}
                     <div className="w-12 h-12 rounded-xl bg-ink-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                      {o.empresa.logo_url
-                        ? <img src={o.empresa.logo_url} alt={o.empresa.nombre} className="w-full h-full object-cover" />
+                      {(o.logo_url ?? o.empresa.logo_url)
+                        ? <img src={o.logo_url ?? o.empresa.logo_url!} alt={o.nombre_marca ?? o.empresa.nombre} className="w-full h-full object-cover" />
                         : <Building2 size={20} className="text-ink-400" />
                       }
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <h2 className="font-semibold text-ink-900 text-lg leading-tight mb-1">{o.titulo}</h2>
-                      <p className="text-brand-600 text-sm font-medium mb-2">{o.empresa.nombre}</p>
+                      <p className="text-brand-600 text-sm font-medium mb-2">{o.nombre_marca ?? o.empresa.nombre}</p>
 
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-ink-500 text-sm mb-3">
                         {o.ciudad && (

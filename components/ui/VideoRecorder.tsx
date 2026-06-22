@@ -24,9 +24,15 @@ interface Modulo {
 
 type Stage = 'preview' | 'countdown' | 'recording' | 'section_review' | 'between' | 'uploading' | 'done' | 'error';
 
+let sharedAudioCtx: AudioContext | null = null;
+
 function playBeep(freq = 660, duration = 0.12, vol = 0.25) {
   try {
-    const ctx = new AudioContext();
+    if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+      sharedAudioCtx = new AudioContext();
+    }
+    const ctx = sharedAudioCtx;
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
@@ -44,6 +50,70 @@ function getMimeType(): string {
   if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) return 'video/webm;codecs=vp9,opus';
   if (MediaRecorder.isTypeSupported('video/webm')) return 'video/webm';
   return 'video/mp4';
+}
+
+// Concatenar blobs WebM crudos produce un contenedor inválido (cada blob trae
+// su propio header), por eso se "re-grababan" en serie sobre un canvas para
+// obtener un único archivo continuo y reproducible.
+async function combineRecordings(blobs: Blob[]): Promise<Blob> {
+  if (blobs.length === 1) return blobs[0];
+
+  const canvas = document.createElement('canvas');
+  const ctx2d = canvas.getContext('2d')!;
+  const audioCtx = new AudioContext();
+  await audioCtx.resume().catch(() => {});
+  const dest = audioCtx.createMediaStreamDestination();
+
+  const probe = document.createElement('video');
+  probe.src = URL.createObjectURL(blobs[0]);
+  probe.muted = true;
+  await new Promise(res => { probe.onloadedmetadata = res; });
+  canvas.width = probe.videoWidth || 1280;
+  canvas.height = probe.videoHeight || 720;
+  URL.revokeObjectURL(probe.src);
+
+  const canvasStream = (canvas as any).captureStream(30) as MediaStream;
+  const combinedStream = new MediaStream([
+    ...canvasStream.getVideoTracks(),
+    ...dest.stream.getAudioTracks(),
+  ]);
+
+  const mimeType = getMimeType();
+  const recorder = new MediaRecorder(combinedStream, { mimeType });
+  const outChunks: Blob[] = [];
+  recorder.ondataavailable = e => { if (e.data.size > 0) outChunks.push(e.data); };
+  const finished = new Promise<Blob>(resolve => {
+    recorder.onstop = () => resolve(new Blob(outChunks, { type: mimeType }));
+  });
+  recorder.start(250);
+
+  for (const blob of blobs) {
+    const videoEl = document.createElement('video');
+    videoEl.src = URL.createObjectURL(blob);
+    videoEl.muted = true;
+    videoEl.playsInline = true;
+    await new Promise(res => { videoEl.onloadedmetadata = res; });
+
+    const source = audioCtx.createMediaElementSource(videoEl);
+    source.connect(dest);
+
+    let rafId = 0;
+    const draw = () => {
+      ctx2d.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+      rafId = requestAnimationFrame(draw);
+    };
+    draw();
+
+    await videoEl.play();
+    await new Promise(res => { videoEl.onended = res; });
+    cancelAnimationFrame(rafId);
+    source.disconnect();
+    URL.revokeObjectURL(videoEl.src);
+  }
+
+  recorder.stop();
+  audioCtx.close().catch(() => {});
+  return finished;
 }
 
 export default function VideoRecorder({
@@ -170,16 +240,22 @@ export default function VideoRecorder({
     sectionAttemptsRef.current = newAttempts;
     setSectionAttempts([...newAttempts]);
 
+    sectionEndCalledRef.current = false;
     chunksRef.current = [];
     const mimeType = getMimeType();
     const recorder = new MediaRecorder(streamRef.current, { mimeType });
-    recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-    recorder.onstop = () => {
+    const finishSection = () => {
       const blob = new Blob(chunksRef.current, { type: mimeType });
       currentBlobRef.current = blob;
       const url = URL.createObjectURL(blob);
       setReviewUrl(url);
       setStage('section_review');
+    };
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+    recorder.onstop = finishSection;
+    recorder.onerror = (e) => {
+      console.error('MediaRecorder error', e);
+      finishSection();
     };
     recorder.start(250);
     recorderRef.current = recorder;
@@ -193,7 +269,25 @@ export default function VideoRecorder({
     sectionEndCalledRef.current = true;
     clearInterval(timerRef.current!);
     const recorder = recorderRef.current;
-    if (recorder && recorder.state !== 'inactive') recorder.stop();
+    if (!recorder || recorder.state === 'inactive') return;
+
+    // Salvaguarda: si el navegador no dispara onstop/ondataavailable a tiempo
+    // (se ha visto en algunas versiones de Chrome con streams reusados),
+    // forzamos el avance con lo que se haya capturado hasta ese momento.
+    const fallback = setTimeout(() => {
+      if (currentBlobRef.current) return; // onstop ya corrió
+      const mimeType = recorder.mimeType || 'video/webm';
+      const blob = new Blob(chunksRef.current, { type: mimeType });
+      currentBlobRef.current = blob;
+      setReviewUrl(URL.createObjectURL(blob));
+      setStage('section_review');
+    }, 2500);
+    const originalOnStop = recorder.onstop;
+    recorder.onstop = (ev) => {
+      clearTimeout(fallback);
+      if (typeof originalOnStop === 'function') (originalOnStop as any).call(recorder, ev);
+    };
+    recorder.stop();
   }, []);
 
   // ── Regrabar la misma sección ─────────────────────────────────────
@@ -213,8 +307,8 @@ export default function VideoRecorder({
       const blobs = confirmedBlobsRef.current.filter((b): b is Blob => b instanceof Blob);
       if (blobs.length === 0) throw new Error('No hay video para subir');
 
-      const mimeType = blobs[0].type ?? 'video/webm';
-      const finalBlob = new Blob(blobs, { type: mimeType });
+      const finalBlob = await combineRecordings(blobs);
+      const mimeType = finalBlob.type || blobs[0].type || 'video/webm';
       const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
       const filename = `${session.userId}/${tipo}-${Date.now()}.${ext}`;
 

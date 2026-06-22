@@ -38,6 +38,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             cv_datos: true,
             alfa_digital: true,
             alfa_score: true,
+            grabaciones_cv: true,
             videos: {
               where: { oferta_id: params.id, es_fragmento: false },
               select: { id: true, video_url: true, tipo: true, created_at: true },

@@ -59,7 +59,7 @@ export default async function EmpresaPublicaPage({
       {/* Navbar */}
       <nav className="flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
         <Link href="/" className="flex items-center gap-2">
-          <img src="/logo.svg" alt="Oportunai" className="w-8 h-8" />
+          <img src="/logo.png" alt="Oportunai" className="w-8 h-8" />
           <span className="font-display text-xl font-semibold text-ink-800">Oportunai</span>
         </Link>
         <div className="flex items-center gap-3">

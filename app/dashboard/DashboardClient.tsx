@@ -15,9 +15,8 @@ import {
   ExternalLink, Copy, CheckCheck, Clock, Circle,
   BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck,
   CalendarDays, MapPin, Loader2, Plus, GraduationCap, Briefcase as BriefcaseIcon, Wrench,
-  Star, Building2, Link2, Trash2, PlayCircle
+  Star, Building2, Link2, Trash2
 } from 'lucide-react';
-import CapacitacionPlayer from '@/components/ui/CapacitacionPlayer';
 import OfertasTab from '@/components/ui/OfertasTab';
 import VideoThumbnail from '@/components/ui/VideoThumbnail';
 
@@ -37,18 +36,6 @@ interface Referencia {
   token: string;
   estado: string;
   created_at: string;
-}
-
-interface CapacitacionItem {
-  id: string;
-  titulo: string;
-  descripcion: string | null;
-  video_url: string;
-  pregunta: string;
-  opciones: string[];
-  completada: boolean;
-  empresa: { nombre: string };
-  _count: { completadas: number };
 }
 
 interface CvDatos {
@@ -195,10 +182,6 @@ export default function DashboardClient({
   const [refMsg, setRefMsg] = useState<string | null>(null);
   const [copiedRef, setCopiedRef] = useState<string | null>(null);
 
-  // Capacitaciones
-  const [capacitaciones, setCapacitaciones] = useState<CapacitacionItem[]>([]);
-  const [playerCap, setPlayerCap] = useState<CapacitacionItem | null>(null);
-
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
   const cvUrl = `${appUrl}/u/${usuario.slug}/cv`;
   const pitchUrl = `${appUrl}/u/${usuario.slug}/pitch`;
@@ -210,7 +193,6 @@ export default function DashboardClient({
   useEffect(() => {
     if (tab === 'documentos') cargarDocumentos();
     if (tab === 'perfil' && referencias.length === 0) cargarReferencias();
-    if (tab === 'perfil' && capacitaciones.length === 0) cargarCapacitaciones();
   }, [tab]);
 
   async function cargarReferencias() {
@@ -219,12 +201,6 @@ export default function DashboardClient({
     const data = await res.json();
     if (data.referencias) setReferencias(data.referencias);
     setLoadingRefs(false);
-  }
-
-  async function cargarCapacitaciones() {
-    const res = await fetch('/api/capacitaciones');
-    const data = await res.json();
-    if (data.capacitaciones) setCapacitaciones(data.capacitaciones);
   }
 
   async function agregarReferencia() {
@@ -777,60 +753,6 @@ export default function DashboardClient({
                 )}
               </div>
 
-              {/* Capacitaciones */}
-              <div className="card p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <GraduationCap size={16} className="text-blue-600" />
-                  <h2 className="font-semibold text-ink-800">Capacitaciones</h2>
-                  {capacitaciones.filter(c => c.completada).length > 0 && (
-                    <span className="ml-auto badge bg-amber-100 text-amber-700 flex items-center gap-1">
-                      <Star size={10} fill="currentColor" />
-                      {capacitaciones.filter(c => c.completada).length} completadas
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-ink-400 mb-4 leading-relaxed">
-                  Mirá videos de capacitación de empresas y respondé una pregunta para ganar una ⭐ en tu perfil.
-                </p>
-                {capacitaciones.length === 0 ? (
-                  <p className="text-xs text-ink-300 italic text-center py-2">No hay capacitaciones disponibles todavía.</p>
-                ) : (
-                  <div className="space-y-2">
-                    {capacitaciones.map(cap => {
-                      const ytId = cap.video_url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?\s]{11})/)?.[1] ?? null;
-                      return (
-                        <div key={cap.id} className={`rounded-xl border p-3 ${cap.completada ? 'border-emerald-200 bg-emerald-50' : 'border-ink-200 bg-white'}`}>
-                          <div className="flex items-start gap-3">
-                            {ytId && (
-                              <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt={cap.titulo} className="w-20 h-12 object-cover rounded-lg flex-shrink-0" />
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-ink-400">{cap.empresa.nombre}</p>
-                              <p className="text-sm font-semibold text-ink-800 line-clamp-1">{cap.titulo}</p>
-                              {cap.descripcion && <p className="text-xs text-ink-400 line-clamp-1 mt-0.5">{cap.descripcion}</p>}
-                            </div>
-                          </div>
-                          <div className="mt-2">
-                            {cap.completada ? (
-                              <span className="inline-flex items-center gap-1 text-xs text-emerald-700 font-medium">
-                                <Star size={11} fill="currentColor" className="text-amber-500" /> Completada — ⭐ sumada a tu perfil
-                              </span>
-                            ) : (
-                              <button
-                                onClick={() => setPlayerCap(cap)}
-                                className="flex items-center gap-1.5 text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
-                              >
-                                <PlayCircle size={13} /> Hacer capacitación
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
               {/* CV File */}
               <div className="card p-6">
                 <h2 className="font-semibold text-ink-800 mb-4">Archivo CV</h2>
@@ -1157,17 +1079,6 @@ export default function DashboardClient({
           </div>
         )}
       </main>
-
-      {playerCap && (
-        <CapacitacionPlayer
-          cap={playerCap}
-          onClose={() => setPlayerCap(null)}
-          onCompleted={(id) => {
-            setCapacitaciones(p => p.map(c => c.id === id ? { ...c, completada: true } : c));
-            setPlayerCap(null);
-          }}
-        />
-      )}
     </div>
   );
 }

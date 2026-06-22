@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
+import VideoThumbnail from '@/components/ui/VideoThumbnail';
 import {
   Users, BookOpen, Video, Plus, Trash2,
   Check, X, ChevronDown, ChevronUp, Loader2,
@@ -410,11 +411,13 @@ export default function SuperAdminClient({
             {usuarios.map(u => (
               <div key={u.id} className="card overflow-hidden">
                 <button onClick={() => setExpandedUser(expandedUser === u.id ? null : u.id)}
-                  className="w-full flex items-center justify-between px-6 py-4 hover:bg-ink-50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center flex-shrink-0 font-semibold text-brand-700 text-sm">
-                      {u.nombre_completo.split(' ').map(n => n[0]).slice(0, 2).join('')}
-                    </div>
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-ink-50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    {/* Thumbnail inline */}
+                    {u.videos.find(v => v.tipo === 'video_cv')
+                      ? <VideoThumbnail src={u.videos.find(v => v.tipo === 'video_cv')!.video_url} size="sm" />
+                      : <div className="w-14 h-10 rounded-lg bg-ink-100 flex items-center justify-center flex-shrink-0"><Video size={14} className="text-ink-300" /></div>
+                    }
                     <div className="text-left">
                       <p className="font-medium text-ink-800">{u.nombre_completo}</p>
                       <p className="text-xs text-ink-400">{u.email} · DNI {u.dni}</p>
@@ -514,20 +517,15 @@ export default function SuperAdminClient({
                       ) : (
                         <div className="space-y-2">
                           {u.videos.map(v => (
-                            <div key={v.id} className="flex items-center justify-between bg-ink-50 rounded-xl px-4 py-3">
-                              <div className="flex items-center gap-3">
-                                {v.tipo === 'video_cv' ? <Video size={15} className="text-brand-500" /> : <Mic size={15} className="text-emerald-500" />}
-                                <div>
-                                  <p className="text-sm font-medium text-ink-800">
-                                    {v.tipo === 'video_cv' ? 'Video CV' : 'Video Pitch'}
-                                    {v.taller && <span className="text-ink-400 font-normal"> · {v.taller.nombre}</span>}
-                                  </p>
-                                  <p className="text-xs text-ink-400">{new Date(v.created_at).toLocaleString('es-AR')}</p>
-                                </div>
+                            <div key={v.id} className="flex items-center gap-3 bg-ink-50 rounded-xl px-4 py-3">
+                              <VideoThumbnail src={v.video_url} size="sm" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-ink-800">
+                                  {v.tipo === 'video_cv' ? 'Video CV' : 'Video Pitch'}
+                                  {v.taller && <span className="text-ink-400 font-normal"> · {v.taller.nombre}</span>}
+                                </p>
+                                <p className="text-xs text-ink-400">{new Date(v.created_at).toLocaleString('es-AR')}</p>
                               </div>
-                              <a href={v.video_url} target="_blank" rel="noopener noreferrer" className="btn-ghost py-1 px-2 text-xs gap-1">
-                                <ExternalLink size={12} /> Ver
-                              </a>
                             </div>
                           ))}
                         </div>

@@ -1,7 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2, Pencil, ToggleLeft, ToggleRight, Globe, Copy, ExternalLink, LogOut, CalendarPlus, Loader2 } from 'lucide-react';
+import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2, Pencil, ToggleLeft, ToggleRight, Globe, Copy, ExternalLink, LogOut, CalendarPlus, Loader2, GraduationCap, Star } from 'lucide-react';
+
+function getYouTubeId(url: string): string | null {
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?\s]{11})/);
+  return m ? m[1] : null;
+}
 
 const DOCS_CONFIG = [
   { tipo: 'dni', label: 'DNI' },
@@ -101,9 +106,16 @@ type CitaEmpresa = {
   }[];
 };
 
+type Cap = {
+  id: string; titulo: string; descripcion: string | null; video_url: string;
+  rubro: string | null; pregunta: string; opciones: string[]; respuesta_correcta: number;
+  activa: boolean; created_at: string;
+  _count: { completadas: number };
+};
+
 export default function EmpresaDashboard() {
   const router = useRouter();
-  const [tab, setTab] = useState<'ofertas' | 'nueva' | 'editar' | 'postulantes' | 'perfil' | 'citas'>('ofertas');
+  const [tab, setTab] = useState<'ofertas' | 'nueva' | 'editar' | 'postulantes' | 'perfil' | 'citas' | 'capacitaciones'>('ofertas');
   const [citas, setCitas] = useState<CitaEmpresa[]>([]);
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const [postulantes, setPostulantes] = useState<Postulante[]>([]);
@@ -125,6 +137,16 @@ export default function EmpresaDashboard() {
   const [citaEnviando, setCitaEnviando] = useState(false);
   const [citaResultado, setCitaResultado] = useState<{ candidato: string; telefono: string; url: string }[] | null>(null);
   const [citaError, setCitaError] = useState<string | null>(null);
+
+  // Capacitaciones
+  const [capacitaciones, setCapacitaciones] = useState<Cap[]>([]);
+  const [newCapOpen, setNewCapOpen] = useState(false);
+  const [savingCap, setSavingCap] = useState(false);
+  const [capMsg, setCapMsg] = useState<string | null>(null);
+  const [capForm, setCapForm] = useState({
+    titulo: '', descripcion: '', video_url: '', rubro: '',
+    pregunta: '', opciones: ['', '', '', ''], respuesta_correcta: 0,
+  });
 
   function toggleSeleccionado(id: string) {
     setSeleccionados(prev => {
@@ -176,6 +198,53 @@ export default function EmpresaDashboard() {
     setSeleccionados(new Set());
   }
 
+  async function cargarCapacitaciones() {
+    const res = await fetch('/api/empresa/capacitaciones');
+    const data = await res.json();
+    if (data.capacitaciones) setCapacitaciones(data.capacitaciones);
+  }
+
+  async function crearCapacitacion() {
+    const { titulo, video_url, pregunta, opciones, respuesta_correcta } = capForm;
+    if (!titulo.trim() || !video_url.trim() || !pregunta.trim() || opciones.some(o => !o.trim())) {
+      setCapMsg('Completá todos los campos requeridos, incluyendo las 4 opciones.');
+      setTimeout(() => setCapMsg(null), 3000);
+      return;
+    }
+    setSavingCap(true);
+    const res = await fetch('/api/empresa/capacitaciones', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...capForm, respuesta_correcta }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      setCapMsg('Capacitación creada ✓');
+      setNewCapOpen(false);
+      setCapForm({ titulo: '', descripcion: '', video_url: '', rubro: '', pregunta: '', opciones: ['', '', '', ''], respuesta_correcta: 0 });
+      cargarCapacitaciones();
+    } else {
+      setCapMsg(data.error ?? 'Error al crear');
+    }
+    setSavingCap(false);
+    setTimeout(() => setCapMsg(null), 4000);
+  }
+
+  async function toggleCapActiva(id: string, activa: boolean) {
+    await fetch(`/api/empresa/capacitaciones/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activa: !activa }),
+    });
+    setCapacitaciones(p => p.map(c => c.id === id ? { ...c, activa: !activa } : c));
+  }
+
+  async function eliminarCapacitacion(id: string) {
+    if (!confirm('¿Eliminar esta capacitación? Los candidatos perderán el acceso.')) return;
+    await fetch(`/api/empresa/capacitaciones/${id}`, { method: 'DELETE' });
+    setCapacitaciones(p => p.filter(c => c.id !== id));
+  }
+
   const [form, setForm] = useState({
     titulo: '', descripcion: '', requisitos: '', area: '',
     modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '',
@@ -201,7 +270,7 @@ export default function EmpresaDashboard() {
     nombre: '', descripcion: '', rubro: '', ciudad: '', sitio_web: '',
   });
 
-  useEffect(() => { cargarOfertas(); cargarEmpresa(); cargarCitas(); }, []);
+  useEffect(() => { cargarOfertas(); cargarEmpresa(); cargarCitas(); cargarCapacitaciones(); }, []);
 
   async function cargarCitas() {
     const res = await fetch('/api/empresa/citas');
@@ -424,6 +493,7 @@ export default function EmpresaDashboard() {
     { key: 'ofertas', label: 'Mis ofertas' },
     { key: 'postulantes', label: ofertaSeleccionada ? `Pipeline — ${ofertaSeleccionada.titulo}` : 'Pipeline' },
     { key: 'citas', label: `Citas${citas.length > 0 ? ` (${citas.length})` : ''}` },
+    { key: 'capacitaciones', label: `Capacitaciones${capacitaciones.length > 0 ? ` (${capacitaciones.length})` : ''}` },
     { key: 'perfil', label: 'Perfil empresa' },
   ];
 
@@ -1117,6 +1187,146 @@ export default function EmpresaDashboard() {
                   </div>
                 </div>
               ))
+            )}
+          </div>
+        )}
+
+        {/* Tab: Capacitaciones */}
+        {tab === 'capacitaciones' && (
+          <div className="space-y-4 max-w-3xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Mis capacitaciones</h2>
+                <p className="text-sm text-gray-500 mt-0.5">Los candidatos ven tu video y completan una pregunta para ganar una estrella en su perfil.</p>
+              </div>
+              <button
+                onClick={() => setNewCapOpen(v => !v)}
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+              >
+                <Plus size={15} /> Nueva capacitación
+              </button>
+            </div>
+
+            {capMsg && (
+              <div className={`rounded-lg px-4 py-3 text-sm font-medium ${capMsg.includes('✓') ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                {capMsg}
+              </div>
+            )}
+
+            {/* Formulario nueva */}
+            {newCapOpen && (
+              <div className="bg-white rounded-xl border border-blue-200 p-5 space-y-4">
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2"><GraduationCap size={16} className="text-blue-600" /> Nueva capacitación</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Título *</label>
+                    <input value={capForm.titulo} onChange={e => setCapForm(f => ({ ...f, titulo: e.target.value }))} placeholder="Ej: Introducción al servicio al cliente" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Descripción (opcional)</label>
+                    <textarea value={capForm.descripcion} onChange={e => setCapForm(f => ({ ...f, descripcion: e.target.value }))} rows={2} placeholder="¿De qué trata esta capacitación?" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-xs font-medium text-gray-600 block mb-1">URL de YouTube *</label>
+                    <input value={capForm.video_url} onChange={e => setCapForm(f => ({ ...f, video_url: e.target.value }))} placeholder="https://www.youtube.com/watch?v=..." className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    {getYouTubeId(capForm.video_url) && (
+                      <img src={`https://img.youtube.com/vi/${getYouTubeId(capForm.video_url)}/mqdefault.jpg`} alt="preview" className="mt-2 rounded-lg w-48 object-cover" />
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Rubro (opcional)</label>
+                    <input value={capForm.rubro} onChange={e => setCapForm(f => ({ ...f, rubro: e.target.value }))} placeholder="Ej: Gastronomía" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div className="col-span-2 border-t border-gray-100 pt-3">
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Pregunta de verificación *</label>
+                    <input value={capForm.pregunta} onChange={e => setCapForm(f => ({ ...f, pregunta: e.target.value }))} placeholder="Ej: ¿Cuál es la actitud correcta ante un cliente molesto?" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div className="col-span-2 space-y-2">
+                    <label className="text-xs font-medium text-gray-600 block">Opciones de respuesta * <span className="text-gray-400 font-normal">(marcá la correcta)</span></label>
+                    {capForm.opciones.map((op, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <button
+                          onClick={() => setCapForm(f => ({ ...f, respuesta_correcta: i }))}
+                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${capForm.respuesta_correcta === i ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300 bg-white hover:border-emerald-400'}`}
+                        >
+                          {capForm.respuesta_correcta === i && <Check size={12} className="text-white" />}
+                        </button>
+                        <span className="text-xs font-medium text-gray-500 w-5">{String.fromCharCode(65 + i)}.</span>
+                        <input
+                          value={op}
+                          onChange={e => setCapForm(f => { const o = [...f.opciones]; o[i] = e.target.value; return { ...f, opciones: o }; })}
+                          placeholder={`Opción ${String.fromCharCode(65 + i)}`}
+                          className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    ))}
+                    <p className="text-xs text-gray-400">El círculo verde indica la opción correcta.</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button onClick={crearCapacitacion} disabled={savingCap} className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5">
+                    {savingCap ? <Loader2 size={14} className="animate-spin" /> : <GraduationCap size={14} />}
+                    Crear capacitación
+                  </button>
+                  <button onClick={() => setNewCapOpen(false)} className="border border-gray-200 text-gray-600 px-5 py-2 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
+                </div>
+              </div>
+            )}
+
+            {/* Lista */}
+            {capacitaciones.length === 0 && !newCapOpen ? (
+              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                <GraduationCap size={32} className="mx-auto mb-3 text-gray-300" />
+                <p className="text-gray-400 mb-4">Todavía no creaste ninguna capacitación</p>
+                <button onClick={() => setNewCapOpen(true)} className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Crear primera capacitación</button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {capacitaciones.map(cap => {
+                  const ytId = getYouTubeId(cap.video_url);
+                  return (
+                    <div key={cap.id} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+                      {ytId ? (
+                        <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt={cap.titulo} className="w-28 h-16 object-cover rounded-lg flex-shrink-0" />
+                      ) : (
+                        <div className="w-28 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <GraduationCap size={20} className="text-gray-300" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-semibold text-gray-900 text-sm">{cap.titulo}</h3>
+                          {cap.rubro && <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{cap.rubro}</span>}
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${cap.activa ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+                            {cap.activa ? 'Activa' : 'Inactiva'}
+                          </span>
+                        </div>
+                        {cap.descripcion && <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{cap.descripcion}</p>}
+                        <div className="flex items-center gap-1 mt-1 text-xs text-gray-400">
+                          <Star size={11} className="text-amber-400" fill="currentColor" />
+                          <span>{cap._count.completadas} {cap._count.completadas === 1 ? 'candidato completó' : 'candidatos completaron'} esta capacitación</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => toggleCapActiva(cap.id, cap.activa)}
+                          title={cap.activa ? 'Desactivar' : 'Activar'}
+                          className={`p-2 rounded-lg border transition-colors ${cap.activa ? 'border-emerald-200 text-emerald-600 hover:bg-emerald-50' : 'border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                        >
+                          {cap.activa ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                        </button>
+                        <button
+                          onClick={() => eliminarCapacitacion(cap.id)}
+                          className="p-2 rounded-lg border border-red-100 text-red-400 hover:bg-red-50 transition-colors"
+                          title="Eliminar"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         )}

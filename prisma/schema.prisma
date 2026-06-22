@@ -311,6 +311,8 @@ model Referencia {
   usuario_id       String
   empresa_nombre   String
   referidor_nombre String
+  referidor_cargo  String?
+  referidor_email  String?
   token            String    @unique @default(cuid())
   estado           String    @default("pendiente")
   fecha_validada   DateTime?

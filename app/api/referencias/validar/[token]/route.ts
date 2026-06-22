@@ -36,6 +36,8 @@ export async function POST(
     data: {
       estado: 'validada',
       fecha_validada: new Date(),
+      referidor_cargo: body.cargo?.trim() || null,
+      referidor_email: body.email?.trim() || null,
       mensaje: body.mensaje?.trim() || null,
     },
   });

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, Building2, User, Star } from 'lucide-react';
+import { CheckCircle2, Building2, User, Star, Briefcase, Mail } from 'lucide-react';
 
 export default function ValidarClient({
   token, candidato, empresa_nombre, referidor_nombre, estadoInicial,
@@ -14,18 +14,22 @@ export default function ValidarClient({
   estadoInicial: string;
 }) {
   const [validando, setValidando] = useState(false);
+  const [cargo, setCargo] = useState('');
+  const [email, setEmail] = useState('');
   const [mensaje, setMensaje] = useState('');
   const [done, setDone] = useState(estadoInicial === 'validada');
   const [error, setError] = useState<string | null>(null);
 
   const handleValidar = async () => {
+    if (!cargo.trim()) { setError('Completá tu cargo o puesto en la empresa'); return; }
+    if (!email.trim() || !email.includes('@')) { setError('Ingresá un email válido'); return; }
     setValidando(true);
     setError(null);
     try {
       const res = await fetch(`/api/referencias/validar/${token}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mensaje }),
+        body: JSON.stringify({ cargo: cargo.trim(), email: email.trim(), mensaje }),
       });
       if (res.ok) {
         setDone(true);
@@ -69,17 +73,18 @@ export default function ValidarClient({
             </Link>
           </div>
         ) : (
-          <div className="card p-8 space-y-6">
+          <div className="card p-8 space-y-5">
             <div>
               <h1 className="font-display text-2xl font-semibold text-ink-900 mb-2">
                 Validar referencia laboral
               </h1>
               <p className="text-ink-500 text-sm leading-relaxed">
-                <strong>{candidato}</strong> te nombró como referente. Si trabajaste con esa persona, confirmalo acá.
+                <strong>{candidato}</strong> te nombró como referente. Si trabajaste con esa persona, confirmalo completando los datos.
               </p>
             </div>
 
-            <div className="space-y-3">
+            {/* Datos del candidato */}
+            <div className="space-y-2">
               <div className="bg-ink-50 rounded-xl p-4 flex items-start gap-3">
                 <Building2 size={16} className="text-ink-400 mt-0.5 flex-shrink-0" />
                 <div>
@@ -96,8 +101,46 @@ export default function ValidarClient({
               </div>
             </div>
 
+            {/* Datos del referente — obligatorios */}
+            <div className="space-y-3">
+              <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest">Tus datos para verificar</p>
+              <div>
+                <label className="text-xs font-medium text-ink-600 block mb-1.5">
+                  Tu cargo en {empresa_nombre} <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <Briefcase size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+                  <input
+                    value={cargo}
+                    onChange={e => setCargo(e.target.value)}
+                    placeholder="Ej: Gerente, Supervisor, Encargado..."
+                    className="input-field text-sm pl-9"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-ink-600 block mb-1.5">
+                  Tu email de contacto <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="tu@empresa.com"
+                    className="input-field text-sm pl-9"
+                  />
+                </div>
+                <p className="text-xs text-ink-300 mt-1">
+                  Visible para las empresas que quieran verificar. No se usa para nada más.
+                </p>
+              </div>
+            </div>
+
+            {/* Mensaje opcional */}
             <div>
-              <label className="text-xs font-medium text-ink-600 block mb-2">
+              <label className="text-xs font-medium text-ink-600 block mb-1.5">
                 Mensaje opcional — aparecerá en el perfil de {firstName}
               </label>
               <textarea

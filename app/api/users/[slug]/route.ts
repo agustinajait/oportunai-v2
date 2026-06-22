@@ -32,7 +32,7 @@ export async function GET(
       referencias: {
         where: { estado: 'validada' },
         orderBy: { fecha_validada: 'desc' },
-        select: { id: true, empresa_nombre: true, referidor_nombre: true, mensaje: true, fecha_validada: true },
+        select: { id: true, empresa_nombre: true, referidor_nombre: true, referidor_cargo: true, referidor_email: true, mensaje: true, fecha_validada: true },
       },
     },
   });

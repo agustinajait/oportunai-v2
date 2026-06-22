@@ -12,7 +12,7 @@ import {
 
 interface VideoItem { id: string; tipo: string; video_url: string; created_at: string }
 interface ArchivoItem { id: string; file_url: string; file_type: string }
-interface ReferenciaItem { id: string; empresa_nombre: string; referidor_nombre: string; mensaje: string | null; fecha_validada: string | null }
+interface ReferenciaItem { id: string; empresa_nombre: string; referidor_nombre: string; referidor_cargo: string | null; referidor_email: string | null; mensaje: string | null; fecha_validada: string | null }
 interface CvDatos {
   resumen?: string;
   experiencia?: { empresa: string; cargo: string; periodo: string }[];
@@ -474,7 +474,14 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                       </div>
                       <div>
                         <p className="font-medium text-ink-800 text-sm">{r.empresa_nombre}</p>
-                        <p className="text-xs text-ink-400">{r.referidor_nombre}</p>
+                        <p className="text-xs text-ink-500">
+                          {r.referidor_nombre}{r.referidor_cargo ? ` · ${r.referidor_cargo}` : ''}
+                        </p>
+                        {r.referidor_email && (
+                          <a href={`mailto:${r.referidor_email}`} className="text-xs text-brand-500 hover:text-brand-700 transition-colors">
+                            {r.referidor_email}
+                          </a>
+                        )}
                       </div>
                     </div>
                     <span className="flex items-center gap-1 text-xs text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex-shrink-0">

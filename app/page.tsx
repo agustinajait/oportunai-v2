@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import {
-  Fuel, Sparkles, UtensilsCrossed,
+  Fuel, Headphones, UtensilsCrossed,
   Video, Smartphone, PhoneCall,
   CreditCard, Bot, LayoutGrid,
   GraduationCap, ClipboardList, RefreshCw,
@@ -29,11 +29,11 @@ const SECTORES: Sector[] = [
     keys:  ['estacion', 'playero', 'nafta', 'combustible', 'playa de'],
   },
   {
-    label: 'Empresas de limpieza',
-    desc:  'Operarios, supervisores',
-    Icon:  Sparkles,
+    label: 'Atención al cliente',
+    desc:  'Vendedores, recepcionistas, call center',
+    Icon:  Headphones,
     href:  '/ofertas',
-    keys:  ['limpieza', 'aseo', 'cleaning', 'higiene'],
+    keys:  ['atencion', 'atención', 'call center', 'recepcion', 'recepción', 'vendedor', 'customer', 'telefonista', 'operador'],
   },
   {
     label: 'Comidas rápidas',
@@ -46,13 +46,13 @@ const SECTORES: Sector[] = [
 
 const TALLER_ICONS = [
   { bg: '#ECE9FB', color: '#5B3FE0', rubro: 'Estación de servicio',  Icon: Fuel },
-  { bg: '#E3FAF4', color: '#0E9C82', rubro: 'Limpieza',              Icon: Sparkles },
+  { bg: '#E3FAF4', color: '#0E9C82', rubro: 'Atención al cliente',   Icon: Headphones },
   { bg: '#FFF3E8', color: '#D97706', rubro: 'Comidas rápidas',        Icon: UtensilsCrossed },
 ];
 
 const CAP_FALLBACK = [
   { bg: '#ECE9FB', color: '#5B3FE0', rubro: 'Estación de servicio',  titulo: 'Atención al cliente en la playa',   dur: '8 min',  emp: 'YPF',           Icon: Fuel },
-  { bg: '#E3FAF4', color: '#0E9C82', rubro: 'Limpieza',              titulo: 'Técnicas de limpieza profesional', dur: '12 min', emp: 'Propia empresa', Icon: Sparkles },
+  { bg: '#E3FAF4', color: '#0E9C82', rubro: 'Atención al cliente',   titulo: 'Cómo atender bien al cliente',     dur: '10 min', emp: 'Empresa local',  Icon: Headphones },
   { bg: '#FFF3E8', color: '#D97706', rubro: 'Comidas rápidas',        titulo: 'Atención y manejo de caja',        dur: '10 min', emp: 'Empresa local',  Icon: UtensilsCrossed },
 ];
 
@@ -170,7 +170,7 @@ export default async function LandingPage() {
         <div>
           <p className={s.capStripTag}>Exclusivo Oportunai</p>
           <h2 className={s.capStripH}>Aprendé antes de arrancar. Gratis.</h2>
-          <p className={s.capStripP}>Capacitaciones en video para estaciones de servicio, limpieza y comidas rápidas. Cargadas por las mismas empresas que buscan personal.</p>
+          <p className={s.capStripP}>Capacitaciones en video para estaciones de servicio, atención al cliente y comidas rápidas. Cargadas por las mismas empresas que buscan personal.</p>
         </div>
         <Link href="/register" className={s.capStripBtn}>Ver capacitaciones →</Link>
       </div>
@@ -345,7 +345,7 @@ export default async function LandingPage() {
             { Icon: Video,         t: 'Ves el video antes de entrevistar', d: 'Conocés la actitud del candidato antes de llamarlo.' },
             { Icon: GraduationCap, t: 'Subís tus propias capacitaciones',   d: 'Cargás videos para tu rubro y los candidatos los ven.' },
             { Icon: ClipboardList, t: 'Pipeline de selección',              d: 'Pendiente, contactado, contratado en un tablero.' },
-            { Icon: RefreshCw,     t: 'Hecho para alta rotación',           d: 'Estaciones, limpieza, gastronomía — siempre hay vacantes.' },
+            { Icon: RefreshCw,     t: 'Hecho para alta rotación',           d: 'Estaciones, atención al cliente, gastronomía — siempre hay vacantes.' },
           ].map(f => (
             <div key={f.t} className={s.efeat}>
               <div className={s.efeatIco}>
@@ -364,7 +364,7 @@ export default async function LandingPage() {
       <section className={s.ctaFinal}>
         <p className={s.ctaTag}>Gratis · Desde el celular · 2 minutos</p>
         <h2 className={s.ctaH}>Empezá hoy.<br/>Tu oportunidad te espera.</h2>
-        <p className={s.ctaSub}>Miles de personas en estaciones, limpieza y comidas rápidas<br/>ya encontraron trabajo con Oportunai.</p>
+        <p className={s.ctaSub}>Miles de personas en estaciones, atención al cliente y comidas rápidas<br/>ya encontraron trabajo con Oportunai.</p>
         <div className={s.ctaBtns}>
           <Link href="/register" className={s.ctaBtnP}>
             <Video size={16} strokeWidth={2} />

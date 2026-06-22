@@ -1,6 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2, Pencil, ToggleLeft, ToggleRight, Globe, Copy, ExternalLink } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2, Pencil, ToggleLeft, ToggleRight, Globe, Copy, ExternalLink, LogOut, CalendarPlus, Loader2, GraduationCap, Star } from 'lucide-react';
+
+function getYouTubeId(url: string): string | null {
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?\s]{11})/);
+  return m ? m[1] : null;
+}
 
 const DOCS_CONFIG = [
   { tipo: 'dni', label: 'DNI' },
@@ -60,6 +66,7 @@ type Oferta = {
   id: string; titulo: string; descripcion: string; requisitos: string | null;
   area: string | null; ciudad: string | null;
   modalidad: string; estado: string; mensaje_whatsapp: string | null;
+  nombre_marca: string | null; logo_url: string | null;
   docs_requeridos: string[]; preguntas_videocv: string[]; created_at: string;
   _count: { postulaciones: number };
 };
@@ -90,8 +97,26 @@ type Empresa = {
   descripcion: string | null; rubro: string | null; ciudad: string | null; sitio_web: string | null;
 };
 
+type Cap = {
+  id: string; titulo: string; descripcion: string | null; video_url: string;
+  rubro: string | null; pregunta: string; opciones: string[]; respuesta_correcta: number;
+  activa: boolean; created_at: string;
+  _count: { completadas: number };
+};
+
+type CitaEmpresa = {
+  id: string; fecha: string; modalidad: string; lugar: string; mensaje: string | null; grupal: boolean;
+  oferta: { titulo: string } | null;
+  invitados: {
+    id: string; estado: string;
+    postulacion: { usuario: { nombre_completo: string; telefono: string } };
+  }[];
+};
+
 export default function EmpresaDashboard() {
-  const [tab, setTab] = useState<'ofertas' | 'nueva' | 'editar' | 'postulantes' | 'perfil'>('ofertas');
+  const router = useRouter();
+  const [tab, setTab] = useState<'ofertas' | 'nueva' | 'editar' | 'postulantes' | 'perfil' | 'citas' | 'capacitaciones'>('ofertas');
+  const [citas, setCitas] = useState<CitaEmpresa[]>([]);
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const [postulantes, setPostulantes] = useState<Postulante[]>([]);
   const [ofertaSeleccionada, setOfertaSeleccionada] = useState<Oferta | null>(null);
@@ -106,29 +131,152 @@ export default function EmpresaDashboard() {
   const [filtroEdadMax, setFiltroEdadMax] = useState<string>('');
   const [filtroCiudad, setFiltroCiudad] = useState<string>('');
   const [filtroDocsCompletos, setFiltroDocsCompletos] = useState<boolean>(false);
+  const [seleccionados, setSeleccionados] = useState<Set<string>>(new Set());
+  const [citaModalOpen, setCitaModalOpen] = useState(false);
+  const [citaForm, setCitaForm] = useState({ fecha: '', hora: '', modalidad: 'virtual', lugar: '', mensaje: '' });
+  const [citaEnviando, setCitaEnviando] = useState(false);
+  const [citaResultado, setCitaResultado] = useState<{ candidato: string; telefono: string; url: string }[] | null>(null);
+  const [citaError, setCitaError] = useState<string | null>(null);
+
+  // Capacitaciones
+  const [capacitaciones, setCapacitaciones] = useState<Cap[]>([]);
+  const [newCapOpen, setNewCapOpen] = useState(false);
+  const [savingCap, setSavingCap] = useState(false);
+  const [capMsg, setCapMsg] = useState<string | null>(null);
+  const [capForm, setCapForm] = useState({
+    titulo: '', descripcion: '', video_url: '', rubro: '',
+    pregunta: '', opciones: ['', '', '', ''], respuesta_correcta: 0,
+  });
+
+  function toggleSeleccionado(id: string) {
+    setSeleccionados(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  async function enviarCita() {
+    if (!citaForm.fecha || !citaForm.hora || !citaForm.lugar) {
+      setCitaError('Completá la fecha, hora y lugar/link de la cita.');
+      return;
+    }
+    setCitaEnviando(true);
+    setCitaError(null);
+    try {
+      const res = await fetch('/api/empresa/citas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          postulacion_ids: Array.from(seleccionados),
+          oferta_id: ofertaSeleccionada?.id,
+          fecha: `${citaForm.fecha}T${citaForm.hora}`,
+          modalidad: citaForm.modalidad,
+          lugar: citaForm.lugar,
+          mensaje: citaForm.mensaje,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCitaError(data.error ?? 'Error al agendar la cita');
+        return;
+      }
+      setCitaResultado(data.whatsappLinks ?? []);
+      cargarCitas();
+    } catch {
+      setCitaError('Error al agendar la cita');
+    } finally {
+      setCitaEnviando(false);
+    }
+  }
+
+  function cerrarCitaModal() {
+    setCitaModalOpen(false);
+    setCitaResultado(null);
+    setCitaError(null);
+    setCitaForm({ fecha: '', hora: '', modalidad: 'virtual', lugar: '', mensaje: '' });
+    setSeleccionados(new Set());
+  }
+
+  async function cargarCapacitaciones() {
+    const res = await fetch('/api/empresa/capacitaciones');
+    const data = await res.json();
+    if (data.capacitaciones) setCapacitaciones(data.capacitaciones);
+  }
+
+  async function crearCapacitacion() {
+    const { titulo, video_url, pregunta, opciones, respuesta_correcta } = capForm;
+    if (!titulo.trim() || !video_url.trim() || !pregunta.trim() || opciones.some(o => !o.trim())) {
+      setCapMsg('Completá todos los campos requeridos, incluyendo las 4 opciones.');
+      setTimeout(() => setCapMsg(null), 3000);
+      return;
+    }
+    setSavingCap(true);
+    const res = await fetch('/api/empresa/capacitaciones', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...capForm, respuesta_correcta }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      setCapMsg('Capacitación creada ✓');
+      setNewCapOpen(false);
+      setCapForm({ titulo: '', descripcion: '', video_url: '', rubro: '', pregunta: '', opciones: ['', '', '', ''], respuesta_correcta: 0 });
+      cargarCapacitaciones();
+    } else {
+      setCapMsg(data.error ?? 'Error al crear');
+    }
+    setSavingCap(false);
+    setTimeout(() => setCapMsg(null), 4000);
+  }
+
+  async function toggleCapActiva(id: string, activa: boolean) {
+    await fetch(`/api/empresa/capacitaciones/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activa: !activa }),
+    });
+    setCapacitaciones(p => p.map(c => c.id === id ? { ...c, activa: !activa } : c));
+  }
+
+  async function eliminarCapacitacion(id: string) {
+    if (!confirm('¿Eliminar esta capacitación? Los candidatos perderán el acceso.')) return;
+    await fetch(`/api/empresa/capacitaciones/${id}`, { method: 'DELETE' });
+    setCapacitaciones(p => p.filter(c => c.id !== id));
+  }
 
   const [form, setForm] = useState({
     titulo: '', descripcion: '', requisitos: '', area: '',
     modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '',
+    nombre_marca: '', logo_url: '',
     docs_requeridos: [] as string[],
     preguntas_videocv: [] as string[],
   });
+  const [logoUploadingNueva, setLogoUploadingNueva] = useState(false);
   const [preguntaInput, setPreguntaInput] = useState('');
   const [otroLabel, setOtroLabel] = useState('');
   const [editOtroLabel, setEditOtroLabel] = useState('');
   const [editForm, setEditForm] = useState({
     titulo: '', descripcion: '', requisitos: '', area: '',
     modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '',
+    nombre_marca: '', logo_url: '',
     docs_requeridos: [] as string[],
     preguntas_videocv: [] as string[],
   });
+  const [logoUploadingEditar, setLogoUploadingEditar] = useState(false);
   const [editPreguntaInput, setEditPreguntaInput] = useState('');
 
   const [perfilForm, setPerfilForm] = useState({
     nombre: '', descripcion: '', rubro: '', ciudad: '', sitio_web: '',
   });
 
-  useEffect(() => { cargarOfertas(); cargarEmpresa(); }, []);
+  useEffect(() => { cargarOfertas(); cargarEmpresa(); cargarCitas(); cargarCapacitaciones(); }, []);
+
+  async function cargarCitas() {
+    const res = await fetch('/api/empresa/citas');
+    const data = await res.json();
+    if (data.citas) setCitas(data.citas);
+  }
 
   async function cargarOfertas() {
     const res = await fetch('/api/empresa/ofertas');
@@ -219,7 +367,7 @@ export default function EmpresaDashboard() {
     const res = await fetch('/api/ofertas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formFinal) });
     const data = await res.json();
     if (data.ok) {
-      setForm({ titulo: '', descripcion: '', requisitos: '', area: '', modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '', docs_requeridos: [], preguntas_videocv: [] });
+      setForm({ titulo: '', descripcion: '', requisitos: '', area: '', modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '', nombre_marca: '', logo_url: '', docs_requeridos: [], preguntas_videocv: [] });
       setPreguntaInput('');
       setTab('ofertas');
       cargarOfertas();
@@ -239,6 +387,8 @@ export default function EmpresaDashboard() {
       modalidad: oferta.modalidad,
       ciudad: oferta.ciudad || '',
       mensaje_whatsapp: oferta.mensaje_whatsapp || '',
+      nombre_marca: oferta.nombre_marca || '',
+      logo_url: oferta.logo_url || '',
       docs_requeridos: oferta.docs_requeridos || [],
       preguntas_videocv: oferta.preguntas_videocv || [],
     });
@@ -342,8 +492,16 @@ export default function EmpresaDashboard() {
   const tabs = [
     { key: 'ofertas', label: 'Mis ofertas' },
     { key: 'postulantes', label: ofertaSeleccionada ? `Pipeline — ${ofertaSeleccionada.titulo}` : 'Pipeline' },
+    { key: 'citas', label: `Citas${citas.length > 0 ? ` (${citas.length})` : ''}` },
+    { key: 'capacitaciones', label: `Capacitaciones${capacitaciones.length > 0 ? ` (${capacitaciones.length})` : ''}` },
     { key: 'perfil', label: 'Perfil empresa' },
   ];
+
+  const citasPorDia = citas.reduce((acc, c) => {
+    const dia = new Date(c.fecha).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    (acc[dia] ??= []).push(c);
+    return acc;
+  }, {} as Record<string, CitaEmpresa[]>);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -360,7 +518,16 @@ export default function EmpresaDashboard() {
               {empresa?.rubro && <p className="text-sm text-gray-500">{empresa.rubro}</p>}
             </div>
           </div>
-          <button onClick={() => setTab('nueva')} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">+ Nueva oferta</button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setTab('nueva')} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">+ Nueva oferta</button>
+            <button
+              onClick={async () => { await fetch('/api/auth/logout', { method: 'POST' }); router.push('/login'); router.refresh(); }}
+              className="flex items-center gap-1.5 border border-gray-200 text-gray-500 px-3 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+              title="Cerrar sesión"
+            >
+              <LogOut size={15} /> Salir
+            </button>
+          </div>
         </div>
 
         {/* Banner página pública */}
@@ -555,6 +722,34 @@ export default function EmpresaDashboard() {
                 <textarea value={form.mensaje_whatsapp} onChange={e => setForm({ ...form, mensaje_whatsapp: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 <p className="text-xs text-gray-400 mt-1">Se enviará: "Hola [nombre], te contacto desde [empresa]. [tu mensaje]"</p>
               </div>
+              <div className="border-t border-gray-100 pt-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">Marca (opcional)</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Nombre de la marca</label>
+                    <input value={form.nombre_marca} onChange={e => setForm({ ...form, nombre_marca: e.target.value })} placeholder={empresa?.nombre ?? ''} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Logo de la marca</label>
+                    {form.logo_url && <img src={form.logo_url} alt="preview" className="w-10 h-10 rounded-lg object-cover mb-1 border border-gray-200" />}
+                    <label className="cursor-pointer flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+                      <input type="file" accept="image/*" className="hidden" disabled={logoUploadingNueva} onChange={async e => {
+                        const file = e.target.files?.[0]; if (!file) return;
+                        setLogoUploadingNueva(true);
+                        const { createClient } = await import('@supabase/supabase-js');
+                        const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+                        const ext = file.name.split('.').pop() || 'jpg';
+                        const filename = `logos/oferta-${Date.now()}.${ext}`;
+                        const { error } = await sb.storage.from('videos').upload(filename, file, { contentType: file.type, upsert: true });
+                        if (!error) { const { data } = sb.storage.from('videos').getPublicUrl(filename); setForm(f => ({ ...f, logo_url: data.publicUrl })); }
+                        setLogoUploadingNueva(false);
+                      }} />
+                      {logoUploadingNueva ? 'Subiendo...' : (form.logo_url ? 'Cambiar' : 'Subir logo')}
+                    </label>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Si esta oferta es de una submarca del grupo, podés poner su nombre y logo propio.</p>
+              </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={crearOferta} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
                   {loading ? 'Publicando...' : 'Publicar oferta'}
@@ -678,6 +873,34 @@ export default function EmpresaDashboard() {
                 <label className="text-sm font-medium text-gray-700 block mb-1">Mensaje WhatsApp (opcional)</label>
                 <textarea value={editForm.mensaje_whatsapp} onChange={e => setEditForm({ ...editForm, mensaje_whatsapp: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
+              <div className="border-t border-gray-100 pt-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">Marca (opcional)</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Nombre de la marca</label>
+                    <input value={editForm.nombre_marca} onChange={e => setEditForm({ ...editForm, nombre_marca: e.target.value })} placeholder={empresa?.nombre ?? ''} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Logo de la marca</label>
+                    {editForm.logo_url && <img src={editForm.logo_url} alt="preview" className="w-10 h-10 rounded-lg object-cover mb-1 border border-gray-200" />}
+                    <label className="cursor-pointer flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+                      <input type="file" accept="image/*" className="hidden" disabled={logoUploadingEditar} onChange={async e => {
+                        const file = e.target.files?.[0]; if (!file) return;
+                        setLogoUploadingEditar(true);
+                        const { createClient } = await import('@supabase/supabase-js');
+                        const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+                        const ext = file.name.split('.').pop() || 'jpg';
+                        const filename = `logos/oferta-${Date.now()}.${ext}`;
+                        const { error } = await sb.storage.from('videos').upload(filename, file, { contentType: file.type, upsert: true });
+                        if (!error) { const { data } = sb.storage.from('videos').getPublicUrl(filename); setEditForm(f => ({ ...f, logo_url: data.publicUrl })); }
+                        setLogoUploadingEditar(false);
+                      }} />
+                      {logoUploadingEditar ? 'Subiendo...' : (editForm.logo_url ? 'Cambiar' : 'Subir logo')}
+                    </label>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Si esta oferta es de una submarca del grupo, podés poner su nombre y logo propio.</p>
+              </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={guardarEdicion} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
                   {loading ? 'Guardando...' : 'Guardar cambios'}
@@ -765,80 +988,340 @@ export default function EmpresaDashboard() {
               )}
             </div>
 
+            {seleccionados.size > 0 && (
+              <div className="sticky top-2 z-10 mb-4 bg-gray-900 text-white rounded-xl px-4 py-3 flex items-center justify-between shadow-lg">
+                <span className="text-sm">{seleccionados.size} candidato{seleccionados.size !== 1 ? 's' : ''} seleccionado{seleccionados.size !== 1 ? 's' : ''}</span>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setSeleccionados(new Set())} className="text-xs text-gray-300 hover:text-white">Cancelar</button>
+                  <button onClick={() => setCitaModalOpen(true)} className="flex items-center gap-1.5 bg-teal-500 hover:bg-teal-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
+                    <CalendarPlus size={14} /> Agendar cita{seleccionados.size > 1 ? ' grupal' : ''}
+                  </button>
+                </div>
+              </div>
+            )}
+
             {postulanteFiltrados.length === 0 ? (
               <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
                 <p className="text-gray-400">No hay postulantes en este estado</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {postulanteFiltrados.map(p => {
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                {/* Header tabla */}
+                <div className="hidden md:grid grid-cols-[28px_180px_1fr_auto_160px] gap-4 px-4 py-2 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-400 uppercase tracking-wide items-center">
+                  <span />
+                  <span>Video CV</span>
+                  <span>Candidato</span>
+                  <span>Docs</span>
+                  <span>Estado</span>
+                </div>
+
+                {postulanteFiltrados.map((p, idx) => {
                   const pipelineInfo = getPipelineInfo(p.estado);
                   const Icon = pipelineInfo.icon;
                   const edad = calcularEdad(p.usuario.fecha_nacimiento);
                   const ciudad = p.usuario.direccion?.split(',').slice(-2).join(',').trim() || '';
                   return (
-                    <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                      <div className="relative bg-gray-900 aspect-video cursor-pointer" onClick={() => {
-                        setVideoModal(p);
-                        if (p.estado === 'pendiente') cambiarEstado(p.id, 'visto');
-                      }}>
-                        <video src={p.video.video_url} className="w-full h-full object-cover opacity-80" />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
-                            <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[16px] border-l-white border-b-[8px] border-b-transparent ml-1" />
+                    <div key={p.id} className={`flex md:grid md:grid-cols-[28px_180px_1fr_auto_160px] gap-4 items-center px-4 py-3 ${idx !== postulanteFiltrados.length - 1 ? 'border-b border-gray-100' : ''} hover:bg-gray-50 transition-colors`}>
+
+                      {/* Checkbox selección */}
+                      <input
+                        type="checkbox"
+                        checked={seleccionados.has(p.id)}
+                        onChange={() => toggleSeleccionado(p.id)}
+                        className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer flex-shrink-0"
+                      />
+
+                      {/* Thumbnail video */}
+                      <div
+                        className="relative bg-gray-900 rounded-xl overflow-hidden cursor-pointer group flex-shrink-0"
+                        style={{ width: 180, height: 101 }}
+                        onClick={() => { setVideoModal(p); if (p.estado === 'pendiente') cambiarEstado(p.id, 'visto'); }}
+                      >
+                        <video
+                          src={p.video.video_url}
+                          className="w-full h-full object-cover"
+                          preload="metadata"
+                          muted
+                          playsInline
+                          loop
+                          onMouseEnter={e => (e.currentTarget as HTMLVideoElement).play().catch(() => {})}
+                          onMouseLeave={e => { const v = e.currentTarget as HTMLVideoElement; v.pause(); v.currentTime = 0; }}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center transition-opacity group-hover:opacity-0 pointer-events-none">
+                          <div className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                            <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[12px] border-l-white border-b-[6px] border-b-transparent ml-0.5" />
                           </div>
                         </div>
-                        <div className={`absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full ${pipelineInfo.color}`}>
-                          <Icon size={10} />
-                          {pipelineInfo.label}
+                        <div className="absolute bottom-1.5 right-1.5 pointer-events-none">
+                          <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${pipelineInfo.color}`}>
+                            <Icon size={9} />{pipelineInfo.label}
+                          </span>
                         </div>
                       </div>
 
-                      <div className="p-4">
-                        <h3 className="font-semibold text-gray-900">{p.usuario.nombre_completo}</h3>
-                        <div className="flex gap-2 text-xs text-gray-400 mt-1 mb-2">
-                          {edad && <span>🎂 {edad}</span>}
+                      {/* Info candidato */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-semibold text-gray-900 text-sm">{p.usuario.nombre_completo}</h3>
+                          {p.usuario.alfa_digital && (
+                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                              {p.usuario.alfa_digital === 'Perfil nativo digital' ? '🚀' : p.usuario.alfa_digital === 'Usuario digital activo' ? '⚡' : '🌱'}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex gap-3 text-xs text-gray-400 mt-0.5">
+                          {edad && <span>{edad}</span>}
                           {ciudad && <span>📍 {ciudad}</span>}
                         </div>
-                        {p.usuario.bio && <p className="text-xs text-gray-500 line-clamp-2 mb-2">{p.usuario.bio}</p>}
-                        {p.usuario.alfa_digital && (
-                          <span className="inline-block text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full mb-2">
-                            {p.usuario.alfa_digital === 'Perfil nativo digital' ? '🚀' : p.usuario.alfa_digital === 'Usuario digital activo' ? '⚡' : '🌱'} {p.usuario.alfa_digital}
-                          </span>
+                        {p.usuario.bio && <p className="text-xs text-gray-500 line-clamp-1 mt-1">{p.usuario.bio}</p>}
+                        {/* Habilidades rápidas si tiene CV */}
+                        {(p.usuario.cv_datos?.habilidades?.length ?? 0) > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {p.usuario.cv_datos!.habilidades!.slice(0, 3).map((h, i) => (
+                              <span key={i} className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">{h}</span>
+                            ))}
+                            {(p.usuario.cv_datos!.habilidades!.length ?? 0) > 3 && (
+                              <span className="text-xs text-gray-400">+{p.usuario.cv_datos!.habilidades!.length - 3}</span>
+                            )}
+                          </div>
                         )}
+                        <div className="flex gap-2 mt-2">
+                          <a href={`/u/${p.usuario.slug}/cv`} target="_blank"
+                            className="text-xs border border-blue-200 text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-50">
+                            Ver perfil
+                          </a>
+                          {ofertaSeleccionada?.mensaje_whatsapp && p.usuario.telefono && (
+                            <a href={whatsappUrl(p.usuario.telefono, ofertaSeleccionada.mensaje_whatsapp, p.usuario.nombre_completo)}
+                              target="_blank" className="text-xs bg-green-500 text-white px-2 py-1 rounded-lg hover:bg-green-600">
+                              WhatsApp
+                            </a>
+                          )}
+                        </div>
+                      </div>
 
-                        {ofertaSeleccionada?.docs_requeridos?.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mb-3">
-                            {ofertaSeleccionada.docs_requeridos.map(tipo => {
+                      {/* Documentos */}
+                      <div className="hidden md:flex flex-col gap-1">
+                        {ofertaSeleccionada?.docs_requeridos?.length > 0
+                          ? ofertaSeleccionada.docs_requeridos.map(tipo => {
                               const tipoBase = parseDocTipo(tipo);
                               const tieneDoc = p.documentos?.some(d => d.tipo === tipoBase);
                               const doc = p.documentos?.find(d => d.tipo === tipoBase);
                               const label = parseDocLabel(tipo);
                               return (
-                                <span key={tipo} className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${tieneDoc ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-600'}`}>
-                                  {tieneDoc ? <Check size={10} /> : <X size={10} />}
+                                <span key={tipo} className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 whitespace-nowrap ${tieneDoc ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-500'}`}>
+                                  {tieneDoc ? <Check size={9} /> : <X size={9} />}
                                   {tieneDoc && doc ? <a href={doc.file_url} target="_blank" className="hover:underline">{label}</a> : label}
                                 </span>
                               );
-                            })}
-                          </div>
-                        )}
+                            })
+                          : <span className="text-xs text-gray-300">—</span>
+                        }
+                      </div>
 
-                        <div className="flex gap-2 mb-3">
-                          <a href={`/u/${p.usuario.slug}/cv`} target="_blank"
-                            className="flex-1 text-center border border-blue-200 text-blue-600 py-1.5 rounded-lg text-xs hover:bg-blue-50">Ver perfil</a>
-                          {ofertaSeleccionada?.mensaje_whatsapp && (
-                            <a href={whatsappUrl(p.usuario.telefono, ofertaSeleccionada.mensaje_whatsapp, p.usuario.nombre_completo)}
-                              target="_blank" className="flex-1 text-center bg-green-500 text-white py-1.5 rounded-lg text-xs hover:bg-green-600">
-                              📱 WhatsApp
-                            </a>
-                          )}
-                        </div>
-
-                        <select value={p.estado} onChange={e => cambiarEstado(p.id, e.target.value)}
-                          className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      {/* Estado */}
+                      <div className="hidden md:block">
+                        <select
+                          value={p.estado}
+                          onChange={e => cambiarEstado(p.id, e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
                           {PIPELINE.map(s => <option key={s.estado} value={s.estado}>{s.label}</option>)}
                         </select>
+                      </div>
+
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab: Citas */}
+        {tab === 'citas' && (
+          <div className="space-y-6 max-w-3xl">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-500">Entrá a una oferta y seleccioná candidatos en su Pipeline para agendarles una cita.</p>
+              <button onClick={() => setTab('ofertas')} className="flex items-center gap-1.5 bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors flex-shrink-0">
+                <CalendarPlus size={14} /> Nueva cita
+              </button>
+            </div>
+            {citas.length === 0 ? (
+              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                <p className="text-gray-400">Todavía no agendaste ninguna cita</p>
+              </div>
+            ) : (
+              Object.entries(citasPorDia).map(([dia, items]) => (
+                <div key={dia}>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2 capitalize">{dia}</h3>
+                  <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+                    {items.map(c => (
+                      <div key={c.id} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div className="w-16 flex-shrink-0 text-sm font-medium text-gray-900">
+                          {new Date(c.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${c.modalidad === 'presencial' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>
+                              {c.modalidad === 'presencial' ? 'Presencial' : 'Virtual'}
+                            </span>
+                            {c.grupal && <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">Grupal</span>}
+                            {c.oferta && <span className="text-xs text-gray-400">{c.oferta.titulo}</span>}
+                          </div>
+                          <p className="text-sm text-gray-600 mt-1 truncate">{c.lugar}</p>
+                          <div className="flex flex-wrap gap-1.5 mt-2">
+                            {c.invitados.map(inv => (
+                              <span key={inv.id} className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                                inv.estado === 'confirmada' ? 'bg-emerald-100 text-emerald-700' :
+                                inv.estado === 'rechazada' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'
+                              }`}>
+                                {inv.postulacion.usuario.nombre_completo}
+                                {inv.estado === 'confirmada' && ' ✓'}
+                                {inv.estado === 'rechazada' && ' ✕'}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Tab: Capacitaciones */}
+        {tab === 'capacitaciones' && (
+          <div className="space-y-4 max-w-3xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Mis capacitaciones</h2>
+                <p className="text-sm text-gray-500 mt-0.5">Los candidatos ven tu video y completan una pregunta para ganar una estrella en su perfil.</p>
+              </div>
+              <button
+                onClick={() => setNewCapOpen(v => !v)}
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+              >
+                <Plus size={15} /> Nueva capacitación
+              </button>
+            </div>
+
+            {capMsg && (
+              <div className={`rounded-lg px-4 py-3 text-sm font-medium ${capMsg.includes('✓') ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                {capMsg}
+              </div>
+            )}
+
+            {/* Formulario nueva */}
+            {newCapOpen && (
+              <div className="bg-white rounded-xl border border-blue-200 p-5 space-y-4">
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2"><GraduationCap size={16} className="text-blue-600" /> Nueva capacitación</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Título *</label>
+                    <input value={capForm.titulo} onChange={e => setCapForm(f => ({ ...f, titulo: e.target.value }))} placeholder="Ej: Introducción al servicio al cliente" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Descripción (opcional)</label>
+                    <textarea value={capForm.descripcion} onChange={e => setCapForm(f => ({ ...f, descripcion: e.target.value }))} rows={2} placeholder="¿De qué trata esta capacitación?" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-xs font-medium text-gray-600 block mb-1">URL de YouTube *</label>
+                    <input value={capForm.video_url} onChange={e => setCapForm(f => ({ ...f, video_url: e.target.value }))} placeholder="https://www.youtube.com/watch?v=..." className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    {getYouTubeId(capForm.video_url) && (
+                      <img src={`https://img.youtube.com/vi/${getYouTubeId(capForm.video_url)}/mqdefault.jpg`} alt="preview" className="mt-2 rounded-lg w-48 object-cover" />
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Rubro (opcional)</label>
+                    <input value={capForm.rubro} onChange={e => setCapForm(f => ({ ...f, rubro: e.target.value }))} placeholder="Ej: Gastronomía" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div className="col-span-2 border-t border-gray-100 pt-3">
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Pregunta de verificación *</label>
+                    <input value={capForm.pregunta} onChange={e => setCapForm(f => ({ ...f, pregunta: e.target.value }))} placeholder="Ej: ¿Cuál es la actitud correcta ante un cliente molesto?" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div className="col-span-2 space-y-2">
+                    <label className="text-xs font-medium text-gray-600 block">Opciones de respuesta * <span className="text-gray-400 font-normal">(marcá la correcta)</span></label>
+                    {capForm.opciones.map((op, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <button
+                          onClick={() => setCapForm(f => ({ ...f, respuesta_correcta: i }))}
+                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${capForm.respuesta_correcta === i ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300 bg-white hover:border-emerald-400'}`}
+                        >
+                          {capForm.respuesta_correcta === i && <Check size={12} className="text-white" />}
+                        </button>
+                        <span className="text-xs font-medium text-gray-500 w-5">{String.fromCharCode(65 + i)}.</span>
+                        <input
+                          value={op}
+                          onChange={e => setCapForm(f => { const o = [...f.opciones]; o[i] = e.target.value; return { ...f, opciones: o }; })}
+                          placeholder={`Opción ${String.fromCharCode(65 + i)}`}
+                          className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    ))}
+                    <p className="text-xs text-gray-400">El círculo verde indica la opción correcta.</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button onClick={crearCapacitacion} disabled={savingCap} className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5">
+                    {savingCap ? <Loader2 size={14} className="animate-spin" /> : <GraduationCap size={14} />}
+                    Crear capacitación
+                  </button>
+                  <button onClick={() => setNewCapOpen(false)} className="border border-gray-200 text-gray-600 px-5 py-2 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
+                </div>
+              </div>
+            )}
+
+            {/* Lista */}
+            {capacitaciones.length === 0 && !newCapOpen ? (
+              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                <GraduationCap size={32} className="mx-auto mb-3 text-gray-300" />
+                <p className="text-gray-400 mb-4">Todavía no creaste ninguna capacitación</p>
+                <button onClick={() => setNewCapOpen(true)} className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Crear primera capacitación</button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {capacitaciones.map(cap => {
+                  const ytId = getYouTubeId(cap.video_url);
+                  return (
+                    <div key={cap.id} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+                      {ytId ? (
+                        <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt={cap.titulo} className="w-28 h-16 object-cover rounded-lg flex-shrink-0" />
+                      ) : (
+                        <div className="w-28 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <GraduationCap size={20} className="text-gray-300" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-semibold text-gray-900 text-sm">{cap.titulo}</h3>
+                          {cap.rubro && <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{cap.rubro}</span>}
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${cap.activa ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+                            {cap.activa ? 'Activa' : 'Inactiva'}
+                          </span>
+                        </div>
+                        {cap.descripcion && <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{cap.descripcion}</p>}
+                        <div className="flex items-center gap-1 mt-1 text-xs text-gray-400">
+                          <Star size={11} className="text-amber-400" fill="currentColor" />
+                          <span>{cap._count.completadas} {cap._count.completadas === 1 ? 'candidato completó' : 'candidatos completaron'} esta capacitación</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => toggleCapActiva(cap.id, cap.activa)}
+                          title={cap.activa ? 'Desactivar' : 'Activar'}
+                          className={`p-2 rounded-lg border transition-colors ${cap.activa ? 'border-emerald-200 text-emerald-600 hover:bg-emerald-50' : 'border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                        >
+                          {cap.activa ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                        </button>
+                        <button
+                          onClick={() => eliminarCapacitacion(cap.id)}
+                          className="p-2 rounded-lg border border-red-100 text-red-400 hover:bg-red-50 transition-colors"
+                          title="Eliminar"
+                        >
+                          <Trash2 size={15} />
+                        </button>
                       </div>
                     </div>
                   );
@@ -939,6 +1422,70 @@ export default function EmpresaDashboard() {
         )}
       </div>
 
+      {/* Modal agendar cita */}
+      {citaModalOpen && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={cerrarCitaModal}>
+          <div className="bg-white rounded-2xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
+            {!citaResultado ? (
+              <>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">Agendar cita{seleccionados.size > 1 ? ' grupal' : ''}</h3>
+                <p className="text-xs text-gray-500 mb-4">{seleccionados.size} candidato{seleccionados.size !== 1 ? 's' : ''} invitado{seleccionados.size !== 1 ? 's' : ''}. Se les avisará por email y te damos un link de WhatsApp para confirmar.</p>
+                {citaError && <div className="bg-red-50 text-red-600 text-sm rounded-lg px-3 py-2 mb-3">{citaError}</div>}
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 block mb-1">Fecha</label>
+                      <input type="date" value={citaForm.fecha} onChange={e => setCitaForm({ ...citaForm, fecha: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 block mb-1">Hora</label>
+                      <input type="time" value={citaForm.hora} onChange={e => setCitaForm({ ...citaForm, hora: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Modalidad</label>
+                    <div className="flex gap-2">
+                      <button onClick={() => setCitaForm({ ...citaForm, modalidad: 'virtual' })} className={`flex-1 px-3 py-2 rounded-lg text-sm border ${citaForm.modalidad === 'virtual' ? 'bg-teal-50 border-teal-400 text-teal-700' : 'border-gray-200 text-gray-500'}`}>Virtual</button>
+                      <button onClick={() => setCitaForm({ ...citaForm, modalidad: 'presencial' })} className={`flex-1 px-3 py-2 rounded-lg text-sm border ${citaForm.modalidad === 'presencial' ? 'bg-teal-50 border-teal-400 text-teal-700' : 'border-gray-200 text-gray-500'}`}>Presencial</button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">{citaForm.modalidad === 'presencial' ? 'Dirección' : 'Link de videollamada'}</label>
+                    <input value={citaForm.lugar} onChange={e => setCitaForm({ ...citaForm, lugar: e.target.value })} placeholder={citaForm.modalidad === 'presencial' ? 'Av. Siempre Viva 123, CABA' : 'https://meet.google.com/...'} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Mensaje (opcional)</label>
+                    <textarea value={citaForm.mensaje} onChange={e => setCitaForm({ ...citaForm, mensaje: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-5">
+                  <button onClick={enviarCita} disabled={citaEnviando} className="flex-1 bg-teal-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-teal-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                    {citaEnviando ? <Loader2 size={14} className="animate-spin" /> : <CalendarPlus size={14} />}
+                    Enviar invitación
+                  </button>
+                  <button onClick={cerrarCitaModal} className="px-4 py-2.5 rounded-lg text-sm border border-gray-200 text-gray-600 hover:bg-gray-50">Cancelar</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2"><Check size={18} className="text-emerald-600" /> Cita agendada</h3>
+                <p className="text-xs text-gray-500 mb-4">Le mandamos un email a cada candidato. También podés enviarles el aviso por WhatsApp:</p>
+                <div className="space-y-2 mb-4">
+                  {citaResultado.map(w => (
+                    <a key={w.url} href={w.url} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center justify-between gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-sm text-green-700 hover:bg-green-100">
+                      <span>{w.candidato}</span>
+                      <span className="text-xs font-medium">Enviar WhatsApp →</span>
+                    </a>
+                  ))}
+                </div>
+                <button onClick={cerrarCitaModal} className="w-full bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200">Listo</button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Modal video */}
       {videoModal && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setVideoModal(null)}>
@@ -993,44 +1540,61 @@ export default function EmpresaDashboard() {
               </div>
             )}
 
-            {/* CV analizado */}
-            {videoModal.usuario.cv_datos && (
-              <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-3">
-                <p className="text-xs font-semibold text-gray-700 uppercase tracking-widest">CV</p>
-                {videoModal.usuario.cv_datos.resumen && (
-                  <p className="text-sm text-gray-700 leading-relaxed">{videoModal.usuario.cv_datos.resumen}</p>
-                )}
-                {(videoModal.usuario.cv_datos.experiencia?.length ?? 0) > 0 && (
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 mb-1">Experiencia</p>
-                    <div className="space-y-1">
-                      {videoModal.usuario.cv_datos.experiencia!.map((e, i) => (
-                        <div key={i} className="text-xs text-gray-600">
-                          <span className="font-medium">{e.cargo}</span> — {e.empresa} <span className="text-gray-400">({e.periodo})</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {(videoModal.usuario.cv_datos.educacion?.length ?? 0) > 0 && (
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 mb-1">Educación</p>
-                    {videoModal.usuario.cv_datos.educacion!.map((e, i) => (
-                      <div key={i} className="text-xs text-gray-600">
-                        <span className="font-medium">{e.titulo}</span> — {e.institucion} <span className="text-gray-400">({e.periodo})</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {(videoModal.usuario.cv_datos.habilidades?.length ?? 0) > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {videoModal.usuario.cv_datos.habilidades!.map((h, i) => (
-                      <span key={i} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{h}</span>
-                    ))}
-                  </div>
+            {/* CV del candidato */}
+            <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-gray-700 uppercase tracking-widest">CV del candidato</p>
+                {videoModal.usuario.cv_datos ? (
+                  <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">✓ CV cargado</span>
+                ) : (
+                  <span className="text-xs bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">Sin CV</span>
                 )}
               </div>
-            )}
+              {!videoModal.usuario.cv_datos ? (
+                <p className="text-xs text-gray-400 italic">Este candidato aún no cargó su CV en la plataforma.</p>
+              ) : (
+                <>
+                  {videoModal.usuario.cv_datos.resumen && (
+                    <p className="text-sm text-gray-700 leading-relaxed">{videoModal.usuario.cv_datos.resumen}</p>
+                  )}
+                  {(videoModal.usuario.cv_datos.experiencia?.length ?? 0) > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 mb-1.5">Experiencia</p>
+                      <div className="space-y-1.5">
+                        {videoModal.usuario.cv_datos.experiencia!.map((e, i) => (
+                          <div key={i} className="bg-white rounded-lg px-3 py-2 text-xs text-gray-600">
+                            <span className="font-medium text-gray-800">{e.cargo}</span>
+                            <span className="text-gray-400"> — {e.empresa}</span>
+                            {e.periodo && <span className="text-gray-400"> · {e.periodo}</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {(videoModal.usuario.cv_datos.educacion?.length ?? 0) > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 mb-1.5">Educación</p>
+                      <div className="space-y-1.5">
+                        {videoModal.usuario.cv_datos.educacion!.map((e, i) => (
+                          <div key={i} className="bg-white rounded-lg px-3 py-2 text-xs text-gray-600">
+                            <span className="font-medium text-gray-800">{e.titulo}</span>
+                            <span className="text-gray-400"> — {e.institucion}</span>
+                            {e.periodo && <span className="text-gray-400"> · {e.periodo}</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {(videoModal.usuario.cv_datos.habilidades?.length ?? 0) > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {videoModal.usuario.cv_datos.habilidades!.map((h, i) => (
+                        <span key={i} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{h}</span>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
 
             {/* Documentos */}
             {(videoModal.documentos?.length ?? 0) > 0 && (

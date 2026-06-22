@@ -13,9 +13,13 @@ const supabase = createClient(
 import {
   Video, Mic, FileText, Edit3, Check, X, Upload,
   ExternalLink, Copy, CheckCheck, Clock, Circle,
-  BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck
+  BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck,
+  CalendarDays, MapPin, Loader2, Plus, GraduationCap, Briefcase as BriefcaseIcon, Wrench,
+  Star, Building2, Link2, Trash2, PlayCircle
 } from 'lucide-react';
+import CapacitacionPlayer from '@/components/ui/CapacitacionPlayer';
 import OfertasTab from '@/components/ui/OfertasTab';
+import VideoThumbnail from '@/components/ui/VideoThumbnail';
 
 interface VideoItem {
   id: string; tipo: string; video_url: string; created_at: string;
@@ -26,6 +30,27 @@ interface Archivo { id: string; file_url: string; file_type: string; created_at:
 interface TallerModulo { id: string; tipo_video: string; nombre_modulo: string; duracion_base: number; texto_guia: string; orden: number; }
 interface Taller { id: string; nombre: string; descripcion: string | null; habilita_cv: boolean; habilita_pitch: boolean; modulos: TallerModulo[]; }
 interface TallerUsuario { taller: Taller; estado: string; asignado_en: string; }
+interface Referencia {
+  id: string;
+  empresa_nombre: string;
+  referidor_nombre: string;
+  token: string;
+  estado: string;
+  created_at: string;
+}
+
+interface CapacitacionItem {
+  id: string;
+  titulo: string;
+  descripcion: string | null;
+  video_url: string;
+  pregunta: string;
+  opciones: string[];
+  completada: boolean;
+  empresa: { nombre: string };
+  _count: { completadas: number };
+}
+
 interface CvDatos {
   resumen?: string;
   experiencia?: { empresa: string; cargo: string; periodo: string; descripcion: string }[];
@@ -39,6 +64,7 @@ interface Usuario {
   bio: string | null; slug: string; role: 'super_admin' | 'admin' | 'user';
   cv_datos: CvDatos | null;
   alfa_digital: string | null; alfa_score: number | null;
+  fecha_nacimiento: string | null;
   created_at: string; videos: VideoItem[]; archivos: Archivo[];
 }
 
@@ -47,6 +73,20 @@ interface Documento {
   tipo: string;
   file_url: string;
   created_at: string;
+}
+
+interface CitaInvitado {
+  id: string;
+  estado: 'pendiente' | 'confirmada' | 'rechazada';
+  cita: {
+    fecha: string;
+    modalidad: 'presencial' | 'virtual';
+    lugar: string;
+    mensaje: string | null;
+    grupal: boolean;
+    empresa: { nombre: string; logo_url: string | null };
+    oferta: { titulo: string } | null;
+  };
 }
 
 const DOCS_CONFIG = [
@@ -61,15 +101,36 @@ const DOCS_CONFIG = [
 export default function DashboardClient({
   usuario,
   tallersAsignados,
+  citas,
 }: {
   usuario: Usuario;
   tallersAsignados: TallerUsuario[];
+  citas: CitaInvitado[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [tab, setTab] = useState<'perfil' | 'ofertas' | 'documentos'>(
+  const [tab, setTab] = useState<'perfil' | 'ofertas' | 'documentos' | 'citas'>(
     searchParams.get('tab') === 'ofertas' ? 'ofertas' : 'perfil'
   );
+  const [citasState, setCitasState] = useState<CitaInvitado[]>(citas);
+  const [respondiendo, setRespondiendo] = useState<string | null>(null);
+  const citasPendientes = citasState.filter(c => c.estado === 'pendiente').length;
+
+  async function responderCita(id: string, estado: 'confirmada' | 'rechazada') {
+    setRespondiendo(id);
+    try {
+      const res = await fetch(`/api/citas/${id}/responder`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado }),
+      });
+      if (res.ok) {
+        setCitasState(prev => prev.map(c => c.id === id ? { ...c, estado } : c));
+      }
+    } finally {
+      setRespondiendo(null);
+    }
+  }
   const initialOfertaId = searchParams.get('oferta_id') ?? undefined;
   const [bio, setBio] = useState(usuario.bio ?? '');
   const [editingBio, setEditingBio] = useState(false);
@@ -79,6 +140,44 @@ export default function DashboardClient({
   const [uploadMsg, setUploadMsg] = useState<string | null>(null);
   const [analyzingCV, setAnalyzingCV] = useState(false);
   const [cvDatos, setCvDatos] = useState<CvDatos | null>(usuario.cv_datos);
+
+  // Formulario de datos del perfil
+  const [editandoDatos, setEditandoDatos] = useState(false);
+  const [guardandoDatos, setGuardandoDatos] = useState(false);
+  const [datosMsgOk, setDatosMsgOk] = useState(false);
+  const [fechaNac, setFechaNac] = useState(
+    usuario.fecha_nacimiento ? new Date(usuario.fecha_nacimiento).toISOString().slice(0, 10) : ''
+  );
+  const [resumenPerfil, setResumenPerfil] = useState(usuario.cv_datos?.resumen ?? '');
+  const [experiencias, setExperiencias] = useState<{ empresa: string; cargo: string; periodo: string; descripcion: string }[]>(
+    usuario.cv_datos?.experiencia ?? []
+  );
+  const [educaciones, setEducaciones] = useState<{ institucion: string; titulo: string; periodo: string }[]>(
+    usuario.cv_datos?.educacion ?? []
+  );
+  const [habilidades, setHabilidades] = useState<string[]>(usuario.cv_datos?.habilidades ?? []);
+  const [habilidadInput, setHabilidadInput] = useState('');
+
+  async function guardarDatos() {
+    setGuardandoDatos(true);
+    const nuevoCvDatos: CvDatos = {
+      ...(usuario.cv_datos ?? {}),
+      resumen: resumenPerfil || undefined,
+      experiencia: experiencias.length ? experiencias : undefined,
+      educacion: educaciones.length ? educaciones : undefined,
+      habilidades: habilidades.length ? habilidades : undefined,
+    };
+    await fetch('/api/users/perfil', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fecha_nacimiento: fechaNac || null, cv_datos: nuevoCvDatos }),
+    });
+    setCvDatos(nuevoCvDatos);
+    setGuardandoDatos(false);
+    setEditandoDatos(false);
+    setDatosMsgOk(true);
+    setTimeout(() => setDatosMsgOk(false), 3000);
+  }
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
   const [docMsg, setDocMsg] = useState<string | null>(null);
@@ -86,6 +185,19 @@ export default function DashboardClient({
   const [selectedTaller, setSelectedTaller] = useState<string>('');
   const [selectedTipo, setSelectedTipo] = useState<'video_cv' | 'video_pitch'>('video_cv');
   const [alfaBadge, setAlfaBadge] = useState(usuario.alfa_digital);
+
+  // Referencias
+  const [referencias, setReferencias] = useState<Referencia[]>([]);
+  const [loadingRefs, setLoadingRefs] = useState(false);
+  const [refEmpresa, setRefEmpresa] = useState('');
+  const [refNombre, setRefNombre] = useState('');
+  const [addingRef, setAddingRef] = useState(false);
+  const [refMsg, setRefMsg] = useState<string | null>(null);
+  const [copiedRef, setCopiedRef] = useState<string | null>(null);
+
+  // Capacitaciones
+  const [capacitaciones, setCapacitaciones] = useState<CapacitacionItem[]>([]);
+  const [playerCap, setPlayerCap] = useState<CapacitacionItem | null>(null);
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
   const cvUrl = `${appUrl}/u/${usuario.slug}/cv`;
@@ -97,7 +209,57 @@ export default function DashboardClient({
 
   useEffect(() => {
     if (tab === 'documentos') cargarDocumentos();
+    if (tab === 'perfil' && referencias.length === 0) cargarReferencias();
+    if (tab === 'perfil' && capacitaciones.length === 0) cargarCapacitaciones();
   }, [tab]);
+
+  async function cargarReferencias() {
+    setLoadingRefs(true);
+    const res = await fetch('/api/referencias');
+    const data = await res.json();
+    if (data.referencias) setReferencias(data.referencias);
+    setLoadingRefs(false);
+  }
+
+  async function cargarCapacitaciones() {
+    const res = await fetch('/api/capacitaciones');
+    const data = await res.json();
+    if (data.capacitaciones) setCapacitaciones(data.capacitaciones);
+  }
+
+  async function agregarReferencia() {
+    if (!refEmpresa.trim() || !refNombre.trim()) return;
+    setAddingRef(true);
+    setRefMsg(null);
+    const res = await fetch('/api/referencias', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ empresa_nombre: refEmpresa, referidor_nombre: refNombre }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      setReferencias(p => [data.referencia, ...p]);
+      setRefEmpresa('');
+      setRefNombre('');
+      setRefMsg('Referencia agregada. ¡Compartí el link con tu referente!');
+    } else {
+      setRefMsg(data.error ?? 'Error al agregar');
+    }
+    setAddingRef(false);
+    setTimeout(() => setRefMsg(null), 5000);
+  }
+
+  async function eliminarReferencia(id: string) {
+    await fetch(`/api/referencias/${id}`, { method: 'DELETE' });
+    setReferencias(p => p.filter(r => r.id !== id));
+  }
+
+  function copyRefLink(token: string) {
+    const url = `${appUrl}/validar/${token}`;
+    navigator.clipboard.writeText(url);
+    setCopiedRef(token);
+    setTimeout(() => setCopiedRef(null), 2500);
+  }
 
   async function cargarDocumentos() {
     const res = await fetch('/api/documentos');
@@ -277,8 +439,83 @@ export default function DashboardClient({
               <Briefcase size={14} />
               Ofertas
             </button>
+            <button
+              onClick={() => setTab('citas')}
+              className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                tab === 'citas' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
+              }`}
+            >
+              <CalendarDays size={14} />
+              Citas
+              {citasPendientes > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                  {citasPendientes}
+                </span>
+              )}
+            </button>
           </div>
         </div>
+
+        {/* Tab Citas */}
+        {tab === 'citas' && (
+          <div className="max-w-2xl space-y-4">
+            {citasState.length === 0 && (
+              <div className="card p-8 text-center text-ink-400">
+                <CalendarDays size={32} className="mx-auto mb-2 opacity-40" />
+                <p>Todavía no tenés citas o entrevistas agendadas</p>
+              </div>
+            )}
+            {citasState.map(c => (
+              <div key={c.id} className="card p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <p className="font-medium text-ink-800">{c.cita.empresa.nombre}</p>
+                    {c.cita.oferta && <p className="text-xs text-ink-400">{c.cita.oferta.titulo}</p>}
+                  </div>
+                  <span className={`badge ${
+                    c.estado === 'confirmada' ? 'bg-emerald-100 text-emerald-700' :
+                    c.estado === 'rechazada' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    {c.estado === 'confirmada' ? 'Confirmada' : c.estado === 'rechazada' ? 'Rechazada' : 'Pendiente'}
+                  </span>
+                </div>
+                <div className="space-y-1.5 text-sm text-ink-600 mb-4">
+                  <p className="flex items-center gap-2">
+                    <Clock size={14} className="text-ink-400" />
+                    {new Date(c.cita.fecha).toLocaleString('es-AR', { dateStyle: 'full', timeStyle: 'short' })}
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <MapPin size={14} className="text-ink-400" />
+                    {c.cita.modalidad === 'presencial' ? c.cita.lugar : (
+                      <a href={c.cita.lugar} target="_blank" className="text-brand-600 underline">{c.cita.lugar}</a>
+                    )}
+                    <span className="text-ink-400 text-xs">({c.cita.modalidad === 'presencial' ? 'presencial' : 'virtual'}{c.cita.grupal ? ' · grupal' : ''})</span>
+                  </p>
+                  {c.cita.mensaje && <p className="text-ink-500 italic">"{c.cita.mensaje}"</p>}
+                </div>
+                {c.estado === 'pendiente' && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => responderCita(c.id, 'confirmada')}
+                      disabled={respondiendo === c.id}
+                      className="btn-primary py-1.5 px-4 text-sm"
+                    >
+                      {respondiendo === c.id ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                      Confirmar
+                    </button>
+                    <button
+                      onClick={() => responderCita(c.id, 'rechazada')}
+                      disabled={respondiendo === c.id}
+                      className="btn-ghost py-1.5 px-4 text-sm"
+                    >
+                      <X size={14} /> Rechazar
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Tab Ofertas */}
         {tab === 'ofertas' && (
@@ -429,6 +666,171 @@ export default function DashboardClient({
                 )}
               </div>
 
+              {/* Referencias */}
+              <div className="card p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Star size={16} className="text-amber-500" />
+                  <h2 className="font-semibold text-ink-800">Referencias laborales</h2>
+                  {referencias.filter(r => r.estado === 'validada').length > 0 && (
+                    <span className="ml-auto badge bg-amber-100 text-amber-700 flex items-center gap-1">
+                      <Star size={10} fill="currentColor" />
+                      {referencias.filter(r => r.estado === 'validada').length} verificadas
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-xs text-ink-400 mb-4 leading-relaxed">
+                  Agregá un ex-jefe o empleador como referente. Te damos un link para que lo comparta por WhatsApp. Cuando valida, aparece ⭐ en tu perfil.
+                </p>
+
+                {/* Formulario agregar */}
+                <div className="space-y-2 mb-4">
+                  <input
+                    value={refEmpresa}
+                    onChange={e => setRefEmpresa(e.target.value)}
+                    placeholder="Nombre de la empresa"
+                    className="input-field text-sm"
+                  />
+                  <input
+                    value={refNombre}
+                    onChange={e => setRefNombre(e.target.value)}
+                    placeholder="Nombre del referente (jefe, supervisor...)"
+                    className="input-field text-sm"
+                    onKeyDown={e => { if (e.key === 'Enter') agregarReferencia(); }}
+                  />
+                  <button
+                    onClick={agregarReferencia}
+                    disabled={addingRef || !refEmpresa.trim() || !refNombre.trim()}
+                    className="btn-primary w-full justify-center text-sm py-2 disabled:opacity-50"
+                  >
+                    {addingRef
+                      ? <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                      : <Plus size={14} />
+                    }
+                    Agregar referente
+                  </button>
+                </div>
+
+                {refMsg && (
+                  <p className={`text-xs rounded-lg px-3 py-2 mb-3 ${refMsg.includes('Error') ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                    {refMsg}
+                  </p>
+                )}
+
+                {/* Lista */}
+                {loadingRefs ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 size={16} className="animate-spin text-ink-300" />
+                  </div>
+                ) : referencias.length > 0 ? (
+                  <div className="space-y-2 pt-2 border-t border-ink-100">
+                    {referencias.map(r => (
+                      <div key={r.id} className="bg-ink-50 rounded-xl p-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start gap-2 min-w-0">
+                            <Building2 size={14} className="text-ink-400 mt-0.5 flex-shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-ink-800 truncate">{r.empresa_nombre}</p>
+                              <p className="text-xs text-ink-400 truncate">{r.referidor_nombre}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            {r.estado === 'validada' ? (
+                              <span className="badge bg-emerald-100 text-emerald-700 flex items-center gap-1">
+                                <Check size={10} strokeWidth={3} /> Verificado
+                              </span>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => copyRefLink(r.token)}
+                                  className="flex items-center gap-1 text-xs text-brand-600 bg-brand-50 hover:bg-brand-100 px-2 py-1 rounded-lg transition-colors"
+                                  title="Copiar link de validación"
+                                >
+                                  {copiedRef === r.token
+                                    ? <><CheckCheck size={12} className="text-emerald-600" /> Copiado</>
+                                    : <><Link2 size={12} /> Link</>
+                                  }
+                                </button>
+                                <button
+                                  onClick={() => eliminarReferencia(r.id)}
+                                  className="text-red-400 hover:text-red-600 p-1"
+                                  title="Eliminar"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        {r.estado !== 'validada' && (
+                          <p className="text-xs text-ink-400 mt-1.5 pl-5">
+                            Pendiente de validación — compartí el link con {r.referidor_nombre.split(' ')[0]}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-ink-300 italic text-center py-2">
+                    Aún no tenés referencias. ¡Agregá la primera!
+                  </p>
+                )}
+              </div>
+
+              {/* Capacitaciones */}
+              <div className="card p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <GraduationCap size={16} className="text-blue-600" />
+                  <h2 className="font-semibold text-ink-800">Capacitaciones</h2>
+                  {capacitaciones.filter(c => c.completada).length > 0 && (
+                    <span className="ml-auto badge bg-amber-100 text-amber-700 flex items-center gap-1">
+                      <Star size={10} fill="currentColor" />
+                      {capacitaciones.filter(c => c.completada).length} completadas
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-ink-400 mb-4 leading-relaxed">
+                  Mirá videos de capacitación de empresas y respondé una pregunta para ganar una ⭐ en tu perfil.
+                </p>
+                {capacitaciones.length === 0 ? (
+                  <p className="text-xs text-ink-300 italic text-center py-2">No hay capacitaciones disponibles todavía.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {capacitaciones.map(cap => {
+                      const ytId = cap.video_url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?\s]{11})/)?.[1] ?? null;
+                      return (
+                        <div key={cap.id} className={`rounded-xl border p-3 ${cap.completada ? 'border-emerald-200 bg-emerald-50' : 'border-ink-200 bg-white'}`}>
+                          <div className="flex items-start gap-3">
+                            {ytId && (
+                              <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt={cap.titulo} className="w-20 h-12 object-cover rounded-lg flex-shrink-0" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium text-ink-400">{cap.empresa.nombre}</p>
+                              <p className="text-sm font-semibold text-ink-800 line-clamp-1">{cap.titulo}</p>
+                              {cap.descripcion && <p className="text-xs text-ink-400 line-clamp-1 mt-0.5">{cap.descripcion}</p>}
+                            </div>
+                          </div>
+                          <div className="mt-2">
+                            {cap.completada ? (
+                              <span className="inline-flex items-center gap-1 text-xs text-emerald-700 font-medium">
+                                <Star size={11} fill="currentColor" className="text-amber-500" /> Completada — ⭐ sumada a tu perfil
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => setPlayerCap(cap)}
+                                className="flex items-center gap-1.5 text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
+                              >
+                                <PlayCircle size={13} /> Hacer capacitación
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
               {/* CV File */}
               <div className="card p-6">
                 <h2 className="font-semibold text-ink-800 mb-4">Archivo CV</h2>
@@ -568,6 +970,147 @@ export default function DashboardClient({
 
             {/* ── Columna derecha (2 cols) ───────────────────────── */}
             <div className="lg:col-span-2 space-y-5">
+
+              {/* ── Mis datos ──────────────────────────────────────── */}
+              <div className="card p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-semibold text-ink-800">Mis datos</h2>
+                  {datosMsgOk && <span className="text-xs text-emerald-600 font-medium">Guardado ✓</span>}
+                  {!editandoDatos ? (
+                    <button onClick={() => setEditandoDatos(true)} className="btn-ghost py-1 px-2 text-xs gap-1">
+                      <Edit3 size={13} /> Editar
+                    </button>
+                  ) : (
+                    <div className="flex gap-1">
+                      <button onClick={guardarDatos} disabled={guardandoDatos} className="btn-ghost py-1 px-2 text-xs gap-1 text-brand-600">
+                        <Check size={13} /> {guardandoDatos ? '...' : 'Guardar'}
+                      </button>
+                      <button onClick={() => setEditandoDatos(false)} className="btn-ghost py-1 px-2 text-xs gap-1 text-red-500">
+                        <X size={13} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {!editandoDatos ? (
+                  <div className="space-y-4 text-sm text-ink-600">
+                    {fechaNac && <p><span className="text-ink-400">Fecha de nacimiento:</span> {new Date(fechaNac + 'T00:00:00').toLocaleDateString('es-AR')}</p>}
+                    {resumenPerfil && <p className="leading-relaxed">{resumenPerfil}</p>}
+                    {experiencias.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest mb-2 flex items-center gap-1"><BriefcaseIcon size={12} /> Experiencia</p>
+                        <div className="space-y-1.5">
+                          {experiencias.map((e, i) => (
+                            <div key={i} className="bg-ink-50 rounded-lg px-3 py-2">
+                              <p className="font-medium text-ink-700">{e.cargo} <span className="text-ink-400 font-normal">en {e.empresa}</span></p>
+                              {e.periodo && <p className="text-xs text-ink-400">{e.periodo}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {educaciones.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest mb-2 flex items-center gap-1"><GraduationCap size={12} /> Educación</p>
+                        <div className="space-y-1.5">
+                          {educaciones.map((e, i) => (
+                            <div key={i} className="bg-ink-50 rounded-lg px-3 py-2">
+                              <p className="font-medium text-ink-700">{e.titulo} <span className="text-ink-400 font-normal">— {e.institucion}</span></p>
+                              {e.periodo && <p className="text-xs text-ink-400">{e.periodo}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {habilidades.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest mb-2 flex items-center gap-1"><Wrench size={12} /> Habilidades</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {habilidades.map((h, i) => <span key={i} className="text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full">{h}</span>)}
+                        </div>
+                      </div>
+                    )}
+                    {!fechaNac && !resumenPerfil && !experiencias.length && !educaciones.length && !habilidades.length && (
+                      <p className="text-ink-300 italic text-sm">Completá tus datos para que las empresas te conozcan mejor.</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-5">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-medium text-ink-600 block mb-1">Fecha de nacimiento</label>
+                        <input type="date" value={fechaNac} onChange={e => setFechaNac(e.target.value)} className="input-field text-sm" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-medium text-ink-600 block mb-1">Resumen profesional</label>
+                      <textarea value={resumenPerfil} onChange={e => setResumenPerfil(e.target.value)} rows={3} placeholder="Describí brevemente tu perfil y objetivos..." className="input-field resize-none text-sm" />
+                    </div>
+
+                    {/* Experiencia */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-xs font-medium text-ink-600 flex items-center gap-1"><BriefcaseIcon size={12} /> Experiencia laboral</label>
+                        <button onClick={() => setExperiencias(p => [...p, { empresa: '', cargo: '', periodo: '', descripcion: '' }])} className="text-xs text-brand-600 hover:underline flex items-center gap-1"><Plus size={12} /> Agregar</button>
+                      </div>
+                      <div className="space-y-2">
+                        {experiencias.map((e, i) => (
+                          <div key={i} className="bg-ink-50 rounded-xl p-3 space-y-2">
+                            <div className="grid grid-cols-2 gap-2">
+                              <input value={e.cargo} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, cargo: ev.target.value } : x))} placeholder="Cargo / puesto" className="input-field text-xs py-1.5" />
+                              <input value={e.empresa} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, empresa: ev.target.value } : x))} placeholder="Empresa" className="input-field text-xs py-1.5" />
+                            </div>
+                            <div className="flex gap-2">
+                              <input value={e.periodo} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, periodo: ev.target.value } : x))} placeholder="Período (ej: 2020–2023)" className="input-field text-xs py-1.5 flex-1" />
+                              <button onClick={() => setExperiencias(p => p.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-600 px-2"><X size={14} /></button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Educación */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-xs font-medium text-ink-600 flex items-center gap-1"><GraduationCap size={12} /> Educación</label>
+                        <button onClick={() => setEducaciones(p => [...p, { institucion: '', titulo: '', periodo: '' }])} className="text-xs text-brand-600 hover:underline flex items-center gap-1"><Plus size={12} /> Agregar</button>
+                      </div>
+                      <div className="space-y-2">
+                        {educaciones.map((e, i) => (
+                          <div key={i} className="bg-ink-50 rounded-xl p-3 space-y-2">
+                            <div className="grid grid-cols-2 gap-2">
+                              <input value={e.titulo} onChange={ev => setEducaciones(p => p.map((x, j) => j === i ? { ...x, titulo: ev.target.value } : x))} placeholder="Título / carrera" className="input-field text-xs py-1.5" />
+                              <input value={e.institucion} onChange={ev => setEducaciones(p => p.map((x, j) => j === i ? { ...x, institucion: ev.target.value } : x))} placeholder="Institución" className="input-field text-xs py-1.5" />
+                            </div>
+                            <div className="flex gap-2">
+                              <input value={e.periodo} onChange={ev => setEducaciones(p => p.map((x, j) => j === i ? { ...x, periodo: ev.target.value } : x))} placeholder="Período (ej: 2018–2022)" className="input-field text-xs py-1.5 flex-1" />
+                              <button onClick={() => setEducaciones(p => p.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-600 px-2"><X size={14} /></button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Habilidades */}
+                    <div>
+                      <label className="text-xs font-medium text-ink-600 block mb-2 flex items-center gap-1"><Wrench size={12} /> Habilidades</label>
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {habilidades.map((h, i) => (
+                          <span key={i} className="flex items-center gap-1 text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full">
+                            {h} <button onClick={() => setHabilidades(p => p.filter((_, j) => j !== i))} className="text-brand-400 hover:text-red-500"><X size={10} /></button>
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <input value={habilidadInput} onChange={e => setHabilidadInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && habilidadInput.trim()) { setHabilidades(p => [...p, habilidadInput.trim()]); setHabilidadInput(''); e.preventDefault(); }}} placeholder="Escribí una habilidad y presioná Enter" className="input-field text-xs py-1.5 flex-1" />
+                        <button onClick={() => { if (habilidadInput.trim()) { setHabilidades(p => [...p, habilidadInput.trim()]); setHabilidadInput(''); }}} className="btn-ghost text-xs py-1.5 px-3"><Plus size={13} /></button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <VideoCard
                 tipo="video_cv" titulo="Video CV"
                 descripcion="Presentá tu perfil laboral en 4 módulos guiados"
@@ -600,18 +1143,11 @@ export default function DashboardClient({
                   <div className="space-y-3">
                     {usuario.videos.filter(v => v.taller).map(v => (
                       <div key={v.id} className="flex items-center gap-3 bg-ink-50 rounded-xl p-3">
-                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${v.tipo === 'video_cv' ? 'bg-brand-100' : 'bg-emerald-100'}`}>
-                          {v.tipo === 'video_cv'
-                            ? <Video size={16} className="text-brand-600" />
-                            : <Mic size={16} className="text-emerald-600" />}
-                        </div>
+                        <VideoThumbnail src={v.video_url} size="sm" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-ink-700">{v.tipo === 'video_cv' ? 'Video CV' : 'Video Pitch'}</p>
                           <p className="text-xs text-ink-400 truncate">{v.taller?.nombre} · {new Date(v.created_at).toLocaleDateString('es-AR')}</p>
                         </div>
-                        <a href={v.video_url} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 flex-shrink-0">
-                          <ExternalLink size={15} />
-                        </a>
                       </div>
                     ))}
                   </div>
@@ -621,6 +1157,17 @@ export default function DashboardClient({
           </div>
         )}
       </main>
+
+      {playerCap && (
+        <CapacitacionPlayer
+          cap={playerCap}
+          onClose={() => setPlayerCap(null)}
+          onCompleted={(id) => {
+            setCapacitaciones(p => p.map(c => c.id === id ? { ...c, completada: true } : c));
+            setPlayerCap(null);
+          }}
+        />
+      )}
     </div>
   );
 }

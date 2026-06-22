@@ -155,10 +155,6 @@ export default async function LandingPage() {
           <div className={s.statL}>Personas registradas</div>
         </div>
         <div className={s.stat}>
-          <div className={s.statN}>{fmtNum(totalEmpresas)}</div>
-          <div className={s.statL}>Empresas registradas</div>
-        </div>
-        <div className={s.stat}>
           <div className={s.statN}>{totalOfertas || '0'}</div>
           <div className={s.statL}>Ofertas activas hoy</div>
         </div>

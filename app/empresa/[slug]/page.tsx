@@ -49,6 +49,8 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
   const imagenes = (empresa.imagenes as string[]) ?? [];
   const heroImg = imagenes[0] ?? null;
   const extraImgs = imagenes.slice(1);
+  const color = (empresa.color_primario as string | null) ?? '#16a34a';
+  const bienvenida = (empresa.mensaje_bienvenida as string | null) ?? null;
 
   return (
     <div className="min-h-screen bg-ink-50">
@@ -91,6 +93,11 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
                 </div>
               )}
               <div className="flex-1 min-w-0">
+                {bienvenida && (
+                  <p style={{ color, fontWeight: 800, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+                    {bienvenida}
+                  </p>
+                )}
                 <h1 className="font-display text-3xl font-semibold text-white">{empresa.nombre}</h1>
                 <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-sm text-white/60">
                   {empresa.rubro && <span>{empresa.rubro}</span>}
@@ -146,6 +153,11 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
                 </div>
               )}
               <div className="flex-1 min-w-0">
+                {bienvenida && (
+                  <p style={{ color, fontWeight: 800, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+                    {bienvenida}
+                  </p>
+                )}
                 <h1 className="font-display text-3xl font-semibold text-ink-900">{empresa.nombre}</h1>
                 <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-sm text-ink-500">
                   {empresa.rubro && <span>{empresa.rubro}</span>}
@@ -211,7 +223,7 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
                     </div>
                     <p className="text-ink-500 text-sm leading-relaxed line-clamp-2">{oferta.descripcion}</p>
                   </div>
-                  <span className="btn-primary text-sm py-2.5 px-5 flex-shrink-0 flex items-center gap-1.5">
+                  <span style={{ background: color, color: '#fff', borderRadius: 8, fontSize: 14, fontWeight: 600, padding: '10px 20px', flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                     Ver oferta <ChevronRight size={15} />
                   </span>
                 </div>

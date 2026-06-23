@@ -95,7 +95,7 @@ type Postulante = {
 type Empresa = {
   id: string; nombre: string; slug: string; logo_url: string | null;
   descripcion: string | null; rubro: string | null; ciudad: string | null; sitio_web: string | null;
-  imagenes: string[];
+  imagenes: string[]; color_primario: string | null;
 };
 
 type CitaEmpresa = {
@@ -299,7 +299,7 @@ export default function EmpresaDashboard() {
     const res = await fetch('/api/empresa/perfil');
     const data = await res.json();
     if (data.empresa) {
-      setEmpresa({ ...data.empresa, imagenes: data.empresa.imagenes ?? [] });
+      setEmpresa({ ...data.empresa, imagenes: data.empresa.imagenes ?? [], color_primario: data.empresa.color_primario ?? null });
       setPerfilForm({ nombre: data.empresa.nombre || '', descripcion: data.empresa.descripcion || '', rubro: data.empresa.rubro || '', ciudad: data.empresa.ciudad || '', sitio_web: data.empresa.sitio_web || '' });
     }
   }
@@ -1470,6 +1470,50 @@ export default function EmpresaDashboard() {
                   </label>
                 </div>
                 <p className="text-xs text-gray-400 mt-1.5">Fotos reales del local, equipo o productos. La primera foto se muestra en las páginas de oferta.</p>
+              </div>
+
+              {/* Color de marca */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-2">
+                  Color de marca
+                  <span className="text-xs text-gray-400 font-normal ml-1.5">(botones y textos en tus ofertas)</span>
+                </label>
+                <div className="flex items-center gap-3 flex-wrap">
+                  {['#16a34a','#2563eb','#dc2626','#d97706','#7c3aed','#0891b2','#db2777','#ea580c','#111827'].map(c => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={async () => {
+                        setEmpresa(prev => prev ? { ...prev, color_primario: c } : prev);
+                        await fetch('/api/empresa/perfil', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ color_primario: c }) });
+                      }}
+                      className="w-8 h-8 rounded-full border-2 transition-transform hover:scale-110"
+                      style={{
+                        background: c,
+                        borderColor: empresa?.color_primario === c ? '#111' : 'transparent',
+                        boxShadow: empresa?.color_primario === c ? '0 0 0 2px #fff, 0 0 0 4px #111' : 'none',
+                      }}
+                      title={c}
+                    />
+                  ))}
+                  {/* Custom color input */}
+                  <label className="relative cursor-pointer">
+                    <input
+                      type="color"
+                      value={empresa?.color_primario ?? '#16a34a'}
+                      className="sr-only"
+                      onChange={async e => {
+                        const c = e.target.value;
+                        setEmpresa(prev => prev ? { ...prev, color_primario: c } : prev);
+                        await fetch('/api/empresa/perfil', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ color_primario: c }) });
+                      }}
+                    />
+                    <div className="w-8 h-8 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-gray-400 text-xs font-bold">+</div>
+                  </label>
+                  {empresa?.color_primario && (
+                    <span className="text-xs text-gray-400 font-mono">{empresa.color_primario}</span>
+                  )}
+                </div>
               </div>
 
               <div>

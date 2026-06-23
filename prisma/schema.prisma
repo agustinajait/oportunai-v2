@@ -173,8 +173,9 @@ model Empresa {
   rubro       String?
   ciudad      String?
   sitio_web   String?
-  activa      Boolean  @default(true)
-  imagenes    String[] @default([])
+  activa          Boolean  @default(true)
+  imagenes        String[] @default([])
+  color_primario  String?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 

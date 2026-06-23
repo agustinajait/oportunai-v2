@@ -39,7 +39,7 @@ export default async function OfertaDetailPage({ params }: Props) {
     where: { id: params.id },
     include: {
       empresa: {
-        select: { id: true, nombre: true, slug: true, logo_url: true, descripcion: true, rubro: true, ciudad: true, imagenes: true },
+        select: { id: true, nombre: true, slug: true, logo_url: true, descripcion: true, rubro: true, ciudad: true, imagenes: true, color_primario: true },
       },
     },
   });
@@ -50,6 +50,7 @@ export default async function OfertaDetailPage({ params }: Props) {
   const nombreMarca = oferta.nombre_marca ?? empresa.nombre;
   const logoUrl = oferta.logo_url ?? empresa.logo_url;
   const heroImg = (empresa.imagenes as string[])?.[0] ?? null;
+  const color = (empresa.color_primario as string | null) ?? '#16a34a';
 
   const tieneCapacitaciones = await prisma.capacitacion.count({
     where: { empresa_id: empresa.id, activa: true },
@@ -92,7 +93,7 @@ export default async function OfertaDetailPage({ params }: Props) {
             <div style={{ marginBottom: 18 }}>
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
-                background: '#16a34a', color: '#fff',
+                background: color, color: '#fff',
                 fontSize: 11, fontWeight: 800, letterSpacing: '0.08em',
                 padding: '5px 12px', borderRadius: 999,
                 textTransform: 'uppercase',
@@ -110,7 +111,7 @@ export default async function OfertaDetailPage({ params }: Props) {
               TE ESTAMOS BUSCANDO
             </p>
             <h1 style={{
-              color: '#4ade80', fontWeight: 900,
+              color: color, fontWeight: 900,
               fontSize: 'clamp(26px, 3.5vw, 44px)',
               textTransform: 'uppercase', letterSpacing: '-0.01em',
               margin: '0 0 14px 0', lineHeight: 1.05,
@@ -135,9 +136,9 @@ export default async function OfertaDetailPage({ params }: Props) {
               {tieneCapacitaciones && (
                 <Chip
                   icon={<GraduationCap size={14} color="#fff" />}
-                  bg="#059669"
+                  bg={color}
                   label="Accedé a capacitaciones"
-                  labelColor="#4ade80"
+                  labelColor="#fff"
                   sub="Gratis"
                 />
               )}
@@ -153,11 +154,11 @@ export default async function OfertaDetailPage({ params }: Props) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
               <Link href={postularHref} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 10,
-                background: '#16a34a', color: '#fff',
+                background: color, color: '#fff',
                 padding: '13px 32px', borderRadius: 10,
                 fontSize: 15, fontWeight: 900, textDecoration: 'none',
                 textTransform: 'uppercase', letterSpacing: '0.07em',
-                boxShadow: '0 4px 20px rgba(22,163,74,0.5)',
+                boxShadow: `0 4px 20px ${color}80`,
               }}>
                 <Send size={16} /> POSTULARME ›
               </Link>
@@ -286,9 +287,9 @@ export default async function OfertaDetailPage({ params }: Props) {
         <div style={{ marginTop: 16 }}>
           <Link href={postularHref} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            background: '#16a34a', color: '#fff', padding: '15px 32px', borderRadius: 12,
+            background: color, color: '#fff', padding: '15px 32px', borderRadius: 12,
             fontSize: 15, fontWeight: 900, textDecoration: 'none', textTransform: 'uppercase',
-            letterSpacing: '0.07em', boxShadow: '0 4px 20px rgba(22,163,74,0.4)',
+            letterSpacing: '0.07em', boxShadow: `0 4px 20px ${color}66`,
           }}>
             <Send size={18} /> POSTULARME ›
           </Link>

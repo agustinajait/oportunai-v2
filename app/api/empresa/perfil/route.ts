@@ -36,6 +36,7 @@ export async function PATCH(req: NextRequest) {
       ...(body.ciudad !== undefined && { ciudad: body.ciudad || null }),
       ...(body.sitio_web !== undefined && { sitio_web: body.sitio_web || null }),
       ...(body.imagenes !== undefined && { imagenes: body.imagenes }),
+      ...(body.color_primario !== undefined && { color_primario: body.color_primario || null }),
     },
   });
   return NextResponse.json({ ok: true, empresa });

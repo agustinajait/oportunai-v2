@@ -57,6 +57,9 @@ export default async function VideoCVPage({ params }: Props) {
         orderBy: { created_at: 'desc' },
         take: 1,
       },
+      documentos: {
+        select: { tipo: true, file_url: true },
+      },
     },
   });
 

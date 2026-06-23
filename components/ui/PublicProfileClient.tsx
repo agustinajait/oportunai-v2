@@ -7,11 +7,12 @@ import {
   Download, Eye, EyeOff, Share2, Check,
   User, ChevronRight, FileVideo, Link2,
   Briefcase, GraduationCap, Wrench, Calendar,
-  ShieldCheck, Building2, Star
+  ShieldCheck, Building2, Star, FileText
 } from 'lucide-react';
 
 interface VideoItem { id: string; tipo: string; video_url: string; created_at: string }
 interface ArchivoItem { id: string; file_url: string; file_type: string }
+interface DocumentoItem { tipo: string; file_url: string }
 interface ReferenciaItem { id: string; empresa_nombre: string; referidor_nombre: string; referidor_cargo: string | null; referidor_email: string | null; mensaje: string | null; fecha_validada: string | null }
 interface CvDatos {
   resumen?: string;
@@ -34,8 +35,18 @@ interface UsuarioPublico {
   cv_datos?: CvDatos | null;
   videos: VideoItem[];
   archivos: ArchivoItem[];
+  documentos?: DocumentoItem[];
   referencias?: ReferenciaItem[];
 }
+
+const DOCS_LABELS: Record<string, string> = {
+  dni: 'DNI',
+  antecedentes_penales: 'Antecedentes penales',
+  manipulacion_alimentos: 'Manip. alimentos',
+  libreta_sanitaria: 'Libreta sanitaria',
+  registro_conducir: 'Reg. de conducir',
+  otro: 'Otro documento',
+};
 
 function calcularEdad(fechaNac: string | null | undefined): number | null {
   if (!fechaNac) return null;
@@ -452,6 +463,33 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
             </div>
           );
         })()}
+
+        {/* ── DOCUMENTOS ────────────────────────────────────────── */}
+        {(usuario.documentos?.length ?? 0) > 0 && (
+          <div className="card p-5 space-y-3">
+            <div className="flex items-center gap-2">
+              <FileText size={15} className="text-brand-500" />
+              <h3 className="font-semibold text-ink-800 text-sm">Documentos</h3>
+              <span className="ml-auto text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Check size={10} strokeWidth={3} /> {usuario.documentos!.length} cargados
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {usuario.documentos!.map(doc => (
+                <a
+                  key={doc.tipo}
+                  href={doc.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-xs bg-brand-50 text-brand-700 border border-brand-200 px-3 py-1.5 rounded-full hover:bg-brand-100 transition-colors"
+                >
+                  <FileText size={11} />
+                  {DOCS_LABELS[doc.tipo] ?? doc.tipo}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── REFERENCIAS VERIFICADAS ───────────────────────────── */}
         {(usuario.referencias?.length ?? 0) > 0 && (

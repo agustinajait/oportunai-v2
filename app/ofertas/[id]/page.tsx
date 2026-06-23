@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import {
   Video, GraduationCap, Star, MapPin, Briefcase,
-  ArrowLeft, Send, Building2, Shield,
+  Send, Building2, Shield, Users,
 } from 'lucide-react';
 import type { Metadata } from 'next';
 
@@ -49,277 +49,276 @@ export default async function OfertaDetailPage({ params }: Props) {
   const empresa = oferta.empresa;
   const nombreMarca = oferta.nombre_marca ?? empresa.nombre;
   const logoUrl = oferta.logo_url ?? empresa.logo_url;
-  const heroImg = empresa.imagenes?.[0] ?? null;
+  const heroImg = (empresa.imagenes as string[])?.[0] ?? null;
 
   const tieneCapacitaciones = await prisma.capacitacion.count({
     where: { empresa_id: empresa.id, activa: true },
   }).then(n => n > 0);
 
+  const postularHref = `/register?oferta_id=${oferta.id}`;
+
   return (
-    <div className="min-h-screen" style={{ fontFamily: 'Inter, system-ui, sans-serif', background: '#f3f4f6' }}>
+    <div style={{ fontFamily: 'Inter, system-ui, sans-serif', background: '#f1f5f9', minHeight: '100vh' }}>
 
       {/* ── NAV ── */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 no-underline">
-            <img src="/logo.png" alt="Oportunai" className="w-7 h-7" />
-            <span className="font-bold text-lg text-gray-900">Oportunai</span>
+      <nav style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 30 }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+            <img src="/logo.png" alt="Oportunai" style={{ width: 28, height: 28 }} />
+            <span style={{ fontWeight: 700, fontSize: 18, color: '#0f172a' }}>Oportunai</span>
           </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-gray-500 text-sm font-medium no-underline hover:text-gray-700">Iniciar sesión</Link>
-            <Link href="/register" className="bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-lg no-underline hover:bg-blue-700">Empezar gratis</Link>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <Link href="/login" style={{ color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Iniciar sesión</Link>
+            <Link href="/register" style={{ background: '#2563eb', color: '#fff', padding: '8px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>Empezar gratis</Link>
           </div>
         </div>
       </nav>
 
-      {/* ── HERO ── */}
-      <section
-        className="relative overflow-hidden"
-        style={{ background: '#0d1117', minHeight: 480 }}
-      >
-        {/* Background photo */}
-        {heroImg && (
-          <>
-            <img
-              src={heroImg}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ objectPosition: 'center right' }}
-            />
-            {/* Left dark overlay for text readability, fades out to the right */}
-            <div
-              className="absolute inset-0"
-              style={{ background: 'linear-gradient(to right, rgba(13,17,23,0.98) 40%, rgba(13,17,23,0.55) 70%, rgba(13,17,23,0.2) 100%)' }}
-            />
-          </>
-        )}
+      {/* ── HERO CARD ── */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 0' }}>
+        <div style={{
+          background: '#111827',
+          borderRadius: 20,
+          overflow: 'hidden',
+          display: 'flex',
+          minHeight: 320,
+          position: 'relative',
+        }}>
 
-        <div className="relative z-10 max-w-6xl mx-auto px-6 py-10">
+          {/* LEFT: text */}
+          <div style={{ flex: 1, padding: '36px 40px', position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
 
-          {/* Back */}
-          <Link
-            href="/ofertas"
-            className="inline-flex items-center gap-1.5 text-white/50 text-sm no-underline hover:text-white/80 mb-8"
-          >
-            <ArrowLeft size={14} /> Volver a ofertas
-          </Link>
-
-          <div className="flex flex-col lg:flex-row gap-10 items-start">
-
-            {/* ── LEFT: main content ── */}
-            <div className="flex-1 min-w-0">
-
-              {/* Active badge */}
-              <span className="inline-flex items-center gap-1.5 text-white text-xs font-bold px-3 py-1.5 rounded-full mb-5"
-                style={{ background: '#22c55e', letterSpacing: '0.05em' }}>
+            {/* Badge */}
+            <div style={{ marginBottom: 18 }}>
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                background: '#16a34a', color: '#fff',
+                fontSize: 11, fontWeight: 800, letterSpacing: '0.08em',
+                padding: '5px 12px', borderRadius: 999,
+                textTransform: 'uppercase',
+              }}>
                 🔥 BÚSQUEDA ACTIVA
               </span>
-
-              {/* Company line */}
-              <div className="flex items-center gap-3 mb-4">
-                {logoUrl ? (
-                  <img src={logoUrl} alt={nombreMarca} className="w-12 h-12 rounded-xl object-cover border-2 border-white/20 flex-shrink-0" />
-                ) : (
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white/70 font-bold text-xl flex-shrink-0"
-                    style={{ background: 'rgba(255,255,255,0.1)' }}>
-                    {nombreMarca[0].toUpperCase()}
-                  </div>
-                )}
-                <span className="text-white/70 text-sm font-medium">{nombreMarca}</span>
-              </div>
-
-              <p className="text-white/60 text-sm font-semibold uppercase tracking-widest mb-1">TE ESTAMOS BUSCANDO</p>
-              <h1
-                className="font-black uppercase leading-none mb-5"
-                style={{ fontSize: 'clamp(30px, 4.5vw, 52px)', color: '#4ade80', letterSpacing: '-0.01em' }}
-              >
-                {oferta.titulo}
-              </h1>
-              <p className="text-white/75 text-base leading-relaxed mb-8" style={{ maxWidth: 520 }}>
-                {oferta.descripcion}
-              </p>
-
-              {/* Benefit chips */}
-              <div className="flex flex-wrap gap-3 mb-8">
-                <BenefitChip
-                  icon={<Video size={16} color="#fff" />}
-                  iconBg="#2563eb"
-                  title="GRABÁ TU VIDEOCV"
-                  sub="En 60 segundos"
-                />
-                {tieneCapacitaciones && (
-                  <BenefitChip
-                    icon={<GraduationCap size={16} color="#fff" />}
-                    iconBg="#059669"
-                    title="CAPACITACIONES"
-                    titleColor="#4ade80"
-                    sub="Gratis"
-                  />
-                )}
-                <BenefitChip
-                  icon={<Star size={16} color="#fff" fill="#fff" />}
-                  iconBg="#7c3aed"
-                  title="DESTACATE"
-                  sub="antes que otros postulantes"
-                />
-              </div>
-
-              {/* CTA row */}
-              <div className="flex items-center gap-5 flex-wrap">
-                <Link
-                  href={`/register?oferta_id=${oferta.id}`}
-                  className="inline-flex items-center gap-2.5 text-white font-black text-base uppercase no-underline rounded-xl transition-all hover:opacity-90 active:scale-95"
-                  style={{
-                    background: '#22c55e',
-                    padding: '14px 36px',
-                    letterSpacing: '0.06em',
-                    boxShadow: '0 4px 24px rgba(34,197,94,0.45)',
-                  }}
-                >
-                  <Send size={18} />
-                  POSTULARME
-                  <span style={{ fontSize: 20, marginLeft: 2 }}>›</span>
-                </Link>
-                <span className="text-white/40 text-sm flex items-center gap-1.5">
-                  👥 Búsqueda activa
-                </span>
-              </div>
             </div>
 
-            {/* ── RIGHT: info card ── */}
-            <div
-              className="hidden lg:block flex-shrink-0 bg-white rounded-2xl p-6 shadow-xl"
-              style={{ width: 260 }}
-            >
-              {oferta.ciudad && (
-                <InfoRow icon={<MapPin size={16} className="text-gray-400" />} label="UBICACIÓN" value={oferta.ciudad} />
-              )}
-              <InfoRow
-                icon={<Briefcase size={16} className="text-gray-400" />}
-                label="MODALIDAD"
-                value={MODALIDAD_LABEL[oferta.modalidad] ?? oferta.modalidad}
+            {/* Headline */}
+            <p style={{
+              color: '#e2e8f0', fontWeight: 800, fontSize: 22,
+              textTransform: 'uppercase', letterSpacing: '0.04em',
+              margin: '0 0 6px 0', lineHeight: 1.2,
+            }}>
+              TE ESTAMOS BUSCANDO
+            </p>
+            <h1 style={{
+              color: '#4ade80', fontWeight: 900,
+              fontSize: 'clamp(26px, 3.5vw, 44px)',
+              textTransform: 'uppercase', letterSpacing: '-0.01em',
+              margin: '0 0 14px 0', lineHeight: 1.05,
+            }}>
+              {oferta.titulo}
+            </h1>
+            <p style={{
+              color: 'rgba(226,232,240,0.75)', fontSize: 14, lineHeight: 1.6,
+              margin: '0 0 22px 0', maxWidth: 480,
+            }}>
+              {oferta.descripcion}
+            </p>
+
+            {/* Benefit chips */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
+              <Chip
+                icon={<Video size={14} color="#fff" />}
+                bg="#2563eb"
+                label="Grabá tu VideoCV"
+                sub="En 60 segundos"
               />
-              {oferta.area && (
-                <InfoRow icon={<Building2 size={16} className="text-gray-400" />} label="ÁREA" value={oferta.area} />
+              {tieneCapacitaciones && (
+                <Chip
+                  icon={<GraduationCap size={14} color="#fff" />}
+                  bg="#059669"
+                  label="Accedé a capacitaciones"
+                  labelColor="#4ade80"
+                  sub="Gratis"
+                />
               )}
-              <div className="mt-5 pt-5 border-t border-gray-100">
-                <Link
-                  href={`/register?oferta_id=${oferta.id}`}
-                  className="w-full flex items-center justify-center gap-2 text-white font-bold text-sm uppercase no-underline rounded-xl py-3 transition-all hover:opacity-90"
-                  style={{ background: '#22c55e', letterSpacing: '0.05em' }}
-                >
-                  <Send size={14} /> POSTULARME
-                </Link>
-              </div>
+              <Chip
+                icon={<Star size={14} color="#fff" fill="#fff" />}
+                bg="#7c3aed"
+                label="Destacate"
+                sub="antes que otros postulantes"
+              />
             </div>
 
+            {/* CTA row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+              <Link href={postularHref} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 10,
+                background: '#16a34a', color: '#fff',
+                padding: '13px 32px', borderRadius: 10,
+                fontSize: 15, fontWeight: 900, textDecoration: 'none',
+                textTransform: 'uppercase', letterSpacing: '0.07em',
+                boxShadow: '0 4px 20px rgba(22,163,74,0.5)',
+              }}>
+                <Send size={16} /> POSTULARME ›
+              </Link>
+              <span style={{ color: 'rgba(148,163,184,0.8)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <Users size={14} style={{ opacity: 0.6 }} /> 1 posición disponible
+              </span>
+            </div>
           </div>
+
+          {/* RIGHT: photo */}
+          {heroImg ? (
+            <div style={{ width: '42%', flexShrink: 0, position: 'relative' }}>
+              <img
+                src={heroImg}
+                alt={nombreMarca}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+              {/* Left fade to blend with dark left panel */}
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: 'linear-gradient(to right, #111827 0%, rgba(17,24,39,0.3) 40%, transparent 70%)',
+              }} />
+              {/* Info card over photo */}
+              <div style={{
+                position: 'absolute', bottom: 24, right: 24,
+                background: '#fff', borderRadius: 14, padding: '16px 18px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.25)', minWidth: 190, zIndex: 10,
+              }}>
+                {oferta.ciudad && (
+                  <InfoRow icon={<MapPin size={14} />} label="UBICACIÓN" value={oferta.ciudad} />
+                )}
+                <InfoRow
+                  icon={<Briefcase size={14} />}
+                  label="MODALIDAD"
+                  value={MODALIDAD_LABEL[oferta.modalidad] ?? oferta.modalidad}
+                />
+                {oferta.area && (
+                  <InfoRow icon={<Building2 size={14} />} label="ÁREA" value={oferta.area} />
+                )}
+              </div>
+              {/* Logo marca top-right */}
+              {logoUrl && (
+                <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10 }}>
+                  <img src={logoUrl} alt={nombreMarca} style={{ width: 56, height: 56, borderRadius: 10, objectFit: 'cover', border: '2px solid rgba(255,255,255,0.3)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }} />
+                </div>
+              )}
+            </div>
+          ) : (
+            /* No photo: show info card directly in right area */
+            <div style={{ width: 240, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '24px 32px 24px 0' }}>
+              <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 14, padding: '18px', width: '100%', border: '1px solid rgba(255,255,255,0.1)' }}>
+                {oferta.ciudad && (
+                  <InfoRowDark icon={<MapPin size={14} />} label="UBICACIÓN" value={oferta.ciudad} />
+                )}
+                <InfoRowDark
+                  icon={<Briefcase size={14} />}
+                  label="MODALIDAD"
+                  value={MODALIDAD_LABEL[oferta.modalidad] ?? oferta.modalidad}
+                />
+                {oferta.area && (
+                  <InfoRowDark icon={<Building2 size={14} />} label="ÁREA" value={oferta.area} />
+                )}
+              </div>
+            </div>
+          )}
+
         </div>
-      </section>
+      </div>
 
       {/* ── CARDS BELOW ── */}
-      <div className="max-w-6xl mx-auto px-6 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 24px 40px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>
 
-          {/* VideoCV card */}
           <BottomCard
-            icon={<div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0"><Video size={22} color="#fff" /></div>}
+            icon={<div style={{ width: 48, height: 48, borderRadius: 12, background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Video size={22} color="#fff" /></div>}
             title="GRABÁ TU VIDEOCV"
             titleColor="#2563eb"
             body={`Contanos quién sos y por qué querés trabajar en ${nombreMarca}.`}
             cta="Más información →"
-            ctaHref={`/register?oferta_id=${oferta.id}`}
+            ctaHref={postularHref}
           />
 
-          {/* Capacitaciones card — only if empresa has them */}
           {tieneCapacitaciones && (
             <BottomCard
-              icon={<div className="w-12 h-12 rounded-xl bg-emerald-600 flex items-center justify-center flex-shrink-0"><GraduationCap size={22} color="#fff" /></div>}
+              icon={<div style={{ width: 48, height: 48, borderRadius: 12, background: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><GraduationCap size={22} color="#fff" /></div>}
               title="CAPACITACIONES GRATIS"
               titleColor="#059669"
               body={`Accedé a cursos exclusivos para postulantes de ${nombreMarca}.`}
               cta="Más información →"
-              ctaHref={`/register?oferta_id=${oferta.id}`}
+              ctaHref={postularHref}
             />
           )}
 
-          {/* Company card */}
           <BottomCard
             icon={
               logoUrl
-                ? <img src={logoUrl} alt={nombreMarca} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
-                : <div className="w-12 h-12 rounded-xl bg-gray-200 flex items-center justify-center flex-shrink-0 text-gray-500 font-bold text-xl">{nombreMarca[0].toUpperCase()}</div>
+                ? <img src={logoUrl} alt={nombreMarca} style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }} />
+                : <div style={{ width: 48, height: 48, borderRadius: 12, background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 700, fontSize: 20, color: '#64748b' }}>{nombreMarca[0]}</div>
             }
-            title={nombreMarca}
+            title={nombreMarca.toUpperCase()}
             body={empresa.descripcion ?? `${empresa.rubro ? `${empresa.rubro}. ` : ''}Sumate a nuestro equipo.`}
             cta="Conocé más →"
             ctaHref={`/empresa/${empresa.slug}`}
           />
         </div>
 
-        {/* Requisitos */}
         {oferta.requisitos && (
-          <div className="mt-8 bg-white rounded-2xl p-6 border border-gray-100">
-            <h2 className="font-semibold text-gray-800 mb-3 text-sm uppercase tracking-widest">Requisitos</h2>
-            <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-line">{oferta.requisitos}</p>
+          <div style={{ background: '#fff', borderRadius: 16, padding: '20px 24px', marginBottom: 16, border: '1px solid #e2e8f0' }}>
+            <p style={{ fontWeight: 700, fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Requisitos</p>
+            <p style={{ color: '#475569', fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-line', margin: 0 }}>{oferta.requisitos}</p>
           </div>
         )}
 
-        {/* Privacy footer */}
-        <div className="mt-8 bg-white rounded-2xl p-5 flex items-center gap-4 border border-gray-100">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-            <Shield size={18} className="text-blue-500" />
+        {/* Privacy */}
+        <div style={{ background: '#fff', borderRadius: 16, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14, border: '1px solid #e2e8f0' }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Shield size={18} color="#3b82f6" />
           </div>
           <div>
-            <p className="font-semibold text-gray-800 text-sm">Tu información está segura</p>
-            <p className="text-gray-500 text-xs mt-0.5">En Oportunai protegemos tus datos y solo los compartimos con la empresa.</p>
+            <p style={{ fontWeight: 600, fontSize: 14, color: '#0f172a', margin: 0 }}>Tu información está segura</p>
+            <p style={{ fontSize: 12, color: '#94a3b8', margin: '2px 0 0' }}>En Oportunai protegemos tus datos y solo los compartimos con la empresa.</p>
           </div>
         </div>
 
-        {/* CTA mobile sticky replacement */}
-        <div className="lg:hidden mt-6">
-          <Link
-            href={`/register?oferta_id=${oferta.id}`}
-            className="w-full flex items-center justify-center gap-2.5 text-white font-black text-base uppercase no-underline rounded-xl py-4 transition-all hover:opacity-90"
-            style={{ background: '#22c55e', letterSpacing: '0.06em', boxShadow: '0 4px 24px rgba(34,197,94,0.35)' }}
-          >
-            <Send size={18} /> POSTULARME
+        {/* CTA mobile */}
+        <div style={{ marginTop: 16 }}>
+          <Link href={postularHref} style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+            background: '#16a34a', color: '#fff', padding: '15px 32px', borderRadius: 12,
+            fontSize: 15, fontWeight: 900, textDecoration: 'none', textTransform: 'uppercase',
+            letterSpacing: '0.07em', boxShadow: '0 4px 20px rgba(22,163,74,0.4)',
+          }}>
+            <Send size={18} /> POSTULARME ›
           </Link>
         </div>
 
-        <p className="text-center text-gray-400 text-xs mt-8">
-          Powered by{' '}
-          <Link href="/" className="text-blue-500 hover:underline">Oportunai</Link>
-          {' '}— Selección con Video CV
+        <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: 12, marginTop: 24 }}>
+          Powered by <Link href="/" style={{ color: '#3b82f6' }}>Oportunai</Link> — Selección con Video CV
         </p>
       </div>
-
     </div>
   );
 }
 
 /* ── Sub-components ── */
 
-function BenefitChip({
-  icon, iconBg, title, titleColor = '#fff', sub,
-}: {
-  icon: React.ReactNode;
-  iconBg: string;
-  title: string;
-  titleColor?: string;
-  sub: string;
+function Chip({ icon, bg, label, labelColor = '#fff', sub }: {
+  icon: React.ReactNode; bg: string; label: string; labelColor?: string; sub: string;
 }) {
   return (
-    <div
-      className="flex items-center gap-3 rounded-xl px-4 py-2.5"
-      style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
-    >
-      <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: iconBg }}>
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 8,
+      background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)',
+      borderRadius: 10, padding: '8px 12px',
+    }}>
+      <div style={{ width: 30, height: 30, borderRadius: 7, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         {icon}
       </div>
       <div>
-        <div className="text-xs font-bold uppercase" style={{ color: titleColor, letterSpacing: '0.05em' }}>{title}</div>
-        <div className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>{sub}</div>
+        <div style={{ color: labelColor, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1.2 }}>{label}</div>
+        <div style={{ color: 'rgba(148,163,184,0.8)', fontSize: 10, marginTop: 1 }}>{sub}</div>
       </div>
     </div>
   );
@@ -327,36 +326,39 @@ function BenefitChip({
 
 function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="flex items-start gap-3 mb-4">
-      <div className="mt-0.5 flex-shrink-0">{icon}</div>
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
+      <div style={{ color: '#94a3b8', marginTop: 2, flexShrink: 0 }}>{icon}</div>
       <div>
-        <p className="text-gray-400 text-xs font-semibold uppercase tracking-widest">{label}</p>
-        <p className="text-gray-900 font-semibold text-sm mt-0.5">{value}</p>
+        <p style={{ color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>{label}</p>
+        <p style={{ color: '#0f172a', fontWeight: 600, fontSize: 13, margin: '2px 0 0' }}>{value}</p>
       </div>
     </div>
   );
 }
 
-function BottomCard({
-  icon, title, titleColor = '#111827', body, cta, ctaHref,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  titleColor?: string;
-  body: string;
-  cta: string;
-  ctaHref: string;
+function InfoRowDark({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
+      <div style={{ color: 'rgba(148,163,184,0.6)', marginTop: 2, flexShrink: 0 }}>{icon}</div>
+      <div>
+        <p style={{ color: 'rgba(148,163,184,0.6)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>{label}</p>
+        <p style={{ color: '#f1f5f9', fontWeight: 600, fontSize: 13, margin: '2px 0 0' }}>{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function BottomCard({ icon, title, titleColor = '#0f172a', body, cta, ctaHref }: {
+  icon: React.ReactNode; title: string; titleColor?: string; body: string; cta: string; ctaHref: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-6 border border-gray-100">
-      <div className="flex items-start gap-4 mb-3">
+    <div style={{ background: '#fff', borderRadius: 16, padding: '20px 22px', border: '1px solid #e2e8f0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
         {icon}
-        <div>
-          <p className="font-bold text-sm uppercase" style={{ color: titleColor, letterSpacing: '0.04em' }}>{title}</p>
-        </div>
+        <p style={{ color: titleColor, fontWeight: 700, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.04em', margin: 0 }}>{title}</p>
       </div>
-      <p className="text-gray-500 text-sm leading-relaxed mb-4">{body}</p>
-      <Link href={ctaHref} className="text-sm font-semibold no-underline hover:underline" style={{ color: titleColor !== '#111827' ? titleColor : '#2563eb' }}>
+      <p style={{ color: '#64748b', fontSize: 13, lineHeight: 1.6, margin: '0 0 12px' }}>{body}</p>
+      <Link href={ctaHref} style={{ color: titleColor !== '#0f172a' ? titleColor : '#2563eb', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
         {cta}
       </Link>
     </div>

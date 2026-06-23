@@ -239,11 +239,7 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
                   background: '#fff', borderRadius: 16, padding: '20px 24px',
                   border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center',
                   justifyContent: 'space-between', gap: 16,
-                  transition: 'box-shadow 0.15s',
-                }}
-                  onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)')}
-                  onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
-                >
+                }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontWeight: 700, fontSize: 16, color: '#0f172a', margin: '0 0 6px' }}>{oferta.titulo}</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, fontSize: 13, color: '#64748b' }}>

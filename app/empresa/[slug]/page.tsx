@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
-import { Building2, MapPin, Briefcase, Globe, ChevronRight } from 'lucide-react';
+import { MapPin, Briefcase, Globe, ChevronRight } from 'lucide-react';
 import type { Metadata } from 'next';
 
 const MODALIDAD_LABEL: Record<string, string> = {
@@ -11,11 +11,7 @@ const MODALIDAD_LABEL: Record<string, string> = {
   hibrido: 'Híbrido',
 };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const empresa = await prisma.empresa.findUnique({
     where: { slug: params.slug },
     select: { nombre: true, descripcion: true, logo_url: true, rubro: true, ciudad: true },
@@ -37,11 +33,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function EmpresaPublicaPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function EmpresaPublicaPage({ params }: { params: { slug: string } }) {
   const empresa = await prisma.empresa.findUnique({
     where: { slug: params.slug },
     include: {
@@ -53,6 +45,10 @@ export default async function EmpresaPublicaPage({
   });
 
   if (!empresa || !empresa.activa) notFound();
+
+  const imagenes = (empresa.imagenes as string[]) ?? [];
+  const heroImg = imagenes[0] ?? null;
+  const extraImgs = imagenes.slice(1);
 
   return (
     <div className="min-h-screen bg-ink-50">
@@ -69,54 +65,119 @@ export default async function EmpresaPublicaPage({
       </nav>
 
       {/* Header empresa */}
-      <div className="bg-white border-b border-ink-100">
-        <div className="max-w-4xl mx-auto px-6 py-10">
-          <div className="flex items-start gap-6">
-            {empresa.logo_url ? (
-              <img
-                src={empresa.logo_url}
-                alt={empresa.nombre}
-                className="w-20 h-20 rounded-2xl object-cover border border-ink-200 shadow-sm flex-shrink-0"
-              />
-            ) : (
-              <div className="w-20 h-20 rounded-2xl bg-brand-100 flex items-center justify-center text-brand-600 font-bold text-3xl flex-shrink-0">
-                {empresa.nombre[0].toUpperCase()}
+      {heroImg ? (
+        /* Con fotos: hero oscuro */
+        <div className="relative overflow-hidden bg-[#0d1117]" style={{ minHeight: 260 }}>
+          <img
+            src={heroImg}
+            alt={empresa.nombre}
+            className="absolute inset-0 w-full h-full object-cover opacity-50"
+          />
+          <div
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(to right, rgba(13,17,23,0.95) 40%, rgba(13,17,23,0.45) 100%)' }}
+          />
+          <div className="relative z-10 max-w-4xl mx-auto px-6 py-12">
+            <div className="flex items-start gap-5">
+              {empresa.logo_url ? (
+                <img
+                  src={empresa.logo_url}
+                  alt={empresa.nombre}
+                  className="w-20 h-20 rounded-2xl object-cover border-2 border-white/20 shadow-lg flex-shrink-0"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-2xl bg-white/10 flex items-center justify-center text-white font-bold text-3xl flex-shrink-0">
+                  {empresa.nombre[0].toUpperCase()}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <h1 className="font-display text-3xl font-semibold text-white">{empresa.nombre}</h1>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-sm text-white/60">
+                  {empresa.rubro && <span>{empresa.rubro}</span>}
+                  {empresa.ciudad && (
+                    <span className="flex items-center gap-1">
+                      <MapPin size={13} /> {empresa.ciudad}
+                    </span>
+                  )}
+                  {empresa.sitio_web && (
+                    <a
+                      href={empresa.sitio_web}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-green-400 hover:underline"
+                    >
+                      <Globe size={13} /> {empresa.sitio_web.replace(/https?:\/\/(www\.)?/, '')}
+                    </a>
+                  )}
+                </div>
+                {empresa.descripcion && (
+                  <p className="text-white/70 mt-3 leading-relaxed max-w-xl text-sm">{empresa.descripcion}</p>
+                )}
+              </div>
+            </div>
+            {extraImgs.length > 0 && (
+              <div className="flex gap-2 mt-4 overflow-x-auto pb-1">
+                {extraImgs.map((url, i) => (
+                  <img
+                    key={i}
+                    src={url}
+                    alt=""
+                    className="h-16 w-24 rounded-lg object-cover flex-shrink-0 border border-white/20"
+                  />
+                ))}
               </div>
             )}
-            <div className="flex-1 min-w-0">
-              <h1 className="font-display text-3xl font-semibold text-ink-900">{empresa.nombre}</h1>
-              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-sm text-ink-500">
-                {empresa.rubro && <span>{empresa.rubro}</span>}
-                {empresa.ciudad && (
-                  <span className="flex items-center gap-1">
-                    <MapPin size={13} /> {empresa.ciudad}
-                  </span>
-                )}
-                {empresa.sitio_web && (
-                  <a
-                    href={empresa.sitio_web}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-brand-600 hover:underline"
-                  >
-                    <Globe size={13} /> {empresa.sitio_web.replace(/https?:\/\/(www\.)?/, '')}
-                  </a>
+          </div>
+        </div>
+      ) : (
+        /* Sin fotos: header blanco */
+        <div className="bg-white border-b border-ink-100">
+          <div className="max-w-4xl mx-auto px-6 py-10">
+            <div className="flex items-start gap-6">
+              {empresa.logo_url ? (
+                <img
+                  src={empresa.logo_url}
+                  alt={empresa.nombre}
+                  className="w-20 h-20 rounded-2xl object-cover border border-ink-200 shadow-sm flex-shrink-0"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-2xl bg-brand-100 flex items-center justify-center text-brand-600 font-bold text-3xl flex-shrink-0">
+                  {empresa.nombre[0].toUpperCase()}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <h1 className="font-display text-3xl font-semibold text-ink-900">{empresa.nombre}</h1>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-sm text-ink-500">
+                  {empresa.rubro && <span>{empresa.rubro}</span>}
+                  {empresa.ciudad && (
+                    <span className="flex items-center gap-1">
+                      <MapPin size={13} /> {empresa.ciudad}
+                    </span>
+                  )}
+                  {empresa.sitio_web && (
+                    <a
+                      href={empresa.sitio_web}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-brand-600 hover:underline"
+                    >
+                      <Globe size={13} /> {empresa.sitio_web.replace(/https?:\/\/(www\.)?/, '')}
+                    </a>
+                  )}
+                </div>
+                {empresa.descripcion && (
+                  <p className="text-ink-500 mt-3 leading-relaxed max-w-xl">{empresa.descripcion}</p>
                 )}
               </div>
-              {empresa.descripcion && (
-                <p className="text-ink-500 mt-3 leading-relaxed max-w-xl">{empresa.descripcion}</p>
-              )}
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Ofertas */}
       <div className="max-w-4xl mx-auto px-6 py-10">
         <div className="mb-6">
-          <h2 className="font-display text-xl font-semibold text-ink-800">
-            Ofertas activas
-          </h2>
+          <h2 className="font-display text-xl font-semibold text-ink-800">Ofertas activas</h2>
           <p className="text-ink-500 text-sm mt-1">
             {empresa.ofertas.length === 0
               ? 'No hay ofertas activas por ahora'
@@ -136,27 +197,19 @@ export default async function EmpresaPublicaPage({
               <Link key={oferta.id} href={`/ofertas/${oferta.id}`} className="card p-6 hover:shadow-md transition-shadow block no-underline text-inherit">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-ink-900 text-lg leading-tight mb-1">
-                      {oferta.titulo}
-                    </h3>
+                    <h3 className="font-semibold text-ink-900 text-lg leading-tight mb-1">{oferta.titulo}</h3>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-ink-500 text-sm mb-3">
                       {oferta.ciudad && (
-                        <span className="flex items-center gap-1">
-                          <MapPin size={13} /> {oferta.ciudad}
-                        </span>
+                        <span className="flex items-center gap-1"><MapPin size={13} /> {oferta.ciudad}</span>
                       )}
                       <span className="flex items-center gap-1">
                         <Briefcase size={13} /> {MODALIDAD_LABEL[oferta.modalidad] ?? oferta.modalidad}
                       </span>
                       {oferta.area && (
-                        <span className="bg-brand-50 text-brand-700 text-xs px-2.5 py-0.5 rounded-full font-medium">
-                          {oferta.area}
-                        </span>
+                        <span className="bg-brand-50 text-brand-700 text-xs px-2.5 py-0.5 rounded-full font-medium">{oferta.area}</span>
                       )}
                     </div>
-                    <p className="text-ink-500 text-sm leading-relaxed line-clamp-2">
-                      {oferta.descripcion}
-                    </p>
+                    <p className="text-ink-500 text-sm leading-relaxed line-clamp-2">{oferta.descripcion}</p>
                   </div>
                   <span className="btn-primary text-sm py-2.5 px-5 flex-shrink-0 flex items-center gap-1.5">
                     Ver oferta <ChevronRight size={15} />
@@ -167,13 +220,10 @@ export default async function EmpresaPublicaPage({
           </div>
         )}
 
-        {/* Footer Oportunai */}
         <div className="mt-12 pt-8 border-t border-ink-100 text-center">
           <p className="text-ink-400 text-sm">
             Powered by{' '}
-            <Link href="/" className="text-brand-600 hover:underline font-medium">
-              Oportunai
-            </Link>
+            <Link href="/" className="text-brand-600 hover:underline font-medium">Oportunai</Link>
             {' '}— Plataforma de selección con Video CV
           </p>
         </div>

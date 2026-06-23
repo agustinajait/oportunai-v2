@@ -39,7 +39,7 @@ export default async function OfertaDetailPage({ params }: Props) {
     where: { id: params.id },
     include: {
       empresa: {
-        select: { id: true, nombre: true, slug: true, logo_url: true, descripcion: true, rubro: true, ciudad: true, imagenes: true, color_primario: true, mensaje_bienvenida: true },
+        select: { id: true, nombre: true, slug: true, logo_url: true, descripcion: true, rubro: true, ciudad: true, imagenes: true, color_primario: true },
       },
     },
   });
@@ -51,7 +51,6 @@ export default async function OfertaDetailPage({ params }: Props) {
   const logoUrl = oferta.logo_url ?? empresa.logo_url;
   const heroImg = (empresa.imagenes as string[])?.[0] ?? null;
   const color = (empresa.color_primario as string | null) ?? '#16a34a';
-  const bienvenida = (empresa.mensaje_bienvenida as string | null) || 'TE ESTAMOS BUSCANDO';
   const heroTitle = (oferta as any).titulo_hero || oferta.titulo;
 
   const tieneCapacitaciones = await prisma.capacitacion.count({
@@ -105,13 +104,6 @@ export default async function OfertaDetailPage({ params }: Props) {
             </div>
 
             {/* Headline */}
-            <p style={{
-              color: '#e2e8f0', fontWeight: 800, fontSize: 22,
-              textTransform: 'uppercase', letterSpacing: '0.04em',
-              margin: '0 0 6px 0', lineHeight: 1.2,
-            }}>
-              {bienvenida}
-            </p>
             <h1 style={{
               color: color, fontWeight: 900,
               fontSize: 'clamp(26px, 3.5vw, 44px)',

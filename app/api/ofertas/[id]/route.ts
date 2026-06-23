@@ -3,6 +3,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSessionFromRequest } from '@/lib/auth';
 
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const oferta = await prisma.oferta.findUnique({
+    where: { id: params.id },
+    include: {
+      empresa: {
+        select: { id: true, nombre: true, slug: true, logo_url: true, descripcion: true, rubro: true, ciudad: true, imagenes: true },
+      },
+    },
+  });
+  if (!oferta) return NextResponse.json({ error: 'No encontrada' }, { status: 404 });
+  return NextResponse.json({ oferta });
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }

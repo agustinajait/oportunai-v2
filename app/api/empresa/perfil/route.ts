@@ -30,11 +30,12 @@ export async function PATCH(req: NextRequest) {
   const empresa = await prisma.empresa.update({
     where: { id: miembro.empresa_id },
     data: {
-      nombre: body.nombre,
-      descripcion: body.descripcion || null,
-      rubro: body.rubro || null,
-      ciudad: body.ciudad || null,
-      sitio_web: body.sitio_web || null,
+      ...(body.nombre !== undefined && { nombre: body.nombre }),
+      ...(body.descripcion !== undefined && { descripcion: body.descripcion || null }),
+      ...(body.rubro !== undefined && { rubro: body.rubro || null }),
+      ...(body.ciudad !== undefined && { ciudad: body.ciudad || null }),
+      ...(body.sitio_web !== undefined && { sitio_web: body.sitio_web || null }),
+      ...(body.imagenes !== undefined && { imagenes: body.imagenes }),
     },
   });
   return NextResponse.json({ ok: true, empresa });

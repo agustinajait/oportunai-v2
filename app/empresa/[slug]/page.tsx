@@ -133,7 +133,7 @@ export default async function EmpresaPublicaPage({
         ) : (
           <div className="space-y-4">
             {empresa.ofertas.map((oferta) => (
-              <div key={oferta.id} className="card p-6 hover:shadow-md transition-shadow">
+              <Link key={oferta.id} href={`/ofertas/${oferta.id}`} className="card p-6 hover:shadow-md transition-shadow block no-underline text-inherit">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-ink-900 text-lg leading-tight mb-1">
@@ -157,21 +157,12 @@ export default async function EmpresaPublicaPage({
                     <p className="text-ink-500 text-sm leading-relaxed line-clamp-2">
                       {oferta.descripcion}
                     </p>
-                    {oferta.requisitos && (
-                      <div className="mt-3 bg-ink-50 rounded-lg px-4 py-3">
-                        <p className="text-xs font-medium text-ink-600 mb-1">Requisitos</p>
-                        <p className="text-xs text-ink-500 leading-relaxed">{oferta.requisitos}</p>
-                      </div>
-                    )}
                   </div>
-                  <Link
-                    href={`/register?oferta_id=${oferta.id}`}
-                    className="btn-primary text-sm py-2.5 px-5 flex-shrink-0 flex items-center gap-1.5"
-                  >
-                    Postularme <ChevronRight size={15} />
-                  </Link>
+                  <span className="btn-primary text-sm py-2.5 px-5 flex-shrink-0 flex items-center gap-1.5">
+                    Ver oferta <ChevronRight size={15} />
+                  </span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

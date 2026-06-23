@@ -49,7 +49,7 @@ export default async function OfertasPage() {
         ) : (
           <div className="space-y-4">
             {ofertas.map((o) => (
-              <div key={o.id} className="card p-6 hover:shadow-md transition-shadow">
+              <Link key={o.id} href={`/ofertas/${o.id}`} className="card p-6 hover:shadow-md transition-shadow block no-underline text-inherit">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4 flex-1 min-w-0">
                     {/* Logo marca o empresa */}
@@ -81,13 +81,13 @@ export default async function OfertasPage() {
                   </div>
 
                   <Link
-                    href={`/register?oferta_id=${o.id}`}
+                    href={`/ofertas/${o.id}`}
                     className="btn-primary text-sm py-2.5 px-5 flex-shrink-0"
                   >
-                    Postularme
+                    Ver oferta
                   </Link>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

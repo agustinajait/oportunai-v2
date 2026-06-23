@@ -95,6 +95,7 @@ type Postulante = {
 type Empresa = {
   id: string; nombre: string; slug: string; logo_url: string | null;
   descripcion: string | null; rubro: string | null; ciudad: string | null; sitio_web: string | null;
+  imagenes: string[];
 };
 
 type CitaEmpresa = {
@@ -298,7 +299,7 @@ export default function EmpresaDashboard() {
     const res = await fetch('/api/empresa/perfil');
     const data = await res.json();
     if (data.empresa) {
-      setEmpresa(data.empresa);
+      setEmpresa({ ...data.empresa, imagenes: data.empresa.imagenes ?? [] });
       setPerfilForm({ nombre: data.empresa.nombre || '', descripcion: data.empresa.descripcion || '', rubro: data.empresa.rubro || '', ciudad: data.empresa.ciudad || '', sitio_web: data.empresa.sitio_web || '' });
     }
   }
@@ -320,6 +321,45 @@ export default function EmpresaDashboard() {
     const res = await fetch('/api/empresa/logo', { method: 'POST', body: fd });
     const data = await res.json();
     if (data.logo_url) setEmpresa(prev => prev ? { ...prev, logo_url: data.logo_url } : prev);
+  }
+
+  const [subiendoImagen, setSubiendoImagen] = useState(false);
+
+  async function subirImagenEmpresa(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !empresa) return;
+    setSubiendoImagen(true);
+    try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+      const ext = file.name.split('.').pop() || 'jpg';
+      const filename = `empresa-fotos/${empresa.id}-${Date.now()}.${ext}`;
+      const { error } = await sb.storage.from('videos').upload(filename, file, { contentType: file.type, upsert: true });
+      if (!error) {
+        const { data } = sb.storage.from('videos').getPublicUrl(filename);
+        const nuevasImagenes = [...(empresa.imagenes ?? []), data.publicUrl];
+        await fetch('/api/empresa/perfil', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imagenes: nuevasImagenes }),
+        });
+        setEmpresa(prev => prev ? { ...prev, imagenes: nuevasImagenes } : prev);
+      }
+    } finally {
+      setSubiendoImagen(false);
+      e.target.value = '';
+    }
+  }
+
+  async function eliminarImagenEmpresa(url: string) {
+    if (!empresa) return;
+    const nuevasImagenes = (empresa.imagenes ?? []).filter(u => u !== url);
+    await fetch('/api/empresa/perfil', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imagenes: nuevasImagenes }),
+    });
+    setEmpresa(prev => prev ? { ...prev, imagenes: nuevasImagenes } : prev);
   }
 
   function limpiarFiltros() {
@@ -1406,6 +1446,32 @@ export default function EmpresaDashboard() {
                   </label>
                 </div>
               </div>
+
+              {/* Galería de fotos */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">
+                  Fotos de la empresa
+                  <span className="text-xs text-gray-400 font-normal ml-1.5">(aparecen como fondo en tus ofertas)</span>
+                </label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {(empresa?.imagenes ?? []).map((url, i) => (
+                    <div key={i} className="relative group w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => eliminarImagenEmpresa(url)}
+                        className="absolute inset-0 bg-black/50 text-white text-lg font-bold hidden group-hover:flex items-center justify-center transition-opacity"
+                      >×</button>
+                    </div>
+                  ))}
+                  <label className={`w-20 h-20 rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors ${subiendoImagen ? 'border-gray-200 opacity-50' : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'}`}>
+                    <input type="file" accept="image/*" className="hidden" disabled={subiendoImagen} onChange={subirImagenEmpresa} />
+                    <span className="text-2xl text-gray-400 leading-none">+</span>
+                    <span className="text-[10px] text-gray-400 mt-0.5">{subiendoImagen ? 'Subiendo…' : 'Agregar'}</span>
+                  </label>
+                </div>
+                <p className="text-xs text-gray-400 mt-1.5">Fotos reales del local, equipo o productos. La primera foto se muestra en las páginas de oferta.</p>
+              </div>
+
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Nombre *</label>
                 <input value={perfilForm.nombre} onChange={e => setPerfilForm({ ...perfilForm, nombre: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />

@@ -173,9 +173,10 @@ model Empresa {
   rubro       String?
   ciudad      String?
   sitio_web   String?
-  activa          Boolean  @default(true)
-  imagenes        String[] @default([])
-  color_primario  String?
+  activa              Boolean  @default(true)
+  imagenes            String[] @default([])
+  color_primario      String?
+  mensaje_bienvenida  String?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
@@ -217,6 +218,7 @@ model Oferta {
   mensaje_whatsapp String?
   nombre_marca     String?
   logo_url         String?
+  titulo_hero      String?
   docs_requeridos   String[]     @default([])
   preguntas_videocv String[]     @default([])
   created_at        DateTime     @default(now())

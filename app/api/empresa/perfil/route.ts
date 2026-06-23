@@ -37,6 +37,7 @@ export async function PATCH(req: NextRequest) {
       ...(body.sitio_web !== undefined && { sitio_web: body.sitio_web || null }),
       ...(body.imagenes !== undefined && { imagenes: body.imagenes }),
       ...(body.color_primario !== undefined && { color_primario: body.color_primario || null }),
+      ...(body.mensaje_bienvenida !== undefined && { mensaje_bienvenida: body.mensaje_bienvenida || null }),
     },
   });
   return NextResponse.json({ ok: true, empresa });

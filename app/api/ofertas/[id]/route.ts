@@ -45,7 +45,7 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { titulo, descripcion, requisitos, area, modalidad, ciudad, mensaje_whatsapp, nombre_marca, logo_url, docs_requeridos, preguntas_videocv, estado } = body;
+    const { titulo, descripcion, requisitos, area, modalidad, ciudad, mensaje_whatsapp, nombre_marca, logo_url, titulo_hero, docs_requeridos, preguntas_videocv, estado } = body;
 
     const updated = await prisma.oferta.update({
       where: { id: params.id },
@@ -59,6 +59,7 @@ export async function PATCH(
         ...(mensaje_whatsapp !== undefined && { mensaje_whatsapp: mensaje_whatsapp || null }),
         ...(nombre_marca !== undefined && { nombre_marca: nombre_marca || null }),
         ...(logo_url !== undefined && { logo_url: logo_url || null }),
+        ...(titulo_hero !== undefined && { titulo_hero: titulo_hero || null }),
         ...(docs_requeridos !== undefined && { docs_requeridos }),
         ...(preguntas_videocv !== undefined && { preguntas_videocv }),
         ...(estado !== undefined && { estado }),

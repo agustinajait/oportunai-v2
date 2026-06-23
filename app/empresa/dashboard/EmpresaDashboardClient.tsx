@@ -259,7 +259,7 @@ export default function EmpresaDashboard() {
   const [form, setForm] = useState({
     titulo: '', descripcion: '', requisitos: '', area: '',
     modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '',
-    nombre_marca: '', logo_url: '',
+    nombre_marca: '', logo_url: '', titulo_hero: '',
     docs_requeridos: [] as string[],
     preguntas_videocv: [] as string[],
   });
@@ -270,7 +270,7 @@ export default function EmpresaDashboard() {
   const [editForm, setEditForm] = useState({
     titulo: '', descripcion: '', requisitos: '', area: '',
     modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '',
-    nombre_marca: '', logo_url: '',
+    nombre_marca: '', logo_url: '', titulo_hero: '',
     docs_requeridos: [] as string[],
     preguntas_videocv: [] as string[],
   });
@@ -278,7 +278,7 @@ export default function EmpresaDashboard() {
   const [editPreguntaInput, setEditPreguntaInput] = useState('');
 
   const [perfilForm, setPerfilForm] = useState({
-    nombre: '', descripcion: '', rubro: '', ciudad: '', sitio_web: '',
+    nombre: '', descripcion: '', rubro: '', ciudad: '', sitio_web: '', mensaje_bienvenida: '',
   });
 
   useEffect(() => { cargarOfertas(); cargarEmpresa(); cargarCitas(); cargarCapacitaciones(); }, []);
@@ -300,7 +300,7 @@ export default function EmpresaDashboard() {
     const data = await res.json();
     if (data.empresa) {
       setEmpresa({ ...data.empresa, imagenes: data.empresa.imagenes ?? [], color_primario: data.empresa.color_primario ?? null });
-      setPerfilForm({ nombre: data.empresa.nombre || '', descripcion: data.empresa.descripcion || '', rubro: data.empresa.rubro || '', ciudad: data.empresa.ciudad || '', sitio_web: data.empresa.sitio_web || '' });
+      setPerfilForm({ nombre: data.empresa.nombre || '', descripcion: data.empresa.descripcion || '', rubro: data.empresa.rubro || '', ciudad: data.empresa.ciudad || '', sitio_web: data.empresa.sitio_web || '', mensaje_bienvenida: data.empresa.mensaje_bienvenida || '' });
     }
   }
 
@@ -417,7 +417,7 @@ export default function EmpresaDashboard() {
     const res = await fetch('/api/ofertas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formFinal) });
     const data = await res.json();
     if (data.ok) {
-      setForm({ titulo: '', descripcion: '', requisitos: '', area: '', modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '', nombre_marca: '', logo_url: '', docs_requeridos: [], preguntas_videocv: [] });
+      setForm({ titulo: '', descripcion: '', requisitos: '', area: '', modalidad: 'presencial', ciudad: '', mensaje_whatsapp: '', nombre_marca: '', logo_url: '', titulo_hero: '', docs_requeridos: [], preguntas_videocv: [] });
       setPreguntaInput('');
       setTab('ofertas');
       cargarOfertas();
@@ -439,6 +439,7 @@ export default function EmpresaDashboard() {
       mensaje_whatsapp: oferta.mensaje_whatsapp || '',
       nombre_marca: oferta.nombre_marca || '',
       logo_url: oferta.logo_url || '',
+      titulo_hero: (oferta as any).titulo_hero || '',
       docs_requeridos: oferta.docs_requeridos || [],
       preguntas_videocv: oferta.preguntas_videocv || [],
     });
@@ -800,6 +801,18 @@ export default function EmpresaDashboard() {
                 </div>
                 <p className="text-xs text-gray-400 mt-1">Si esta oferta es de una submarca del grupo, podés poner su nombre y logo propio.</p>
               </div>
+              <div className="border-t border-gray-100 pt-4">
+                <label className="text-sm font-medium text-gray-700 block mb-1">
+                  Título del hero <span className="text-xs text-gray-400 font-normal">(texto grande en la página de la oferta)</span>
+                </label>
+                <input
+                  value={form.titulo_hero}
+                  onChange={e => setForm({ ...form, titulo_hero: e.target.value })}
+                  placeholder={form.titulo || 'Ej: Barista con experiencia'}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-xs text-gray-400 mt-1">Si lo dejás vacío, se usa el título de la oferta.</p>
+              </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={crearOferta} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
                   {loading ? 'Publicando...' : 'Publicar oferta'}
@@ -950,6 +963,18 @@ export default function EmpresaDashboard() {
                   </div>
                 </div>
                 <p className="text-xs text-gray-400 mt-1">Si esta oferta es de una submarca del grupo, podés poner su nombre y logo propio.</p>
+              </div>
+              <div className="border-t border-gray-100 pt-4">
+                <label className="text-sm font-medium text-gray-700 block mb-1">
+                  Título del hero <span className="text-xs text-gray-400 font-normal">(texto grande en la página de la oferta)</span>
+                </label>
+                <input
+                  value={editForm.titulo_hero}
+                  onChange={e => setEditForm({ ...editForm, titulo_hero: e.target.value })}
+                  placeholder={editForm.titulo || 'Ej: Barista con experiencia'}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-xs text-gray-400 mt-1">Si lo dejás vacío, se usa el título de la oferta.</p>
               </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={guardarEdicion} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
@@ -1523,6 +1548,18 @@ export default function EmpresaDashboard() {
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Descripción</label>
                 <textarea value={perfilForm.descripcion} onChange={e => setPerfilForm({ ...perfilForm, descripcion: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">
+                  Mensaje de bienvenida <span className="text-xs text-gray-400 font-normal">(aparece en todas tus páginas de oferta)</span>
+                </label>
+                <input
+                  value={perfilForm.mensaje_bienvenida}
+                  onChange={e => setPerfilForm({ ...perfilForm, mensaje_bienvenida: e.target.value })}
+                  placeholder="Ej: TE ESTAMOS BUSCANDO, QUEREMOS CONOCERTE"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-xs text-gray-400 mt-1">Si lo dejás vacío, se muestra "TE ESTAMOS BUSCANDO".</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>

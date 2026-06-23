@@ -221,7 +221,7 @@ export default function EmpresaDashboard() {
       const res = await fetch('/api/empresa/capacitaciones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...capForm, respuesta_correcta }),
+        body: JSON.stringify(capForm),
       });
       const data = await res.json();
       if (data.ok) {

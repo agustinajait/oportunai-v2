@@ -217,22 +217,27 @@ export default function EmpresaDashboard() {
       return;
     }
     setSavingCap(true);
-    const res = await fetch('/api/empresa/capacitaciones', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...capForm, respuesta_correcta }),
-    });
-    const data = await res.json();
-    if (data.ok) {
-      setCapMsg('Capacitación creada ✓');
-      setNewCapOpen(false);
-      setCapForm({ titulo: '', descripcion: '', video_url: '', rubro: '', pregunta: '', opciones: ['', '', '', ''], respuesta_correcta: 0 });
-      cargarCapacitaciones();
-    } else {
-      setCapMsg(data.error ?? 'Error al crear');
+    try {
+      const res = await fetch('/api/empresa/capacitaciones', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...capForm, respuesta_correcta }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setCapMsg('Capacitación creada ✓');
+        setNewCapOpen(false);
+        setCapForm({ titulo: '', descripcion: '', video_url: '', rubro: '', pregunta: '', opciones: ['', '', '', ''], respuesta_correcta: 0 });
+        cargarCapacitaciones();
+      } else {
+        setCapMsg(data.error ?? 'Error al crear');
+      }
+    } catch {
+      setCapMsg('Error de conexión. Intentá de nuevo.');
+    } finally {
+      setSavingCap(false);
+      setTimeout(() => setCapMsg(null), 4000);
     }
-    setSavingCap(false);
-    setTimeout(() => setCapMsg(null), 4000);
   }
 
   async function toggleCapActiva(id: string, activa: boolean) {

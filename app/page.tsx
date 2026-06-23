@@ -200,7 +200,7 @@ export default async function LandingPage() {
           </div>
           <div className={s.secDarkIntroVisual}>
             <div className={s.secPhotoCircle}>
-              <img src="/candidato.jpg" alt="Candidato grabando Video CV" className={s.secPhoto} />
+              <img src="/candidato.png" alt="Candidato grabando Video CV" className={s.secPhoto} />
             </div>
             <div className={s.recCard}>
               <div className={s.recHeader}><span className={s.recDot}/> REC</div>

@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
-import { MapPin, Briefcase, Globe, ChevronRight } from 'lucide-react';
+import { MapPin, Briefcase, Globe, ChevronRight, Users, Send } from 'lucide-react';
 import type { Metadata } from 'next';
 
 const MODALIDAD_LABEL: Record<string, string> = {
@@ -50,181 +50,226 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
   const heroImg = imagenes[0] ?? null;
   const extraImgs = imagenes.slice(1);
   const color = (empresa.color_primario as string | null) ?? '#16a34a';
-  const bienvenida = (empresa.mensaje_bienvenida as string | null) ?? null;
+  const bienvenida = (empresa.mensaje_bienvenida as string | null) || 'QUEREMOS CONOCERTE';
+  const totalOfertas = (empresa as any).ofertas?.length ?? 0;
 
   return (
-    <div className="min-h-screen bg-ink-50">
-      {/* Navbar */}
-      <nav className="flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
-        <Link href="/" className="flex items-center gap-2">
-          <img src="/logo.png" alt="Oportunai" className="w-8 h-8" />
-          <span className="font-display text-xl font-semibold text-ink-800">Oportunai</span>
-        </Link>
-        <div className="flex items-center gap-3">
-          <Link href="/login" className="btn-ghost text-sm">Iniciar sesión</Link>
-          <Link href="/register" className="btn-primary text-sm py-2">Registrarse</Link>
+    <div style={{ fontFamily: 'Inter, system-ui, sans-serif', background: '#f1f5f9', minHeight: '100vh' }}>
+
+      {/* NAV */}
+      <nav style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 30 }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+            <img src="/logo.png" alt="Oportunai" style={{ width: 28, height: 28 }} />
+            <span style={{ fontWeight: 700, fontSize: 18, color: '#0f172a' }}>Oportunai</span>
+          </Link>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <Link href="/login" style={{ color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Iniciar sesión</Link>
+            <Link href="/register" style={{ background: '#2563eb', color: '#fff', padding: '8px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>Empezar gratis</Link>
+          </div>
         </div>
       </nav>
 
-      {/* Header empresa */}
-      {heroImg ? (
-        /* Con fotos: hero oscuro */
-        <div className="relative overflow-hidden bg-[#0d1117]" style={{ minHeight: 260 }}>
-          <img
-            src={heroImg}
-            alt={empresa.nombre}
-            className="absolute inset-0 w-full h-full object-cover opacity-50"
-          />
-          <div
-            className="absolute inset-0"
-            style={{ background: 'linear-gradient(to right, rgba(13,17,23,0.95) 40%, rgba(13,17,23,0.45) 100%)' }}
-          />
-          <div className="relative z-10 max-w-4xl mx-auto px-6 py-12">
-            <div className="flex items-start gap-5">
-              {empresa.logo_url ? (
-                <img
-                  src={empresa.logo_url}
-                  alt={empresa.nombre}
-                  className="w-20 h-20 rounded-2xl object-cover border-2 border-white/20 shadow-lg flex-shrink-0"
-                />
-              ) : (
-                <div className="w-20 h-20 rounded-2xl bg-white/10 flex items-center justify-center text-white font-bold text-3xl flex-shrink-0">
-                  {empresa.nombre[0].toUpperCase()}
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                {bienvenida && (
-                  <p style={{ color, fontWeight: 800, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
-                    {bienvenida}
-                  </p>
-                )}
-                <h1 className="font-display text-3xl font-semibold text-white">{empresa.nombre}</h1>
-                <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-sm text-white/60">
-                  {empresa.rubro && <span>{empresa.rubro}</span>}
-                  {empresa.ciudad && (
-                    <span className="flex items-center gap-1">
-                      <MapPin size={13} /> {empresa.ciudad}
-                    </span>
-                  )}
-                  {empresa.sitio_web && (
-                    <a
-                      href={empresa.sitio_web}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-green-400 hover:underline"
-                    >
-                      <Globe size={13} /> {empresa.sitio_web.replace(/https?:\/\/(www\.)?/, '')}
-                    </a>
-                  )}
-                </div>
-                {empresa.descripcion && (
-                  <p className="text-white/70 mt-3 leading-relaxed max-w-xl text-sm">{empresa.descripcion}</p>
-                )}
-              </div>
+      {/* HERO CARD */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 0' }}>
+        <div style={{
+          background: '#111827',
+          borderRadius: 20,
+          overflow: 'hidden',
+          display: 'flex',
+          minHeight: 320,
+          position: 'relative',
+        }}>
+
+          {/* LEFT: text */}
+          <div style={{ flex: 1, padding: '36px 40px', position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+
+            {/* Badge */}
+            <div style={{ marginBottom: 18 }}>
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                background: color, color: '#fff',
+                fontSize: 11, fontWeight: 800, letterSpacing: '0.08em',
+                padding: '5px 12px', borderRadius: 999,
+                textTransform: 'uppercase',
+              }}>
+                🔥 {empresa.rubro ?? 'BUSCAMOS TALENTO'}
+              </span>
             </div>
-            {extraImgs.length > 0 && (
-              <div className="flex gap-2 mt-4 overflow-x-auto pb-1">
-                {extraImgs.map((url, i) => (
-                  <img
-                    key={i}
-                    src={url}
-                    alt=""
-                    className="h-16 w-24 rounded-lg object-cover flex-shrink-0 border border-white/20"
-                  />
-                ))}
-              </div>
+
+            {/* Bienvenida */}
+            <p style={{
+              color: '#e2e8f0', fontWeight: 800, fontSize: 22,
+              textTransform: 'uppercase', letterSpacing: '0.04em',
+              margin: '0 0 6px 0', lineHeight: 1.2,
+            }}>
+              {bienvenida}
+            </p>
+
+            {/* Nombre empresa */}
+            <h1 style={{
+              color,
+              fontWeight: 900,
+              fontSize: 'clamp(26px, 3.5vw, 44px)',
+              textTransform: 'uppercase',
+              letterSpacing: '-0.01em',
+              margin: '0 0 14px 0',
+              lineHeight: 1.05,
+            }}>
+              {empresa.nombre}
+            </h1>
+
+            {empresa.descripcion && (
+              <p style={{
+                color: 'rgba(226,232,240,0.75)', fontSize: 14, lineHeight: 1.6,
+                margin: '0 0 22px 0', maxWidth: 480,
+              }}>
+                {empresa.descripcion}
+              </p>
             )}
+
+            {/* CTA row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+              <a href="#ofertas" style={{
+                display: 'inline-flex', alignItems: 'center', gap: 10,
+                background: color, color: '#fff',
+                padding: '13px 32px', borderRadius: 10,
+                fontSize: 15, fontWeight: 900, textDecoration: 'none',
+                textTransform: 'uppercase', letterSpacing: '0.07em',
+                boxShadow: `0 4px 20px ${color}80`,
+              }}>
+                <Send size={16} /> VER OFERTAS ›
+              </a>
+              {totalOfertas > 0 && (
+                <span style={{ color: 'rgba(148,163,184,0.8)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <Users size={14} style={{ opacity: 0.6 }} />
+                  {totalOfertas} {totalOfertas === 1 ? 'posición disponible' : 'posiciones disponibles'}
+                </span>
+              )}
+            </div>
           </div>
-        </div>
-      ) : (
-        /* Sin fotos: header blanco */
-        <div className="bg-white border-b border-ink-100">
-          <div className="max-w-4xl mx-auto px-6 py-10">
-            <div className="flex items-start gap-6">
-              {empresa.logo_url ? (
-                <img
-                  src={empresa.logo_url}
-                  alt={empresa.nombre}
-                  className="w-20 h-20 rounded-2xl object-cover border border-ink-200 shadow-sm flex-shrink-0"
-                />
-              ) : (
-                <div className="w-20 h-20 rounded-2xl bg-brand-100 flex items-center justify-center text-brand-600 font-bold text-3xl flex-shrink-0">
-                  {empresa.nombre[0].toUpperCase()}
+
+          {/* RIGHT: photo */}
+          {heroImg ? (
+            <div style={{ width: '42%', flexShrink: 0, position: 'relative' }}>
+              <img
+                src={heroImg}
+                alt={empresa.nombre}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+              {/* Gradient fade */}
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: 'linear-gradient(to right, #111827 0%, rgba(17,24,39,0.3) 40%, transparent 70%)',
+              }} />
+              {/* Info card */}
+              <div style={{
+                position: 'absolute', bottom: 24, right: 24,
+                background: '#fff', borderRadius: 14, padding: '16px 18px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.25)', minWidth: 190, zIndex: 10,
+              }}>
+                {empresa.ciudad && (
+                  <InfoRow icon={<MapPin size={14} />} label="UBICACIÓN" value={empresa.ciudad} />
+                )}
+                {empresa.rubro && (
+                  <InfoRow icon={<Briefcase size={14} />} label="RUBRO" value={empresa.rubro} />
+                )}
+                {empresa.sitio_web && (
+                  <InfoRow icon={<Globe size={14} />} label="WEB" value={empresa.sitio_web.replace(/https?:\/\/(www\.)?/, '')} />
+                )}
+              </div>
+              {/* Logo top-right */}
+              {empresa.logo_url && (
+                <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10 }}>
+                  <img
+                    src={empresa.logo_url}
+                    alt={empresa.nombre}
+                    style={{ width: 56, height: 56, borderRadius: 10, objectFit: 'cover', border: '2px solid rgba(255,255,255,0.3)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
+                  />
                 </div>
               )}
-              <div className="flex-1 min-w-0">
-                {bienvenida && (
-                  <p style={{ color, fontWeight: 800, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
-                    {bienvenida}
-                  </p>
-                )}
-                <h1 className="font-display text-3xl font-semibold text-ink-900">{empresa.nombre}</h1>
-                <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-sm text-ink-500">
-                  {empresa.rubro && <span>{empresa.rubro}</span>}
-                  {empresa.ciudad && (
-                    <span className="flex items-center gap-1">
-                      <MapPin size={13} /> {empresa.ciudad}
-                    </span>
-                  )}
-                  {empresa.sitio_web && (
-                    <a
-                      href={empresa.sitio_web}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-brand-600 hover:underline"
-                    >
-                      <Globe size={13} /> {empresa.sitio_web.replace(/https?:\/\/(www\.)?/, '')}
-                    </a>
-                  )}
+              {/* Extra thumbnails */}
+              {extraImgs.length > 0 && (
+                <div style={{ position: 'absolute', bottom: 24, left: 16, display: 'flex', gap: 6, zIndex: 10 }}>
+                  {extraImgs.slice(0, 3).map((url, i) => (
+                    <img key={i} src={url} alt="" style={{ width: 52, height: 52, borderRadius: 8, objectFit: 'cover', border: '2px solid rgba(255,255,255,0.25)' }} />
+                  ))}
                 </div>
-                {empresa.descripcion && (
-                  <p className="text-ink-500 mt-3 leading-relaxed max-w-xl">{empresa.descripcion}</p>
+              )}
+            </div>
+          ) : (
+            /* Sin foto: panel derecho oscuro con info */
+            <div style={{ width: 240, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '24px 32px 24px 0' }}>
+              <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 14, padding: '18px', width: '100%', border: '1px solid rgba(255,255,255,0.1)' }}>
+                {empresa.ciudad && (
+                  <InfoRowDark icon={<MapPin size={14} />} label="UBICACIÓN" value={empresa.ciudad} />
+                )}
+                {empresa.rubro && (
+                  <InfoRowDark icon={<Briefcase size={14} />} label="RUBRO" value={empresa.rubro} />
+                )}
+                {empresa.sitio_web && (
+                  <InfoRowDark icon={<Globe size={14} />} label="WEB" value={empresa.sitio_web.replace(/https?:\/\/(www\.)?/, '')} />
                 )}
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {/* Ofertas */}
-      <div className="max-w-4xl mx-auto px-6 py-10">
-        <div className="mb-6">
-          <h2 className="font-display text-xl font-semibold text-ink-800">Ofertas activas</h2>
-          <p className="text-ink-500 text-sm mt-1">
-            {empresa.ofertas.length === 0
-              ? 'No hay ofertas activas por ahora'
-              : `${empresa.ofertas.length} ${empresa.ofertas.length === 1 ? 'posición disponible' : 'posiciones disponibles'}`}
-          </p>
         </div>
+      </div>
 
-        {empresa.ofertas.length === 0 ? (
-          <div className="card p-12 text-center">
-            <Briefcase size={36} className="text-ink-300 mx-auto mb-4" />
-            <p className="text-ink-500">No hay ofertas activas por ahora.</p>
-            <p className="text-ink-400 text-sm mt-1">Volvé pronto.</p>
+      {/* OFERTAS */}
+      <div id="ofertas" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 40px' }}>
+        <p style={{ fontWeight: 700, fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>
+          Posiciones abiertas
+        </p>
+
+        {totalOfertas === 0 ? (
+          <div style={{ background: '#fff', borderRadius: 16, padding: '48px 24px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
+            <p style={{ color: '#94a3b8', fontSize: 15 }}>No hay ofertas activas por ahora. Volvé pronto.</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {empresa.ofertas.map((oferta) => (
-              <Link key={oferta.id} href={`/ofertas/${oferta.id}`} className="card p-6 hover:shadow-md transition-shadow block no-underline text-inherit">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-ink-900 text-lg leading-tight mb-1">{oferta.titulo}</h3>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-ink-500 text-sm mb-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {(empresa as any).ofertas.map((oferta: any) => (
+              <Link
+                key={oferta.id}
+                href={`/ofertas/${oferta.id}`}
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
+                <div style={{
+                  background: '#fff', borderRadius: 16, padding: '20px 24px',
+                  border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center',
+                  justifyContent: 'space-between', gap: 16,
+                  transition: 'box-shadow 0.15s',
+                }}
+                  onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)')}
+                  onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontWeight: 700, fontSize: 16, color: '#0f172a', margin: '0 0 6px' }}>{oferta.titulo}</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, fontSize: 13, color: '#64748b' }}>
                       {oferta.ciudad && (
-                        <span className="flex items-center gap-1"><MapPin size={13} /> {oferta.ciudad}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <MapPin size={13} /> {oferta.ciudad}
+                        </span>
                       )}
-                      <span className="flex items-center gap-1">
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <Briefcase size={13} /> {MODALIDAD_LABEL[oferta.modalidad] ?? oferta.modalidad}
                       </span>
                       {oferta.area && (
-                        <span className="bg-brand-50 text-brand-700 text-xs px-2.5 py-0.5 rounded-full font-medium">{oferta.area}</span>
+                        <span style={{ background: '#eff6ff', color: '#2563eb', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999 }}>
+                          {oferta.area}
+                        </span>
                       )}
                     </div>
-                    <p className="text-ink-500 text-sm leading-relaxed line-clamp-2">{oferta.descripcion}</p>
                   </div>
-                  <span style={{ background: color, color: '#fff', borderRadius: 8, fontSize: 14, fontWeight: 600, padding: '10px 20px', flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                    Ver oferta <ChevronRight size={15} />
+                  <span style={{
+                    background: color, color: '#fff',
+                    borderRadius: 8, fontSize: 13, fontWeight: 700,
+                    padding: '10px 20px', flexShrink: 0,
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    boxShadow: `0 2px 10px ${color}60`,
+                  }}>
+                    Ver oferta <ChevronRight size={14} />
                   </span>
                 </div>
               </Link>
@@ -232,13 +277,33 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
           </div>
         )}
 
-        <div className="mt-12 pt-8 border-t border-ink-100 text-center">
-          <p className="text-ink-400 text-sm">
-            Powered by{' '}
-            <Link href="/" className="text-brand-600 hover:underline font-medium">Oportunai</Link>
-            {' '}— Plataforma de selección con Video CV
-          </p>
-        </div>
+        <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: 12, marginTop: 32 }}>
+          Powered by <Link href="/" style={{ color: '#3b82f6' }}>Oportunai</Link> — Selección con Video CV
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
+      <div style={{ color: '#94a3b8', marginTop: 2, flexShrink: 0 }}>{icon}</div>
+      <div>
+        <p style={{ color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>{label}</p>
+        <p style={{ color: '#0f172a', fontWeight: 600, fontSize: 13, margin: '2px 0 0' }}>{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function InfoRowDark({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
+      <div style={{ color: 'rgba(148,163,184,0.6)', marginTop: 2, flexShrink: 0 }}>{icon}</div>
+      <div>
+        <p style={{ color: 'rgba(148,163,184,0.6)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>{label}</p>
+        <p style={{ color: '#f1f5f9', fontWeight: 600, fontSize: 13, margin: '2px 0 0' }}>{value}</p>
       </div>
     </div>
   );

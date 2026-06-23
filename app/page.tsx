@@ -154,10 +154,6 @@ export default async function LandingPage() {
           <div className={s.statN}>{fmtNum(totalCandidatos)}</div>
           <div className={s.statL}>Personas registradas</div>
         </div>
-        <div className={s.stat}>
-          <div className={s.statN}>{totalOfertas || '0'}</div>
-          <div className={s.statL}>Ofertas activas hoy</div>
-        </div>
       </div>
       </div>
 
@@ -179,7 +175,6 @@ export default async function LandingPage() {
             <div className={s.nichoIco}>
               <sec.Icon size={22} strokeWidth={1.75} />
             </div>
-            <div className={s.nichoNum}>{sec.count}</div>
             <div className={s.nichoName}>{sec.label}</div>
             <div className={s.nichoDesc}>{sec.desc}</div>
             <div className={s.nichoGo}>Ver ofertas <ChevronRight size={13} /></div>

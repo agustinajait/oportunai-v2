@@ -205,10 +205,15 @@ export default function EmpresaDashboard() {
   }
 
   async function crearCapacitacion() {
-    const { titulo, video_url, pregunta, opciones, respuesta_correcta } = capForm;
-    if (!titulo.trim() || !video_url.trim() || !pregunta.trim() || opciones.some(o => !o.trim())) {
-      setCapMsg('Completá todos los campos requeridos, incluyendo las 4 opciones.');
-      setTimeout(() => setCapMsg(null), 3000);
+    const { titulo, video_url, pregunta, opciones } = capForm;
+    const faltantes = [];
+    if (!titulo.trim()) faltantes.push('título');
+    if (!video_url.trim()) faltantes.push('URL de YouTube');
+    if (!pregunta.trim()) faltantes.push('pregunta de verificación');
+    if (opciones.some(o => !o.trim())) faltantes.push('las 4 opciones de respuesta');
+    if (faltantes.length > 0) {
+      setCapMsg(`Falta completar: ${faltantes.join(', ')}.`);
+      setTimeout(() => setCapMsg(null), 4000);
       return;
     }
     setSavingCap(true);
@@ -1263,6 +1268,11 @@ export default function EmpresaDashboard() {
                     <p className="text-xs text-gray-400">El círculo verde indica la opción correcta.</p>
                   </div>
                 </div>
+                {capMsg && (
+                  <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-lg px-3 py-2">
+                    ⚠️ {capMsg}
+                  </div>
+                )}
                 <div className="flex gap-2 pt-1">
                   <button onClick={crearCapacitacion} disabled={savingCap} className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5">
                     {savingCap ? <Loader2 size={14} className="animate-spin" /> : <GraduationCap size={14} />}

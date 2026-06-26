@@ -16,7 +16,7 @@ export async function POST(
   const body = await req.json();
   const { respuesta } = body;
 
-  if (typeof respuesta !== 'number' || respuesta !== cap.respuesta_correcta) {
+  if (respuesta === undefined || respuesta === null || Number(respuesta) !== Number(cap.respuesta_correcta)) {
     return NextResponse.json({ ok: false, error: 'Respuesta incorrecta' }, { status: 400 });
   }
 

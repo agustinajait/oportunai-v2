@@ -2,9 +2,10 @@ export const dynamic = 'force-dynamic';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import { getSession } from '@/lib/auth';
 import {
   Video, GraduationCap, Star, MapPin, Briefcase,
-  Send, Building2, Shield, Users,
+  Send, Building2, Shield, Users, CheckCircle,
 } from 'lucide-react';
 import type { Metadata } from 'next';
 
@@ -53,11 +54,23 @@ export default async function OfertaDetailPage({ params }: Props) {
   const color = (empresa.color_primario as string | null) ?? '#16a34a';
   const heroTitle = (oferta as any).titulo_hero || oferta.titulo;
 
-  const tieneCapacitaciones = await prisma.capacitacion.count({
-    where: { empresa_id: empresa.id, activa: true },
-  }).then(n => n > 0);
+  const [tieneCapacitaciones, session] = await Promise.all([
+    prisma.capacitacion.count({ where: { empresa_id: empresa.id, activa: true } }).then(n => n > 0),
+    getSession(),
+  ]);
 
-  const postularHref = `/register?oferta_id=${oferta.id}`;
+  let tieneVideoCV = false;
+  if (session) {
+    const video = await prisma.video.findFirst({
+      where: { user_id: session.userId, tipo: 'video_cv', oferta_id: null, es_fragmento: false },
+      select: { id: true },
+    });
+    tieneVideoCV = !!video;
+  }
+
+  const postularHref = session
+    ? (tieneVideoCV ? `/dashboard?tab=ofertas` : `/dashboard/grabar-cv`)
+    : `/register?oferta_id=${oferta.id}`;
 
   return (
     <div style={{ fontFamily: 'Inter, system-ui, sans-serif', background: '#f1f5f9', minHeight: '100vh' }}>
@@ -226,14 +239,25 @@ export default async function OfertaDetailPage({ params }: Props) {
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 24px 40px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>
 
-          <BottomCard
-            icon={<div style={{ width: 48, height: 48, borderRadius: 12, background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Video size={22} color="#fff" /></div>}
-            title="GRABÁ TU VIDEOCV"
-            titleColor="#2563eb"
-            body={`Contanos quién sos y por qué querés trabajar en ${nombreMarca}.`}
-            cta="Más información →"
-            ctaHref={postularHref}
-          />
+          {tieneVideoCV ? (
+            <BottomCard
+              icon={<div style={{ width: 48, height: 48, borderRadius: 12, background: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><CheckCircle size={22} color="#fff" /></div>}
+              title="TU VIDEO CV ESTÁ LISTO"
+              titleColor="#059669"
+              body="Ya tenés tu Video CV grabado. Podés postularte directamente desde tu panel."
+              cta="Ir a postularme →"
+              ctaHref={postularHref}
+            />
+          ) : (
+            <BottomCard
+              icon={<div style={{ width: 48, height: 48, borderRadius: 12, background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Video size={22} color="#fff" /></div>}
+              title="GRABÁ TU VIDEOCV"
+              titleColor="#2563eb"
+              body={`Contanos quién sos y por qué querés trabajar en ${nombreMarca}.`}
+              cta="Más información →"
+              ctaHref={postularHref}
+            />
+          )}
 
           {tieneCapacitaciones && (
             <BottomCard

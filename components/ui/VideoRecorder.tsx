@@ -632,10 +632,10 @@ export default function VideoRecorder({
               <p className="text-white/50 text-sm max-w-sm mb-8">Tu video fue generado y guardado correctamente.</p>
               <div className="space-y-3 w-full max-w-xs">
                 <button
-                  onClick={() => router.push(ofertaId ? `/dashboard?tab=ofertas&oferta_id=${ofertaId}` : '/dashboard')}
+                  onClick={() => router.push(ofertaId ? `/dashboard?tab=ofertas&oferta_id=${ofertaId}` : '/dashboard?tab=perfil')}
                   className="btn-primary w-full justify-center py-3.5 rounded-2xl"
                 >
-                  {ofertaId ? 'Volver y postularme' : 'Ver mi dashboard'}
+                  {ofertaId ? 'Volver y postularme' : 'Ir a mi perfil'}
                 </button>
                 <button onClick={restart} className="w-full text-white/50 hover:text-white text-sm py-2.5 transition-colors">
                   Volver a grabar

@@ -32,6 +32,8 @@ export default function CapacitacionPlayer({
   const playerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const maxProgressRef = useRef(0);
+  const prevTimeRef = useRef(0);
 
   const [progress, setProgress] = useState(0);
   const [quizUnlocked, setQuizUnlocked] = useState(false);
@@ -62,7 +64,15 @@ export default function CapacitacionPlayer({
                 if (dur > 0) {
                   const pct = Math.round((cur / dur) * 100);
                   setProgress(pct);
-                  if (pct >= 80) setQuizUnlocked(true);
+                  const delta = cur - prevTimeRef.current;
+                  // Only advance max progress during normal playback (delta ≤ 2s means no seeking)
+                  if (delta > 0 && delta <= 2) {
+                    if (pct > maxProgressRef.current) {
+                      maxProgressRef.current = pct;
+                    }
+                    if (maxProgressRef.current >= 80) setQuizUnlocked(true);
+                  }
+                  prevTimeRef.current = cur;
                 }
               }, 1000);
             } else {

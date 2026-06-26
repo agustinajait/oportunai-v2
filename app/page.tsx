@@ -3,14 +3,14 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import {
   Fuel, Headphones, UtensilsCrossed,
-  Video, Smartphone, PhoneCall,
-  CreditCard, Bot, LayoutGrid,
+  Video,
   GraduationCap, ClipboardList, RefreshCw,
   HardHat, Handshake, Building2, ChevronRight,
-  Target, Smile, Play, Send, CircleCheck,
+  Target, Smartphone, Smile, Play, Send, CircleCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import s from './landing.module.css';
+import AlfaExpandable from './AlfaExpandable';
 
 interface Sector {
   label: string;
@@ -298,26 +298,7 @@ export default async function LandingPage() {
             <h2 className={s.alfaStripH}>Test de Nativo Digital.<br/>Completalo y destacate.</h2>
             <p className={s.alfaStripP}>Respondés 4 preguntas rápidas y tu perfil suma un badge visible para las empresas. No te lleva más de 2 minutos.</p>
           </div>
-          <Link href="/register" className={s.alfaStripBtn}>Hacer el test →</Link>
-        </div>
-        <div className={s.alfaGrid}>
-          {[
-            { Icon: Smartphone,  t: 'Celular y conectividad', d: '¿Cómo usás el teléfono en tu vida diaria?',   badge: 'Suma a tu perfil' },
-            { Icon: CreditCard,  t: 'Pagos y finanzas',        d: '¿Manejás herramientas de pago digital?',       badge: 'Suma a tu perfil' },
-            { Icon: Bot,         t: 'Nuevas tecnologías',      d: '¿Conocés y usás las últimas herramientas?',    badge: 'Nativo digital' },
-            { Icon: LayoutGrid,  t: 'Apps cotidianas',         d: '¿Qué apps forman parte de tu rutina?',         badge: 'Suma a tu perfil' },
-          ].map(a => (
-            <div key={a.t} className={s.alfaCard}>
-              <div className={s.alfaIco}>
-                <a.Icon size={22} strokeWidth={1.75} />
-              </div>
-              <div>
-                <div className={s.alfaT}>{a.t}</div>
-                <div className={s.alfaD}>{a.d}</div>
-                <div className={s.alfaBadge}>{a.badge}</div>
-              </div>
-            </div>
-          ))}
+          <AlfaExpandable ctaHref="/register" />
         </div>
       </div>
 

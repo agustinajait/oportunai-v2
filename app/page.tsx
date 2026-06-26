@@ -291,15 +291,21 @@ export default async function LandingPage() {
       </section>
 
       {/* ── ALFA DIGITAL ── */}
-      <section className={`${s.sec} ${s.secAlt}`}>
-        <p className={s.eyebrow}>Para candidatos</p>
-        <h2 className={s.secH}>Test de Nativo Digital.<br/>Completalo y destacate.</h2>
+      <div className={s.alfaStrip}>
+        <div className={s.alfaStripHead}>
+          <div>
+            <p className={s.alfaStripTag}>Exclusivo Oportunai</p>
+            <h2 className={s.alfaStripH}>Test de Nativo Digital.<br/>Completalo y destacate.</h2>
+            <p className={s.alfaStripP}>Respondés 4 preguntas rápidas y tu perfil suma un badge visible para las empresas. No te lleva más de 2 minutos.</p>
+          </div>
+          <Link href="/register" className={s.alfaStripBtn}>Hacer el test →</Link>
+        </div>
         <div className={s.alfaGrid}>
           {[
-            { Icon: Smartphone,  t: 'Celular y conectividad', d: '¿Cómo usás el teléfono en tu vida diaria?',      badge: 'Suma a tu perfil' },
-            { Icon: CreditCard,  t: 'Pagos y finanzas',        d: '¿Manejás herramientas de pago digital?',          badge: 'Suma a tu perfil' },
-            { Icon: Bot,         t: 'Nuevas tecnologías',      d: '¿Conocés y usás las últimas herramientas?',        badge: 'Nativo digital' },
-            { Icon: LayoutGrid,  t: 'Apps cotidianas',         d: '¿Qué apps forman parte de tu rutina?',             badge: 'Suma a tu perfil' },
+            { Icon: Smartphone,  t: 'Celular y conectividad', d: '¿Cómo usás el teléfono en tu vida diaria?',   badge: 'Suma a tu perfil' },
+            { Icon: CreditCard,  t: 'Pagos y finanzas',        d: '¿Manejás herramientas de pago digital?',       badge: 'Suma a tu perfil' },
+            { Icon: Bot,         t: 'Nuevas tecnologías',      d: '¿Conocés y usás las últimas herramientas?',    badge: 'Nativo digital' },
+            { Icon: LayoutGrid,  t: 'Apps cotidianas',         d: '¿Qué apps forman parte de tu rutina?',         badge: 'Suma a tu perfil' },
           ].map(a => (
             <div key={a.t} className={s.alfaCard}>
               <div className={s.alfaIco}>
@@ -313,10 +319,7 @@ export default async function LandingPage() {
             </div>
           ))}
         </div>
-        <div className={s.alfaNote}>
-          <strong>¿Cómo funciona?</strong> Respondés 4 preguntas rápidas y tu perfil suma un badge visible para las empresas. Más de dos minutos no te lleva.
-        </div>
-      </section>
+      </div>
 
       {/* ── EMPRESA SPLIT ── */}
       <section className={s.empSplit}>

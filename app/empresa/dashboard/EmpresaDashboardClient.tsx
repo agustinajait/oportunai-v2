@@ -79,6 +79,16 @@ type CvDatos = {
   idiomas?: string[];
 };
 
+type Referencia = {
+  id: string; empresa_nombre: string; referidor_nombre: string;
+  referidor_cargo: string | null; mensaje: string | null;
+};
+
+type CapacitacionOk = {
+  completada_en: string;
+  capacitacion: { id: string; titulo: string; empresa: { nombre: string } };
+};
+
 type Postulante = {
   id: string; estado: string; nota: string | null; created_at: string;
   usuario: {
@@ -87,6 +97,8 @@ type Postulante = {
     cv_datos: CvDatos | null;
     alfa_digital: string | null; alfa_score: number | null;
     videos: { id: string; video_url: string; tipo: string; created_at: string }[];
+    referencias?: Referencia[];
+    capacitaciones_ok?: CapacitacionOk[];
   };
   video: { id: string; video_url: string; tipo: string; section_attempts?: { nombre: string; intentos: number }[] | null };
   documentos?: { tipo: string; file_url: string }[];
@@ -542,7 +554,7 @@ export default function EmpresaDashboard() {
 
   const tabs = [
     { key: 'ofertas', label: 'Mis ofertas' },
-    { key: 'postulantes', label: ofertaSeleccionada ? `Pipeline — ${ofertaSeleccionada.titulo}` : 'Pipeline' },
+    { key: 'postulantes', label: ofertaSeleccionada ? `Candidatos — ${ofertaSeleccionada.titulo}` : 'Candidatos' },
     { key: 'citas', label: `Citas${citas.length > 0 ? ` (${citas.length})` : ''}` },
     { key: 'capacitaciones', label: `Capacitaciones${capacitaciones.length > 0 ? ` (${capacitaciones.length})` : ''}` },
     { key: 'perfil', label: 'Perfil empresa' },
@@ -665,7 +677,7 @@ export default function EmpresaDashboard() {
                       className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors" title="Editar oferta">
                       <Pencil size={16} />
                     </button>
-                    <button onClick={() => verPostulantes(oferta)} className="border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">Ver pipeline →</button>
+                    <button onClick={() => verPostulantes(oferta)} className="border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">Ver candidatos →</button>
                   </div>
                 </div>
               ))
@@ -986,9 +998,19 @@ export default function EmpresaDashboard() {
           </div>
         )}
 
-        {/* Tab: Pipeline */}
+        {/* Tab: Candidatos */}
         {tab === 'postulantes' && (
           <div>
+            {/* Breadcrumb */}
+            {ofertaSeleccionada && (
+              <div className="flex items-center gap-2 mb-4 text-sm">
+                <button onClick={() => setTab('ofertas')} className="text-blue-600 hover:underline flex items-center gap-1">
+                  ← Mis ofertas
+                </button>
+                <span className="text-gray-400">/</span>
+                <span className="text-gray-700 font-medium truncate">{ofertaSeleccionada.titulo}</span>
+              </div>
+            )}
             {/* Panel de filtros avanzados */}
             <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4">
               <div className="flex items-center gap-2 mb-3">
@@ -1672,7 +1694,7 @@ export default function EmpresaDashboard() {
 
             {/* Video CV genérico */}
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1">Video CV</p>
-            <video src={videoModal.video.video_url} controls autoPlay className="w-full rounded-xl mb-3" />
+            <video src={videoModal.video.video_url} controls className="w-full rounded-xl mb-3" />
 
             {/* Intentos por sección */}
             {videoModal.video.section_attempts && videoModal.video.section_attempts.length > 0 && (
@@ -1758,6 +1780,58 @@ export default function EmpresaDashboard() {
               )}
             </div>
 
+            {/* Bio */}
+            {videoModal.usuario.bio && (
+              <div className="bg-gray-50 rounded-xl px-4 py-3 mb-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1">Bio</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{videoModal.usuario.bio}</p>
+              </div>
+            )}
+
+            {/* Capacitaciones completadas */}
+            {(videoModal.usuario.capacitaciones_ok?.length ?? 0) > 0 && (
+              <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-4">
+                <p className="text-xs font-semibold text-amber-700 uppercase tracking-widest mb-2 flex items-center gap-1">
+                  <GraduationCap size={12} /> Capacitaciones completadas ({videoModal.usuario.capacitaciones_ok!.length})
+                </p>
+                <div className="space-y-1.5">
+                  {videoModal.usuario.capacitaciones_ok!.map((c, i) => (
+                    <div key={i} className="flex items-center gap-2 bg-white rounded-lg px-3 py-2">
+                      <Star size={11} className="text-amber-500 flex-shrink-0" fill="currentColor" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-800 truncate">{c.capacitacion.titulo}</p>
+                        <p className="text-xs text-gray-400">{c.capacitacion.empresa.nombre}</p>
+                      </div>
+                      <span className="text-xs text-amber-600 flex-shrink-0">
+                        {new Date(c.completada_en).toLocaleDateString('es-AR')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Referencias laborales verificadas */}
+            {(videoModal.usuario.referencias?.length ?? 0) > 0 && (
+              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <p className="text-xs font-semibold text-gray-700 uppercase tracking-widest mb-2 flex items-center gap-1">
+                  <Star size={12} className="text-amber-500" fill="currentColor" /> Referencias verificadas ({videoModal.usuario.referencias!.length})
+                </p>
+                <div className="space-y-2">
+                  {videoModal.usuario.referencias!.map((r, i) => (
+                    <div key={i} className="bg-white rounded-lg px-3 py-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-sm font-medium text-gray-800">{r.referidor_nombre}</span>
+                        {r.referidor_cargo && <span className="text-xs text-gray-400">· {r.referidor_cargo}</span>}
+                        <span className="text-xs text-gray-400">en {r.empresa_nombre}</span>
+                      </div>
+                      {r.mensaje && <p className="text-xs text-gray-600 mt-1 italic">"{r.mensaje}"</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Documentos */}
             {(videoModal.documentos?.length ?? 0) > 0 && (
               <div className="bg-gray-50 rounded-xl p-4 mb-4">
@@ -1765,7 +1839,6 @@ export default function EmpresaDashboard() {
                 <div className="flex flex-wrap gap-2">
                   {videoModal.documentos!.map(doc => {
                     const label = DOCS_CONFIG.find(c => c.tipo === doc.tipo)?.label || doc.tipo;
-                    // label uses the fixed DOCS_CONFIG since doc.tipo comes from the candidate's upload
                     return (
                       <a key={doc.tipo} href={doc.file_url} target="_blank"
                         className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full hover:bg-green-200 transition-colors">

@@ -1238,7 +1238,7 @@ export default function EmpresaDashboard() {
         {tab === 'citas' && (
           <div className="space-y-6 max-w-3xl">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-500">Entrá a una oferta y seleccioná candidatos en su Pipeline para agendarles una cita.</p>
+              <p className="text-sm text-gray-500">Entrá a una oferta y seleccioná candidatos para agendarles una cita.</p>
               <button onClick={() => setTab('ofertas')} className="flex items-center gap-1.5 bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors flex-shrink-0">
                 <CalendarPlus size={14} /> Nueva cita
               </button>
@@ -1721,6 +1721,49 @@ export default function EmpresaDashboard() {
               <div className="mb-4">
                 <p className="text-xs font-semibold text-purple-600 uppercase tracking-widest mb-1">Respuestas a tus preguntas</p>
                 <video src={videoModal.usuario.videos[0].video_url} controls className="w-full rounded-xl" />
+              </div>
+            )}
+
+            {/* Bio */}
+            {videoModal.usuario.bio && (
+              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5">Sobre el candidato</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{videoModal.usuario.bio}</p>
+              </div>
+            )}
+
+            {/* Capacitaciones completadas */}
+            {(videoModal.usuario.capacitaciones_ok?.length ?? 0) > 0 && (
+              <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-4">
+                <p className="text-xs font-semibold text-amber-700 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                  <GraduationCap size={13} /> Capacitaciones completadas
+                </p>
+                <div className="space-y-1.5">
+                  {videoModal.usuario.capacitaciones_ok!.map((c, i) => (
+                    <div key={i} className="flex items-start justify-between text-xs">
+                      <span className="text-amber-800 font-medium">{c.capacitacion.titulo}</span>
+                      <span className="text-amber-600 shrink-0 ml-2">{c.capacitacion.empresa.nombre}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Referencias verificadas */}
+            {(videoModal.usuario.referencias?.length ?? 0) > 0 && (
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4">
+                <p className="text-xs font-semibold text-blue-700 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                  <Star size={13} /> Referencias verificadas
+                </p>
+                <div className="space-y-3">
+                  {videoModal.usuario.referencias!.map((r) => (
+                    <div key={r.id} className="text-xs text-blue-800">
+                      <p className="font-semibold">{r.referidor_nombre}{r.referidor_cargo ? ` · ${r.referidor_cargo}` : ''}</p>
+                      <p className="text-blue-600">{r.empresa_nombre}</p>
+                      {r.mensaje && <p className="mt-0.5 text-blue-700 italic">"{r.mensaje}"</p>}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

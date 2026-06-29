@@ -65,11 +65,8 @@ export default function CapacitacionPlayer({
                   const pct = Math.round((cur / dur) * 100);
                   setProgress(pct);
                   const delta = cur - prevTimeRef.current;
-                  // Only advance max progress during normal playback (delta ≤ 2s means no seeking)
                   if (delta > 0 && delta <= 2) {
-                    if (pct > maxProgressRef.current) {
-                      maxProgressRef.current = pct;
-                    }
+                    if (pct > maxProgressRef.current) maxProgressRef.current = pct;
                     if (maxProgressRef.current >= 80) setQuizUnlocked(true);
                   }
                   prevTimeRef.current = cur;

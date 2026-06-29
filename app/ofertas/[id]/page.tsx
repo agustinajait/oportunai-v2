@@ -61,15 +61,15 @@ export default async function OfertaDetailPage({ params }: Props) {
 
   let tieneVideoCV = false;
   if (session) {
-    const video = await prisma.video.findFirst({
+    const videoCV = await prisma.video.findFirst({
       where: { user_id: session.userId, tipo: 'video_cv', oferta_id: null, es_fragmento: false },
       select: { id: true },
     });
-    tieneVideoCV = !!video;
+    tieneVideoCV = !!videoCV;
   }
 
   const postularHref = session
-    ? (tieneVideoCV ? `/dashboard?tab=ofertas` : `/dashboard/grabar-cv`)
+    ? (tieneVideoCV ? `/dashboard?tab=ofertas&oferta_id=${oferta.id}` : `/dashboard/grabar-cv?oferta_id=${oferta.id}`)
     : `/register?oferta_id=${oferta.id}`;
 
   return (
@@ -244,8 +244,13 @@ export default async function OfertaDetailPage({ params }: Props) {
               icon={<div style={{ width: 48, height: 48, borderRadius: 12, background: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><CheckCircle size={22} color="#fff" /></div>}
               title="TU VIDEO CV ESTÁ LISTO"
               titleColor="#059669"
+<<<<<<< HEAD
               body="Ya tenés tu Video CV grabado. Podés postularte directamente desde tu panel."
               cta="Ir a postularme →"
+=======
+              body="Ya tenés tu Video CV grabado. Podés postularte directamente."
+              cta="Postularme →"
+>>>>>>> 68fff47 (fix: resolve all pending postulante and empleador bugs)
               ctaHref={postularHref}
             />
           ) : (

@@ -90,10 +90,12 @@ async function combineRecordings(blobs: Blob[]): Promise<Blob> {
   for (const blob of blobs) {
     const videoEl = document.createElement('video');
     videoEl.src = URL.createObjectURL(blob);
-    videoEl.muted = true;
     videoEl.playsInline = true;
     await new Promise(res => { videoEl.onloadedmetadata = res; });
 
+    // createMediaElementSource reroutes audio to the AudioContext graph,
+    // away from speakers — do NOT set muted=true or the browser may skip
+    // decoding the audio track entirely, producing a silent output.
     const source = audioCtx.createMediaElementSource(videoEl);
     source.connect(dest);
 
@@ -632,7 +634,11 @@ export default function VideoRecorder({
               <p className="text-white/50 text-sm max-w-sm mb-8">Tu video fue generado y guardado correctamente.</p>
               <div className="space-y-3 w-full max-w-xs">
                 <button
-                  onClick={() => router.push(ofertaId ? `/dashboard?tab=ofertas&oferta_id=${ofertaId}` : '/dashboard?tab=perfil')}
+                  onClick={() => {
+                    const dest = ofertaId ? `/dashboard?tab=ofertas&oferta_id=${ofertaId}` : '/dashboard?tab=perfil';
+                    router.push(dest);
+                    router.refresh();
+                  }}
                   className="btn-primary w-full justify-center py-3.5 rounded-2xl"
                 >
                   {ofertaId ? 'Volver y postularme' : 'Ir a mi perfil'}

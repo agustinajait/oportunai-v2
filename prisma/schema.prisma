@@ -176,6 +176,7 @@ model Empresa {
   activa              Boolean  @default(true)
   imagenes            String[] @default([])
   color_primario      String?
+  fuente              String?
   mensaje_bienvenida  String?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt

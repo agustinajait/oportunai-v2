@@ -301,28 +301,6 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
         </div>
       </div>
 
-      {/* STATS BAR */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
-        <div style={{
-          display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 8,
-          background: '#fff', borderRadius: '0 0 16px 16px',
-          padding: '12px 32px',
-          borderTop: `3px solid ${color}`,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-        }}>
-          {[
-            { emoji: '⚡', text: 'Aplicá en 60 segundos' },
-            { emoji: '🎥', text: 'VideoCV gratis' },
-            { emoji: '🔒', text: 'Tus datos están protegidos' },
-            { emoji: '📲', text: 'Proceso 100% digital' },
-          ].map(({ emoji, text }) => (
-            <span key={text} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: '#64748b', padding: '4px 12px' }}>
-              <span>{emoji}</span> {text}
-            </span>
-          ))}
-        </div>
-      </div>
-
       {/* OFERTAS */}
       <div id="ofertas" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 40px' }}>
         <p style={{ fontWeight: 700, fontSize: 11, color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16, borderBottom: `2px solid ${color}`, paddingBottom: 8, display: 'inline-block' }}>
@@ -331,9 +309,13 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
 
         {totalOfertas === 0 ? (
           <div style={{ background: '#fff', borderRadius: 16, padding: '56px 24px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
-            <div style={{ width: 56, height: 56, borderRadius: '50%', background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
-              <Briefcase size={22} color={color} />
-            </div>
+            {empresa.logo_url ? (
+              <img src={empresa.logo_url} alt={empresa.nombre} style={{ width: 64, height: 64, borderRadius: 14, objectFit: 'cover', display: 'block', margin: '0 auto 16px', boxShadow: '0 4px 16px rgba(0,0,0,0.12)' }} />
+            ) : (
+              <div style={{ width: 64, height: 64, borderRadius: 14, background: pageBg, border: `2px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 26, fontWeight: 900, color }}>
+                {empresa.nombre[0]}
+              </div>
+            )}
             <p style={{ color: '#0f172a', fontWeight: 700, fontSize: 15, margin: '0 0 6px' }}>No hay ofertas activas por ahora.</p>
             <p style={{ color: '#94a3b8', fontSize: 13, margin: 0 }}>Volvé pronto para encontrar nuevas oportunidades.</p>
           </div>

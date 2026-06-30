@@ -45,10 +45,12 @@ function hslToHex(h: number, s: number, l: number): string {
 
 function derivePalette(primaryHex: string) {
   const [r, g, b] = hexToRgb(primaryHex);
-  const [h, s] = rgbToHsl(r, g, b);
+  const [h, s, l] = rgbToHsl(r, g, b);
   const heroBg = hslToHex(h, Math.max(Math.round(s * 0.75), 25), 12);
   const pageBg = hslToHex(h, Math.min(Math.round(s * 0.35), 25), 97);
-  return { heroBg, pageBg };
+  const colorLight = hslToHex(h, Math.min(s + 8, 100), Math.min(l + 18, 80));
+  const colorDark = hslToHex(h, Math.min(s + 5, 100), Math.max(l - 8, 22));
+  return { heroBg, pageBg, colorLight, colorDark };
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -92,10 +94,10 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
   const color = (empresa.color_primario as string | null) ?? '#16a34a';
   const bienvenida = (empresa.mensaje_bienvenida as string | null) || 'QUEREMOS CONOCERTE';
   const totalOfertas = (empresa as any).ofertas?.length ?? 0;
-  const { heroBg, pageBg } = derivePalette(color);
+  const { heroBg, pageBg, colorLight, colorDark } = derivePalette(color);
 
   return (
-    <div style={{ fontFamily: 'Inter, system-ui, sans-serif', background: pageBg, minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-plus-jakarta), system-ui, sans-serif', background: pageBg, minHeight: '100vh' }}>
     <style>{`
       .oferta-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
       .oferta-card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.12); }
@@ -175,7 +177,7 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
 
             {/* Nombre empresa */}
             <h1 style={{
-              color,
+              color: colorLight,
               fontWeight: 900,
               fontSize: 'clamp(26px, 3.5vw, 44px)',
               textTransform: 'uppercase',
@@ -187,9 +189,9 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
             </h1>
             {/* Decorative underline */}
             <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
-              <div style={{ width: 48, height: 3, background: color, borderRadius: 999 }} />
-              <div style={{ width: 12, height: 3, background: `${color}60`, borderRadius: 999 }} />
-              <div style={{ width: 6, height: 3, background: `${color}30`, borderRadius: 999 }} />
+              <div style={{ width: 48, height: 3, background: colorLight, borderRadius: 999 }} />
+              <div style={{ width: 12, height: 3, background: `${colorLight}70`, borderRadius: 999 }} />
+              <div style={{ width: 6, height: 3, background: `${colorLight}35`, borderRadius: 999 }} />
             </div>
 
             {empresa.descripcion && (
@@ -205,11 +207,11 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
               <a href="#ofertas" style={{
                 display: 'inline-flex', alignItems: 'center', gap: 10,
-                background: color, color: '#fff',
+                background: colorDark, color: '#fff',
                 padding: '13px 32px', borderRadius: 10,
                 fontSize: 15, fontWeight: 900, textDecoration: 'none',
                 textTransform: 'uppercase', letterSpacing: '0.07em',
-                boxShadow: `0 4px 20px ${color}80`,
+                boxShadow: `0 4px 20px ${colorDark}80`,
               }}>
                 <Send size={16} /> VER OFERTAS ›
               </a>
@@ -301,28 +303,6 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
         </div>
       </div>
 
-      {/* STATS BAR */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
-        <div style={{
-          display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 8,
-          background: '#fff', borderRadius: '0 0 16px 16px',
-          padding: '12px 32px',
-          borderTop: `3px solid ${color}`,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-        }}>
-          {[
-            { emoji: '⚡', text: 'Aplicá en 60 segundos' },
-            { emoji: '🎥', text: 'VideoCV gratis' },
-            { emoji: '🔒', text: 'Tus datos están protegidos' },
-            { emoji: '📲', text: 'Proceso 100% digital' },
-          ].map(({ emoji, text }) => (
-            <span key={text} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: '#64748b', padding: '4px 12px' }}>
-              <span>{emoji}</span> {text}
-            </span>
-          ))}
-        </div>
-      </div>
-
       {/* OFERTAS */}
       <div id="ofertas" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 40px' }}>
         <p style={{ fontWeight: 700, fontSize: 11, color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16, borderBottom: `2px solid ${color}`, paddingBottom: 8, display: 'inline-block' }}>
@@ -331,9 +311,13 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
 
         {totalOfertas === 0 ? (
           <div style={{ background: '#fff', borderRadius: 16, padding: '56px 24px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
-            <div style={{ width: 56, height: 56, borderRadius: '50%', background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
-              <Briefcase size={22} color={color} />
-            </div>
+            {empresa.logo_url ? (
+              <img src={empresa.logo_url} alt={empresa.nombre} style={{ width: 64, height: 64, borderRadius: 14, objectFit: 'cover', display: 'block', margin: '0 auto 16px', boxShadow: '0 4px 16px rgba(0,0,0,0.12)' }} />
+            ) : (
+              <div style={{ width: 64, height: 64, borderRadius: 14, background: pageBg, border: `2px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 26, fontWeight: 900, color }}>
+                {empresa.nombre[0]}
+              </div>
+            )}
             <p style={{ color: '#0f172a', fontWeight: 700, fontSize: 15, margin: '0 0 6px' }}>No hay ofertas activas por ahora.</p>
             <p style={{ color: '#94a3b8', fontSize: 13, margin: 0 }}>Volvé pronto para encontrar nuevas oportunidades.</p>
           </div>
@@ -376,11 +360,11 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
                     </div>
                   </div>
                   <span style={{
-                    background: color, color: '#fff',
+                    background: colorDark, color: '#fff',
                     borderRadius: 10, fontSize: 13, fontWeight: 700,
                     padding: '10px 22px', flexShrink: 0,
                     display: 'inline-flex', alignItems: 'center', gap: 6,
-                    boxShadow: `0 4px 14px ${color}50`,
+                    boxShadow: `0 4px 14px ${colorDark}50`,
                   }}>
                     Ver oferta <ChevronRight size={14} />
                   </span>

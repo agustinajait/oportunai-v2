@@ -49,10 +49,12 @@ function hslToHex(h: number, s: number, l: number): string {
 
 function derivePalette(primaryHex: string) {
   const [r, g, b] = hexToRgb(primaryHex);
-  const [h, s] = rgbToHsl(r, g, b);
+  const [h, s, l] = rgbToHsl(r, g, b);
   const heroBg = hslToHex(h, Math.max(Math.round(s * 0.75), 25), 12);
   const pageBg = hslToHex(h, Math.min(Math.round(s * 0.35), 25), 97);
-  return { heroBg, pageBg };
+  const colorLight = hslToHex(h, Math.min(s + 8, 100), Math.min(l + 18, 80));
+  const colorDark = hslToHex(h, Math.min(s + 5, 100), Math.max(l - 8, 22));
+  return { heroBg, pageBg, colorLight, colorDark };
 }
 
 interface Props { params: { id: string } }
@@ -93,7 +95,7 @@ export default async function OfertaDetailPage({ params }: Props) {
   const heroImg = (empresa.imagenes as string[])?.[0] ?? null;
   const color = (empresa.color_primario as string | null) ?? '#16a34a';
   const heroTitle = (oferta as any).titulo_hero || oferta.titulo;
-  const { heroBg, pageBg } = derivePalette(color);
+  const { heroBg, pageBg, colorLight, colorDark } = derivePalette(color);
 
   const [tieneCapacitaciones, session] = await Promise.all([
     prisma.capacitacion.count({ where: { empresa_id: empresa.id, activa: true } }).then(n => n > 0),
@@ -114,7 +116,7 @@ export default async function OfertaDetailPage({ params }: Props) {
     : `/register?oferta_id=${oferta.id}`;
 
   return (
-    <div style={{ fontFamily: 'Inter, system-ui, sans-serif', background: pageBg, minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-plus-jakarta), system-ui, sans-serif', background: pageBg, minHeight: '100vh' }}>
 
       {/* ── NAV ── */}
       <nav style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 30 }}>
@@ -170,7 +172,7 @@ export default async function OfertaDetailPage({ params }: Props) {
 
             {/* Headline */}
             <h1 style={{
-              color: color, fontWeight: 900,
+              color: colorLight, fontWeight: 900,
               fontSize: 'clamp(26px, 3.5vw, 44px)',
               textTransform: 'uppercase', letterSpacing: '-0.01em',
               margin: '0 0 8px 0', lineHeight: 1.05,
@@ -179,9 +181,9 @@ export default async function OfertaDetailPage({ params }: Props) {
             </h1>
             {/* Decorative underline */}
             <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
-              <div style={{ width: 48, height: 3, background: color, borderRadius: 999 }} />
-              <div style={{ width: 12, height: 3, background: `${color}60`, borderRadius: 999 }} />
-              <div style={{ width: 6, height: 3, background: `${color}30`, borderRadius: 999 }} />
+              <div style={{ width: 48, height: 3, background: colorLight, borderRadius: 999 }} />
+              <div style={{ width: 12, height: 3, background: `${colorLight}70`, borderRadius: 999 }} />
+              <div style={{ width: 6, height: 3, background: `${colorLight}35`, borderRadius: 999 }} />
             </div>
             <p style={{
               color: 'rgba(226,232,240,0.75)', fontSize: 14, lineHeight: 1.6,
@@ -219,11 +221,11 @@ export default async function OfertaDetailPage({ params }: Props) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
               <Link href={postularHref} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 10,
-                background: color, color: '#fff',
+                background: colorDark, color: '#fff',
                 padding: '13px 32px', borderRadius: 10,
                 fontSize: 15, fontWeight: 900, textDecoration: 'none',
                 textTransform: 'uppercase', letterSpacing: '0.07em',
-                boxShadow: `0 4px 20px ${color}80`,
+                boxShadow: `0 4px 20px ${colorDark}80`,
               }}>
                 <Send size={16} /> POSTULARME ›
               </Link>
@@ -374,9 +376,9 @@ export default async function OfertaDetailPage({ params }: Props) {
         <div style={{ marginTop: 16 }}>
           <Link href={postularHref} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            background: color, color: '#fff', padding: '15px 32px', borderRadius: 12,
+            background: colorDark, color: '#fff', padding: '15px 32px', borderRadius: 12,
             fontSize: 15, fontWeight: 900, textDecoration: 'none', textTransform: 'uppercase',
-            letterSpacing: '0.07em', boxShadow: `0 4px 20px ${color}66`,
+            letterSpacing: '0.07em', boxShadow: `0 4px 20px ${colorDark}66`,
           }}>
             <Send size={18} /> POSTULARME ›
           </Link>

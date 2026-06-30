@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { MapPin, Briefcase, Globe, ChevronRight, Users, Send } from 'lucide-react';
 import type { Metadata } from 'next';
+import HeroGallery from '@/components/ui/HeroGallery';
 
 const MODALIDAD_LABEL: Record<string, string> = {
   presencial: 'Presencial',
@@ -90,7 +91,6 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
 
   const imagenes = (empresa.imagenes as string[]) ?? [];
   const heroImg = imagenes[0] ?? null;
-  const extraImgs = imagenes.slice(1);
   const color = (empresa.color_primario as string | null) ?? '#16a34a';
   const bienvenida = (empresa.mensaje_bienvenida as string | null) || 'QUEREMOS CONOCERTE';
   const totalOfertas = (empresa as any).ofertas?.length ?? 0;
@@ -157,7 +157,8 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
             <div style={{ marginBottom: 18 }}>
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
-                background: color, color: '#fff',
+                background: `${colorLight}22`, color: colorLight,
+                border: `1px solid ${colorLight}50`,
                 fontSize: 11, fontWeight: 800, letterSpacing: '0.08em',
                 padding: '5px 12px', borderRadius: 999,
                 textTransform: 'uppercase',
@@ -224,67 +225,20 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
             </div>
           </div>
 
-          {/* RIGHT: photo */}
-          {heroImg ? (
-            <div style={{ width: '42%', flexShrink: 0, position: 'relative' }}>
-              <img
-                src={heroImg}
-                alt={empresa.nombre}
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-              {/* Color tint filter */}
-              <div style={{
-                position: 'absolute', inset: 0,
-                background: color,
-                opacity: 0.22,
-                mixBlendMode: 'multiply',
-              }} />
-              {/* Gradient fade */}
-              <div style={{
-                position: 'absolute', inset: 0,
-                background: `linear-gradient(to right, ${heroBg} 0%, ${heroBg}4D 40%, transparent 70%)`,
-              }} />
-              {/* Info card */}
-              <div style={{
-                position: 'absolute', bottom: 24, right: 24,
-                background: 'rgba(255,255,255,0.92)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                borderRadius: 14, padding: '16px 18px',
-                border: '1px solid rgba(255,255,255,0.7)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.2)', minWidth: 190, zIndex: 10,
-              }}>
-                {empresa.ciudad && (
-                  <InfoRow icon={<MapPin size={14} />} label="UBICACIÓN" value={empresa.ciudad} />
-                )}
-                {empresa.rubro && (
-                  <InfoRow icon={<Briefcase size={14} />} label="RUBRO" value={empresa.rubro} />
-                )}
-                {empresa.sitio_web && (
-                  <InfoRow icon={<Globe size={14} />} label="WEB" value={empresa.sitio_web.replace(/https?:\/\/(www\.)?/, '')} />
-                )}
-              </div>
-              {/* Logo top-right */}
-              {empresa.logo_url && (
-                <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10 }}>
-                  <img
-                    src={empresa.logo_url}
-                    alt={empresa.nombre}
-                    style={{ width: 56, height: 56, borderRadius: 10, objectFit: 'cover', border: '2px solid rgba(255,255,255,0.3)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
-                  />
-                </div>
-              )}
-              {/* Extra thumbnails */}
-              {extraImgs.length > 0 && (
-                <div style={{ position: 'absolute', bottom: 24, left: 16, display: 'flex', gap: 6, zIndex: 10 }}>
-                  {extraImgs.slice(0, 3).map((url, i) => (
-                    <img key={i} src={url} alt="" style={{ width: 52, height: 52, borderRadius: 8, objectFit: 'cover', border: '2px solid rgba(255,255,255,0.25)' }} />
-                  ))}
-                </div>
-              )}
-            </div>
+          {/* RIGHT: photo gallery or dark info panel */}
+          {imagenes.length > 0 ? (
+            <HeroGallery
+              images={imagenes}
+              alt={empresa.nombre}
+              color={color}
+              colorLight={colorLight}
+              heroBg={heroBg}
+              ciudad={empresa.ciudad}
+              rubro={empresa.rubro}
+              sitioWeb={(empresa as any).sitio_web}
+              logoUrl={empresa.logo_url}
+            />
           ) : (
-            /* Sin foto: panel derecho oscuro con info */
             <div style={{ width: 240, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '24px 32px 24px 0' }}>
               <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 14, padding: '18px', width: '100%', border: '1px solid rgba(255,255,255,0.1)' }}>
                 {empresa.ciudad && (
@@ -293,8 +247,8 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
                 {empresa.rubro && (
                   <InfoRowDark icon={<Briefcase size={14} />} label="RUBRO" value={empresa.rubro} />
                 )}
-                {empresa.sitio_web && (
-                  <InfoRowDark icon={<Globe size={14} />} label="WEB" value={empresa.sitio_web.replace(/https?:\/\/(www\.)?/, '')} />
+                {(empresa as any).sitio_web && (
+                  <InfoRowDark icon={<Globe size={14} />} label="WEB" value={(empresa as any).sitio_web.replace(/https?:\/\/(www\.)?/, '')} />
                 )}
               </div>
             </div>

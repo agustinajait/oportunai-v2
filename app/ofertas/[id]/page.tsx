@@ -161,7 +161,8 @@ export default async function OfertaDetailPage({ params }: Props) {
             <div style={{ marginBottom: 18 }}>
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
-                background: color, color: '#fff',
+                background: `${colorLight}22`, color: colorLight,
+                border: `1px solid ${colorLight}50`,
                 fontSize: 11, fontWeight: 800, letterSpacing: '0.08em',
                 padding: '5px 12px', borderRadius: 999,
                 textTransform: 'uppercase',

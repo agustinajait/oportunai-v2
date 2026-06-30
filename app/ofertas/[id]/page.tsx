@@ -15,6 +15,46 @@ const MODALIDAD_LABEL: Record<string, string> = {
   hibrido: 'Híbrido',
 };
 
+function hexToRgb(hex: string): [number, number, number] {
+  const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return r ? [parseInt(r[1], 16), parseInt(r[2], 16), parseInt(r[3], 16)] : [22, 163, 74];
+}
+
+function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+}
+
+function hslToHex(h: number, s: number, l: number): string {
+  s /= 100; l /= 100;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    return Math.round(255 * (l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1))).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+function derivePalette(primaryHex: string) {
+  const [r, g, b] = hexToRgb(primaryHex);
+  const [h, s] = rgbToHsl(r, g, b);
+  const heroBg = hslToHex(h, Math.max(Math.round(s * 0.75), 25), 12);
+  const pageBg = hslToHex(h, Math.min(Math.round(s * 0.35), 25), 97);
+  return { heroBg, pageBg };
+}
+
 interface Props { params: { id: string } }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -53,6 +93,7 @@ export default async function OfertaDetailPage({ params }: Props) {
   const heroImg = (empresa.imagenes as string[])?.[0] ?? null;
   const color = (empresa.color_primario as string | null) ?? '#16a34a';
   const heroTitle = (oferta as any).titulo_hero || oferta.titulo;
+  const { heroBg, pageBg } = derivePalette(color);
 
   const [tieneCapacitaciones, session] = await Promise.all([
     prisma.capacitacion.count({ where: { empresa_id: empresa.id, activa: true } }).then(n => n > 0),
@@ -73,7 +114,7 @@ export default async function OfertaDetailPage({ params }: Props) {
     : `/register?oferta_id=${oferta.id}`;
 
   return (
-    <div style={{ fontFamily: 'Inter, system-ui, sans-serif', background: '#f1f5f9', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'Inter, system-ui, sans-serif', background: pageBg, minHeight: '100vh' }}>
 
       {/* ── NAV ── */}
       <nav style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 30 }}>
@@ -92,7 +133,7 @@ export default async function OfertaDetailPage({ params }: Props) {
       {/* ── HERO CARD ── */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 0' }}>
         <div style={{
-          background: '#111827',
+          background: heroBg,
           borderRadius: 20,
           overflow: 'hidden',
           display: 'flex',
@@ -186,7 +227,7 @@ export default async function OfertaDetailPage({ params }: Props) {
               {/* Left fade to blend with dark left panel */}
               <div style={{
                 position: 'absolute', inset: 0,
-                background: 'linear-gradient(to right, #111827 0%, rgba(17,24,39,0.3) 40%, transparent 70%)',
+                background: `linear-gradient(to right, ${heroBg} 0%, ${heroBg}4D 40%, transparent 70%)`,
               }} />
               {/* Info card over photo */}
               <div style={{

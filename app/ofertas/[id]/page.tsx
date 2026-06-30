@@ -8,6 +8,7 @@ import {
   Send, Building2, Shield, Users, CheckCircle,
 } from 'lucide-react';
 import type { Metadata } from 'next';
+import { resolveFont } from '@/lib/fonts';
 
 const MODALIDAD_LABEL: Record<string, string> = {
   presencial: 'Presencial',
@@ -131,6 +132,7 @@ export default async function OfertaDetailPage({ params }: Props) {
   const heroTitle = (oferta as any).titulo_hero || oferta.titulo;
   const { heroBg, pageBg, colorLight, colorDark } = derivePalette(color);
   const decoIcons = getDecoIcons(empresa.rubro);
+  const font = resolveFont((empresa as any).fuente);
 
   const [tieneCapacitaciones, session] = await Promise.all([
     prisma.capacitacion.count({ where: { empresa_id: empresa.id, activa: true } }).then(n => n > 0),
@@ -151,7 +153,11 @@ export default async function OfertaDetailPage({ params }: Props) {
     : `/register?oferta_id=${oferta.id}`;
 
   return (
-    <div style={{ fontFamily: 'var(--font-plus-jakarta), system-ui, sans-serif', background: pageBg, minHeight: '100vh' }}>
+    <>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+    <link href={font.url} rel="stylesheet" />
+    <div style={{ fontFamily: font.family, background: pageBg, minHeight: '100vh' }}>
 
       {/* ── NAV ── */}
       <nav style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 30 }}>
@@ -455,6 +461,7 @@ export default async function OfertaDetailPage({ params }: Props) {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

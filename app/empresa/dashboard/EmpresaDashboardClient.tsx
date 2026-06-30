@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { FONT_OPTIONS, type FontKey } from '@/lib/fonts';
 import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2, Pencil, ToggleLeft, ToggleRight, Globe, Copy, ExternalLink, LogOut, CalendarPlus, Loader2, GraduationCap, Star } from 'lucide-react';
 
 function getYouTubeId(url: string): string | null {
@@ -107,7 +108,7 @@ type Postulante = {
 type Empresa = {
   id: string; nombre: string; slug: string; logo_url: string | null;
   descripcion: string | null; rubro: string | null; ciudad: string | null; sitio_web: string | null;
-  imagenes: string[]; color_primario: string | null;
+  imagenes: string[]; color_primario: string | null; fuente: string | null;
 };
 
 type CitaEmpresa = {
@@ -312,7 +313,7 @@ export default function EmpresaDashboard() {
     const res = await fetch('/api/empresa/perfil');
     const data = await res.json();
     if (data.empresa) {
-      setEmpresa({ ...data.empresa, imagenes: data.empresa.imagenes ?? [], color_primario: data.empresa.color_primario ?? null });
+      setEmpresa({ ...data.empresa, imagenes: data.empresa.imagenes ?? [], color_primario: data.empresa.color_primario ?? null, fuente: data.empresa.fuente ?? null });
       setPerfilForm({ nombre: data.empresa.nombre || '', descripcion: data.empresa.descripcion || '', rubro: data.empresa.rubro || '', ciudad: data.empresa.ciudad || '', sitio_web: data.empresa.sitio_web || '', mensaje_bienvenida: data.empresa.mensaje_bienvenida || '' });
     }
   }
@@ -1549,6 +1550,33 @@ export default function EmpresaDashboard() {
                   </label>
                 </div>
                 <p className="text-xs text-gray-400 mt-1.5">Fotos reales del local, equipo o productos. La primera foto se muestra en las páginas de oferta.</p>
+              </div>
+
+              {/* Fuente */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-2">
+                  Tipografía
+                  <span className="text-xs text-gray-400 font-normal ml-1.5">(se aplica en tu landing y ofertas)</span>
+                </label>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {(Object.entries(FONT_OPTIONS) as [FontKey, typeof FONT_OPTIONS[FontKey]][]).map(([key, font]) => {
+                    const isActive = (empresa?.fuente ?? 'plus-jakarta') === key;
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={async () => {
+                          setEmpresa(prev => prev ? { ...prev, fuente: key } : prev);
+                          await fetch('/api/empresa/perfil', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fuente: key }) });
+                        }}
+                        className={`px-3 py-2.5 rounded-lg border-2 text-left transition-all ${isActive ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300 bg-white'}`}
+                      >
+                        <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-0.5">Aa</p>
+                        <p className="text-sm font-semibold text-gray-800 truncate" style={{ fontFamily: font.family }}>{font.name}</p>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Color de marca */}

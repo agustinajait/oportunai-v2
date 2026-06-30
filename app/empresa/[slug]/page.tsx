@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MapPin, Briefcase, Globe, ChevronRight, Users, Send } from 'lucide-react';
 import type { Metadata } from 'next';
 import HeroGallery from '@/components/ui/HeroGallery';
+import { resolveFont } from '@/lib/fonts';
 
 const MODALIDAD_LABEL: Record<string, string> = {
   presencial: 'Presencial',
@@ -131,9 +132,14 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
   const totalOfertas = (empresa as any).ofertas?.length ?? 0;
   const { heroBg, pageBg, colorLight, colorDark } = derivePalette(color);
   const decoIcons = getDecoIcons(empresa.rubro);
+  const font = resolveFont((empresa as any).fuente);
 
   return (
-    <div style={{ fontFamily: 'var(--font-plus-jakarta), system-ui, sans-serif', background: pageBg, minHeight: '100vh' }}>
+    <>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+    <link href={font.url} rel="stylesheet" />
+    <div style={{ fontFamily: font.family, background: pageBg, minHeight: '100vh' }}>
     <style>{`
       .oferta-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
       .oferta-card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.12); }
@@ -399,6 +405,7 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
         </div>
       </div>
     </div>
+    </>
   );
 }
 

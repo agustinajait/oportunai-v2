@@ -44,6 +44,41 @@ function hslToHex(h: number, s: number, l: number): string {
   return `#${f(0)}${f(8)}${f(4)}`;
 }
 
+const RUBRO_ICONS: Record<string, string[]> = {
+  gastronomia:   ['🍔', '🍕', '🥗', '🍟', '🧂', '🥤', '🍜'],
+  logistica:     ['📦', '🚛', '📋', '🏭', '⚙️', '🔩'],
+  tecnologia:    ['💻', '📱', '⚙️', '🖥️', '🔧', '🛜'],
+  retail:        ['🛍️', '👗', '🏪', '✨', '🧴', '👟'],
+  salud:         ['❤️', '🏥', '💊', '🩺', '🌿', '⚕️'],
+  educacion:     ['📚', '🎓', '✏️', '📐', '🏫', '🔬'],
+  construccion:  ['🏗️', '🔨', '⚙️', '🧱', '🪚', '📐'],
+  finanzas:      ['💰', '📈', '🏦', '💳', '📊'],
+  turismo:       ['✈️', '🏨', '🗺️', '🌍', '🏖️'],
+  automotriz:    ['🚗', '🔧', '⚙️', '🛠️', '🏎️'],
+  agro:          ['🌾', '🚜', '🌱', '🌽', '🐄'],
+  moda:          ['👗', '👠', '🧵', '✂️', '👒'],
+};
+
+const DECO_POSITIONS = [
+  { top: '6%',  left:  '1%',   size: 58, rot: -14 },
+  { top: '28%', left:  '2%',   size: 40, rot:  20 },
+  { top: '58%', left:  '0.8%', size: 50, rot:  -6 },
+  { top: '82%', left:  '3%',   size: 36, rot:  24 },
+  { top: '12%', right: '1%',   size: 46, rot:  16 },
+  { top: '42%', right: '0.8%', size: 54, rot: -20 },
+  { top: '72%', right: '2%',   size: 38, rot:   9 },
+];
+
+function getDecoIcons(rubro?: string | null): string[] {
+  if (!rubro) return [];
+  const normalized = rubro.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '');
+  for (const [key, icons] of Object.entries(RUBRO_ICONS)) {
+    if (normalized.includes(key) || key.includes(normalized.split(' ')[0])) return icons;
+  }
+  return [];
+}
+
 function derivePalette(primaryHex: string) {
   const [r, g, b] = hexToRgb(primaryHex);
   const [h, s, l] = rgbToHsl(r, g, b);
@@ -95,6 +130,7 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
   const bienvenida = (empresa.mensaje_bienvenida as string | null) || 'QUEREMOS CONOCERTE';
   const totalOfertas = (empresa as any).ofertas?.length ?? 0;
   const { heroBg, pageBg, colorLight, colorDark } = derivePalette(color);
+  const decoIcons = getDecoIcons(empresa.rubro);
 
   return (
     <div style={{ fontFamily: 'var(--font-plus-jakarta), system-ui, sans-serif', background: pageBg, minHeight: '100vh' }}>
@@ -257,8 +293,37 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
         </div>
       </div>
 
-      {/* OFERTAS */}
-      <div id="ofertas" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 40px' }}>
+      {/* OFERTAS — gradient background + industry decorations */}
+      <div style={{ position: 'relative', overflow: 'hidden' }}>
+
+        {/* Gradient blobs */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          background: `
+            radial-gradient(circle 500px at 8% 35%, ${color}10 0%, transparent 65%),
+            radial-gradient(circle 350px at 92% 65%, ${color}08 0%, transparent 55%),
+            radial-gradient(circle 250px at 50% 90%, ${color}06 0%, transparent 50%)
+          `,
+        }} />
+
+        {/* Industry deco icons */}
+        {decoIcons.length > 0 && DECO_POSITIONS.map((pos, i) => (
+          <div key={i} style={{
+            position: 'absolute',
+            top: (pos as any).top, left: (pos as any).left, right: (pos as any).right,
+            fontSize: pos.size,
+            transform: `rotate(${pos.rot}deg)`,
+            opacity: 0.07,
+            pointerEvents: 'none',
+            userSelect: 'none',
+            lineHeight: 1,
+            zIndex: 0,
+          }}>
+            {decoIcons[i % decoIcons.length]}
+          </div>
+        ))}
+
+        <div id="ofertas" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 40px', position: 'relative', zIndex: 1 }}>
         <p style={{ fontWeight: 700, fontSize: 11, color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16, borderBottom: `2px solid ${color}`, paddingBottom: 8, display: 'inline-block' }}>
           Posiciones abiertas
         </p>
@@ -331,6 +396,7 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
         <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: 12, marginTop: 32 }}>
           Powered by <Link href="/" style={{ color: '#3b82f6' }}>Oportunai</Link> — Selección con Video CV
         </p>
+        </div>
       </div>
     </div>
   );

@@ -244,13 +244,8 @@ export default async function OfertaDetailPage({ params }: Props) {
               icon={<div style={{ width: 48, height: 48, borderRadius: 12, background: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><CheckCircle size={22} color="#fff" /></div>}
               title="TU VIDEO CV ESTÁ LISTO"
               titleColor="#059669"
-<<<<<<< HEAD
-              body="Ya tenés tu Video CV grabado. Podés postularte directamente desde tu panel."
-              cta="Ir a postularme →"
-=======
               body="Ya tenés tu Video CV grabado. Podés postularte directamente."
               cta="Postularme →"
->>>>>>> 68fff47 (fix: resolve all pending postulante and empleador bugs)
               ctaHref={postularHref}
             />
           ) : (

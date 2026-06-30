@@ -45,10 +45,12 @@ function hslToHex(h: number, s: number, l: number): string {
 
 function derivePalette(primaryHex: string) {
   const [r, g, b] = hexToRgb(primaryHex);
-  const [h, s] = rgbToHsl(r, g, b);
+  const [h, s, l] = rgbToHsl(r, g, b);
   const heroBg = hslToHex(h, Math.max(Math.round(s * 0.75), 25), 12);
   const pageBg = hslToHex(h, Math.min(Math.round(s * 0.35), 25), 97);
-  return { heroBg, pageBg };
+  const colorLight = hslToHex(h, Math.min(s + 8, 100), Math.min(l + 18, 80));
+  const colorDark = hslToHex(h, Math.min(s + 5, 100), Math.max(l - 8, 22));
+  return { heroBg, pageBg, colorLight, colorDark };
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -92,10 +94,10 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
   const color = (empresa.color_primario as string | null) ?? '#16a34a';
   const bienvenida = (empresa.mensaje_bienvenida as string | null) || 'QUEREMOS CONOCERTE';
   const totalOfertas = (empresa as any).ofertas?.length ?? 0;
-  const { heroBg, pageBg } = derivePalette(color);
+  const { heroBg, pageBg, colorLight, colorDark } = derivePalette(color);
 
   return (
-    <div style={{ fontFamily: 'Inter, system-ui, sans-serif', background: pageBg, minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-plus-jakarta), system-ui, sans-serif', background: pageBg, minHeight: '100vh' }}>
     <style>{`
       .oferta-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
       .oferta-card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.12); }
@@ -175,7 +177,7 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
 
             {/* Nombre empresa */}
             <h1 style={{
-              color,
+              color: colorLight,
               fontWeight: 900,
               fontSize: 'clamp(26px, 3.5vw, 44px)',
               textTransform: 'uppercase',
@@ -187,9 +189,9 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
             </h1>
             {/* Decorative underline */}
             <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
-              <div style={{ width: 48, height: 3, background: color, borderRadius: 999 }} />
-              <div style={{ width: 12, height: 3, background: `${color}60`, borderRadius: 999 }} />
-              <div style={{ width: 6, height: 3, background: `${color}30`, borderRadius: 999 }} />
+              <div style={{ width: 48, height: 3, background: colorLight, borderRadius: 999 }} />
+              <div style={{ width: 12, height: 3, background: `${colorLight}70`, borderRadius: 999 }} />
+              <div style={{ width: 6, height: 3, background: `${colorLight}35`, borderRadius: 999 }} />
             </div>
 
             {empresa.descripcion && (
@@ -205,11 +207,11 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
               <a href="#ofertas" style={{
                 display: 'inline-flex', alignItems: 'center', gap: 10,
-                background: color, color: '#fff',
+                background: colorDark, color: '#fff',
                 padding: '13px 32px', borderRadius: 10,
                 fontSize: 15, fontWeight: 900, textDecoration: 'none',
                 textTransform: 'uppercase', letterSpacing: '0.07em',
-                boxShadow: `0 4px 20px ${color}80`,
+                boxShadow: `0 4px 20px ${colorDark}80`,
               }}>
                 <Send size={16} /> VER OFERTAS ›
               </a>
@@ -358,11 +360,11 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
                     </div>
                   </div>
                   <span style={{
-                    background: color, color: '#fff',
+                    background: colorDark, color: '#fff',
                     borderRadius: 10, fontSize: 13, fontWeight: 700,
                     padding: '10px 22px', flexShrink: 0,
                     display: 'inline-flex', alignItems: 'center', gap: 6,
-                    boxShadow: `0 4px 14px ${color}50`,
+                    boxShadow: `0 4px 14px ${colorDark}50`,
                   }}>
                     Ver oferta <ChevronRight size={14} />
                   </span>

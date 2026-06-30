@@ -15,6 +15,40 @@ const MODALIDAD_LABEL: Record<string, string> = {
   hibrido: 'Híbrido',
 };
 
+const RUBRO_ICONS: Record<string, string[]> = {
+  gastronomia:  ['🍔', '🍕', '🥗', '🍟', '🧂', '🥤', '🍜'],
+  logistica:    ['📦', '🚛', '📋', '🏭', '⚙️', '🔩'],
+  tecnologia:   ['💻', '📱', '⚙️', '🖥️', '🔧', '🛜'],
+  retail:       ['🛍️', '👗', '🏪', '✨', '🧴', '👟'],
+  salud:        ['❤️', '🏥', '💊', '🩺', '🌿', '⚕️'],
+  educacion:    ['📚', '🎓', '✏️', '📐', '🏫', '🔬'],
+  construccion: ['🏗️', '🔨', '⚙️', '🧱', '🪚', '📐'],
+  finanzas:     ['💰', '📈', '🏦', '💳', '📊'],
+  turismo:      ['✈️', '🏨', '🗺️', '🌍', '🏖️'],
+  automotriz:   ['🚗', '🔧', '⚙️', '🛠️', '🏎️'],
+  agro:         ['🌾', '🚜', '🌱', '🌽', '🐄'],
+  moda:         ['👗', '👠', '🧵', '✂️', '👒'],
+};
+
+const DECO_POSITIONS = [
+  { top: '6%',  left:  '1%',   size: 58, rot: -14 },
+  { top: '28%', left:  '2%',   size: 40, rot:  20 },
+  { top: '58%', left:  '0.8%', size: 50, rot:  -6 },
+  { top: '82%', left:  '3%',   size: 36, rot:  24 },
+  { top: '12%', right: '1%',   size: 46, rot:  16 },
+  { top: '42%', right: '0.8%', size: 54, rot: -20 },
+  { top: '72%', right: '2%',   size: 38, rot:   9 },
+];
+
+function getDecoIcons(rubro?: string | null): string[] {
+  if (!rubro) return [];
+  const normalized = rubro.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  for (const [key, icons] of Object.entries(RUBRO_ICONS)) {
+    if (normalized.includes(key) || key.includes(normalized.split(' ')[0])) return icons;
+  }
+  return [];
+}
+
 function hexToRgb(hex: string): [number, number, number] {
   const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return r ? [parseInt(r[1], 16), parseInt(r[2], 16), parseInt(r[3], 16)] : [22, 163, 74];
@@ -96,6 +130,7 @@ export default async function OfertaDetailPage({ params }: Props) {
   const color = (empresa.color_primario as string | null) ?? '#16a34a';
   const heroTitle = (oferta as any).titulo_hero || oferta.titulo;
   const { heroBg, pageBg, colorLight, colorDark } = derivePalette(color);
+  const decoIcons = getDecoIcons(empresa.rubro);
 
   const [tieneCapacitaciones, session] = await Promise.all([
     prisma.capacitacion.count({ where: { empresa_id: empresa.id, activa: true } }).then(n => n > 0),
@@ -307,8 +342,37 @@ export default async function OfertaDetailPage({ params }: Props) {
         </div>
       </div>
 
-      {/* ── CARDS BELOW ── */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 24px 40px' }}>
+      {/* ── CARDS BELOW — gradient + industry decorations ── */}
+      <div style={{ position: 'relative', overflow: 'hidden' }}>
+
+        {/* Gradient blobs */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          background: `
+            radial-gradient(circle 500px at 8% 35%, ${color}10 0%, transparent 65%),
+            radial-gradient(circle 350px at 92% 65%, ${color}08 0%, transparent 55%),
+            radial-gradient(circle 250px at 50% 90%, ${color}06 0%, transparent 50%)
+          `,
+        }} />
+
+        {/* Industry deco icons */}
+        {decoIcons.length > 0 && DECO_POSITIONS.map((pos, i) => (
+          <div key={i} style={{
+            position: 'absolute',
+            top: (pos as any).top, left: (pos as any).left, right: (pos as any).right,
+            fontSize: pos.size,
+            transform: `rotate(${pos.rot}deg)`,
+            opacity: 0.07,
+            pointerEvents: 'none',
+            userSelect: 'none',
+            lineHeight: 1,
+            zIndex: 0,
+          }}>
+            {decoIcons[i % decoIcons.length]}
+          </div>
+        ))}
+
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 24px 40px', position: 'relative', zIndex: 1 }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>
 
           {tieneVideoCV ? (
@@ -388,6 +452,7 @@ export default async function OfertaDetailPage({ params }: Props) {
         <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: 12, marginTop: 24 }}>
           Powered by <Link href="/" style={{ color: '#3b82f6' }}>Oportunai</Link> — Selección con Video CV
         </p>
+        </div>
       </div>
     </div>
   );

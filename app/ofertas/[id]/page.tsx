@@ -140,9 +140,20 @@ export default async function OfertaDetailPage({ params }: Props) {
           minHeight: 320,
           position: 'relative',
         }}>
+          {/* Grain texture overlay */}
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
+            backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E\")",
+            opacity: 0.04,
+          }} />
 
           {/* LEFT: text */}
-          <div style={{ flex: 1, padding: '36px 40px', position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{
+            flex: 1, padding: '36px 40px', position: 'relative', zIndex: 10,
+            display: 'flex', flexDirection: 'column', justifyContent: 'center',
+            backgroundImage: `radial-gradient(circle, ${color}22 1px, transparent 1px)`,
+            backgroundSize: '22px 22px',
+          }}>
 
             {/* Badge */}
             <div style={{ marginBottom: 18 }}>
@@ -245,8 +256,12 @@ export default async function OfertaDetailPage({ params }: Props) {
               {/* Info card over photo */}
               <div style={{
                 position: 'absolute', bottom: 24, right: 24,
-                background: '#fff', borderRadius: 14, padding: '16px 18px',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.25)', minWidth: 190, zIndex: 10,
+                background: 'rgba(255,255,255,0.92)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                borderRadius: 14, padding: '16px 18px',
+                border: '1px solid rgba(255,255,255,0.7)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.2)', minWidth: 190, zIndex: 10,
               }}>
                 {oferta.ciudad && (
                   <InfoRow icon={<MapPin size={14} />} label="UBICACIÓN" value={oferta.ciudad} />

@@ -44,6 +44,24 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
               select: { id: true, video_url: true, tipo: true, created_at: true },
               take: 1,
             },
+            referencias: {
+              where: { estado: 'validada' },
+              select: {
+                id: true, empresa_nombre: true, referidor_nombre: true,
+                referidor_cargo: true, mensaje: true,
+              },
+            },
+            capacitaciones_ok: {
+              select: {
+                completada_en: true,
+                capacitacion: {
+                  select: {
+                    id: true, titulo: true,
+                    empresa: { select: { nombre: true } },
+                  },
+                },
+              },
+            },
           },
         },
         video: { select: { id: true, video_url: true, tipo: true, created_at: true, section_attempts: true } },

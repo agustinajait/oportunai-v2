@@ -79,6 +79,16 @@ type CvDatos = {
   idiomas?: string[];
 };
 
+type Referencia = {
+  id: string; empresa_nombre: string; referidor_nombre: string;
+  referidor_cargo: string | null; mensaje: string | null;
+};
+
+type CapacitacionOk = {
+  completada_en: string;
+  capacitacion: { id: string; titulo: string; empresa: { nombre: string } };
+};
+
 type Postulante = {
   id: string; estado: string; nota: string | null; created_at: string;
   usuario: {
@@ -87,6 +97,8 @@ type Postulante = {
     cv_datos: CvDatos | null;
     alfa_digital: string | null; alfa_score: number | null;
     videos: { id: string; video_url: string; tipo: string; created_at: string }[];
+    referencias?: Referencia[];
+    capacitaciones_ok?: CapacitacionOk[];
   };
   video: { id: string; video_url: string; tipo: string; section_attempts?: { nombre: string; intentos: number }[] | null };
   documentos?: { tipo: string; file_url: string }[];
@@ -126,6 +138,7 @@ export default function EmpresaDashboard() {
   const [loading, setLoading] = useState(false);
   const [perfilGuardado, setPerfilGuardado] = useState(false);
   const [linkCopiado, setLinkCopiado] = useState(false);
+  const [ofertaLinkCopiada, setOfertaLinkCopiada] = useState<string | null>(null);
   const [videoModal, setVideoModal] = useState<Postulante | null>(null);
   const [filtroEstado, setFiltroEstado] = useState<string>('todos');
   const [filtroEdadMin, setFiltroEdadMin] = useState<string>('');
@@ -398,12 +411,25 @@ export default function EmpresaDashboard() {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? (typeof window !== 'undefined' ? window.location.origin : '');
 
+  function shareText(nombre: string, url: string) {
+    return `En ${nombre} queremos conocerte. Mostranos quién sos con un VideoCV. ${url}`;
+  }
+
   function copiarLink() {
     if (!empresa?.slug) return;
     const url = `${appUrl}/empresa/${empresa.slug}`;
-    navigator.clipboard.writeText(url).then(() => {
+    navigator.clipboard.writeText(shareText(empresa.nombre, url)).then(() => {
       setLinkCopiado(true);
       setTimeout(() => setLinkCopiado(false), 2000);
+    });
+  }
+
+  function copiarLinkOferta(oferta: Oferta) {
+    const url = `${appUrl}/ofertas/${oferta.id}`;
+    const nombre = oferta.nombre_marca || empresa?.nombre || '';
+    navigator.clipboard.writeText(shareText(nombre, url)).then(() => {
+      setOfertaLinkCopiada(oferta.id);
+      setTimeout(() => setOfertaLinkCopiada(null), 2000);
     });
   }
 
@@ -542,7 +568,7 @@ export default function EmpresaDashboard() {
 
   const tabs = [
     { key: 'ofertas', label: 'Mis ofertas' },
-    { key: 'postulantes', label: ofertaSeleccionada ? `Pipeline — ${ofertaSeleccionada.titulo}` : 'Pipeline' },
+    { key: 'postulantes', label: ofertaSeleccionada ? `Candidatos — ${ofertaSeleccionada.titulo}` : 'Candidatos' },
     { key: 'citas', label: `Citas${citas.length > 0 ? ` (${citas.length})` : ''}` },
     { key: 'capacitaciones', label: `Capacitaciones${capacitaciones.length > 0 ? ` (${capacitaciones.length})` : ''}` },
     { key: 'perfil', label: 'Perfil empresa' },
@@ -606,7 +632,7 @@ export default function EmpresaDashboard() {
                 {linkCopiado ? '¡Copiado!' : 'Copiar link'}
               </button>
               <a
-                href={`https://wa.me/?text=${encodeURIComponent(`Mirá nuestras ofertas de trabajo en ${empresa.nombre}: ${appUrl}/empresa/${empresa.slug}`)}`}
+                href={`https://wa.me/?text=${encodeURIComponent(shareText(empresa.nombre, `${appUrl}/empresa/${empresa.slug}`))}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 text-sm bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 transition-colors"
@@ -665,7 +691,25 @@ export default function EmpresaDashboard() {
                       className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors" title="Editar oferta">
                       <Pencil size={16} />
                     </button>
-                    <button onClick={() => verPostulantes(oferta)} className="border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">Ver pipeline →</button>
+                    <button
+                      onClick={() => copiarLinkOferta(oferta)}
+                      title="Copiar enlace de la oferta"
+                      className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors text-xs"
+                    >
+                      {ofertaLinkCopiada === oferta.id ? <Check size={15} className="text-green-600" /> : <Copy size={15} />}
+                    </button>
+                    <a
+                      href={`https://wa.me/?text=${encodeURIComponent(shareText(oferta.nombre_marca || empresa?.nombre || '', `${appUrl}/ofertas/${oferta.id}`))}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Compartir por WhatsApp"
+                      className="p-2 rounded-lg border border-green-200 text-green-600 hover:bg-green-50 transition-colors"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                      </svg>
+                    </a>
+                    <button onClick={() => verPostulantes(oferta)} className="border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">Ver candidatos →</button>
                   </div>
                 </div>
               ))
@@ -986,9 +1030,19 @@ export default function EmpresaDashboard() {
           </div>
         )}
 
-        {/* Tab: Pipeline */}
+        {/* Tab: Candidatos */}
         {tab === 'postulantes' && (
           <div>
+            {/* Breadcrumb */}
+            {ofertaSeleccionada && (
+              <div className="flex items-center gap-2 mb-4 text-sm">
+                <button onClick={() => setTab('ofertas')} className="text-blue-600 hover:underline flex items-center gap-1">
+                  ← Mis ofertas
+                </button>
+                <span className="text-gray-400">/</span>
+                <span className="text-gray-700 font-medium truncate">{ofertaSeleccionada.titulo}</span>
+              </div>
+            )}
             {/* Panel de filtros avanzados */}
             <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4">
               <div className="flex items-center gap-2 mb-3">
@@ -1216,7 +1270,7 @@ export default function EmpresaDashboard() {
         {tab === 'citas' && (
           <div className="space-y-6 max-w-3xl">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-500">Entrá a una oferta y seleccioná candidatos en su Pipeline para agendarles una cita.</p>
+              <p className="text-sm text-gray-500">Entrá a una oferta y seleccioná candidatos para agendarles una cita.</p>
               <button onClick={() => setTab('ofertas')} className="flex items-center gap-1.5 bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors flex-shrink-0">
                 <CalendarPlus size={14} /> Nueva cita
               </button>
@@ -1444,7 +1498,7 @@ export default function EmpresaDashboard() {
                     <Copy size={12} /> {linkCopiado ? '¡Copiado!' : 'Copiar link'}
                   </button>
                   <a
-                    href={`https://wa.me/?text=${encodeURIComponent(`Mirá nuestras ofertas de trabajo: ${appUrl}/empresa/${empresa.slug}`)}`}
+                    href={`https://wa.me/?text=${encodeURIComponent(shareText(empresa.nombre, `${appUrl}/empresa/${empresa.slug}`))}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 text-xs bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition-colors"
@@ -1672,7 +1726,7 @@ export default function EmpresaDashboard() {
 
             {/* Video CV genérico */}
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1">Video CV</p>
-            <video src={videoModal.video.video_url} controls autoPlay className="w-full rounded-xl mb-3" />
+            <video src={videoModal.video.video_url} controls className="w-full rounded-xl mb-3" />
 
             {/* Intentos por sección */}
             {videoModal.video.section_attempts && videoModal.video.section_attempts.length > 0 && (
@@ -1699,6 +1753,49 @@ export default function EmpresaDashboard() {
               <div className="mb-4">
                 <p className="text-xs font-semibold text-purple-600 uppercase tracking-widest mb-1">Respuestas a tus preguntas</p>
                 <video src={videoModal.usuario.videos[0].video_url} controls className="w-full rounded-xl" />
+              </div>
+            )}
+
+            {/* Bio */}
+            {videoModal.usuario.bio && (
+              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5">Sobre el candidato</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{videoModal.usuario.bio}</p>
+              </div>
+            )}
+
+            {/* Capacitaciones completadas */}
+            {(videoModal.usuario.capacitaciones_ok?.length ?? 0) > 0 && (
+              <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-4">
+                <p className="text-xs font-semibold text-amber-700 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                  <GraduationCap size={13} /> Capacitaciones completadas
+                </p>
+                <div className="space-y-1.5">
+                  {videoModal.usuario.capacitaciones_ok!.map((c, i) => (
+                    <div key={i} className="flex items-start justify-between text-xs">
+                      <span className="text-amber-800 font-medium">{c.capacitacion.titulo}</span>
+                      <span className="text-amber-600 shrink-0 ml-2">{c.capacitacion.empresa.nombre}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Referencias verificadas */}
+            {(videoModal.usuario.referencias?.length ?? 0) > 0 && (
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4">
+                <p className="text-xs font-semibold text-blue-700 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                  <Star size={13} /> Referencias verificadas
+                </p>
+                <div className="space-y-3">
+                  {videoModal.usuario.referencias!.map((r) => (
+                    <div key={r.id} className="text-xs text-blue-800">
+                      <p className="font-semibold">{r.referidor_nombre}{r.referidor_cargo ? ` · ${r.referidor_cargo}` : ''}</p>
+                      <p className="text-blue-600">{r.empresa_nombre}</p>
+                      {r.mensaje && <p className="mt-0.5 text-blue-700 italic">"{r.mensaje}"</p>}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -1758,6 +1855,58 @@ export default function EmpresaDashboard() {
               )}
             </div>
 
+            {/* Bio */}
+            {videoModal.usuario.bio && (
+              <div className="bg-gray-50 rounded-xl px-4 py-3 mb-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1">Bio</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{videoModal.usuario.bio}</p>
+              </div>
+            )}
+
+            {/* Capacitaciones completadas */}
+            {(videoModal.usuario.capacitaciones_ok?.length ?? 0) > 0 && (
+              <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-4">
+                <p className="text-xs font-semibold text-amber-700 uppercase tracking-widest mb-2 flex items-center gap-1">
+                  <GraduationCap size={12} /> Capacitaciones completadas ({videoModal.usuario.capacitaciones_ok!.length})
+                </p>
+                <div className="space-y-1.5">
+                  {videoModal.usuario.capacitaciones_ok!.map((c, i) => (
+                    <div key={i} className="flex items-center gap-2 bg-white rounded-lg px-3 py-2">
+                      <Star size={11} className="text-amber-500 flex-shrink-0" fill="currentColor" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-800 truncate">{c.capacitacion.titulo}</p>
+                        <p className="text-xs text-gray-400">{c.capacitacion.empresa.nombre}</p>
+                      </div>
+                      <span className="text-xs text-amber-600 flex-shrink-0">
+                        {new Date(c.completada_en).toLocaleDateString('es-AR')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Referencias laborales verificadas */}
+            {(videoModal.usuario.referencias?.length ?? 0) > 0 && (
+              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <p className="text-xs font-semibold text-gray-700 uppercase tracking-widest mb-2 flex items-center gap-1">
+                  <Star size={12} className="text-amber-500" fill="currentColor" /> Referencias verificadas ({videoModal.usuario.referencias!.length})
+                </p>
+                <div className="space-y-2">
+                  {videoModal.usuario.referencias!.map((r, i) => (
+                    <div key={i} className="bg-white rounded-lg px-3 py-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-sm font-medium text-gray-800">{r.referidor_nombre}</span>
+                        {r.referidor_cargo && <span className="text-xs text-gray-400">· {r.referidor_cargo}</span>}
+                        <span className="text-xs text-gray-400">en {r.empresa_nombre}</span>
+                      </div>
+                      {r.mensaje && <p className="text-xs text-gray-600 mt-1 italic">"{r.mensaje}"</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Documentos */}
             {(videoModal.documentos?.length ?? 0) > 0 && (
               <div className="bg-gray-50 rounded-xl p-4 mb-4">
@@ -1765,7 +1914,6 @@ export default function EmpresaDashboard() {
                 <div className="flex flex-wrap gap-2">
                   {videoModal.documentos!.map(doc => {
                     const label = DOCS_CONFIG.find(c => c.tipo === doc.tipo)?.label || doc.tipo;
-                    // label uses the fixed DOCS_CONFIG since doc.tipo comes from the candidate's upload
                     return (
                       <a key={doc.tipo} href={doc.file_url} target="_blank"
                         className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full hover:bg-green-200 transition-colors">

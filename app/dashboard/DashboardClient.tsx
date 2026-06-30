@@ -109,9 +109,13 @@ export default function DashboardClient({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [tab, setTab] = useState<'perfil' | 'ofertas' | 'documentos' | 'citas'>(
-    searchParams.get('tab') === 'ofertas' ? 'ofertas' : 'perfil'
-  );
+  const [tab, setTab] = useState<'perfil' | 'ofertas' | 'documentos' | 'citas'>(() => {
+    const t = searchParams.get('tab');
+    if (t === 'ofertas') return 'ofertas';
+    if (t === 'documentos') return 'documentos';
+    if (t === 'citas') return 'citas';
+    return 'perfil';
+  });
   const [citasState, setCitasState] = useState<CitaInvitado[]>(citas);
   const [respondiendo, setRespondiendo] = useState<string | null>(null);
   const citasPendientes = citasState.filter(c => c.estado === 'pendiente').length;

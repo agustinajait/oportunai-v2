@@ -84,6 +84,17 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
           {/* LEFT: text */}
           <div style={{ flex: 1, padding: '36px 40px', position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
 
+            {/* Logo */}
+            {empresa.logo_url && (
+              <div style={{ marginBottom: 16 }}>
+                <img
+                  src={empresa.logo_url}
+                  alt={empresa.nombre}
+                  style={{ width: 56, height: 56, borderRadius: 12, objectFit: 'cover', border: '2px solid rgba(255,255,255,0.2)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
+                />
+              </div>
+            )}
+
             {/* Badge */}
             <div style={{ marginBottom: 18 }}>
               <span style={{

@@ -133,7 +133,6 @@ export default function OfertasTab({ videos, initialOfertaId }: { videos: Video[
       setMensaje({ texto: '¡Postulación enviada!', tipo: 'ok' });
       setOfertaDetalle(null);
       setNota('');
-      setVista('mis_postulaciones');
     } else {
       setMensaje({ texto: data.error || 'Error al postularse', tipo: 'error' });
     }
@@ -154,7 +153,6 @@ export default function OfertasTab({ videos, initialOfertaId }: { videos: Video[
     if (data.ok) {
       await cargarDatos();
       setMensaje({ texto: '¡Postulación enviada!', tipo: 'ok' });
-      setVista('mis_postulaciones');
     } else {
       abrirPostular(oferta);
       setMensaje({ texto: data.error || 'Error al postularse', tipo: 'error' });
@@ -291,6 +289,14 @@ export default function OfertasTab({ videos, initialOfertaId }: { videos: Video[
             </div>
           ) : (
             <div className="space-y-3">
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setVista('explorar')}
+                  className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-800 font-medium"
+                >
+                  <Briefcase size={14} /> Explorar más ofertas →
+                </button>
+              </div>
               {postulaciones.map(post => {
                 const estadoInfo = ESTADO_LABEL[post.estado] ?? ESTADO_LABEL.pendiente;
                 const Icon = estadoInfo.icon;

@@ -106,12 +106,12 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
   };
 
   const fallbackCopy = async () => {
+    const textToCopy = `${shareText} ${profileUrl}`;
     try {
-      await navigator.clipboard.writeText(profileUrl);
+      await navigator.clipboard.writeText(textToCopy);
     } catch {
-      // Last resort: select text from a temp input
       const input = document.createElement('input');
-      input.value = profileUrl;
+      input.value = textToCopy;
       document.body.appendChild(input);
       input.select();
       document.execCommand('copy');
@@ -160,8 +160,8 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
             </div>
             <span className="font-display text-lg font-semibold text-ink-800">Oportunai</span>
           </Link>
-          <Link href="/register" className="btn-primary text-sm py-2 px-4">
-            Crear mi perfil
+          <Link href="/login" className="btn-ghost text-sm py-2 px-4">
+            Iniciar sesión
           </Link>
         </div>
       </nav>

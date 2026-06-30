@@ -2,7 +2,21 @@ export const dynamic = 'force-dynamic';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
-import { MapPin, Briefcase, Globe, ChevronRight, Users, Send } from 'lucide-react';
+import {
+  MapPin, Briefcase, Globe, ChevronRight, Users, Send,
+  Utensils, Coffee, Wine,
+  Package, Truck, Boxes,
+  Laptop, Code, Cpu,
+  ShoppingBag, Tag, ShoppingCart,
+  Heart, Activity, Stethoscope,
+  BookOpen, GraduationCap, Pencil,
+  HardHat, Hammer, Wrench,
+  TrendingUp, DollarSign, BarChart2,
+  Plane, MapIcon, Compass,
+  Car, Gauge, Fuel,
+  Leaf, Sun, Flower2,
+  Scissors, Shirt, Sparkles,
+} from 'lucide-react';
 import type { Metadata } from 'next';
 import HeroGallery from '@/components/ui/HeroGallery';
 import { resolveFont } from '@/lib/fonts';
@@ -45,19 +59,19 @@ function hslToHex(h: number, s: number, l: number): string {
   return `#${f(0)}${f(8)}${f(4)}`;
 }
 
-const RUBRO_ICONS: Record<string, string[]> = {
-  gastronomia:   ['🍔', '🍕', '🥗', '🍟', '🧂', '🥤', '🍜'],
-  logistica:     ['📦', '🚛', '📋', '🏭', '⚙️', '🔩'],
-  tecnologia:    ['💻', '📱', '⚙️', '🖥️', '🔧', '🛜'],
-  retail:        ['🛍️', '👗', '🏪', '✨', '🧴', '👟'],
-  salud:         ['❤️', '🏥', '💊', '🩺', '🌿', '⚕️'],
-  educacion:     ['📚', '🎓', '✏️', '📐', '🏫', '🔬'],
-  construccion:  ['🏗️', '🔨', '⚙️', '🧱', '🪚', '📐'],
-  finanzas:      ['💰', '📈', '🏦', '💳', '📊'],
-  turismo:       ['✈️', '🏨', '🗺️', '🌍', '🏖️'],
-  automotriz:    ['🚗', '🔧', '⚙️', '🛠️', '🏎️'],
-  agro:          ['🌾', '🚜', '🌱', '🌽', '🐄'],
-  moda:          ['👗', '👠', '🧵', '✂️', '👒'],
+const RUBRO_ICONS: Record<string, any[]> = {
+  gastronomia:  [Utensils, Coffee, Wine],
+  logistica:    [Package, Truck, Boxes],
+  tecnologia:   [Laptop, Code, Cpu],
+  retail:       [ShoppingBag, Tag, ShoppingCart],
+  salud:        [Heart, Activity, Stethoscope],
+  educacion:    [BookOpen, GraduationCap, Pencil],
+  construccion: [HardHat, Hammer, Wrench],
+  finanzas:     [TrendingUp, DollarSign, BarChart2],
+  turismo:      [Plane, MapIcon, Compass],
+  automotriz:   [Car, Gauge, Fuel],
+  agro:         [Leaf, Sun, Flower2],
+  moda:         [Scissors, Shirt, Sparkles],
 };
 
 const DECO_POSITIONS = [
@@ -70,7 +84,7 @@ const DECO_POSITIONS = [
   { top: '72%', right: '2%',   size: 38, rot:   9 },
 ];
 
-function getDecoIcons(rubro?: string | null): string[] {
+function getDecoIcons(rubro?: string | null): any[] {
   if (!rubro) return [];
   const normalized = rubro.toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -313,21 +327,23 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
         }} />
 
         {/* Industry deco icons */}
-        {decoIcons.length > 0 && DECO_POSITIONS.map((pos, i) => (
-          <div key={i} style={{
-            position: 'absolute',
-            top: (pos as any).top, left: (pos as any).left, right: (pos as any).right,
-            fontSize: pos.size,
-            transform: `rotate(${pos.rot}deg)`,
-            opacity: 0.07,
-            pointerEvents: 'none',
-            userSelect: 'none',
-            lineHeight: 1,
-            zIndex: 0,
-          }}>
-            {decoIcons[i % decoIcons.length]}
-          </div>
-        ))}
+        {decoIcons.length > 0 && DECO_POSITIONS.map((pos, i) => {
+          const Icon = decoIcons[i % decoIcons.length];
+          return (
+            <div key={i} style={{
+              position: 'absolute',
+              top: (pos as any).top, left: (pos as any).left, right: (pos as any).right,
+              transform: `rotate(${pos.rot}deg)`,
+              opacity: 0.06,
+              pointerEvents: 'none',
+              userSelect: 'none',
+              color: colorLight,
+              zIndex: 0,
+            }}>
+              <Icon size={pos.size} strokeWidth={1} />
+            </div>
+          );
+        })}
 
         <div id="ofertas" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 40px', position: 'relative', zIndex: 1 }}>
         <p style={{ fontWeight: 700, fontSize: 11, color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16, borderBottom: `2px solid ${color}`, paddingBottom: 8, display: 'inline-block' }}>

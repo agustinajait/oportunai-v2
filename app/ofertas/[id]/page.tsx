@@ -6,6 +6,18 @@ import { getSession } from '@/lib/auth';
 import {
   Video, GraduationCap, Star, MapPin, Briefcase,
   Send, Building2, Shield, Users, CheckCircle,
+  Utensils, Coffee, Wine,
+  Package, Truck, Boxes,
+  Laptop, Code, Cpu,
+  ShoppingBag, Tag, ShoppingCart,
+  Heart, Activity, Stethoscope,
+  BookOpen, Pencil,
+  HardHat, Hammer, Wrench,
+  TrendingUp, DollarSign, BarChart2,
+  Plane, MapIcon, Compass,
+  Car, Gauge, Fuel,
+  Leaf, Sun, Flower2,
+  Scissors, Shirt, Sparkles,
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import { resolveFont } from '@/lib/fonts';
@@ -16,19 +28,19 @@ const MODALIDAD_LABEL: Record<string, string> = {
   hibrido: 'Híbrido',
 };
 
-const RUBRO_ICONS: Record<string, string[]> = {
-  gastronomia:  ['🍔', '🍕', '🥗', '🍟', '🧂', '🥤', '🍜'],
-  logistica:    ['📦', '🚛', '📋', '🏭', '⚙️', '🔩'],
-  tecnologia:   ['💻', '📱', '⚙️', '🖥️', '🔧', '🛜'],
-  retail:       ['🛍️', '👗', '🏪', '✨', '🧴', '👟'],
-  salud:        ['❤️', '🏥', '💊', '🩺', '🌿', '⚕️'],
-  educacion:    ['📚', '🎓', '✏️', '📐', '🏫', '🔬'],
-  construccion: ['🏗️', '🔨', '⚙️', '🧱', '🪚', '📐'],
-  finanzas:     ['💰', '📈', '🏦', '💳', '📊'],
-  turismo:      ['✈️', '🏨', '🗺️', '🌍', '🏖️'],
-  automotriz:   ['🚗', '🔧', '⚙️', '🛠️', '🏎️'],
-  agro:         ['🌾', '🚜', '🌱', '🌽', '🐄'],
-  moda:         ['👗', '👠', '🧵', '✂️', '👒'],
+const RUBRO_ICONS: Record<string, any[]> = {
+  gastronomia:  [Utensils, Coffee, Wine],
+  logistica:    [Package, Truck, Boxes],
+  tecnologia:   [Laptop, Code, Cpu],
+  retail:       [ShoppingBag, Tag, ShoppingCart],
+  salud:        [Heart, Activity, Stethoscope],
+  educacion:    [BookOpen, GraduationCap, Pencil],
+  construccion: [HardHat, Hammer, Wrench],
+  finanzas:     [TrendingUp, DollarSign, BarChart2],
+  turismo:      [Plane, MapIcon, Compass],
+  automotriz:   [Car, Gauge, Fuel],
+  agro:         [Leaf, Sun, Flower2],
+  moda:         [Scissors, Shirt, Sparkles],
 };
 
 const DECO_POSITIONS = [
@@ -41,7 +53,7 @@ const DECO_POSITIONS = [
   { top: '72%', right: '2%',   size: 38, rot:   9 },
 ];
 
-function getDecoIcons(rubro?: string | null): string[] {
+function getDecoIcons(rubro?: string | null): any[] {
   if (!rubro) return [];
   const normalized = rubro.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   for (const [key, icons] of Object.entries(RUBRO_ICONS)) {
@@ -362,21 +374,23 @@ export default async function OfertaDetailPage({ params }: Props) {
         }} />
 
         {/* Industry deco icons */}
-        {decoIcons.length > 0 && DECO_POSITIONS.map((pos, i) => (
-          <div key={i} style={{
-            position: 'absolute',
-            top: (pos as any).top, left: (pos as any).left, right: (pos as any).right,
-            fontSize: pos.size,
-            transform: `rotate(${pos.rot}deg)`,
-            opacity: 0.07,
-            pointerEvents: 'none',
-            userSelect: 'none',
-            lineHeight: 1,
-            zIndex: 0,
-          }}>
-            {decoIcons[i % decoIcons.length]}
-          </div>
-        ))}
+        {decoIcons.length > 0 && DECO_POSITIONS.map((pos, i) => {
+          const Icon = decoIcons[i % decoIcons.length];
+          return (
+            <div key={i} style={{
+              position: 'absolute',
+              top: (pos as any).top, left: (pos as any).left, right: (pos as any).right,
+              transform: `rotate(${pos.rot}deg)`,
+              opacity: 0.06,
+              pointerEvents: 'none',
+              userSelect: 'none',
+              color: colorLight,
+              zIndex: 0,
+            }}>
+              <Icon size={pos.size} strokeWidth={1} />
+            </div>
+          );
+        })}
 
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 24px 40px', position: 'relative', zIndex: 1 }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>

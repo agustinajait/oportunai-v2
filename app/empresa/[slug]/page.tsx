@@ -152,7 +152,7 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
     <>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-    <link href={font.url} rel="stylesheet" />
+    {font.url && <link href={font.url} rel="stylesheet" />}
     <div style={{ fontFamily: font.family, background: pageBg, minHeight: '100vh' }}>
     <style>{`
       .oferta-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }

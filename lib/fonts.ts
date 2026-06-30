@@ -29,6 +29,11 @@ export const FONT_OPTIONS = {
     url: 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap',
     family: "'Montserrat', system-ui, sans-serif",
   },
+  'impact': {
+    name: 'Impact',
+    url: '',
+    family: "Impact, 'Arial Narrow', Arial, sans-serif",
+  },
 } as const;
 
 export type FontKey = keyof typeof FONT_OPTIONS;

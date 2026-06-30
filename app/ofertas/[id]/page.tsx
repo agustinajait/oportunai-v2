@@ -168,7 +168,7 @@ export default async function OfertaDetailPage({ params }: Props) {
     <>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-    <link href={font.url} rel="stylesheet" />
+    {font.url && <link href={font.url} rel="stylesheet" />}
     <div style={{ fontFamily: font.family, background: pageBg, minHeight: '100vh' }}>
 
       {/* ── NAV ── */}

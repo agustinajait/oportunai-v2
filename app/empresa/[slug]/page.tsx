@@ -165,11 +165,17 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
               fontSize: 'clamp(26px, 3.5vw, 44px)',
               textTransform: 'uppercase',
               letterSpacing: '-0.01em',
-              margin: '0 0 14px 0',
+              margin: '0 0 8px 0',
               lineHeight: 1.05,
             }}>
               {empresa.nombre}
             </h1>
+            {/* Decorative underline */}
+            <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
+              <div style={{ width: 48, height: 3, background: color, borderRadius: 999 }} />
+              <div style={{ width: 12, height: 3, background: `${color}60`, borderRadius: 999 }} />
+              <div style={{ width: 6, height: 3, background: `${color}30`, borderRadius: 999 }} />
+            </div>
 
             {empresa.descripcion && (
               <p style={{
@@ -209,6 +215,13 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
                 alt={empresa.nombre}
                 style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
               />
+              {/* Color tint filter */}
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: color,
+                opacity: 0.22,
+                mixBlendMode: 'multiply',
+              }} />
               {/* Gradient fade */}
               <div style={{
                 position: 'absolute', inset: 0,

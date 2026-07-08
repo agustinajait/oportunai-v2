@@ -709,6 +709,203 @@
 .efeatT { font-size: 13px; font-weight: 600; margin-bottom: 3px; color: #111118; }
 .efeatD { font-size: 12px; color: #8080A0; line-height: 1.55; }
 
+/* ── POR QUÉ OPORTUNAI ── */
+.whySec {
+  margin: 40px 32px;
+  padding: 4rem 3rem;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.09);
+  border-radius: 22px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+}
+
+.whyHead {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.whySub {
+  font-size: 16px; color: #64748b;
+  line-height: 1.65; margin-top: 10px;
+}
+
+/* Two info blocks */
+.whyBlocks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 3rem;
+}
+
+.whyBlock {
+  padding: 2rem;
+  background: #F8F8FC;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 16px;
+}
+
+.whyBlockIco {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.whyBlockH {
+  font-family: 'Poppins', sans-serif;
+  font-size: 17px; font-weight: 700; color: #111118;
+  margin-bottom: 10px; line-height: 1.3;
+}
+
+.whyBlockP {
+  font-size: 13.5px; color: #64748b;
+  line-height: 1.65; margin-bottom: 8px;
+}
+.whyBlockP:last-child { margin-bottom: 0; }
+
+/* Gallery mosaic */
+.whyGallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 140px 140px;
+  gap: 10px;
+  margin-bottom: 3rem;
+}
+
+.whyGalleryItem {
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+}
+
+.whyGalleryBig {
+  grid-row: span 2;
+}
+
+.whyGalleryPh {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px;
+}
+
+/* Timeline */
+.whyTl {
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: #F8F8FC;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.whyTlEye {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: #9090A8; margin-bottom: 1.5rem;
+}
+
+.whyTlItems {
+  display: flex; flex-direction: column; gap: 0;
+}
+
+.whyTlRow {
+  display: grid;
+  grid-template-columns: 80px 24px 1fr;
+  align-items: flex-start;
+  gap: 0 12px;
+}
+
+.whyTlYearCol {
+  text-align: right;
+  padding-top: 2px;
+}
+
+.whyTlYear {
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px; font-weight: 700;
+  color: #5B3FE0;
+}
+
+.whyTlAxis {
+  display: flex; flex-direction: column; align-items: center;
+  padding-top: 5px;
+}
+
+.whyTlDot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #D0D0E0; flex-shrink: 0;
+}
+
+.whyTlDotBig {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: linear-gradient(135deg, #4B33CC, #7048F0);
+  box-shadow: 0 0 0 3px rgba(91,63,224,0.15);
+  flex-shrink: 0;
+}
+
+.whyTlLine {
+  width: 2px;
+  background: linear-gradient(to bottom, rgba(91,63,224,0.2), rgba(91,63,224,0.08));
+  flex: 1; min-height: 28px;
+}
+
+.whyTlText {
+  font-size: 13.5px; color: #374151; line-height: 1.5;
+  padding: 0 0 20px; padding-top: 1px;
+}
+
+/* Closing block */
+.whyClose {
+  text-align: center;
+  padding: 2.5rem;
+  background: linear-gradient(135deg, rgba(91,63,224,0.05), rgba(20,199,168,0.05));
+  border: 1px solid rgba(91,63,224,0.12);
+  border-radius: 16px;
+}
+
+.whyCloseQ {
+  font-family: 'Poppins', sans-serif;
+  font-size: 22px; font-weight: 700;
+  color: #111118; line-height: 1.45;
+  margin-bottom: 12px;
+}
+
+.whyCloseQAccent {
+  background: linear-gradient(135deg, #4B33CC, #14C7A8);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.whyCloseBody {
+  font-size: 14px; color: #64748b;
+  line-height: 1.65; max-width: 560px;
+  margin: 0 auto 20px;
+}
+
+.whyCloseBtn {
+  display: inline-block;
+  padding: 11px 26px; border-radius: 10px;
+  background: linear-gradient(135deg, #4B33CC, #6D5AE6);
+  color: #fff; font-size: 13.5px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; text-decoration: none;
+  box-shadow: 0 4px 16px rgba(91,63,224,0.3);
+  transition: all .2s ease;
+}
+.whyCloseBtn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(91,63,224,0.4); }
+
+/* Scroll reveal animation */
+@supports (animation-timeline: view()) {
+  .whyBlock, .whyGalleryItem, .whyTlRow, .whyClose {
+    animation: revealUp linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 30%;
+  }
+}
+
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ── CTA FINAL ── */
 .ctaFinal {
   margin: 40px 32px;
@@ -845,6 +1042,17 @@
   .ctaFinal { margin: 24px 16px; padding: 3.5rem 24px; border-radius: 18px; }
   .ctaH { font-size: 30px; }
   .ctaBtns { flex-direction: column; align-items: center; }
+
+  .whySec { margin: 24px 16px; padding: 2.5rem 1.25rem; }
+  .whyBlocks { grid-template-columns: 1fr; }
+  .whyBlock { padding: 1.5rem 1.25rem; }
+  .whyBlockH { font-size: 15px; }
+  .whyGallery { grid-template-columns: 1fr 1fr; grid-template-rows: 110px 110px 110px; }
+  .whyGalleryBig { grid-row: span 1; }
+  .whyTl { padding: 1.5rem 1.25rem; }
+  .whyTlRow { grid-template-columns: 60px 20px 1fr; }
+  .whyClose { padding: 1.75rem 1.25rem; }
+  .whyCloseQ { font-size: 18px; }
 
   .foot { margin: 0 16px 20px; padding: 16px 20px; flex-direction: column; gap: 12px; text-align: center; }
   .footLinks { flex-wrap: wrap; justify-content: center; }

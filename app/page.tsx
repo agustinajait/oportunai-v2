@@ -7,6 +7,7 @@ import {
   GraduationCap, ClipboardList, RefreshCw,
   HardHat, Handshake, Building2, ChevronRight,
   Target, Smartphone, Smile, Play, Send, CircleCheck,
+  Heart, Camera,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import s from './landing.module.css';
@@ -48,6 +49,23 @@ const TALLER_ICONS = [
   { bg: '#ECE9FB', color: '#5B3FE0', rubro: 'Estación de servicio',  Icon: Fuel },
   { bg: '#E3FAF4', color: '#0E9C82', rubro: 'Atención al cliente',   Icon: Headphones },
   { bg: '#FFF3E8', color: '#D97706', rubro: 'Comidas rápidas',        Icon: UtensilsCrossed },
+];
+
+const GALLERY_SLOTS = [
+  { big: true,  bg: 'linear-gradient(145deg,rgba(91,63,224,0.10),rgba(109,72,240,0.18))', color: '#5B3FE0', label: 'Implementaciones' },
+  { big: false, bg: 'linear-gradient(145deg,rgba(20,199,168,0.10),rgba(10,148,133,0.18))', color: '#0A9485', label: 'Capacitaciones' },
+  { big: false, bg: 'linear-gradient(145deg,rgba(0,0,0,0.04),rgba(0,0,0,0.09))',           color: '#94a3b8', label: 'Eventos' },
+  { big: false, bg: 'linear-gradient(145deg,rgba(20,199,168,0.07),rgba(91,63,224,0.10))',  color: '#5B3FE0', label: 'Equipos' },
+  { big: false, bg: 'linear-gradient(145deg,rgba(91,63,224,0.08),rgba(109,72,240,0.14))',  color: '#7048F0', label: 'Empresas' },
+  { big: false, bg: 'linear-gradient(145deg,rgba(0,0,0,0.05),rgba(0,0,0,0.10))',           color: '#94a3b8', label: 'Historias' },
+];
+
+const TIMELINE = [
+  { year: '2015', text: 'Nacimiento de Tu VideoCV' },
+  { year: null,   text: 'Primeras implementaciones en grandes empresas' },
+  { year: null,   text: '+10 años desarrollando tecnología para RRHH' },
+  { year: '2024', text: 'Creación de OportunAI' },
+  { year: null,   text: 'La experiencia al servicio de la ONG CAII' },
 ];
 
 const CAP_FALLBACK = [
@@ -306,6 +324,79 @@ export default async function LandingPage() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* ── POR QUÉ OPORTUNAI ── */}
+      <section className={s.whySec}>
+
+        {/* Header */}
+        <div className={s.whyHead}>
+          <p className={s.eyebrow}>Confianza · Trayectoria · Propósito</p>
+          <h2 className={s.secH}>¿Por qué OportunAI?</h2>
+          <p className={s.whySub}>Tecnología con experiencia.<br/>Selección con propósito.</p>
+        </div>
+
+        {/* Dos bloques */}
+        <div className={s.whyBlocks}>
+          <div className={s.whyBlock}>
+            <div className={s.whyBlockIco} style={{ background: 'linear-gradient(135deg,#0A9485,#14C7A8)', boxShadow: '0 4px 16px rgba(20,199,168,0.35)' }}>
+              <Heart size={20} color="#fff" strokeWidth={2} />
+            </div>
+            <h3 className={s.whyBlockH}>Impulsada por la ONG CAII</h3>
+            <p className={s.whyBlockP}>OportunAI es una iniciativa desarrollada por la ONG CAII para generar más oportunidades de capacitación y empleo mediante tecnología.</p>
+            <p className={s.whyBlockP}>Ayudamos a empresas, comercios y organizaciones a seleccionar mejor a sus candidatos mediante VideoCV y capacitación, mientras impulsamos más oportunidades laborales para quienes buscan trabajo.</p>
+          </div>
+          <div className={s.whyBlock}>
+            <div className={s.whyBlockIco} style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 16px rgba(91,63,224,0.35)' }}>
+              <Video size={20} color="#fff" strokeWidth={2} />
+            </div>
+            <h3 className={s.whyBlockH}>+10 años transformando la selección</h3>
+            <p className={s.whyBlockP}>OportunAI cuenta con el respaldo de Tu VideoCV, la startup argentina pionera en la incorporación del VideoCV en procesos de selección.</p>
+            <p className={s.whyBlockP}>Desde 2015 desarrollamos tecnología utilizada por grandes empresas. Hoy esa experiencia se pone al servicio de una plataforma con impacto social.</p>
+          </div>
+        </div>
+
+        {/* Galería */}
+        <div className={s.whyGallery}>
+          {GALLERY_SLOTS.map((slot, i) => (
+            <div key={i} className={`${s.whyGalleryItem}${slot.big ? ` ${s.whyGalleryBig}` : ''}`} style={{ background: slot.bg }}>
+              <div className={s.whyGalleryPh}>
+                <Camera size={slot.big ? 34 : 22} style={{ color: slot.color, opacity: 0.45 }} strokeWidth={1.5} />
+                <span style={{ color: slot.color, opacity: 0.55, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 6 }}>{slot.label}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Timeline */}
+        <div className={s.whyTl}>
+          <p className={s.whyTlEye}>Nuestra historia</p>
+          <div className={s.whyTlItems}>
+            {TIMELINE.map((item, i) => (
+              <div key={i} className={s.whyTlRow}>
+                <div className={s.whyTlYearCol}>
+                  {item.year && <span className={s.whyTlYear}>{item.year}</span>}
+                </div>
+                <div className={s.whyTlAxis}>
+                  <div className={item.year ? s.whyTlDotBig : s.whyTlDot} />
+                  {i < TIMELINE.length - 1 && <div className={s.whyTlLine} />}
+                </div>
+                <div className={s.whyTlText}>{item.text}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Cierre */}
+        <div className={s.whyClose}>
+          <p className={s.whyCloseQ}>
+            La tecnología cambia la forma de contratar.<br/>
+            <span className={s.whyCloseQAccent}>La misión cambia la vida de las personas.</span>
+          </p>
+          <p className={s.whyCloseBody}>Cada empresa que utiliza OportunAI mejora sus procesos de selección y, al mismo tiempo, acompaña una iniciativa que amplía el acceso a la capacitación y al empleo.</p>
+          <a href="#" className={s.whyCloseBtn}>Conocé nuestra historia →</a>
+        </div>
+
       </section>
 
       {/* ── CTA FINAL ── */}

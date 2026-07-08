@@ -256,7 +256,7 @@
 
 /* ── NICHOS CAROUSEL ── */
 .nichosOuter {
-  padding: 32px 0 0;
+  padding: 32px 0;
   overflow: hidden;
   -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
   mask-image: linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);

@@ -142,8 +142,8 @@ export default async function LandingPage() {
       {/* ── NICHOS ── */}
       <div className={s.nichosOuter}>
       <div className={s.nichos}>
-        {sectores.map((sec) => (
-          <Link key={sec.label} href={sec.href} className={s.nicho}>
+        {[...sectores, ...sectores].map((sec, i) => (
+          <Link key={i} href={sec.href} className={s.nicho} aria-hidden={i >= sectores.length ? 'true' : undefined}>
             <div className={s.nichoIco}>
               <sec.Icon size={22} strokeWidth={1.75} />
             </div>
@@ -269,7 +269,7 @@ export default async function LandingPage() {
           <div>
             <p className={s.alfaStripTag}>Exclusivo Oportunai</p>
             <h2 className={s.alfaStripH}>Test de Nativo Digital.<br/>Completalo y destacate.</h2>
-            <p className={s.alfaStripP}>Respondés 4 preguntas rápidas y tu perfil suma un badge visible para las empresas. No te lleva más de 2 minutos.</p>
+            <p className={s.alfaStripP}>Respondés preguntas rápidas y tu perfil suma un badge visible para las empresas. No te lleva más de 2 minutos.</p>
           </div>
           <AlfaExpandable ctaHref="/register" />
         </div>

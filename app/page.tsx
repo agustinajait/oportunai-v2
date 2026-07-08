@@ -211,7 +211,7 @@ export default async function LandingPage() {
           <div>
             <p className={s.eyebrow}>Exclusivo Oportunai · Gratis</p>
             <h2 className={s.secH}>Aprendé antes de arrancar.<br/>Entrá capacitado desde el día uno.</h2>
-            <p className={s.capStripP}>Capacitaciones en video para estaciones de servicio, atención al cliente y comidas rápidas. Cargadas por las mismas empresas que buscan personal.</p>
+            <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, maxWidth: 420, margin: '8px 0 0' }}>Capacitaciones en video para estaciones de servicio, atención al cliente y comidas rápidas. Cargadas por las mismas empresas que buscan personal.</p>
           </div>
           <Link href="/register" className={s.verMas}>Ver todas →</Link>
         </div>

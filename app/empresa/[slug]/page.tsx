@@ -157,6 +157,15 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
     <style>{`
       .oferta-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
       .oferta-card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.12); }
+      @media (max-width: 640px) {
+        .nav-login { display: none; }
+        .hero-card { flex-direction: column !important; }
+        .hero-left { padding: 24px 20px !important; }
+        .hero-gallery { width: 100% !important; height: 220px !important; }
+        .hero-right-info { display: none; }
+        .oferta-card { flex-wrap: wrap; }
+        .oferta-btn { width: 100%; justify-content: center; }
+      }
     `}</style>
 
       {/* NAV */}
@@ -167,7 +176,7 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
             <span style={{ fontWeight: 700, fontSize: 18, color: '#0f172a' }}>Oportunai</span>
           </Link>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <Link href="/login" style={{ color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Iniciar sesión</Link>
+            <Link href="/login" className="nav-login" style={{ color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Iniciar sesión</Link>
             <Link href="/register" style={{ background: '#2563eb', color: '#fff', padding: '8px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>Empezar gratis</Link>
           </div>
         </div>
@@ -175,7 +184,7 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
 
       {/* HERO CARD */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 0' }}>
-        <div style={{
+        <div className="hero-card" style={{
           background: heroBg,
           borderRadius: 20,
           overflow: 'hidden',
@@ -191,7 +200,7 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
           }} />
 
           {/* LEFT: text */}
-          <div style={{
+          <div className="hero-left" style={{
             flex: 1, padding: '36px 40px', position: 'relative', zIndex: 10,
             display: 'flex', flexDirection: 'column', justifyContent: 'center',
             backgroundImage: `radial-gradient(circle, ${color}22 1px, transparent 1px)`,
@@ -295,7 +304,7 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
               logoUrl={empresa.logo_url}
             />
           ) : (
-            <div style={{ width: 240, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '24px 32px 24px 0' }}>
+            <div className="hero-right-info" style={{ width: 240, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '24px 32px 24px 0' }}>
               <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 14, padding: '18px', width: '100%', border: '1px solid rgba(255,255,255,0.1)' }}>
                 {empresa.ciudad && (
                   <InfoRowDark icon={<MapPin size={14} />} label="UBICACIÓN" value={empresa.ciudad} />
@@ -400,7 +409,7 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
                       )}
                     </div>
                   </div>
-                  <span style={{
+                  <span className="oferta-btn" style={{
                     background: colorDark, color: '#fff',
                     borderRadius: 10, fontSize: 13, fontWeight: 700,
                     padding: '10px 22px', flexShrink: 0,

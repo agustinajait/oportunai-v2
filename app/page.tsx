@@ -62,16 +62,8 @@ function countSector(ofertas: { area: string | null; titulo: string }[], keys: s
   ).length;
 }
 
-function fmtNum(n: number): string {
-  if (n >= 10000) return `+${Math.floor(n / 1000)}K`;
-  if (n > 0) return `+${n}`;
-  return '0';
-}
-
 export default async function LandingPage() {
-  const [totalCandidatos, totalEmpresas, ofertasActivas, talleres] = await Promise.all([
-    prisma.usuario.count({ where: { role: 'user' } }),
-    prisma.empresa.count({ where: { activa: true } }),
+  const [ofertasActivas, talleres] = await Promise.all([
     prisma.oferta.findMany({
       where: { estado: 'activa' },
       select: { id: true, titulo: true, area: true },
@@ -147,26 +139,6 @@ export default async function LandingPage() {
       </section>
       </div>
 
-      {/* ── STATS ROW ── */}
-      <div className={s.statsOuter}>
-      <div className={s.statsRow}>
-        <div className={s.stat}>
-          <div className={s.statN}>{fmtNum(totalCandidatos)}</div>
-          <div className={s.statL}>Personas registradas</div>
-        </div>
-      </div>
-      </div>
-
-      {/* ── CAP STRIP ── */}
-      <div className={s.capStrip}>
-        <div>
-          <p className={s.capStripTag}>Exclusivo Oportunai</p>
-          <h2 className={s.capStripH}>Aprendé antes de arrancar. Gratis.</h2>
-          <p className={s.capStripP}>Capacitaciones en video para estaciones de servicio, atención al cliente y comidas rápidas. Cargadas por las mismas empresas que buscan personal.</p>
-        </div>
-        <Link href="/register" className={s.capStripBtn}>Ver capacitaciones →</Link>
-      </div>
-
       {/* ── NICHOS ── */}
       <div className={s.nichosOuter}>
       <div className={s.nichos}>
@@ -237,8 +209,9 @@ export default async function LandingPage() {
       <section className={s.sec}>
         <div className={s.secHead}>
           <div>
-            <p className={s.eyebrow}>Capacitaciones gratuitas</p>
-            <h2 className={s.secH} style={{ marginBottom: 0 }}>Entrá capacitado<br/>desde el día uno.</h2>
+            <p className={s.eyebrow}>Exclusivo Oportunai · Gratis</p>
+            <h2 className={s.secH}>Aprendé antes de arrancar.<br/>Entrá capacitado desde el día uno.</h2>
+            <p className={s.capStripP}>Capacitaciones en video para estaciones de servicio, atención al cliente y comidas rápidas. Cargadas por las mismas empresas que buscan personal.</p>
           </div>
           <Link href="/register" className={s.verMas}>Ver todas →</Link>
         </div>

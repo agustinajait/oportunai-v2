@@ -170,6 +170,16 @@ export default async function OfertaDetailPage({ params }: Props) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
     {font.url && <link href={font.url} rel="stylesheet" />}
     <div style={{ fontFamily: font.family, background: pageBg, minHeight: '100vh' }}>
+    <style>{`
+      @media (max-width: 640px) {
+        .nav-login { display: none; }
+        .hero-card { flex-direction: column !important; }
+        .hero-left { padding: 24px 20px !important; }
+        .hero-right-photo { width: 100% !important; height: 220px !important; flex-shrink: 0 !important; }
+        .hero-info-card { display: none; }
+        .hero-right-info { display: none; }
+      }
+    `}</style>
 
       {/* ── NAV ── */}
       <nav style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 30 }}>
@@ -179,7 +189,7 @@ export default async function OfertaDetailPage({ params }: Props) {
             <span style={{ fontWeight: 700, fontSize: 18, color: '#0f172a' }}>Oportunai</span>
           </Link>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <Link href="/login" style={{ color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Iniciar sesión</Link>
+            <Link href="/login" className="nav-login" style={{ color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Iniciar sesión</Link>
             <Link href="/register" style={{ background: '#2563eb', color: '#fff', padding: '8px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>Empezar gratis</Link>
           </div>
         </div>
@@ -187,7 +197,7 @@ export default async function OfertaDetailPage({ params }: Props) {
 
       {/* ── HERO CARD ── */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 0' }}>
-        <div style={{
+        <div className="hero-card" style={{
           background: heroBg,
           borderRadius: 20,
           overflow: 'hidden',
@@ -203,7 +213,7 @@ export default async function OfertaDetailPage({ params }: Props) {
           }} />
 
           {/* LEFT: text */}
-          <div style={{
+          <div className="hero-left" style={{
             flex: 1, padding: '36px 40px', position: 'relative', zIndex: 10,
             display: 'flex', flexDirection: 'column', justifyContent: 'center',
             backgroundImage: `radial-gradient(circle, ${color}22 1px, transparent 1px)`,
@@ -291,7 +301,7 @@ export default async function OfertaDetailPage({ params }: Props) {
 
           {/* RIGHT: photo */}
           {heroImg ? (
-            <div style={{ width: '42%', flexShrink: 0, position: 'relative' }}>
+            <div className="hero-right-photo" style={{ width: '42%', flexShrink: 0, position: 'relative' }}>
               <img
                 src={heroImg}
                 alt={nombreMarca}
@@ -310,7 +320,7 @@ export default async function OfertaDetailPage({ params }: Props) {
                 background: `linear-gradient(to right, ${heroBg} 0%, ${heroBg}4D 40%, transparent 70%)`,
               }} />
               {/* Info card over photo */}
-              <div style={{
+              <div className="hero-info-card" style={{
                 position: 'absolute', bottom: 24, right: 24,
                 background: 'rgba(255,255,255,0.92)',
                 backdropFilter: 'blur(16px)',
@@ -340,7 +350,7 @@ export default async function OfertaDetailPage({ params }: Props) {
             </div>
           ) : (
             /* No photo: show info card directly in right area */
-            <div style={{ width: 240, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '24px 32px 24px 0' }}>
+            <div className="hero-right-info" style={{ width: 240, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '24px 32px 24px 0' }}>
               <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 14, padding: '18px', width: '100%', border: '1px solid rgba(255,255,255,0.1)' }}>
                 {oferta.ciudad && (
                   <InfoRowDark icon={<MapPin size={14} />} label="UBICACIÓN" value={oferta.ciudad} />

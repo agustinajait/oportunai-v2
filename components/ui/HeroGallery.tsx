@@ -31,7 +31,7 @@ export default function HeroGallery({ images, alt, color, colorLight, heroBg, ci
   const extras = images.slice(1, 4);
 
   return (
-    <div style={{ width: '42%', flexShrink: 0, position: 'relative' }}>
+    <div className="hero-gallery" style={{ width: '42%', flexShrink: 0, position: 'relative' }}>
       {/* Main image */}
       <img
         key={activeIdx}

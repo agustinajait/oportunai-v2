@@ -8,7 +8,8 @@ import {
   Users, BookOpen, Video, Plus, Trash2,
   Check, X, ChevronDown, ChevronUp, Loader2,
   Clock, Mic, ExternalLink, Building2, Mail, Phone,
-  ShieldCheck, ToggleLeft, ToggleRight, Briefcase
+  ShieldCheck, ToggleLeft, ToggleRight, Briefcase,
+  Image, Upload, ToggleLeft as Toggle
 } from 'lucide-react';
 import type { SessionPayload } from '@/lib/auth';
 
@@ -44,7 +45,7 @@ export default function SuperAdminClient({
   talleres: Taller[]; usuarios: Usuario[]; empresas: Empresa[]; session: SessionPayload;
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<'talleres' | 'usuarios' | 'empresas' | 'ofertas'>('talleres');
+  const [tab, setTab] = useState<'talleres' | 'usuarios' | 'empresas' | 'ofertas' | 'galeria'>('talleres');
   const [talleres, setTalleres] = useState<Taller[]>(initTalleres);
   const [usuarios, setUsuarios] = useState<Usuario[]>(initUsuarios);
   const [empresas, setEmpresas] = useState<Empresa[]>(initEmpresas);
@@ -121,6 +122,70 @@ export default function SuperAdminClient({
   // ── Empresa state ───────────────────────────────────────────────────
   const [expandedEmpresa, setExpandedEmpresa] = useState<string | null>(null);
   const [togglingEmpresa, setTogglingEmpresa] = useState<string | null>(null);
+
+  // ── Galería state ────────────────────────────────────────────────────
+  type GaleriaItem = { id: string; src: string; label: string; big: boolean; orden: number; activa: boolean };
+  const [galeriaItems, setGaleriaItems] = useState<GaleriaItem[]>([]);
+  const [galeriaLoaded, setGaleriaLoaded] = useState(false);
+  const [uploadingGaleria, setUploadingGaleria] = useState(false);
+  const [galeriaLabel, setGaleriaLabel] = useState('');
+  const [galeriaBig, setGaleriaBig] = useState(false);
+  const [galeriaOrden, setGaleriaOrden] = useState(0);
+
+  async function cargarGaleria() {
+    if (galeriaLoaded) return;
+    const res = await fetch('/api/super-admin/galeria-home');
+    const data = await res.json();
+    if (data.items) setGaleriaItems(data.items);
+    setGaleriaLoaded(true);
+  }
+
+  async function subirFotoGaleria(file: File) {
+    if (!galeriaLabel.trim()) { alert('Ingresá una etiqueta primero'); return; }
+    setUploadingGaleria(true);
+    const fd = new FormData();
+    fd.append('file', file);
+    const uploadRes = await fetch('/api/super-admin/galeria-home/upload', { method: 'POST', body: fd });
+    const uploadData = await uploadRes.json();
+    if (!uploadData.src) { setUploadingGaleria(false); alert('Error al subir la imagen'); return; }
+    const createRes = await fetch('/api/super-admin/galeria-home', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ src: uploadData.src, label: galeriaLabel, big: galeriaBig, orden: galeriaOrden }),
+    });
+    const createData = await createRes.json();
+    if (createData.item) setGaleriaItems(prev => [...prev, createData.item].sort((a, b) => a.orden - b.orden));
+    setGaleriaLabel('');
+    setGaleriaBig(false);
+    setGaleriaOrden(0);
+    setUploadingGaleria(false);
+  }
+
+  async function toggleGaleriaActiva(item: GaleriaItem) {
+    const res = await fetch(`/api/super-admin/galeria-home/${item.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activa: !item.activa }),
+    });
+    const data = await res.json();
+    if (data.item) setGaleriaItems(prev => prev.map(g => g.id === item.id ? data.item : g));
+  }
+
+  async function toggleGaleriaBig(item: GaleriaItem) {
+    const res = await fetch(`/api/super-admin/galeria-home/${item.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ big: !item.big }),
+    });
+    const data = await res.json();
+    if (data.item) setGaleriaItems(prev => prev.map(g => g.id === item.id ? data.item : g));
+  }
+
+  async function eliminarFotoGaleria(id: string) {
+    if (!confirm('¿Eliminar esta foto?')) return;
+    await fetch(`/api/super-admin/galeria-home/${id}`, { method: 'DELETE' });
+    setGaleriaItems(prev => prev.filter(g => g.id !== id));
+  }
 
   // ══════════════════════════════════════════════════════════════════
   // TALLERES HANDLERS
@@ -303,8 +368,9 @@ export default function SuperAdminClient({
             { key: 'usuarios', label: 'Usuarios', icon: <Users size={15} />, count: usuarios.length },
             { key: 'empresas', label: 'Empresas', icon: <Building2 size={15} />, count: empresas.length },
             { key: 'ofertas', label: 'Ofertas', icon: <Briefcase size={15} />, count: ofertas.length },
+            { key: 'galeria', label: 'Galería', icon: <Image size={15} />, count: galeriaItems.length },
           ].map(t => (
-            <button key={t.key} onClick={() => { setTab(t.key as any); if (t.key === 'ofertas') cargarOfertas(); }}
+            <button key={t.key} onClick={() => { setTab(t.key as any); if (t.key === 'ofertas') cargarOfertas(); if (t.key === 'galeria') cargarGaleria(); }}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${tab === t.key ? 'bg-white text-ink-800 shadow-sm' : 'text-ink-500 hover:text-ink-700'}`}>
               {t.icon} {t.label}
               <span className="badge bg-ink-200 text-ink-600 ml-1">{t.count}</span>
@@ -804,6 +870,88 @@ export default function SuperAdminClient({
                 </button>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* ── TAB: GALERÍA ────────────────────────────────────────────── */}
+        {tab === 'galeria' && (
+          <div className="space-y-6">
+
+            {/* Upload form */}
+            <div className="card p-6">
+              <h3 className="font-semibold text-ink-800 mb-4 flex items-center gap-2">
+                <Upload size={16} /> Subir nueva foto
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                <div>
+                  <label className="label">Etiqueta *</label>
+                  <input className="input-field" placeholder="Ej: Implementaciones"
+                    value={galeriaLabel} onChange={e => setGaleriaLabel(e.target.value)} />
+                </div>
+                <div>
+                  <label className="label">Orden</label>
+                  <input type="number" className="input-field" min={0} max={99}
+                    value={galeriaOrden} onChange={e => setGaleriaOrden(Number(e.target.value))} />
+                </div>
+                <div className="flex items-end">
+                  <label className="flex items-center gap-2 cursor-pointer mb-2">
+                    <input type="checkbox" checked={galeriaBig}
+                      onChange={e => setGaleriaBig(e.target.checked)} className="w-4 h-4 rounded" />
+                    <span className="text-sm font-medium">Foto grande (ocupa 2 filas)</span>
+                  </label>
+                </div>
+              </div>
+              <label className={`inline-flex items-center gap-2 btn-primary cursor-pointer ${!galeriaLabel.trim() || uploadingGaleria ? 'opacity-60 pointer-events-none' : ''}`}>
+                {uploadingGaleria ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                {uploadingGaleria ? 'Subiendo...' : 'Elegir imagen'}
+                <input type="file" accept="image/*" className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) subirFotoGaleria(f); e.target.value = ''; }} />
+              </label>
+              <p className="text-xs text-ink-400 mt-3">Formatos: JPG, PNG, WebP · Tamaño recomendado: 800×600px mínimo</p>
+            </div>
+
+            {/* Grid of photos */}
+            {galeriaItems.length === 0 && galeriaLoaded && (
+              <div className="card p-12 text-center text-ink-400">
+                <Image size={32} className="mx-auto mb-3 opacity-30" />
+                <p className="text-sm">No hay fotos todavía. Subí la primera.</p>
+              </div>
+            )}
+
+            {galeriaItems.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {galeriaItems.map(item => (
+                  <div key={item.id} className={`card overflow-hidden ${!item.activa ? 'opacity-50' : ''}`}>
+                    <div className="relative" style={{ paddingBottom: '66%' }}>
+                      <img src={item.src} alt={item.label}
+                        className="absolute inset-0 w-full h-full object-cover" />
+                      {item.big && (
+                        <span className="absolute top-2 left-2 bg-brand-600 text-white text-xs px-2 py-0.5 rounded-full font-semibold">Grande</span>
+                      )}
+                    </div>
+                    <div className="p-3">
+                      <p className="font-medium text-sm text-ink-800 mb-1">{item.label}</p>
+                      <p className="text-xs text-ink-400 mb-3">Orden: {item.orden}</p>
+                      <div className="flex gap-2 flex-wrap">
+                        <button onClick={() => toggleGaleriaActiva(item)}
+                          className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-colors ${item.activa ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-ink-100 text-ink-500 hover:bg-ink-200'}`}>
+                          {item.activa ? '✓ Activa' : '○ Oculta'}
+                        </button>
+                        <button onClick={() => toggleGaleriaBig(item)}
+                          className="text-xs px-2.5 py-1 rounded-lg font-medium bg-ink-100 text-ink-600 hover:bg-ink-200 transition-colors">
+                          {item.big ? 'Normal' : '↕ Grande'}
+                        </button>
+                        <button onClick={() => eliminarFotoGaleria(item.id)}
+                          className="text-xs px-2.5 py-1 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
           </div>
         )}
 

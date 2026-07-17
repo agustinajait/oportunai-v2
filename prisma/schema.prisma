@@ -358,3 +358,13 @@ model CapacitacionUsuario {
 
   @@unique([usuario_id, capacitacion_id])
 }
+
+model GaleriaHome {
+  id         String   @id @default(cuid())
+  src        String
+  label      String
+  orden      Int      @default(0)
+  big        Boolean  @default(false)
+  activa     Boolean  @default(true)
+  created_at DateTime @default(now())
+}

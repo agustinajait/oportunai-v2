@@ -81,7 +81,7 @@ function countSector(ofertas: { area: string | null; titulo: string }[], keys: s
 }
 
 export default async function LandingPage() {
-  const [ofertasActivas, talleres] = await Promise.all([
+  const [ofertasActivas, talleres, galeriaDB] = await Promise.all([
     prisma.oferta.findMany({
       where: { estado: 'activa' },
       select: { id: true, titulo: true, area: true },
@@ -90,6 +90,10 @@ export default async function LandingPage() {
       where: { activo: true },
       select: { id: true, nombre: true, descripcion: true },
       take: 3,
+    }),
+    prisma.galeriaHome.findMany({
+      where: { activa: true },
+      orderBy: { orden: 'asc' },
     }),
   ]);
 
@@ -358,14 +362,27 @@ export default async function LandingPage() {
 
         {/* Galería */}
         <div className={s.whyGallery}>
-          {GALLERY_SLOTS.map((slot, i) => (
-            <div key={i} className={`${s.whyGalleryItem}${slot.big ? ` ${s.whyGalleryBig}` : ''}`} style={{ background: slot.bg }}>
-              <div className={s.whyGalleryPh}>
-                <Camera size={slot.big ? 34 : 22} style={{ color: slot.color, opacity: 0.45 }} strokeWidth={1.5} />
-                <span style={{ color: slot.color, opacity: 0.55, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 6 }}>{slot.label}</span>
+          {(galeriaDB.length > 0 ? galeriaDB : GALLERY_SLOTS).map((slot, i) => {
+            const isReal = galeriaDB.length > 0;
+            const big = slot.big;
+            if (isReal) {
+              const item = slot as typeof galeriaDB[0];
+              return (
+                <div key={item.id} className={`${s.whyGalleryItem}${big ? ` ${s.whyGalleryBig}` : ''}`}>
+                  <img src={item.src} alt={item.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              );
+            }
+            const placeholder = slot as typeof GALLERY_SLOTS[0];
+            return (
+              <div key={i} className={`${s.whyGalleryItem}${big ? ` ${s.whyGalleryBig}` : ''}`} style={{ background: placeholder.bg }}>
+                <div className={s.whyGalleryPh}>
+                  <Camera size={big ? 34 : 22} style={{ color: placeholder.color, opacity: 0.45 }} strokeWidth={1.5} />
+                  <span style={{ color: placeholder.color, opacity: 0.55, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 6 }}>{placeholder.label}</span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Timeline */}

@@ -60,13 +60,6 @@ const GALLERY_SLOTS = [
   { big: false, bg: 'linear-gradient(145deg,rgba(0,0,0,0.05),rgba(0,0,0,0.10))',           color: '#94a3b8', label: 'Historias' },
 ];
 
-const TIMELINE = [
-  { year: '2015', text: 'Nacimiento de Tu VideoCV' },
-  { year: null,   text: 'Primeras implementaciones en grandes empresas' },
-  { year: null,   text: '+10 años desarrollando tecnología para RRHH' },
-  { year: '2024', text: 'Creación de OportunAI' },
-  { year: null,   text: 'La experiencia al servicio de la ONG CAII' },
-];
 
 const CAP_FALLBACK = [
   { bg: '#ECE9FB', color: '#5B3FE0', rubro: 'Estación de servicio',  titulo: 'Atención al cliente en la playa',   dur: '8 min',  emp: 'YPF',           Icon: Fuel },
@@ -383,25 +376,6 @@ export default async function LandingPage() {
               </div>
             );
           })}
-        </div>
-
-        {/* Timeline */}
-        <div className={s.whyTl}>
-          <p className={s.whyTlEye}>Nuestra historia</p>
-          <div className={s.whyTlItems}>
-            {TIMELINE.map((item, i) => (
-              <div key={i} className={s.whyTlRow}>
-                <div className={s.whyTlYearCol}>
-                  {item.year && <span className={s.whyTlYear}>{item.year}</span>}
-                </div>
-                <div className={s.whyTlAxis}>
-                  <div className={item.year ? s.whyTlDotBig : s.whyTlDot} />
-                  {i < TIMELINE.length - 1 && <div className={s.whyTlLine} />}
-                </div>
-                <div className={s.whyTlText}>{item.text}</div>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Cierre */}

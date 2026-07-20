@@ -9,7 +9,7 @@ import {
   Check, X, ChevronDown, ChevronUp, Loader2,
   Clock, Mic, ExternalLink, Building2, Mail, Phone,
   ShieldCheck, ToggleLeft, ToggleRight, Briefcase,
-  Image, Upload, ToggleLeft as Toggle
+  Image, Upload
 } from 'lucide-react';
 import type { SessionPayload } from '@/lib/auth';
 
@@ -901,10 +901,10 @@ export default function SuperAdminClient({
                   </label>
                 </div>
               </div>
-              <label className={`inline-flex items-center gap-2 btn-primary cursor-pointer ${!galeriaLabel.trim() || uploadingGaleria ? 'opacity-60 pointer-events-none' : ''}`}>
+              <label className={`inline-flex items-center gap-2 btn-primary cursor-pointer ${uploadingGaleria ? 'opacity-60 pointer-events-none' : ''}`}>
                 {uploadingGaleria ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
                 {uploadingGaleria ? 'Subiendo...' : 'Elegir imagen'}
-                <input type="file" accept="image/*" className="hidden"
+                <input type="file" accept="image/*" className="hidden" disabled={uploadingGaleria}
                   onChange={e => { const f = e.target.files?.[0]; if (f) subirFotoGaleria(f); e.target.value = ''; }} />
               </label>
               <p className="text-xs text-ink-400 mt-3">Formatos: JPG, PNG, WebP · Tamaño recomendado: 800×600px mínimo</p>

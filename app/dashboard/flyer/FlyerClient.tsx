@@ -2,7 +2,8 @@
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Printer, ExternalLink, Phone, Briefcase, GraduationCap, Plus, X, Check, Loader2, Edit3, Camera } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
+import { ArrowLeft, Printer, ExternalLink, Phone, Briefcase, GraduationCap, Plus, X, Check, Loader2, Edit3, Camera, Download, Share2, Mail } from 'lucide-react';
 
 interface CvDatos {
   resumen?: string;
@@ -36,11 +37,22 @@ function alfaEmoji(badge: string) {
   return '🌱';
 }
 
+// WhatsApp icon SVG inline
+function WhatsAppIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+  );
+}
+
 export default function FlyerClient({ usuario }: Props) {
-  const profileUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://oportunai.korai.lat'}/u/${usuario.slug}/cv`;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=3B2B9E&bgcolor=FFFFFF&data=${encodeURIComponent(profileUrl)}`;
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://oportunai.korai.lat';
+  const profileUrl = `${origin}/u/${usuario.slug}/cv`;
 
   const cv = usuario.cv_datos as CvDatos | null;
+
+  const flyerRef = useRef<HTMLDivElement>(null);
 
   // Editable state
   const [fotoUrl, setFotoUrl] = useState<string | null>(usuario.foto_url ?? null);
@@ -54,6 +66,8 @@ export default function FlyerClient({ usuario }: Props) {
   const [saving, setSaving] = useState(false);
   const [savedOk, setSavedOk] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   const expReciente = experiencias[0] ?? null;
   const eduReciente = educaciones[0] ?? null;
@@ -111,9 +125,66 @@ export default function FlyerClient({ usuario }: Props) {
     }
   }
 
+  async function descargarImagen() {
+    if (!flyerRef.current) return;
+    setDownloading(true);
+    try {
+      const { toPng } = await import('html-to-image');
+      const dataUrl = await toPng(flyerRef.current, {
+        cacheBust: true,
+        pixelRatio: 2,
+        backgroundColor: '#ffffff',
+      });
+      const link = document.createElement('a');
+      link.download = `flyer-${usuario.slug}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      alert('No se pudo generar la imagen. Intentá con "Imprimir / PDF".');
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  async function compartir() {
+    setSharing(true);
+    try {
+      const { toPng } = await import('html-to-image');
+      const dataUrl = await toPng(flyerRef.current!, { cacheBust: true, pixelRatio: 2, backgroundColor: '#ffffff' });
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], `flyer-${usuario.slug}.png`, { type: 'image/png' });
+
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: `Flyer de ${usuario.nombre_completo}`, text: `Mirá mi CV en Oportunai: ${profileUrl}` });
+      } else {
+        // Fallback: descargar
+        const link = document.createElement('a');
+        link.download = `flyer-${usuario.slug}.png`;
+        link.href = dataUrl;
+        link.click();
+      }
+    } catch (err: any) {
+      if (err?.name !== 'AbortError') alert('No se pudo compartir. Intentá descargar la imagen.');
+    } finally {
+      setSharing(false);
+    }
+  }
+
+  function compartirWhatsApp() {
+    const texto = encodeURIComponent(`¡Mirá mi CV digital en Oportunai! 👇\n${profileUrl}`);
+    window.open(`https://wa.me/?text=${texto}`, '_blank');
+  }
+
+  function compartirEmail() {
+    const subject = encodeURIComponent(`CV de ${usuario.nombre_completo} — Oportunai`);
+    const body = encodeURIComponent(`Hola,\n\nTe comparto mi CV digital en Oportunai:\n${profileUrl}\n\nSaludos,\n${usuario.nombre_completo}`);
+    window.open(`mailto:?subject=${subject}&body=${body}`);
+  }
+
   return (
     <>
       <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
         @media print {
           body * { visibility: hidden !important; }
           #flyer-print, #flyer-print * { visibility: visible !important; }
@@ -133,19 +204,19 @@ export default function FlyerClient({ usuario }: Props) {
       <div style={{ minHeight: '100vh', background: '#F0F0F8', padding: '32px 16px' }}>
 
         {/* Nav */}
-        <div style={{ maxWidth: 560, margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ maxWidth: 560, margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
           <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#5B3FE0', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
             <ArrowLeft size={16} /> Volver
           </Link>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             {savedOk && <span style={{ fontSize: 13, color: '#0A9485', fontWeight: 600 }}>✓ Guardado</span>}
             <button onClick={() => setEditing(e => !e)}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, background: editing ? '#F0F0F8' : '#fff', color: '#5B3FE0', border: '1px solid #D0C8F8', borderRadius: 10, padding: '9px 16px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: editing ? '#F0F0F8' : '#fff', color: '#5B3FE0', border: '1px solid #D0C8F8', borderRadius: 10, padding: '9px 14px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
               <Edit3 size={14} /> {editing ? 'Ver flyer' : 'Editar datos'}
             </button>
             <button onClick={() => window.print()}
-              style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'linear-gradient(135deg,#4B33CC,#6D5AE6)', color: '#fff', border: 'none', borderRadius: 10, padding: '9px 18px', fontWeight: 600, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 14px rgba(91,63,224,0.3)' }}>
-              <Printer size={14} /> Imprimir / PDF
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', color: '#374151', border: '1px solid #E0E0F0', borderRadius: 10, padding: '9px 14px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+              <Printer size={14} /> PDF
             </button>
           </div>
         </div>
@@ -275,15 +346,18 @@ export default function FlyerClient({ usuario }: Props) {
         {/* ── FLYER ── */}
         {!editing && (
           <>
-            <div id="flyer-print"
-              style={{ maxWidth: 420, margin: '0 auto', background: '#fff', borderRadius: 20, boxShadow: '0 8px 40px rgba(0,0,0,0.14)', overflow: 'hidden', fontFamily: "'DM Sans', sans-serif" }}>
+            {/* Flyer card */}
+            <div ref={flyerRef} id="flyer-print"
+              style={{ maxWidth: 420, margin: '0 auto', background: '#fff', borderRadius: 20, boxShadow: '0 8px 40px rgba(0,0,0,0.14)', overflow: 'hidden', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
 
               {/* Header */}
               <div style={{ background: 'linear-gradient(135deg, #3A28B8 0%, #5B3FE0 55%, #0A9485 100%)', padding: '26px 24px 22px', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, position: 'relative', zIndex: 1 }}>
                   <div style={{ width: 68, height: 68, borderRadius: '50%', flexShrink: 0, background: 'rgba(255,255,255,0.2)', border: '2.5px solid rgba(255,255,255,0.4)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 800, color: '#fff' }}>
-                    {fotoUrl ? <img src={fotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : getInitials(usuario.nombre_completo)}
+                    {fotoUrl
+                      ? <img src={fotoUrl} alt="" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : getInitials(usuario.nombre_completo)}
                   </div>
                   <div style={{ flex: 1 }}>
                     <h1 style={{ color: '#fff', fontSize: 20, fontWeight: 800, margin: 0, lineHeight: 1.2, letterSpacing: '-0.02em' }}>{usuario.nombre_completo}</h1>
@@ -368,9 +442,11 @@ export default function FlyerClient({ usuario }: Props) {
                   </div>
                 </div>
 
-                {/* QR */}
+                {/* QR — generado en el browser, sin CORS */}
                 <div style={{ width: 136, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '18px 14px', borderLeft: '1px solid #F0F0F8', background: '#FAFAFF', gap: 8 }}>
-                  <img src={qrUrl} alt="QR" width={108} height={108} style={{ borderRadius: 10, border: '1px solid #E8E8F0' }} />
+                  <div style={{ width: 108, height: 108, borderRadius: 10, border: '1px solid #E8E8F0', overflow: 'hidden', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <QRCodeSVG value={profileUrl} size={100} fgColor="#3B28CC" bgColor="#ffffff" level="M" />
+                  </div>
                   <p style={{ fontSize: 8.5, color: '#9090A8', textAlign: 'center', lineHeight: 1.5, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', margin: 0 }}>
                     Escaneame<br />para ver mi<br />Video CV
                   </p>
@@ -380,8 +456,8 @@ export default function FlyerClient({ usuario }: Props) {
               {/* Footer */}
               <div style={{ background: '#F8F8FC', borderTop: '1px solid #F0F0F8', padding: '11px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 22, height: 22, borderRadius: 6, background: 'linear-gradient(135deg,#4B33CC,#7048F0)', overflow: 'hidden' }}>
-                    <img src="/logo.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{ width: 22, height: 22, borderRadius: 6, background: 'linear-gradient(135deg,#4B33CC,#7048F0)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ color: '#fff', fontSize: 10, fontWeight: 900 }}>O</span>
                   </div>
                   <span style={{ fontSize: 11, fontWeight: 800, color: '#111118', letterSpacing: '0.04em' }}>OPORTUNAI</span>
                 </div>
@@ -389,13 +465,39 @@ export default function FlyerClient({ usuario }: Props) {
               </div>
             </div>
 
-            <div style={{ maxWidth: 420, margin: '20px auto 0', background: '#fff', borderRadius: 14, padding: '16px 20px', border: '1px solid rgba(0,0,0,0.08)' }}>
-              <p style={{ fontSize: 12.5, fontWeight: 700, color: '#111118', marginBottom: 8 }}>¿Cómo usar tu flyer?</p>
-              <ul style={{ fontSize: 12.5, color: '#64748b', lineHeight: 1.8, paddingLeft: 16, margin: 0 }}>
-                <li>Guardá como PDF e imprimí en cualquier copistería</li>
-                <li>Compartí el PDF por WhatsApp o email</li>
-                <li>El código QR lleva directo a tu Video CV</li>
-              </ul>
+            {/* ── Acciones de compartir ── */}
+            <div style={{ maxWidth: 420, margin: '16px auto 0', background: '#fff', borderRadius: 16, padding: '18px 20px', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: '#9090A8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>Compartir y descargar</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+                {/* Descargar imagen */}
+                <button onClick={descargarImagen} disabled={downloading}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'linear-gradient(135deg,#4B33CC,#6D5AE6)', color: '#fff', border: 'none', borderRadius: 12, padding: '12px 14px', fontWeight: 700, fontSize: 13, cursor: downloading ? 'not-allowed' : 'pointer', opacity: downloading ? 0.7 : 1 }}>
+                  {downloading ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={14} />}
+                  {downloading ? 'Generando...' : 'Descargar PNG'}
+                </button>
+                {/* Compartir nativo / link */}
+                <button onClick={compartir} disabled={sharing}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: '#F0F0F8', color: '#5B3FE0', border: '1.5px solid #D0C8F8', borderRadius: 12, padding: '12px 14px', fontWeight: 700, fontSize: 13, cursor: sharing ? 'not-allowed' : 'pointer', opacity: sharing ? 0.7 : 1 }}>
+                  {sharing ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Share2 size={14} />}
+                  {sharing ? 'Compartiendo...' : 'Compartir'}
+                </button>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                {/* WhatsApp */}
+                <button onClick={compartirWhatsApp}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: '#25D366', color: '#fff', border: 'none', borderRadius: 12, padding: '12px 14px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                  <WhatsAppIcon /> WhatsApp
+                </button>
+                {/* Email */}
+                <button onClick={compartirEmail}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: '#F8F8FC', color: '#374151', border: '1.5px solid #E0E0F0', borderRadius: 12, padding: '12px 14px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                  <Mail size={14} /> Email
+                </button>
+              </div>
+              <p style={{ fontSize: 11, color: '#B0B0C4', marginTop: 10, lineHeight: 1.5 }}>
+                💡 <strong>Descargar PNG</strong>: imagen tal cual se ve. <strong>WhatsApp/Email</strong>: comparte el link de tu CV.
+                En celular, <strong>Compartir</strong> abre el menú del teléfono para enviar la imagen directo.
+              </p>
             </div>
           </>
         )}

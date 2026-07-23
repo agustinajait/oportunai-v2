@@ -18,6 +18,7 @@ model Usuario {
   dni             String   @unique
   role            Role     @default(user)
   bio             String?
+  foto_url        String?
 fecha_nacimiento DateTime?
   slug            String   @unique
   cv_datos        Json?

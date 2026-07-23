@@ -125,16 +125,48 @@ export default function FlyerClient({ usuario }: Props) {
     }
   }
 
+  async function capturarFlyer(): Promise<string> {
+    const { toPng } = await import('html-to-image');
+    const el = flyerRef.current!;
+    const W = el.offsetWidth;
+    const H = el.offsetHeight;
+
+    // html-to-image se confunde con la posición del elemento en la página
+    // (margin:auto desplaza el origen). Lo clonamos en un contenedor fijo
+    // en (0,0) para que siempre capture desde el ángulo correcto.
+    const container = document.createElement('div');
+    Object.assign(container.style, {
+      position: 'fixed', top: '0', left: '0',
+      width: W + 'px', zIndex: '9999',
+      opacity: '0', pointerEvents: 'none',
+    });
+    const clone = el.cloneNode(true) as HTMLElement;
+    Object.assign(clone.style, {
+      position: 'static', width: W + 'px',
+      maxWidth: 'none', margin: '0',
+      boxShadow: 'none', borderRadius: '0',
+    });
+    container.appendChild(clone);
+    document.body.appendChild(container);
+
+    // Dos frames para que el browser layoutee el clon
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    try {
+      return await toPng(clone, {
+        cacheBust: true, pixelRatio: 2,
+        backgroundColor: '#ffffff', width: W, height: H,
+      });
+    } finally {
+      document.body.removeChild(container);
+    }
+  }
+
   async function descargarImagen() {
     if (!flyerRef.current) return;
     setDownloading(true);
     try {
-      const { toPng } = await import('html-to-image');
-      const dataUrl = await toPng(flyerRef.current, {
-        cacheBust: true,
-        pixelRatio: 2,
-        backgroundColor: '#ffffff',
-      });
+      const dataUrl = await capturarFlyer();
       const link = document.createElement('a');
       link.download = `flyer-${usuario.slug}.png`;
       link.href = dataUrl;
@@ -149,15 +181,13 @@ export default function FlyerClient({ usuario }: Props) {
   async function compartir() {
     setSharing(true);
     try {
-      const { toPng } = await import('html-to-image');
-      const dataUrl = await toPng(flyerRef.current!, { cacheBust: true, pixelRatio: 2, backgroundColor: '#ffffff' });
+      const dataUrl = await capturarFlyer();
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], `flyer-${usuario.slug}.png`, { type: 'image/png' });
 
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: `Flyer de ${usuario.nombre_completo}`, text: `Mirá mi CV en Oportunai: ${profileUrl}` });
       } else {
-        // Fallback: descargar
         const link = document.createElement('a');
         link.download = `flyer-${usuario.slug}.png`;
         link.href = dataUrl;

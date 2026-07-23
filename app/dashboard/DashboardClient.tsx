@@ -61,7 +61,7 @@ interface CvDatos {
 
 interface Usuario {
   id: string; nombre_completo: string; email: string; telefono: string;
-  bio: string | null; slug: string; role: 'super_admin' | 'admin' | 'user';
+  bio: string | null; foto_url: string | null; slug: string; role: 'super_admin' | 'admin' | 'user';
   cv_datos: CvDatos | null;
   alfa_digital: string | null; alfa_score: number | null;
   fecha_nacimiento: string | null;
@@ -139,6 +139,8 @@ export default function DashboardClient({
   const [bio, setBio] = useState(usuario.bio ?? '');
   const [editingBio, setEditingBio] = useState(false);
   const [bioSaving, setBioSaving] = useState(false);
+  const [fotoUrl, setFotoUrl] = useState<string | null>(usuario.foto_url ?? null);
+  const [uploadingFoto, setUploadingFoto] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState<string | null>(null);
@@ -306,6 +308,16 @@ export default function DashboardClient({
     setUploadingDoc(null);
     setTimeout(() => setDocMsg(null), 3000);
   }
+
+  const uploadFoto = async (file: File) => {
+    setUploadingFoto(true);
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch('/api/perfil/foto', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.foto_url) setFotoUrl(data.foto_url);
+    setUploadingFoto(false);
+  };
 
   const saveBio = async () => {
     setBioSaving(true);
@@ -598,16 +610,38 @@ export default function DashboardClient({
             {/* ── Columna izquierda ──────────────────────────────── */}
             <div className="space-y-5">
               {/* Flyer card */}
-              <Link href="/dashboard/flyer" className="card p-5 flex items-center gap-4 hover:shadow-md transition-shadow group" style={{ textDecoration: 'none' }}>
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
-                  <FileText size={20} color="#fff" strokeWidth={1.75} />
+              <div className="card p-5 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-content-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <FileText size={20} color="#fff" strokeWidth={1.75} />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-ink-800 text-sm">Mi flyer</p>
+                    <p className="text-xs text-ink-400">Tarjeta con QR para imprimir o compartir</p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-ink-800 text-sm">Crear mi flyer</p>
-                  <p className="text-xs text-ink-400 mt-0.5">Tarjeta con QR para imprimir o compartir</p>
+                {/* Foto de perfil */}
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-ink-100 flex items-center justify-center border-2 border-ink-200">
+                    {fotoUrl
+                      ? <img src={fotoUrl} alt="Foto" className="w-full h-full object-cover" />
+                      : <span className="text-ink-400 text-xs font-bold">{usuario.nombre_completo.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase()}</span>
+                    }
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-ink-500 mb-1.5">{fotoUrl ? 'Foto cargada ✓' : 'Sin foto de perfil todavía'}</p>
+                    <label className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer transition-colors ${uploadingFoto ? 'bg-ink-100 text-ink-400 pointer-events-none' : 'bg-brand-50 text-brand-600 hover:bg-brand-100'}`}>
+                      {uploadingFoto ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                      {uploadingFoto ? 'Subiendo...' : fotoUrl ? 'Cambiar foto' : 'Subir foto'}
+                      <input type="file" accept="image/*" className="hidden" disabled={uploadingFoto}
+                        onChange={e => { const f = e.target.files?.[0]; if (f) uploadFoto(f); e.target.value = ''; }} />
+                    </label>
+                  </div>
                 </div>
-                <ArrowRight size={16} className="text-ink-300 group-hover:text-brand-500 transition-colors" />
-              </Link>
+                <Link href="/dashboard/flyer" className="btn-primary w-full justify-center text-sm py-2.5" style={{ textDecoration:'none', display:'flex', alignItems:'center', gap:6 }}>
+                  <FileText size={15} /> Ver mi flyer
+                </Link>
+              </div>
 
               {/* Bio */}
               <div className="card p-6">

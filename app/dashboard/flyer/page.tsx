@@ -15,6 +15,7 @@ export default async function FlyerPage() {
       nombre_completo: true,
       telefono: true,
       bio: true,
+      foto_url: true,
       slug: true,
       alfa_digital: true,
       alfa_score: true,

@@ -38,6 +38,50 @@ const ofertaEstadoBadge = (estado: string) => {
   return map[estado] ?? 'bg-ink-100 text-ink-500';
 };
 
+// ── Password Reset Component ─────────────────────────────────────────
+function PasswordReset({ userId }: { userId: string }) {
+  const [pwd, setPwd] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const handleReset = async () => {
+    if (pwd.length < 6) { setMsg({ ok: false, text: 'Mínimo 6 caracteres' }); return; }
+    setSaving(true); setMsg(null);
+    const res = await fetch(`/api/super-admin/usuarios/${userId}/password`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd }),
+    });
+    const data = await res.json();
+    setSaving(false);
+    if (data.ok) { setMsg({ ok: true, text: 'Contraseña actualizada' }); setPwd(''); }
+    else setMsg({ ok: false, text: data.error ?? 'Error al actualizar' });
+  };
+
+  return (
+    <div className="flex items-center gap-3 flex-wrap">
+      <input
+        type="password"
+        value={pwd}
+        onChange={e => setPwd(e.target.value)}
+        placeholder="Nueva contraseña"
+        className="input-field text-sm w-52"
+        onKeyDown={e => { if (e.key === 'Enter') handleReset(); }}
+      />
+      <button onClick={handleReset} disabled={saving || !pwd}
+        className="btn-primary py-2 px-4 text-sm disabled:opacity-50">
+        {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+        Guardar
+      </button>
+      {msg && (
+        <span className={`text-xs font-medium ${msg.ok ? 'text-emerald-600' : 'text-red-500'}`}>
+          {msg.text}
+        </span>
+      )}
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────
 export default function SuperAdminClient({
   talleres: initTalleres, usuarios: initUsuarios, empresas: initEmpresas, session,
@@ -519,6 +563,12 @@ export default function SuperAdminClient({
                         {updatingRole === u.id && <Loader2 size={14} className="animate-spin text-brand-500" />}
                         <span className="text-xs text-ink-400">Cambia acceso inmediatamente</span>
                       </div>
+                    </div>
+
+                    {/* Cambiar contraseña */}
+                    <div>
+                      <h4 className="font-semibold text-ink-800 text-sm mb-3 flex items-center gap-2"><ShieldCheck size={14} className="text-amber-500" /> Cambiar contraseña</h4>
+                      <PasswordReset userId={u.id} />
                     </div>
 
                     {/* Talleres asignados */}

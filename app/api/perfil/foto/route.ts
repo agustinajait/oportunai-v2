@@ -29,13 +29,14 @@ export async function POST(req: NextRequest) {
     if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 });
 
     const { data: urlData } = supabase.storage.from('videos').getPublicUrl(filename);
+    const foto_url = `${urlData.publicUrl}?v=${Date.now()}`;
 
     await prisma.usuario.update({
       where: { id: session.userId },
-      data: { foto_url: urlData.publicUrl },
+      data: { foto_url },
     });
 
-    return NextResponse.json({ ok: true, foto_url: urlData.publicUrl });
+    return NextResponse.json({ ok: true, foto_url });
   } catch (err: any) {
     console.error('[foto/route] error:', err);
     return NextResponse.json({ error: err.message ?? 'Error interno' }, { status: 500 });

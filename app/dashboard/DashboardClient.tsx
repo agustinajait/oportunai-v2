@@ -317,7 +317,7 @@ export default function DashboardClient({
       const res = await fetch('/api/perfil/foto', { method: 'POST', body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Error al subir foto');
-      if (data.foto_url) setFotoUrl(data.foto_url + '?v=' + Date.now());
+      if (data.foto_url) setFotoUrl(data.foto_url);
     } catch (err: any) {
       alert('No se pudo subir la foto: ' + (err.message ?? 'error desconocido'));
     } finally {

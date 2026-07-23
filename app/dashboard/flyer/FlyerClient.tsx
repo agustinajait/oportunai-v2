@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Printer, ExternalLink, Phone, Briefcase, GraduationCap, Plus, X, Check, Loader2, Edit3 } from 'lucide-react';
+import { ArrowLeft, Printer, ExternalLink, Phone, Briefcase, GraduationCap, Plus, X, Check, Loader2, Edit3, Camera } from 'lucide-react';
 
 interface CvDatos {
   resumen?: string;
@@ -43,6 +43,8 @@ export default function FlyerClient({ usuario }: Props) {
   const cv = usuario.cv_datos as CvDatos | null;
 
   // Editable state
+  const [fotoUrl, setFotoUrl] = useState<string | null>(usuario.foto_url ?? null);
+  const [uploadingFoto, setUploadingFoto] = useState(false);
   const [resumen, setResumen] = useState(cv?.resumen ?? usuario.bio ?? '');
   const [habilidades, setHabilidades] = useState<string[]>(cv?.habilidades ?? []);
   const [habilidadInput, setHabilidadInput] = useState('');
@@ -51,28 +53,55 @@ export default function FlyerClient({ usuario }: Props) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savedOk, setSavedOk] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const expReciente = experiencias[0] ?? null;
   const eduReciente = educaciones[0] ?? null;
 
+  async function uploadFoto(file: File) {
+    setUploadingFoto(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/perfil/foto', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Error al subir foto');
+      setFotoUrl(data.foto_url);
+    } catch (err: any) {
+      alert('No se pudo subir la foto: ' + (err.message ?? 'error desconocido'));
+    } finally {
+      setUploadingFoto(false);
+    }
+  }
+
   async function guardar() {
     setSaving(true);
-    const nuevoCvDatos: CvDatos = {
-      ...(cv ?? {}),
-      resumen: resumen || undefined,
-      experiencia: experiencias.length ? experiencias : undefined,
-      educacion: educaciones.length ? educaciones : undefined,
-      habilidades: habilidades.length ? habilidades : undefined,
-    };
-    await fetch('/api/users/perfil', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cv_datos: nuevoCvDatos }),
-    });
-    setSaving(false);
-    setEditing(false);
-    setSavedOk(true);
-    setTimeout(() => setSavedOk(false), 3000);
+    setSaveError(null);
+    try {
+      const nuevoCvDatos: CvDatos = {
+        ...(cv ?? {}),
+        resumen: resumen || undefined,
+        experiencia: experiencias.length ? experiencias : undefined,
+        educacion: educaciones.length ? educaciones : undefined,
+        habilidades: habilidades.length ? habilidades : undefined,
+      };
+      const res = await fetch('/api/users/perfil', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cv_datos: nuevoCvDatos }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error ?? 'Error al guardar');
+      }
+      setEditing(false);
+      setSavedOk(true);
+      setTimeout(() => setSavedOk(false), 3000);
+    } catch (err: any) {
+      setSaveError(err.message ?? 'Error al guardar');
+    } finally {
+      setSaving(false);
+    }
   }
 
   function addHabilidad() {
@@ -125,6 +154,22 @@ export default function FlyerClient({ usuario }: Props) {
         {editing && (
           <div style={{ maxWidth: 560, margin: '0 auto 24px', background: '#fff', borderRadius: 16, padding: '24px', border: '1px solid #E0D8FC', boxShadow: '0 4px 20px rgba(91,63,224,0.08)' }}>
             <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111118', marginBottom: 18 }}>Completá los datos del flyer</h3>
+
+            {/* Foto */}
+            <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: fotoUrl ? 'transparent' : 'linear-gradient(135deg,#4B33CC,#7048F0)', border: '3px solid #E0D8FC', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+                {fotoUrl ? <img src={fotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : getInitials(usuario.nombre_completo)}
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 700, color: '#5B3FE0', display: 'block', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Foto de perfil</label>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: uploadingFoto ? '#F0F0F8' : '#ECE9FB', color: '#5B3FE0', borderRadius: 8, padding: '7px 14px', fontSize: 13, fontWeight: 600, cursor: uploadingFoto ? 'default' : 'pointer' }}>
+                  {uploadingFoto ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <Camera size={13} />}
+                  {uploadingFoto ? 'Subiendo...' : fotoUrl ? 'Cambiar foto' : 'Subir foto'}
+                  <input type="file" accept="image/*" style={{ display: 'none' }} disabled={uploadingFoto}
+                    onChange={e => { const f = e.target.files?.[0]; if (f) uploadFoto(f); e.currentTarget.value = ''; }} />
+                </label>
+              </div>
+            </div>
 
             {/* Resumen */}
             <div style={{ marginBottom: 18 }}>
@@ -213,6 +258,12 @@ export default function FlyerClient({ usuario }: Props) {
               </div>
             </div>
 
+            {saveError && (
+              <div style={{ marginBottom: 12, padding: '10px 14px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, fontSize: 13, color: '#B91C1C' }}>
+                ⚠️ {saveError}
+              </div>
+            )}
+
             <button onClick={guardar} disabled={saving}
               style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'linear-gradient(135deg,#4B33CC,#6D5AE6)', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 24px', fontWeight: 600, fontSize: 14, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>
               {saving ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Check size={15} />}
@@ -232,7 +283,7 @@ export default function FlyerClient({ usuario }: Props) {
                 <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, position: 'relative', zIndex: 1 }}>
                   <div style={{ width: 68, height: 68, borderRadius: '50%', flexShrink: 0, background: 'rgba(255,255,255,0.2)', border: '2.5px solid rgba(255,255,255,0.4)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 800, color: '#fff' }}>
-                    {usuario.foto_url ? <img src={usuario.foto_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : getInitials(usuario.nombre_completo)}
+                    {fotoUrl ? <img src={fotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : getInitials(usuario.nombre_completo)}
                   </div>
                   <div style={{ flex: 1 }}>
                     <h1 style={{ color: '#fff', fontSize: 20, fontWeight: 800, margin: 0, lineHeight: 1.2, letterSpacing: '-0.02em' }}>{usuario.nombre_completo}</h1>

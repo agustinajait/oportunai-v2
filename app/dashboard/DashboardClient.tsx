@@ -597,6 +597,18 @@ export default function DashboardClient({
           <div className="grid lg:grid-cols-3 gap-6">
             {/* ── Columna izquierda ──────────────────────────────── */}
             <div className="space-y-5">
+              {/* Flyer card */}
+              <Link href="/dashboard/flyer" className="card p-5 flex items-center gap-4 hover:shadow-md transition-shadow group" style={{ textDecoration: 'none' }}>
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
+                  <FileText size={20} color="#fff" strokeWidth={1.75} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-ink-800 text-sm">Crear mi flyer</p>
+                  <p className="text-xs text-ink-400 mt-0.5">Tarjeta con QR para imprimir o compartir</p>
+                </div>
+                <ArrowRight size={16} className="text-ink-300 group-hover:text-brand-500 transition-colors" />
+              </Link>
+
               {/* Bio */}
               <div className="card p-6">
                 <div className="flex items-center justify-between mb-4">

@@ -53,6 +53,9 @@ interface CapacitacionItem {
 
 interface CvDatos {
   resumen?: string;
+  nivel_estudios?: string;
+  disponibilidad?: string;
+  localidad?: string;
   experiencia?: { empresa: string; cargo: string; periodo: string; descripcion: string }[];
   educacion?: { institucion: string; titulo: string; periodo: string }[];
   habilidades?: string[];
@@ -163,12 +166,18 @@ export default function DashboardClient({
   );
   const [habilidades, setHabilidades] = useState<string[]>(usuario.cv_datos?.habilidades ?? []);
   const [habilidadInput, setHabilidadInput] = useState('');
+  const [nivelEstudios, setNivelEstudios] = useState(usuario.cv_datos?.nivel_estudios ?? '');
+  const [disponibilidad, setDisponibilidad] = useState(usuario.cv_datos?.disponibilidad ?? '');
+  const [localidad, setLocalidad] = useState(usuario.cv_datos?.localidad ?? '');
 
   async function guardarDatos() {
     setGuardandoDatos(true);
     const nuevoCvDatos: CvDatos = {
       ...(usuario.cv_datos ?? {}),
       resumen: resumenPerfil || undefined,
+      nivel_estudios: nivelEstudios || undefined,
+      disponibilidad: disponibilidad || undefined,
+      localidad: localidad || undefined,
       experiencia: experiencias.length ? experiencias : undefined,
       educacion: educaciones.length ? educaciones : undefined,
       habilidades: habilidades.length ? habilidades : undefined,
@@ -1068,6 +1077,13 @@ export default function DashboardClient({
                 {!editandoDatos ? (
                   <div className="space-y-4 text-sm text-ink-600">
                     {fechaNac && <p><span className="text-ink-400">Fecha de nacimiento:</span> {new Date(fechaNac + 'T00:00:00').toLocaleDateString('es-AR')}</p>}
+                    {(nivelEstudios || disponibilidad || localidad) && (
+                      <div className="flex flex-wrap gap-2">
+                        {nivelEstudios && <span className="text-xs bg-ink-50 text-ink-600 px-2 py-1 rounded-full">{nivelEstudios}</span>}
+                        {disponibilidad && <span className="text-xs bg-ink-50 text-ink-600 px-2 py-1 rounded-full">{disponibilidad}</span>}
+                        {localidad && <span className="text-xs bg-ink-50 text-ink-600 px-2 py-1 rounded-full">📍 {localidad}</span>}
+                      </div>
+                    )}
                     {resumenPerfil && <p className="leading-relaxed">{resumenPerfil}</p>}
                     {experiencias.length > 0 && (
                       <div>
@@ -1103,7 +1119,7 @@ export default function DashboardClient({
                         </div>
                       </div>
                     )}
-                    {!fechaNac && !resumenPerfil && !experiencias.length && !educaciones.length && !habilidades.length && (
+                    {!fechaNac && !resumenPerfil && !nivelEstudios && !disponibilidad && !localidad && !experiencias.length && !educaciones.length && !habilidades.length && (
                       <p className="text-ink-300 italic text-sm">Completá tus datos para que las empresas te conozcan mejor.</p>
                     )}
                   </div>
@@ -1119,6 +1135,40 @@ export default function DashboardClient({
                     <div>
                       <label className="text-xs font-medium text-ink-600 block mb-1">Resumen profesional</label>
                       <textarea value={resumenPerfil} onChange={e => setResumenPerfil(e.target.value)} rows={3} placeholder="Describí brevemente tu perfil y objetivos..." className="input-field resize-none text-sm" />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-medium text-ink-600 block mb-1">Nivel de estudios</label>
+                        <select value={nivelEstudios} onChange={e => setNivelEstudios(e.target.value)} className="input-field text-sm">
+                          <option value="">Seleccioná</option>
+                          <option>Primario completo</option>
+                          <option>Secundario incompleto</option>
+                          <option>Secundario completo</option>
+                          <option>Terciario incompleto</option>
+                          <option>Terciario completo</option>
+                          <option>Universitario incompleto</option>
+                          <option>Universitario completo</option>
+                          <option>Posgrado</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-ink-600 block mb-1">Disponibilidad horaria</label>
+                        <select value={disponibilidad} onChange={e => setDisponibilidad(e.target.value)} className="input-field text-sm">
+                          <option value="">Seleccioná</option>
+                          <option>Full time</option>
+                          <option>Part time mañana</option>
+                          <option>Part time tarde</option>
+                          <option>Part time noche</option>
+                          <option>Fines de semana</option>
+                          <option>Flexible</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-medium text-ink-600 block mb-1">Localidad</label>
+                      <input type="text" value={localidad} onChange={e => setLocalidad(e.target.value)} placeholder="Ej: Buenos Aires, CABA" className="input-field text-sm" />
                     </div>
 
                     {/* Experiencia */}

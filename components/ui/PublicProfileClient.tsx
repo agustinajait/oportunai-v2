@@ -26,6 +26,7 @@ interface UsuarioPublico {
   nombre_completo: string;
   bio: string | null;
   slug: string;
+  foto_url?: string | null;
   email: string;
   telefono: string;
   direccion: string;
@@ -172,12 +173,15 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
         <div className="card p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-brand-100 rounded-2xl flex items-center justify-center flex-shrink-0">
-                <User size={28} className="text-brand-600" />
+              <div className="w-16 h-16 rounded-2xl flex-shrink-0 overflow-hidden flex items-center justify-center font-bold text-xl text-white flex-shrink-0"
+                style={{ background: usuario.foto_url ? 'transparent' : 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
+                {usuario.foto_url
+                  ? <img src={usuario.foto_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : usuario.nombre_completo.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
+                }
               </div>
               <div>
                 <h1 className="font-display text-2xl font-semibold text-ink-900 leading-tight">
-                  {isCv ? 'Video CV de' : 'Video Pitch de'}{' '}
                   {usuario.nombre_completo}
                 </h1>
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">

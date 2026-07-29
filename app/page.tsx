@@ -108,7 +108,7 @@ export default async function LandingPage() {
           <span className={s.logoText}>OPORTUNAI</span>
         </Link>
         <div className={s.navLinks}>
-          <Link href="/ofertas" className={s.btnGhost}>Capacitaciones</Link>
+          <Link href="/capacitaciones" className={s.btnGhost}>Capacitaciones</Link>
           <Link href="/login" className={s.btnGhost}>Iniciar sesión</Link>
           <Link href="/register" className={s.btnFill}>Empezar gratis</Link>
         </div>

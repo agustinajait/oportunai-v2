@@ -15,7 +15,7 @@ import {
   ExternalLink, Copy, CheckCheck, Clock, Circle,
   BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck,
   CalendarDays, MapPin, Loader2, Plus, GraduationCap, Briefcase as BriefcaseIcon, Wrench,
-  Star, Building2, Link2, Trash2, PlayCircle
+  Star, Building2, Link2, Trash2, PlayCircle, Download
 } from 'lucide-react';
 import OfertasTab from '@/components/ui/OfertasTab';
 import CapacitacionPlayer from '@/components/ui/CapacitacionPlayer';
@@ -675,7 +675,21 @@ export default function DashboardClient({
                 </Link>
               </div>
 
-              {/* Bio */}
+              {/* Descargar CV */}
+              <div className="card p-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-xl flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <FileText size={18} color="#fff" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-ink-800 text-sm">CV para postulaciones</p>
+                    <p className="text-xs text-ink-400">Formato DOCX compatible con ATS</p>
+                  </div>
+                </div>
+                <a href="/api/cv/download" download style={{ textDecoration:'none', display:'flex', alignItems:'center', justifyContent:'center', gap:6, background:'linear-gradient(135deg,#4B33CC,#7048F0)', color:'#fff', borderRadius:10, padding:'10px 14px', fontWeight:700, fontSize:13, whiteSpace:'nowrap' }}>
+                  <Download size={14} /> Descargar
+                </a>
+              </div>
               <div className="card p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-semibold text-ink-800">Tu bio</h2>

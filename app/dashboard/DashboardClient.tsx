@@ -59,11 +59,29 @@ interface CvDatos {
   experiencia?: { empresa: string; cargo: string; periodo: string; descripcion: string }[];
   educacion?: { institucion: string; titulo: string; periodo: string }[];
   habilidades?: string[];
+  herramientas_digitales?: string[];
   idiomas?: string[];
 }
 
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: CURRENT_YEAR - 1979 }, (_, i) => String(CURRENT_YEAR - i));
+
+const HABILIDADES_SUGERIDAS = [
+  'Atención al cliente', 'Trabajo en equipo', 'Comunicación', 'Responsabilidad',
+  'Proactividad', 'Organización', 'Puntualidad', 'Resolución de problemas',
+  'Manejo de caja', 'Ventas', 'Liderazgo', 'Adaptabilidad',
+];
+
+const HERRAMIENTAS_DIGITALES = [
+  'Microsoft Office', 'Excel', 'Word', 'PowerPoint', 'Outlook',
+  'Google Workspace', 'Google Sheets', 'Google Docs', 'Gmail',
+  'WhatsApp Business', 'Zoom', 'Teams',
+  'ChatGPT / IA', 'SAP', 'HubSpot', 'Salesforce',
+  'Redes sociales', 'Canva', 'Mercado Libre / e-commerce',
+];
+
 interface Usuario {
-  id: string; nombre_completo: string; email: string; telefono: string;
+  id: string; nombre_completo: string; email: string; telefono: string; direccion: string;
   bio: string | null; foto_url: string | null; slug: string; role: 'super_admin' | 'admin' | 'user';
   cv_datos: CvDatos | null;
   alfa_digital: string | null; alfa_score: number | null;
@@ -166,9 +184,12 @@ export default function DashboardClient({
   );
   const [habilidades, setHabilidades] = useState<string[]>(usuario.cv_datos?.habilidades ?? []);
   const [habilidadInput, setHabilidadInput] = useState('');
+  const [herramientas, setHerramientas] = useState<string[]>(usuario.cv_datos?.herramientas_digitales ?? []);
   const [nivelEstudios, setNivelEstudios] = useState(usuario.cv_datos?.nivel_estudios ?? '');
   const [disponibilidad, setDisponibilidad] = useState(usuario.cv_datos?.disponibilidad ?? '');
   const [localidad, setLocalidad] = useState(usuario.cv_datos?.localidad ?? '');
+  const [telefono, setTelefono] = useState(usuario.telefono ?? '');
+  const [direccion, setDireccion] = useState(usuario.direccion ?? '');
 
   async function guardarDatos() {
     setGuardandoDatos(true);
@@ -181,11 +202,17 @@ export default function DashboardClient({
       experiencia: experiencias.length ? experiencias : undefined,
       educacion: educaciones.length ? educaciones : undefined,
       habilidades: habilidades.length ? habilidades : undefined,
+      herramientas_digitales: herramientas.length ? herramientas : undefined,
     };
     await fetch('/api/users/perfil', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fecha_nacimiento: fechaNac || null, cv_datos: nuevoCvDatos }),
+      body: JSON.stringify({
+        fecha_nacimiento: fechaNac || null,
+        cv_datos: nuevoCvDatos,
+        telefono: telefono || undefined,
+        direccion: direccion || undefined,
+      }),
     });
     setCvDatos(nuevoCvDatos);
     setGuardandoDatos(false);
@@ -690,35 +717,6 @@ export default function DashboardClient({
                   <Download size={14} /> Descargar
                 </a>
               </div>
-              <div className="card p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-semibold text-ink-800">Tu bio</h2>
-                  {!editingBio ? (
-                    <button onClick={() => setEditingBio(true)} className="btn-ghost py-1 px-2 text-xs gap-1">
-                      <Edit3 size={13} /> Editar
-                    </button>
-                  ) : (
-                    <div className="flex gap-1">
-                      <button onClick={saveBio} disabled={bioSaving} className="btn-ghost py-1 px-2 text-xs gap-1 text-brand-600">
-                        <Check size={13} /> {bioSaving ? '...' : 'Guardar'}
-                      </button>
-                      <button onClick={() => { setBio(usuario.bio ?? ''); setEditingBio(false); }} className="btn-ghost py-1 px-2 text-xs gap-1 text-red-500">
-                        <X size={13} />
-                      </button>
-                    </div>
-                  )}
-                </div>
-                {editingBio ? (
-                  <textarea value={bio} onChange={e => setBio(e.target.value)} maxLength={500} rows={4}
-                    className="input-field resize-none text-sm" placeholder="Contá algo sobre vos..." />
-                ) : (
-                  <p className="text-ink-500 text-sm leading-relaxed">
-                    {bio || <span className="text-ink-300 italic">Sin bio todavía. ¡Agregá una!</span>}
-                  </p>
-                )}
-                {editingBio && <p className="text-xs text-ink-300 mt-1 text-right">{bio.length}/500</p>}
-              </div>
-
               {/* Perfil digital */}
               <div className="card p-6">
                 <div className="flex items-center gap-2 mb-4">
@@ -1069,28 +1067,24 @@ export default function DashboardClient({
 
               {/* ── Mis datos ──────────────────────────────────────── */}
               <div className="card p-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-1">
                   <h2 className="font-semibold text-ink-800">Mis datos</h2>
                   {datosMsgOk && <span className="text-xs text-emerald-600 font-medium">Guardado ✓</span>}
-                  {!editandoDatos ? (
+                  {!editandoDatos && (
                     <button onClick={() => setEditandoDatos(true)} className="btn-ghost py-1 px-2 text-xs gap-1">
                       <Edit3 size={13} /> Editar
                     </button>
-                  ) : (
-                    <div className="flex gap-1">
-                      <button onClick={guardarDatos} disabled={guardandoDatos} className="btn-ghost py-1 px-2 text-xs gap-1 text-brand-600">
-                        <Check size={13} /> {guardandoDatos ? '...' : 'Guardar'}
-                      </button>
-                      <button onClick={() => setEditandoDatos(false)} className="btn-ghost py-1 px-2 text-xs gap-1 text-red-500">
-                        <X size={13} />
-                      </button>
-                    </div>
                   )}
                 </div>
+                <p className="text-xs text-ink-400 mb-4">Estos datos se usan para generar tu CV, tu flyer y tu perfil público.</p>
 
                 {!editandoDatos ? (
                   <div className="space-y-4 text-sm text-ink-600">
-                    {fechaNac && <p><span className="text-ink-400">Fecha de nacimiento:</span> {new Date(fechaNac + 'T00:00:00').toLocaleDateString('es-AR')}</p>}
+                    <div className="flex flex-wrap gap-3">
+                      {fechaNac && <span className="text-ink-500"><span className="text-ink-400">Nac:</span> {new Date(fechaNac + 'T00:00:00').toLocaleDateString('es-AR')}</span>}
+                      {telefono && <span className="text-ink-500">📞 {telefono}</span>}
+                      {direccion && <span className="text-ink-500">🏠 {direccion}</span>}
+                    </div>
                     {(nivelEstudios || disponibilidad || localidad) && (
                       <div className="flex flex-wrap gap-2">
                         {nivelEstudios && <span className="text-xs bg-ink-50 text-ink-600 px-2 py-1 rounded-full">{nivelEstudios}</span>}
@@ -1133,7 +1127,15 @@ export default function DashboardClient({
                         </div>
                       </div>
                     )}
-                    {!fechaNac && !resumenPerfil && !nivelEstudios && !disponibilidad && !localidad && !experiencias.length && !educaciones.length && !habilidades.length && (
+                    {herramientas.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest mb-2 flex items-center gap-1">💻 Herramientas digitales</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {herramientas.map((h, i) => <span key={i} className="text-xs bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full">{h}</span>)}
+                        </div>
+                      </div>
+                    )}
+                    {!fechaNac && !resumenPerfil && !nivelEstudios && !disponibilidad && !localidad && !experiencias.length && !educaciones.length && !habilidades.length && !herramientas.length && (
                       <p className="text-ink-300 italic text-sm">Completá tus datos para que las empresas te conozcan mejor.</p>
                     )}
                   </div>
@@ -1141,9 +1143,18 @@ export default function DashboardClient({
                   <div className="space-y-5">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
+                        <label className="text-xs font-medium text-ink-600 block mb-1">Teléfono</label>
+                        <input type="tel" value={telefono} onChange={e => setTelefono(e.target.value)} placeholder="Ej: 11 1234-5678" className="input-field text-sm" />
+                      </div>
+                      <div>
                         <label className="text-xs font-medium text-ink-600 block mb-1">Fecha de nacimiento</label>
                         <input type="date" value={fechaNac} onChange={e => setFechaNac(e.target.value)} className="input-field text-sm" />
                       </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-medium text-ink-600 block mb-1">Dirección</label>
+                      <input type="text" value={direccion} onChange={e => setDireccion(e.target.value)} placeholder="Ej: Av. Corrientes 1234, CABA" className="input-field text-sm" />
                     </div>
 
                     <div>
@@ -1198,8 +1209,30 @@ export default function DashboardClient({
                               <input value={e.cargo} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, cargo: ev.target.value } : x))} placeholder="Cargo / puesto" className="input-field text-xs py-1.5" />
                               <input value={e.empresa} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, empresa: ev.target.value } : x))} placeholder="Empresa" className="input-field text-xs py-1.5" />
                             </div>
-                            <div className="flex gap-2">
-                              <input value={e.periodo} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, periodo: ev.target.value } : x))} placeholder="Período (ej: 2020–2023)" className="input-field text-xs py-1.5 flex-1" />
+                            <div className="flex gap-2 items-center">
+                              <select
+                                value={e.periodo?.split(' - ')[0] ?? ''}
+                                onChange={ev => {
+                                  const hasta = e.periodo?.split(' - ')[1] ?? 'Actualidad';
+                                  setExperiencias(p => p.map((x, j) => j === i ? { ...x, periodo: ev.target.value ? `${ev.target.value} - ${hasta}` : '' } : x));
+                                }}
+                                className="input-field text-xs py-1.5 flex-1"
+                              >
+                                <option value="">Desde</option>
+                                {YEARS.map(y => <option key={y}>{y}</option>)}
+                              </select>
+                              <span className="text-ink-400 text-xs flex-shrink-0">–</span>
+                              <select
+                                value={e.periodo?.split(' - ')[1] ?? 'Actualidad'}
+                                onChange={ev => {
+                                  const desde = e.periodo?.split(' - ')[0] ?? '';
+                                  setExperiencias(p => p.map((x, j) => j === i ? { ...x, periodo: desde ? `${desde} - ${ev.target.value}` : '' } : x));
+                                }}
+                                className="input-field text-xs py-1.5 flex-1"
+                              >
+                                <option>Actualidad</option>
+                                {YEARS.map(y => <option key={y}>{y}</option>)}
+                              </select>
                               <button onClick={() => setExperiencias(p => p.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-600 px-2"><X size={14} /></button>
                             </div>
                           </div>
@@ -1239,10 +1272,51 @@ export default function DashboardClient({
                           </span>
                         ))}
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 mb-2">
                         <input value={habilidadInput} onChange={e => setHabilidadInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && habilidadInput.trim()) { setHabilidades(p => [...p, habilidadInput.trim()]); setHabilidadInput(''); e.preventDefault(); }}} placeholder="Escribí una habilidad y presioná Enter" className="input-field text-xs py-1.5 flex-1" />
                         <button onClick={() => { if (habilidadInput.trim()) { setHabilidades(p => [...p, habilidadInput.trim()]); setHabilidadInput(''); }}} className="btn-ghost text-xs py-1.5 px-3"><Plus size={13} /></button>
                       </div>
+                      <p className="text-xs text-ink-400 mb-1.5">Sugerencias:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {HABILIDADES_SUGERIDAS.filter(h => !habilidades.includes(h)).map(h => (
+                          <button key={h} onClick={() => setHabilidades(p => [...p, h])}
+                            className="text-xs bg-ink-100 text-ink-500 hover:bg-brand-50 hover:text-brand-600 px-2 py-0.5 rounded-full transition-colors">
+                            + {h}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Herramientas digitales */}
+                    <div>
+                      <label className="text-xs font-medium text-ink-600 block mb-2">💻 Herramientas digitales</label>
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {herramientas.map((h, i) => (
+                          <span key={i} className="flex items-center gap-1 text-xs bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full">
+                            {h} <button onClick={() => setHerramientas(p => p.filter((_, j) => j !== i))} className="text-teal-400 hover:text-red-500"><X size={10} /></button>
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {HERRAMIENTAS_DIGITALES.filter(h => !herramientas.includes(h)).map(h => (
+                          <button key={h} onClick={() => setHerramientas(p => [...p, h])}
+                            className="text-xs bg-ink-100 text-ink-500 hover:bg-teal-50 hover:text-teal-600 px-2 py-0.5 rounded-full transition-colors">
+                            + {h}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Botón guardar */}
+                    <div className="pt-2 border-t border-ink-100 flex gap-2">
+                      <button onClick={guardarDatos} disabled={guardandoDatos}
+                        className="btn-primary flex-1 justify-center py-3 text-sm gap-2">
+                        <Check size={16} /> {guardandoDatos ? 'Guardando...' : 'Guardar todos mis datos'}
+                      </button>
+                      <button onClick={() => setEditandoDatos(false)}
+                        className="btn-ghost px-4 text-sm text-red-500">
+                        Cancelar
+                      </button>
                     </div>
                   </div>
                 )}

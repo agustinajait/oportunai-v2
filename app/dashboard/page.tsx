@@ -17,6 +17,7 @@ export default async function DashboardPage() {
         nombre_completo: true,
         email: true,
         telefono: true,
+        direccion: true,
         bio: true,
         foto_url: true,
         slug: true,

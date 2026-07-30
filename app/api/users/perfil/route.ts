@@ -8,15 +8,15 @@ export async function PATCH(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
 
   const body = await req.json();
-  const { fecha_nacimiento, cv_datos } = body;
+  const { fecha_nacimiento, cv_datos, telefono, direccion } = body;
 
   const data: Record<string, any> = {};
   if (fecha_nacimiento !== undefined) {
     data.fecha_nacimiento = fecha_nacimiento ? new Date(fecha_nacimiento) : null;
   }
-  if (cv_datos !== undefined) {
-    data.cv_datos = cv_datos;
-  }
+  if (cv_datos !== undefined) data.cv_datos = cv_datos;
+  if (telefono !== undefined) data.telefono = telefono;
+  if (direccion !== undefined) data.direccion = direccion;
 
   const usuario = await prisma.usuario.update({
     where: { id: session.userId },

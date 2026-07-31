@@ -201,13 +201,13 @@ export default function FlyerClient({ usuario }: Props) {
   }
 
   function compartirWhatsApp() {
-    const texto = encodeURIComponent(`¡Mirá mi CV digital en Oportunai! 👇\n${profileUrl}`);
+    const texto = encodeURIComponent(`Mirá mi perfil laboral en Oportunai 👇\n${profileUrl}`);
     window.open(`https://wa.me/?text=${texto}`, '_blank');
   }
 
   function compartirEmail() {
     const subject = encodeURIComponent(`CV de ${usuario.nombre_completo} — Oportunai`);
-    const body = encodeURIComponent(`Hola,\n\nTe comparto mi CV digital en Oportunai:\n${profileUrl}\n\nSaludos,\n${usuario.nombre_completo}`);
+    const body = encodeURIComponent(`Hola,\n\nTe comparto mi perfil laboral en Oportunai:\n${profileUrl}\n\nSaludos,\n${usuario.nombre_completo}`);
     window.open(`mailto:?subject=${subject}&body=${body}`);
   }
 

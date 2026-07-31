@@ -130,7 +130,7 @@ export default function CardClient({ usuario }: Props) {
   }
 
   function compartirWhatsApp() {
-    const txt = encodeURIComponent(`Hola, te paso mi tarjeta de contacto digital 👇\n${profileUrl}`);
+    const txt = encodeURIComponent(`Mirá mi perfil laboral en Oportunai 👇\n${profileUrl}`);
     window.open(`https://wa.me/?text=${txt}`, '_blank');
   }
 

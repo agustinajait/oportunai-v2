@@ -84,11 +84,11 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
   const profileUrl = `${appUrl}/u/${usuario.slug}/${tipo}`;
 
   const shareTitle = isCv
-    ? `Video CV de ${usuario.nombre_completo}`
-    : `Video Pitch de ${usuario.nombre_completo}`;
+    ? `${usuario.nombre_completo} — Perfil laboral en Oportunai`
+    : `${usuario.nombre_completo} — Video Pitch en Oportunai`;
   const shareText = isCv
-    ? `Te comparto mi Video CV en Oportunai`
-    : `Te comparto mi Video Pitch en Oportunai`;
+    ? `Mirá este talento en Oportunai 👇`
+    : `Mirá este Video Pitch en Oportunai 👇`;
 
   // ── Share handler: native on mobile, clipboard fallback on desktop ──
   const handleShare = async () => {

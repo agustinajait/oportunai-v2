@@ -455,7 +455,7 @@ export default function EmpresaDashboard() {
 
   // Servicios (módulos de trabajo)
   type ServicioEmpresa = {
-    id: string; titulo: string; descripcion: string; frecuencia: string; duracion_jornada: string | null; estado: string;
+    id: string; titulo: string; descripcion: string; frecuencia: string; duracion_jornada: string | null; horas_modulo: number | null; precio_hora: number | null; estado: string;
     deadline: string | null; contrato_template: string | null;
     protocolo: { item: string; descripcion: string }[];
     capacitacion: { id: string; titulo: string } | null;
@@ -496,7 +496,8 @@ export default function EmpresaDashboard() {
   const [remitoMsg, setRemitoMsg] = useState<{ id: string; msg: string; ok: boolean } | null>(null);
   const PROTOCOLO_ITEM_EMPTY = { item: '', descripcion: '' };
   const [servicioForm, setServicioForm] = useState({
-    titulo: '', descripcion: '', frecuencia: 'mensual', duracion_jornada: '', deadline: '',
+    titulo: '', descripcion: '', frecuencia: 'mensual', duracion_jornada: '',
+    horas_modulo: '', precio_hora: '', deadline: '',
     capacitacion_id: '', contrato_template: '',
     protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }],
   });
@@ -538,7 +539,7 @@ export default function EmpresaDashboard() {
     if (data.ok) {
       setServicioMsg('✓ Servicio creado correctamente');
       setNewServicioOpen(false);
-      setServicioForm({ titulo: '', descripcion: '', frecuencia: 'mensual', duracion_jornada: '', deadline: '', capacitacion_id: '', contrato_template: '', protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }] });
+      setServicioForm({ titulo: '', descripcion: '', frecuencia: 'mensual', duracion_jornada: '', horas_modulo: '', precio_hora: '', deadline: '', capacitacion_id: '', contrato_template: '', protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }] });
       cargarServiciosEmpresa();
     } else {
       setServicioMsg(data.error ?? 'Error al crear el servicio');
@@ -1987,8 +1988,26 @@ export default function EmpresaDashboard() {
                     <label className="block text-xs font-medium text-gray-700 mb-1">Duración de jornada</label>
                     <input value={servicioForm.duracion_jornada} onChange={e => setServicioForm(p => ({ ...p, duracion_jornada: e.target.value }))}
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                      placeholder="Ej: 6 hs/día, 4 hs los sábados, 20 hs semanales" />
+                      placeholder="Ej: 6 hs/día, 4 hs los sábados" />
                   </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Total hs del módulo</label>
+                    <input type="number" min="1" value={servicioForm.horas_modulo} onChange={e => setServicioForm(p => ({ ...p, horas_modulo: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      placeholder="Ej: 40" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Precio por hora ($)</label>
+                    <input type="number" min="0" step="0.01" value={servicioForm.precio_hora} onChange={e => setServicioForm(p => ({ ...p, precio_hora: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      placeholder="Ej: 3500" />
+                  </div>
+                  {servicioForm.horas_modulo && servicioForm.precio_hora && (
+                    <div className="col-span-2 bg-teal-50 rounded-lg px-3 py-2 text-sm font-semibold text-teal-700 flex items-center gap-2">
+                      <span>Honorario estimado por módulo:</span>
+                      <span>${(parseFloat(servicioForm.horas_modulo) * parseFloat(servicioForm.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })}</span>
+                    </div>
+                  )}
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Deadline (opcional)</label>
                     <input type="date" value={servicioForm.deadline} onChange={e => setServicioForm(p => ({ ...p, deadline: e.target.value }))}
@@ -2089,6 +2108,11 @@ export default function EmpresaDashboard() {
                         <p className="text-xs text-gray-500 mt-1 line-clamp-1">{s.descripcion}</p>
                         <div className="flex items-center gap-3 mt-2 text-xs text-gray-400 flex-wrap">
                           {s.duracion_jornada && <span className="font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full">{s.duracion_jornada}</span>}
+                          {s.horas_modulo && <span className="font-medium text-gray-600">{s.horas_modulo} hs/módulo</span>}
+                          {s.precio_hora && <span className="font-medium text-gray-600">${Number(s.precio_hora).toLocaleString('es-AR')}/hs</span>}
+                          {s.horas_modulo && s.precio_hora && (
+                            <span className="font-bold text-teal-700">${(s.horas_modulo * Number(s.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })} total</span>
+                          )}
                           <span>{s._count.postulaciones} postulantes</span>
                           <span>{s._count.modulos_asignados} módulos activos</span>
                           {s.deadline && <span>Deadline: {new Date(s.deadline).toLocaleDateString('es-AR')}</span>}

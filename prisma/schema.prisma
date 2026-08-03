@@ -374,6 +374,8 @@ model Servicio {
   descripcion        String
   frecuencia         FrecuenciaModulo @default(mensual)
   duracion_jornada   String?
+  horas_modulo       Int?
+  precio_hora        Decimal?         @db.Decimal(10, 2)
   deadline           DateTime?
   capacitacion_id    String?
   contrato_template  String?

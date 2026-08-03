@@ -496,6 +496,21 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
                             <Clock size={11} /> {s.duracion_jornada}
                           </span>
                         )}
+                        {s.horas_modulo && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#f0fdfa', color: '#0d9488', fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999 }}>
+                            {s.horas_modulo} hs
+                          </span>
+                        )}
+                        {s.precio_hora && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#f0fdf4', color: '#16a34a', fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999 }}>
+                            ${Number(s.precio_hora).toLocaleString('es-AR')}/hs
+                          </span>
+                        )}
+                        {s.horas_modulo && s.precio_hora && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#fefce8', color: '#854d0e', border: '1px solid #fde68a', fontSize: 12, fontWeight: 800, padding: '3px 10px', borderRadius: 999 }}>
+                            ${(s.horas_modulo * Number(s.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })} total
+                          </span>
+                        )}
                         {s.deadline && (
                           <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#94a3b8', fontSize: 12 }}>
                             <CalendarClock size={12} /> Deadline: {new Date(s.deadline).toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}

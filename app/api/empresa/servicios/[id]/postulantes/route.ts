@@ -71,7 +71,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const body = await req.json();
-    const { postulacion_id, estado, deadline } = body;
+    const { postulacion_id, estado, deadline, horas_asignadas } = body;
 
     if (!postulacion_id || !['aceptado', 'rechazado'].includes(estado)) {
       return NextResponse.json({ error: 'Faltan datos' }, { status: 400 });
@@ -97,6 +97,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
             protocolo: servicio.protocolo,
             estado: 'en_progreso',
             deadline: deadline ? new Date(deadline) : (servicio.deadline ?? null),
+            horas_asignadas: horas_asignadas ? parseInt(horas_asignadas) : null,
           },
         });
       }

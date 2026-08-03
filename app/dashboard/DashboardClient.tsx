@@ -251,7 +251,7 @@ export default function DashboardClient({
     _count: { postulaciones: number };
   };
   type ModuloAsignadoItem = {
-    id: string; estado: string; fecha_inicio: string; deadline: string | null; contrato_url: string | null;
+    id: string; estado: string; fecha_inicio: string; deadline: string | null; horas_asignadas: number | null; contrato_url: string | null;
     protocolo: { item: string; descripcion: string }[];
     servicio: { id: string; titulo: string; descripcion: string; frecuencia: string };
     empresa: { id: string; nombre: string; logo_url: string | null };
@@ -731,11 +731,18 @@ export default function DashboardClient({
 
                         {isOpen && (
                           <div className="border-t border-gray-100 p-4 space-y-3 bg-gray-50/50">
-                            {mod.deadline && (
-                              <p className="text-xs text-ink-500 flex items-center gap-1">
-                                <Clock size={12} /> Deadline: {new Date(mod.deadline).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                              </p>
-                            )}
+                            <div className="flex items-center gap-3 flex-wrap">
+                              {mod.horas_asignadas && (
+                                <span className="text-xs font-semibold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                  <Clock size={11} /> {mod.horas_asignadas} hs asignadas
+                                </span>
+                              )}
+                              {mod.deadline && (
+                                <span className="text-xs text-ink-500 flex items-center gap-1">
+                                  <Clock size={11} /> Deadline: {new Date(mod.deadline).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                </span>
+                              )}
+                            </div>
                             <p className="text-xs text-ink-500 font-medium uppercase tracking-wide">Protocolo de trabajo</p>
                             <div className="space-y-3">
                               {protocolo.map((item, idx) => {

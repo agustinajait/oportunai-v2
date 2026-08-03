@@ -127,6 +127,44 @@ type Cap = {
   _count: { completadas: number };
 };
 
+function CONTRATO_PLANTILLA(nombreServicio: string): string {
+  return `ACUERDO DE PRESTACIÓN DE SERVICIOS
+
+Entre [NOMBRE DE LA EMPRESA], CUIT [CUIT], con domicilio en [DOMICILIO] (en adelante "la Empresa"), y [NOMBRE DEL PRESTADOR], DNI [DNI], con domicilio en [DOMICILIO] (en adelante "el Prestador"), se acuerda lo siguiente:
+
+1. OBJETO
+El Prestador se compromete a realizar el servicio de ${nombreServicio} conforme al protocolo de trabajo acordado, cumpliendo cada uno de los ítems establecidos y aportando la evidencia correspondiente a través de la plataforma Oportunai.
+
+2. DURACIÓN Y FRECUENCIA
+El presente acuerdo tiene vigencia desde la fecha de aceptación en la plataforma. La frecuencia de prestación y la carga horaria asignada quedan registradas en el módulo correspondiente.
+
+3. OBLIGACIONES DEL PRESTADOR
+- Realizar el servicio en las condiciones, plazos y calidad pactados.
+- Cargar evidencia fotográfica o descriptiva por cada ítem del protocolo.
+- Informar con anticipación cualquier inconveniente que impida la prestación.
+
+4. OBLIGACIONES DE LA EMPRESA
+- Brindar la información y accesos necesarios para la ejecución del servicio.
+- Revisar y aprobar las evidencias presentadas en un plazo máximo de [X] días hábiles.
+- Emitir el remito correspondiente una vez aprobado el módulo completo.
+
+5. RETRIBUCIÓN
+La retribución acordada es de $[MONTO] por [módulo / hora / jornada], a abonarse mediante [MEDIO DE PAGO] dentro de los [X] días de emitido el remito.
+
+6. CONFIDENCIALIDAD
+El Prestador se compromete a mantener reserva sobre toda información de la Empresa a la que acceda en el ejercicio de sus funciones.
+
+7. RESCISIÓN
+Cualquiera de las partes podrá rescindir el presente con un preaviso de [X] días corridos. El incumplimiento grave de las obligaciones habilitará la rescisión inmediata.
+
+8. JURISDICCIÓN
+Para cualquier controversia las partes se someten a la jurisdicción de los tribunales ordinarios de [CIUDAD].
+
+Fecha: [FECHA]
+
+Firma Empresa: ___________________________    Firma Prestador: ___________________________`;
+}
+
 function ModuloEmpresaCard({
   modulo, onGenerarRemito, onCambiarEstado, onAprobarItem, generandoRemito, remitoMsg,
 }: {
@@ -1867,10 +1905,22 @@ export default function EmpresaDashboard() {
                     </div>
                   )}
                   <div className="col-span-2">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Modelo de contrato / acuerdo (opcional)</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-medium text-gray-700">Modelo de contrato / acuerdo (opcional)</label>
+                      <button
+                        type="button"
+                        onClick={() => setServicioForm(p => ({ ...p, contrato_template: CONTRATO_PLANTILLA(p.titulo || '[NOMBRE DEL SERVICIO]') }))}
+                        className="text-xs text-teal-600 hover:underline flex items-center gap-1"
+                      >
+                        <FileText size={11} /> Usar plantilla de referencia
+                      </button>
+                    </div>
                     <textarea value={servicioForm.contrato_template} onChange={e => setServicioForm(p => ({ ...p, contrato_template: e.target.value }))}
-                      rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      rows={8} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono"
                       placeholder="Texto base del acuerdo entre las partes..." />
+                    {servicioForm.contrato_template && (
+                      <p className="text-[11px] text-gray-400 mt-1">Editá el texto reemplazando los campos entre [corchetes] con los datos reales.</p>
+                    )}
                   </div>
                 </div>
                 {/* Protocolo */}

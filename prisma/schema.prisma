@@ -28,14 +28,16 @@ fecha_nacimiento DateTime?
   grabaciones_cv  Int      @default(0)
   created_at      DateTime @default(now())
 
-  videos           Video[]
-  archivos         Archivo[]
-  documentos       Documento[]
-  taller_usuarios  TallerUsuario[]
-  postulaciones    Postulacion[]
-  empresa_miembros EmpresaMiembro[]
-  referencias      Referencia[]
-  capacitaciones_ok CapacitacionUsuario[]
+  videos                Video[]
+  archivos              Archivo[]
+  documentos            Documento[]
+  taller_usuarios       TallerUsuario[]
+  postulaciones         Postulacion[]
+  empresa_miembros      EmpresaMiembro[]
+  referencias           Referencia[]
+  capacitaciones_ok     CapacitacionUsuario[]
+  postulaciones_servicio PostulacionServicio[]
+  modulos_asignados     ModuloAsignado[]
 }
 
 enum Role {
@@ -182,10 +184,12 @@ model Empresa {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  miembros       EmpresaMiembro[]
-  ofertas        Oferta[]
-  citas          Cita[]
-  capacitaciones Capacitacion[]
+  miembros          EmpresaMiembro[]
+  ofertas           Oferta[]
+  citas             Cita[]
+  capacitaciones    Capacitacion[]
+  servicios         Servicio[]
+  modulos_asignados ModuloAsignado[]
 }
 
 model EmpresaMiembro {
@@ -346,6 +350,7 @@ model Capacitacion {
 
   empresa     Empresa               @relation(fields: [empresa_id], references: [id], onDelete: Cascade)
   completadas CapacitacionUsuario[]
+  servicios   Servicio[]
 }
 
 model CapacitacionUsuario {
@@ -358,6 +363,118 @@ model CapacitacionUsuario {
   capacitacion Capacitacion @relation(fields: [capacitacion_id], references: [id], onDelete: Cascade)
 
   @@unique([usuario_id, capacitacion_id])
+}
+
+// ─── MÓDULOS DE SERVICIO ────────────────────────────────────────────────────
+
+model Servicio {
+  id                 String           @id @default(cuid())
+  empresa_id         String
+  titulo             String
+  descripcion        String
+  frecuencia         FrecuenciaModulo @default(mensual)
+  deadline           DateTime?
+  capacitacion_id    String?
+  contrato_template  String?
+  protocolo          Json             // [{item: string, descripcion: string}]
+  estado             EstadoServicio   @default(activo)
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+
+  empresa           Empresa               @relation(fields: [empresa_id], references: [id], onDelete: Cascade)
+  capacitacion      Capacitacion?         @relation(fields: [capacitacion_id], references: [id], onDelete: SetNull)
+  postulaciones     PostulacionServicio[]
+  modulos_asignados ModuloAsignado[]
+}
+
+enum FrecuenciaModulo {
+  diaria
+  semanal
+  mensual
+  unica
+}
+
+enum EstadoServicio {
+  activo
+  cerrado
+}
+
+model PostulacionServicio {
+  id          String                    @id @default(cuid())
+  servicio_id String
+  usuario_id  String
+  estado      EstadoPostulacionServicio @default(pendiente)
+  created_at  DateTime                  @default(now())
+  updated_at  DateTime                  @updatedAt
+
+  servicio Servicio @relation(fields: [servicio_id], references: [id], onDelete: Cascade)
+  usuario  Usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+
+  @@unique([servicio_id, usuario_id])
+}
+
+enum EstadoPostulacionServicio {
+  pendiente
+  aceptado
+  rechazado
+}
+
+model ModuloAsignado {
+  id           String       @id @default(cuid())
+  servicio_id  String
+  usuario_id   String
+  empresa_id   String
+  protocolo    Json         // copia del protocolo al momento de asignación
+  estado       EstadoModulo @default(en_progreso)
+  fecha_inicio DateTime     @default(now())
+  deadline     DateTime?
+  contrato_url String?
+  created_at   DateTime     @default(now())
+  updated_at   DateTime     @updatedAt
+
+  servicio   Servicio        @relation(fields: [servicio_id], references: [id], onDelete: Cascade)
+  usuario    Usuario         @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  empresa    Empresa         @relation(fields: [empresa_id], references: [id], onDelete: Cascade)
+  evidencias EvidenciaItem[]
+  remito     Remito?
+}
+
+enum EstadoModulo {
+  en_progreso
+  en_riesgo
+  completado
+  aprobado
+}
+
+model EvidenciaItem {
+  id          String          @id @default(cuid())
+  modulo_id   String
+  item_index  Int
+  texto       String?
+  archivo_url String?
+  estado      EstadoEvidencia @default(pendiente)
+  created_at  DateTime        @default(now())
+  updated_at  DateTime        @updatedAt
+
+  modulo ModuloAsignado @relation(fields: [modulo_id], references: [id], onDelete: Cascade)
+
+  @@unique([modulo_id, item_index])
+}
+
+enum EstadoEvidencia {
+  pendiente
+  aprobado
+  rechazado
+}
+
+model Remito {
+  id            String   @id @default(cuid())
+  modulo_id     String   @unique
+  numero_remito String   @unique
+  pdf_url       String?
+  created_at    DateTime @default(now())
+
+  modulo ModuloAsignado @relation(fields: [modulo_id], references: [id], onDelete: Cascade)
 }
 
 model GaleriaHome {

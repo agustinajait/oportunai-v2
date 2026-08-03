@@ -459,58 +459,60 @@ export default function DashboardClient({
     <div className="min-h-screen bg-ink-50">
       <Navbar session={{ nombre: usuario.nombre_completo, role: usuario.role, slug: usuario.slug }} />
 
-      <main className="max-w-6xl mx-auto px-6 py-10">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-3xl font-light text-ink-900">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <div className="mb-6 sm:mb-8">
+          <div className="mb-4">
+            <h1 className="font-display text-2xl sm:text-3xl font-light text-ink-900">
               Hola, <span className="font-semibold italic">{usuario.nombre_completo.split(' ')[0]}</span> 👋
             </h1>
             <p className="text-ink-400 mt-1 text-sm">Administrá tu perfil y tus contenidos</p>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1">
-            <button
-              onClick={() => setTab('perfil')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                tab === 'perfil' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
-              }`}
-            >
-              <Video size={14} />
-              Mi perfil
-            </button>
-            <button
-              onClick={() => setTab('documentos')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                tab === 'documentos' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
-              }`}
-            >
-              <ShieldCheck size={14} />
-              Mis documentos
-            </button>
-            <button
-              onClick={() => setTab('ofertas')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                tab === 'ofertas' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
-              }`}
-            >
-              <Briefcase size={14} />
-              Ofertas
-            </button>
-            <button
-              onClick={() => setTab('citas')}
-              className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                tab === 'citas' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
-              }`}
-            >
-              <CalendarDays size={14} />
-              Citas
-              {citasPendientes > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
-                  {citasPendientes}
-                </span>
-              )}
-            </button>
+          {/* Tabs — scroll horizontal en móvil */}
+          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+            <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 w-max sm:w-auto">
+              <button
+                onClick={() => setTab('perfil')}
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                  tab === 'perfil' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
+                }`}
+              >
+                <Video size={14} />
+                Mi perfil
+              </button>
+              <button
+                onClick={() => setTab('documentos')}
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                  tab === 'documentos' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
+                }`}
+              >
+                <ShieldCheck size={14} />
+                Documentos
+              </button>
+              <button
+                onClick={() => setTab('ofertas')}
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                  tab === 'ofertas' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
+                }`}
+              >
+                <Briefcase size={14} />
+                Ofertas
+              </button>
+              <button
+                onClick={() => setTab('citas')}
+                className={`relative flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                  tab === 'citas' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
+                }`}
+              >
+                <CalendarDays size={14} />
+                Citas
+                {citasPendientes > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                    {citasPendientes}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 

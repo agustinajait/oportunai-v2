@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSessionFromRequest } from '@/lib/auth';
 
-// POST /api/postulaciones â€” candidato aplica con su video
+// POST /api/postulaciones — candidato aplica con su video
 export async function POST(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req);
@@ -24,10 +24,10 @@ export async function POST(req: NextRequest) {
     });
 
     if (!video) {
-      return NextResponse.json({ error: 'Video no vÃ¡lido' }, { status: 400 });
+      return NextResponse.json({ error: 'Video no válido' }, { status: 400 });
     }
 
-    // Verificar que no aplicÃ³ antes
+    // Verificar que no aplicó antes
     const existente = await prisma.postulacion.findUnique({
       where: { oferta_id_usuario_id: { oferta_id, usuario_id: session.userId } },
     });
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET /api/postulaciones â€” candidato ve sus postulaciones
+// GET /api/postulaciones — candidato ve sus postulaciones
 export async function GET(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req);

@@ -430,6 +430,7 @@ model ModuloAsignado {
   fecha_inicio    DateTime     @default(now())
   deadline        DateTime?
   horas_asignadas Int?
+  precio_hora     Decimal?  @db.Decimal(10, 2)
   contrato_url    String?
   created_at   DateTime     @default(now())
   updated_at   DateTime     @updatedAt

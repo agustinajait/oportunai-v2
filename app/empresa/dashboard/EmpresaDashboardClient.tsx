@@ -127,11 +127,50 @@ type Cap = {
   _count: { completadas: number };
 };
 
+function CONTRATO_PLANTILLA(nombreServicio: string): string {
+  return `ACUERDO DE PRESTACIÓN DE SERVICIOS
+
+Entre [NOMBRE DE LA EMPRESA], CUIT [CUIT], con domicilio en [DOMICILIO] (en adelante "la Empresa"), y [NOMBRE DEL PRESTADOR], DNI [DNI], con domicilio en [DOMICILIO] (en adelante "el Prestador"), se acuerda lo siguiente:
+
+1. OBJETO
+El Prestador se compromete a realizar el servicio de ${nombreServicio} conforme al protocolo de trabajo acordado, cumpliendo cada uno de los ítems establecidos y aportando la evidencia correspondiente a través de la plataforma Oportunai.
+
+2. DURACIÓN Y FRECUENCIA
+El presente acuerdo tiene vigencia desde la fecha de aceptación en la plataforma. La frecuencia de prestación y la carga horaria asignada quedan registradas en el módulo correspondiente.
+
+3. OBLIGACIONES DEL PRESTADOR
+- Realizar el servicio en las condiciones, plazos y calidad pactados.
+- Cargar evidencia fotográfica o descriptiva por cada ítem del protocolo.
+- Informar con anticipación cualquier inconveniente que impida la prestación.
+
+4. OBLIGACIONES DE LA EMPRESA
+- Brindar la información y accesos necesarios para la ejecución del servicio.
+- Revisar y aprobar las evidencias presentadas en un plazo máximo de [X] días hábiles.
+- Emitir el remito correspondiente una vez aprobado el módulo completo.
+
+5. RETRIBUCIÓN
+La retribución acordada es de $[MONTO] por [módulo / hora / jornada], a abonarse mediante [MEDIO DE PAGO] dentro de los [X] días de emitido el remito.
+
+6. CONFIDENCIALIDAD
+El Prestador se compromete a mantener reserva sobre toda información de la Empresa a la que acceda en el ejercicio de sus funciones.
+
+7. RESCISIÓN
+Cualquiera de las partes podrá rescindir el presente con un preaviso de [X] días corridos. El incumplimiento grave de las obligaciones habilitará la rescisión inmediata.
+
+8. JURISDICCIÓN
+Para cualquier controversia las partes se someten a la jurisdicción de los tribunales ordinarios de [CIUDAD].
+
+Fecha: [FECHA]
+
+Firma Empresa: ___________________________    Firma Prestador: ___________________________`;
+}
+
 function ModuloEmpresaCard({
   modulo, onGenerarRemito, onCambiarEstado, onAprobarItem, generandoRemito, remitoMsg,
 }: {
   modulo: {
-    id: string; estado: string; deadline: string | null; horas_asignadas: number | null;
+    id: string; estado: string; deadline: string | null;
+    horas_asignadas: number | null; precio_hora: number | null;
     protocolo: { item: string; descripcion: string }[];
     usuario: { id: string; nombre_completo: string; email: string; telefono: string; slug: string; foto_url: string | null };
     evidencias: { item_index: number; texto: string | null; archivo_url: string | null; estado: string }[];
@@ -144,6 +183,13 @@ function ModuloEmpresaCard({
   remitoMsg: { id: string; msg: string; ok: boolean } | null;
 }) {
   const [open, setOpen] = useState(false);
+  const [editando, setEditando] = useState(false);
+  const [editForm, setEditForm] = useState({
+    horas_asignadas: modulo.horas_asignadas?.toString() ?? '',
+    precio_hora: modulo.precio_hora?.toString() ?? '',
+    deadline: modulo.deadline ? new Date(modulo.deadline).toISOString().slice(0, 10) : '',
+  });
+  const [guardando, setGuardando] = useState(false);
 
   const ESTADO_COLOR: Record<string, string> = {
     en_progreso: 'bg-blue-100 text-blue-700',
@@ -158,6 +204,32 @@ function ModuloEmpresaCard({
   const protocolo = modulo.protocolo as { item: string; descripcion: string }[];
   const aprobados = modulo.evidencias.filter(e => e.estado === 'aprobado').length;
   const msgRemito = remitoMsg?.id === modulo.id ? remitoMsg : null;
+
+  const totalHonorario =
+    editForm.horas_asignadas && editForm.precio_hora
+      ? (parseFloat(editForm.horas_asignadas) * parseFloat(editForm.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })
+      : modulo.horas_asignadas && modulo.precio_hora
+      ? (modulo.horas_asignadas * modulo.precio_hora).toLocaleString('es-AR', { minimumFractionDigits: 0 })
+      : null;
+
+  async function guardarEdicion() {
+    setGuardando(true);
+    await fetch(`/api/modulos/${modulo.id}/estado`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        horas_asignadas: editForm.horas_asignadas || null,
+        precio_hora: editForm.precio_hora || null,
+        deadline: editForm.deadline || null,
+      }),
+    });
+    // Actualizar valores locales en el objeto (el padre refrescará en próxima carga)
+    modulo.horas_asignadas = editForm.horas_asignadas ? parseInt(editForm.horas_asignadas) : null;
+    modulo.precio_hora = editForm.precio_hora ? parseFloat(editForm.precio_hora) : null;
+    modulo.deadline = editForm.deadline ? new Date(editForm.deadline).toISOString() : null;
+    setGuardando(false);
+    setEditando(false);
+  }
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -175,9 +247,17 @@ function ModuloEmpresaCard({
             <p className="text-xs text-gray-400">{modulo.usuario.email}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
           {modulo.remito && (
             <span className="text-xs bg-teal-600 text-white px-2 py-0.5 rounded-full">#{modulo.remito.numero_remito}</span>
+          )}
+          {totalHonorario && !editando && (
+            <span className="text-xs font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded-full">
+              ${totalHonorario}
+            </span>
+          )}
+          {modulo.horas_asignadas && !editando && (
+            <span className="text-xs text-gray-500">{modulo.horas_asignadas} hs</span>
           )}
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ESTADO_COLOR[modulo.estado] ?? 'bg-gray-100 text-gray-600'}`}>
             {ESTADO_LABEL[modulo.estado] ?? modulo.estado}
@@ -189,18 +269,75 @@ function ModuloEmpresaCard({
 
       {open && (
         <div className="border-t border-gray-100 p-4 bg-gray-50/50 space-y-3">
-          <div className="flex items-center gap-3 flex-wrap">
-            {modulo.horas_asignadas && (
-              <span className="text-xs font-semibold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full flex items-center gap-1">
-                <Clock size={11} /> {modulo.horas_asignadas} hs asignadas
-              </span>
-            )}
-            {modulo.deadline && (
-              <span className="text-xs text-gray-500 flex items-center gap-1">
-                <Clock size={11} /> Deadline: {new Date(modulo.deadline).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
-              </span>
-            )}
-          </div>
+          {/* Bloque editable: horas, precio, deadline */}
+          {editando ? (
+            <div className="bg-white rounded-xl border border-teal-200 p-3 space-y-3">
+              <p className="text-xs font-semibold text-gray-700">Editar datos del módulo</p>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-[11px] text-gray-500 mb-1">Hs asignadas</label>
+                  <input type="number" min="1" value={editForm.horas_asignadas}
+                    onChange={e => setEditForm(p => ({ ...p, horas_asignadas: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                    placeholder="Ej: 40" />
+                </div>
+                <div>
+                  <label className="block text-[11px] text-gray-500 mb-1">Precio/hora ($)</label>
+                  <input type="number" min="0" step="0.01" value={editForm.precio_hora}
+                    onChange={e => setEditForm(p => ({ ...p, precio_hora: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                    placeholder="Ej: 3500" />
+                </div>
+                <div>
+                  <label className="block text-[11px] text-gray-500 mb-1">Deadline</label>
+                  <input type="date" value={editForm.deadline}
+                    onChange={e => setEditForm(p => ({ ...p, deadline: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500" />
+                </div>
+              </div>
+              {editForm.horas_asignadas && editForm.precio_hora && (
+                <p className="text-xs text-teal-700 font-semibold">
+                  Total estimado: ${(parseFloat(editForm.horas_asignadas) * parseFloat(editForm.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })}
+                </p>
+              )}
+              <div className="flex gap-2">
+                <button onClick={guardarEdicion} disabled={guardando}
+                  className="text-xs bg-teal-600 text-white px-3 py-1.5 rounded-lg hover:bg-teal-700 flex items-center gap-1 disabled:opacity-50">
+                  {guardando ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />} Guardar
+                </button>
+                <button onClick={() => setEditando(false)} className="text-xs border border-gray-200 text-gray-500 px-3 py-1.5 rounded-lg hover:bg-gray-50">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 flex-wrap">
+              {modulo.horas_asignadas && (
+                <span className="text-xs font-semibold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <Clock size={11} /> {modulo.horas_asignadas} hs
+                </span>
+              )}
+              {modulo.precio_hora && (
+                <span className="text-xs font-semibold bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">
+                  ${Number(modulo.precio_hora).toLocaleString('es-AR')}/hs
+                </span>
+              )}
+              {totalHonorario && (
+                <span className="text-xs font-bold text-gray-800 bg-yellow-50 border border-yellow-200 px-2 py-0.5 rounded-full">
+                  Total: ${totalHonorario}
+                </span>
+              )}
+              {modulo.deadline && (
+                <span className="text-xs text-gray-500 flex items-center gap-1">
+                  <Clock size={11} /> {new Date(modulo.deadline).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </span>
+              )}
+              <button onClick={() => { setEditForm({ horas_asignadas: modulo.horas_asignadas?.toString() ?? '', precio_hora: modulo.precio_hora?.toString() ?? '', deadline: modulo.deadline ? new Date(modulo.deadline).toISOString().slice(0, 10) : '' }); setEditando(true); }}
+                className="text-xs text-teal-600 hover:underline flex items-center gap-1 ml-auto">
+                <Pencil size={11} /> Editar
+              </button>
+            </div>
+          )}
           {/* Cambiar estado */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs text-gray-500">Estado:</span>
@@ -336,7 +473,8 @@ export default function EmpresaDashboard() {
     };
   };
   type ModuloConDetalle = {
-    id: string; estado: string; fecha_inicio: string; deadline: string | null; horas_asignadas: number | null;
+    id: string; estado: string; fecha_inicio: string; deadline: string | null;
+    horas_asignadas: number | null; precio_hora: number | null;
     protocolo: { item: string; descripcion: string }[];
     usuario: { id: string; nombre_completo: string; email: string; telefono: string; slug: string; foto_url: string | null };
     evidencias: { id: string; item_index: number; texto: string | null; archivo_url: string | null; estado: string }[];
@@ -1867,10 +2005,22 @@ export default function EmpresaDashboard() {
                     </div>
                   )}
                   <div className="col-span-2">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Modelo de contrato / acuerdo (opcional)</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-medium text-gray-700">Modelo de contrato / acuerdo (opcional)</label>
+                      <button
+                        type="button"
+                        onClick={() => setServicioForm(p => ({ ...p, contrato_template: CONTRATO_PLANTILLA(p.titulo || '[NOMBRE DEL SERVICIO]') }))}
+                        className="text-xs text-teal-600 hover:underline flex items-center gap-1"
+                      >
+                        <FileText size={11} /> Usar plantilla de referencia
+                      </button>
+                    </div>
                     <textarea value={servicioForm.contrato_template} onChange={e => setServicioForm(p => ({ ...p, contrato_template: e.target.value }))}
-                      rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      rows={8} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono"
                       placeholder="Texto base del acuerdo entre las partes..." />
+                    {servicioForm.contrato_template && (
+                      <p className="text-[11px] text-gray-400 mt-1">Editá el texto reemplazando los campos entre [corchetes] con los datos reales.</p>
+                    )}
                   </div>
                 </div>
                 {/* Protocolo */}

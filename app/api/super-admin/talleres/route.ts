@@ -42,19 +42,19 @@ export async function POST(req: NextRequest) {
 
   const { nombre, descripcion, habilita_cv, habilita_pitch } = parsed.data;
 
-  // Auto-crear mÃ³dulos por defecto si el taller los habilita
+  // Auto-crear módulos por defecto si el taller los habilita
   const modulosCV = habilita_cv ? [
-    { tipo_video: 'video_cv' as const, nombre_modulo: 'PresentaciÃ³n',        duracion_base: 10, texto_guia: 'DecÃ­ tu nombre y quÃ© estÃ¡s buscando laboralmente', orden: 1 },
-    { tipo_video: 'video_cv' as const, nombre_modulo: 'Estudios',            duracion_base: 20, texto_guia: 'ContÃ¡ tu formaciÃ³n y cursos relevantes', orden: 2 },
-    { tipo_video: 'video_cv' as const, nombre_modulo: 'Experiencia laboral', duracion_base: 20, texto_guia: 'ExplicÃ¡ dÃ³nde trabajaste y quÃ© tareas realizabas', orden: 3 },
-    { tipo_video: 'video_cv' as const, nombre_modulo: 'MotivaciÃ³n',          duracion_base: 10, texto_guia: 'ContÃ¡ por quÃ© deberÃ­an contratarte', orden: 4 },
+    { tipo_video: 'video_cv' as const, nombre_modulo: 'Presentación',        duracion_base: 10, texto_guia: 'Decí tu nombre y qué estás buscando laboralmente', orden: 1 },
+    { tipo_video: 'video_cv' as const, nombre_modulo: 'Estudios',            duracion_base: 20, texto_guia: 'Contá tu formación y cursos relevantes', orden: 2 },
+    { tipo_video: 'video_cv' as const, nombre_modulo: 'Experiencia laboral', duracion_base: 20, texto_guia: 'Explicá dónde trabajaste y qué tareas realizabas', orden: 3 },
+    { tipo_video: 'video_cv' as const, nombre_modulo: 'Motivación',          duracion_base: 10, texto_guia: 'Contá por qué deberían contratarte', orden: 4 },
   ] : [];
 
   const modulosPitch = habilita_pitch ? [
-    { tipo_video: 'video_pitch' as const, nombre_modulo: 'PresentaciÃ³n + problema', duracion_base: 15, texto_guia: 'DecÃ­ tu nombre, quÃ© hacÃ©s y cuÃ¡l es el problema que detectaste', orden: 1 },
-    { tipo_video: 'video_pitch' as const, nombre_modulo: 'SoluciÃ³n',                duracion_base: 15, texto_guia: 'ExplicÃ¡ cÃ³mo resolvÃ©s ese problema', orden: 2 },
-    { tipo_video: 'video_pitch' as const, nombre_modulo: 'Producto / servicio',     duracion_base: 15, texto_guia: 'ContÃ¡ quÃ© ofrecÃ©s y cÃ³mo funciona', orden: 3 },
-    { tipo_video: 'video_pitch' as const, nombre_modulo: 'Cierre / impacto',        duracion_base: 15, texto_guia: 'ExplicÃ¡ por quÃ© es importante y quÃ© estÃ¡s buscando', orden: 4 },
+    { tipo_video: 'video_pitch' as const, nombre_modulo: 'Presentación + problema', duracion_base: 15, texto_guia: 'Decí tu nombre, qué hacés y cuál es el problema que detectaste', orden: 1 },
+    { tipo_video: 'video_pitch' as const, nombre_modulo: 'Solución',                duracion_base: 15, texto_guia: 'Explicá cómo resolvés ese problema', orden: 2 },
+    { tipo_video: 'video_pitch' as const, nombre_modulo: 'Producto / servicio',     duracion_base: 15, texto_guia: 'Contá qué ofrecés y cómo funciona', orden: 3 },
+    { tipo_video: 'video_pitch' as const, nombre_modulo: 'Cierre / impacto',        duracion_base: 15, texto_guia: 'Explicá por qué es importante y qué estás buscando', orden: 4 },
   ] : [];
 
   const taller = await prisma.taller.create({

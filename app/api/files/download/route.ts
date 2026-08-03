@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   try {
     const fileUrl = req.nextUrl.searchParams.get('url');
     if (!fileUrl) {
-      return NextResponse.json({ error: 'Falta parÃ¡metro url' }, { status: 400 });
+      return NextResponse.json({ error: 'Falta parámetro url' }, { status: 400 });
     }
 
     // Security: only serve files from allowed directories

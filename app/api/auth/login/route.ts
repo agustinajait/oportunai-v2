@@ -18,12 +18,12 @@ export async function POST(req: NextRequest) {
 
     const usuario = await prisma.usuario.findUnique({ where: { email } });
     if (!usuario) {
-      return NextResponse.json({ error: 'Email o contraseÃ±a incorrectos' }, { status: 401 });
+      return NextResponse.json({ error: 'Email o contraseña incorrectos' }, { status: 401 });
     }
 
     const valid = await bcrypt.compare(password, usuario.password_hash);
     if (!valid) {
-      return NextResponse.json({ error: 'Email o contraseÃ±a incorrectos' }, { status: 401 });
+      return NextResponse.json({ error: 'Email o contraseña incorrectos' }, { status: 401 });
     }
 
     const token = await createToken({

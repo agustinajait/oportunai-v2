@@ -131,7 +131,7 @@ function ModuloEmpresaCard({
   modulo, onGenerarRemito, onCambiarEstado, onAprobarItem, generandoRemito, remitoMsg,
 }: {
   modulo: {
-    id: string; estado: string; deadline: string | null;
+    id: string; estado: string; deadline: string | null; horas_asignadas: number | null;
     protocolo: { item: string; descripcion: string }[];
     usuario: { id: string; nombre_completo: string; email: string; telefono: string; slug: string; foto_url: string | null };
     evidencias: { item_index: number; texto: string | null; archivo_url: string | null; estado: string }[];
@@ -189,11 +189,18 @@ function ModuloEmpresaCard({
 
       {open && (
         <div className="border-t border-gray-100 p-4 bg-gray-50/50 space-y-3">
-          {modulo.deadline && (
-            <p className="text-xs text-gray-500 flex items-center gap-1.5">
-              <Clock size={12} /> Deadline: {new Date(modulo.deadline).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
-            </p>
-          )}
+          <div className="flex items-center gap-3 flex-wrap">
+            {modulo.horas_asignadas && (
+              <span className="text-xs font-semibold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Clock size={11} /> {modulo.horas_asignadas} hs asignadas
+              </span>
+            )}
+            {modulo.deadline && (
+              <span className="text-xs text-gray-500 flex items-center gap-1">
+                <Clock size={11} /> Deadline: {new Date(modulo.deadline).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
+              </span>
+            )}
+          </div>
           {/* Cambiar estado */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs text-gray-500">Estado:</span>
@@ -311,7 +318,7 @@ export default function EmpresaDashboard() {
 
   // Servicios (módulos de trabajo)
   type ServicioEmpresa = {
-    id: string; titulo: string; descripcion: string; frecuencia: string; estado: string;
+    id: string; titulo: string; descripcion: string; frecuencia: string; duracion_jornada: string | null; estado: string;
     deadline: string | null; contrato_template: string | null;
     protocolo: { item: string; descripcion: string }[];
     capacitacion: { id: string; titulo: string } | null;
@@ -329,7 +336,7 @@ export default function EmpresaDashboard() {
     };
   };
   type ModuloConDetalle = {
-    id: string; estado: string; fecha_inicio: string; deadline: string | null;
+    id: string; estado: string; fecha_inicio: string; deadline: string | null; horas_asignadas: number | null;
     protocolo: { item: string; descripcion: string }[];
     usuario: { id: string; nombre_completo: string; email: string; telefono: string; slug: string; foto_url: string | null };
     evidencias: { id: string; item_index: number; texto: string | null; archivo_url: string | null; estado: string }[];
@@ -343,13 +350,15 @@ export default function EmpresaDashboard() {
   const [postulantesServicio, setPostulantesServicio] = useState<PostulanteServicio[]>([]);
   const [loadingPostulantesServ, setLoadingPostulantesServ] = useState(false);
   const [procesandoPostServ, setProcesandoPostServ] = useState<string | null>(null);
+  const [aceptandoConHoras, setAceptandoConHoras] = useState<string | null>(null);
+  const [horasInput, setHorasInput] = useState<Record<string, string>>({});
   const [modulosServicio, setModulosServicio] = useState<ModuloConDetalle[]>([]);
   const [loadingModulos, setLoadingModulos] = useState(false);
   const [generandoRemito, setGenerandoRemito] = useState<string | null>(null);
   const [remitoMsg, setRemitoMsg] = useState<{ id: string; msg: string; ok: boolean } | null>(null);
   const PROTOCOLO_ITEM_EMPTY = { item: '', descripcion: '' };
   const [servicioForm, setServicioForm] = useState({
-    titulo: '', descripcion: '', frecuencia: 'mensual', deadline: '',
+    titulo: '', descripcion: '', frecuencia: 'mensual', duracion_jornada: '', deadline: '',
     capacitacion_id: '', contrato_template: '',
     protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }],
   });
@@ -391,7 +400,7 @@ export default function EmpresaDashboard() {
     if (data.ok) {
       setServicioMsg('✓ Servicio creado correctamente');
       setNewServicioOpen(false);
-      setServicioForm({ titulo: '', descripcion: '', frecuencia: 'mensual', deadline: '', capacitacion_id: '', contrato_template: '', protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }] });
+      setServicioForm({ titulo: '', descripcion: '', frecuencia: 'mensual', duracion_jornada: '', deadline: '', capacitacion_id: '', contrato_template: '', protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }] });
       cargarServiciosEmpresa();
     } else {
       setServicioMsg(data.error ?? 'Error al crear el servicio');
@@ -429,13 +438,14 @@ export default function EmpresaDashboard() {
     setLoadingModulos(false);
   }
 
-  async function procesarPostulanteServicio(postulacion_id: string, estado: 'aceptado' | 'rechazado') {
+  async function procesarPostulanteServicio(postulacion_id: string, estado: 'aceptado' | 'rechazado', horas?: number) {
     if (!servicioSeleccionado) return;
     setProcesandoPostServ(postulacion_id);
+    setAceptandoConHoras(null);
     const res = await fetch(`/api/empresa/servicios/${servicioSeleccionado.id}/postulantes`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ postulacion_id, estado }),
+      body: JSON.stringify({ postulacion_id, estado, horas_asignadas: horas ?? null }),
     });
     const data = await res.json();
     if (data.ok) {
@@ -1836,6 +1846,12 @@ export default function EmpresaDashboard() {
                     </select>
                   </div>
                   <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Duración de jornada</label>
+                    <input value={servicioForm.duracion_jornada} onChange={e => setServicioForm(p => ({ ...p, duracion_jornada: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      placeholder="Ej: 6 hs/día, 4 hs los sábados, 20 hs semanales" />
+                  </div>
+                  <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Deadline (opcional)</label>
                     <input type="date" value={servicioForm.deadline} onChange={e => setServicioForm(p => ({ ...p, deadline: e.target.value }))}
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
@@ -1921,7 +1937,8 @@ export default function EmpresaDashboard() {
                           </span>
                         </div>
                         <p className="text-xs text-gray-500 mt-1 line-clamp-1">{s.descripcion}</p>
-                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-400 flex-wrap">
+                          {s.duracion_jornada && <span className="font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full">{s.duracion_jornada}</span>}
                           <span>{s._count.postulaciones} postulantes</span>
                           <span>{s._count.modulos_asignados} módulos activos</span>
                           {s.deadline && <span>Deadline: {new Date(s.deadline).toLocaleDateString('es-AR')}</span>}
@@ -2016,11 +2033,33 @@ export default function EmpresaDashboard() {
                             </a>
                             {p.estado === 'pendiente' && (
                               <>
-                                <button onClick={() => procesarPostulanteServicio(p.id, 'aceptado')}
-                                  disabled={procesandoPostServ === p.id}
-                                  className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 flex items-center gap-1 disabled:opacity-50">
-                                  {procesandoPostServ === p.id ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />} Aceptar
-                                </button>
+                                {aceptandoConHoras === p.id ? (
+                                  <div className="flex items-center gap-1.5">
+                                    <input
+                                      type="number"
+                                      min="1"
+                                      placeholder="Hs totales"
+                                      value={horasInput[p.id] ?? ''}
+                                      onChange={e => setHorasInput(prev => ({ ...prev, [p.id]: e.target.value }))}
+                                      className="w-24 text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-green-500"
+                                    />
+                                    <button
+                                      onClick={() => procesarPostulanteServicio(p.id, 'aceptado', horasInput[p.id] ? parseInt(horasInput[p.id]) : undefined)}
+                                      disabled={procesandoPostServ === p.id}
+                                      className="text-xs bg-green-600 text-white px-2 py-1.5 rounded-lg hover:bg-green-700 flex items-center gap-1 disabled:opacity-50">
+                                      {procesandoPostServ === p.id ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />} OK
+                                    </button>
+                                    <button onClick={() => setAceptandoConHoras(null)} className="text-xs text-gray-400 hover:text-gray-600 px-1">
+                                      <X size={13} />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button onClick={() => setAceptandoConHoras(p.id)}
+                                    disabled={procesandoPostServ === p.id}
+                                    className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 flex items-center gap-1 disabled:opacity-50">
+                                    <Check size={12} /> Aceptar
+                                  </button>
+                                )}
                                 <button onClick={() => procesarPostulanteServicio(p.id, 'rechazado')}
                                   disabled={procesandoPostServ === p.id}
                                   className="text-xs border border-red-200 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50 flex items-center gap-1 disabled:opacity-50">

@@ -491,9 +491,14 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
                       </div>
                       <p style={{ color: '#64748b', fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 }}>{s.descripcion}</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                        {s.duracion_jornada && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: `${color}12`, color, fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999 }}>
+                            <Clock size={11} /> {s.duracion_jornada}
+                          </span>
+                        )}
                         {s.deadline && (
                           <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#94a3b8', fontSize: 12 }}>
-                            <Clock size={12} /> Deadline: {new Date(s.deadline).toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}
+                            <CalendarClock size={12} /> Deadline: {new Date(s.deadline).toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}
                           </span>
                         )}
                         {protocolo.length > 0 && (

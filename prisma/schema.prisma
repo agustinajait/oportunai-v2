@@ -373,6 +373,7 @@ model Servicio {
   titulo             String
   descripcion        String
   frecuencia         FrecuenciaModulo @default(mensual)
+  duracion_jornada   String?
   deadline           DateTime?
   capacitacion_id    String?
   contrato_template  String?
@@ -424,11 +425,12 @@ model ModuloAsignado {
   servicio_id  String
   usuario_id   String
   empresa_id   String
-  protocolo    Json         // copia del protocolo al momento de asignación
-  estado       EstadoModulo @default(en_progreso)
-  fecha_inicio DateTime     @default(now())
-  deadline     DateTime?
-  contrato_url String?
+  protocolo       Json         // copia del protocolo al momento de asignación
+  estado          EstadoModulo @default(en_progreso)
+  fecha_inicio    DateTime     @default(now())
+  deadline        DateTime?
+  horas_asignadas Int?
+  contrato_url    String?
   created_at   DateTime     @default(now())
   updated_at   DateTime     @updatedAt
 

@@ -245,7 +245,8 @@ export default function DashboardClient({
   // Servicios
   type ServicioPublico = {
     id: string; titulo: string; descripcion: string; frecuencia: string;
-    duracion_jornada: string | null; deadline: string | null; estado: string; created_at: string;
+    duracion_jornada: string | null; horas_modulo: number | null; precio_hora: number | null;
+    deadline: string | null; estado: string; created_at: string;
     empresa: { id: string; nombre: string; logo_url: string | null; slug: string };
     capacitacion: { id: string; titulo: string } | null;
     _count: { postulaciones: number };
@@ -848,6 +849,21 @@ export default function DashboardClient({
                           {s.duracion_jornada && (
                             <span className="badge bg-teal-50 text-teal-700 text-[11px] flex items-center gap-1">
                               <Clock size={10} /> {s.duracion_jornada}
+                            </span>
+                          )}
+                          {s.horas_modulo && (
+                            <span className="badge bg-teal-50 text-teal-700 text-[11px] font-semibold">
+                              {s.horas_modulo} hs
+                            </span>
+                          )}
+                          {s.precio_hora && (
+                            <span className="badge bg-green-50 text-green-700 text-[11px] font-semibold">
+                              ${Number(s.precio_hora).toLocaleString('es-AR')}/hs
+                            </span>
+                          )}
+                          {s.horas_modulo && s.precio_hora && (
+                            <span className="badge bg-yellow-50 text-yellow-800 text-[11px] font-bold border border-yellow-200">
+                              ${(s.horas_modulo * Number(s.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })} total
                             </span>
                           )}
                           {s.capacitacion && (

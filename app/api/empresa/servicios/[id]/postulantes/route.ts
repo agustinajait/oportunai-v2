@@ -97,7 +97,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
             protocolo: servicio.protocolo,
             estado: 'en_progreso',
             deadline: deadline ? new Date(deadline) : (servicio.deadline ?? null),
-            horas_asignadas: horas_asignadas ? parseInt(horas_asignadas) : null,
+            horas_asignadas: horas_asignadas ? parseInt(horas_asignadas) : ((servicio as any).horas_modulo ?? null),
+            precio_hora: (servicio as any).precio_hora ?? null,
           },
         });
       }

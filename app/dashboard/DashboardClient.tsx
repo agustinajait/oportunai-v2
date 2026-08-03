@@ -245,7 +245,7 @@ export default function DashboardClient({
   // Servicios
   type ServicioPublico = {
     id: string; titulo: string; descripcion: string; frecuencia: string;
-    deadline: string | null; estado: string; created_at: string;
+    duracion_jornada: string | null; deadline: string | null; estado: string; created_at: string;
     empresa: { id: string; nombre: string; logo_url: string | null; slug: string };
     capacitacion: { id: string; titulo: string } | null;
     _count: { postulaciones: number };
@@ -828,6 +828,11 @@ export default function DashboardClient({
                           <span className="badge bg-brand-50 text-brand-700 text-[11px]">
                             {s.frecuencia === 'diaria' ? 'Diaria' : s.frecuencia === 'semanal' ? 'Semanal' : s.frecuencia === 'mensual' ? 'Mensual' : 'Única vez'}
                           </span>
+                          {s.duracion_jornada && (
+                            <span className="badge bg-teal-50 text-teal-700 text-[11px] flex items-center gap-1">
+                              <Clock size={10} /> {s.duracion_jornada}
+                            </span>
+                          )}
                           {s.capacitacion && (
                             <span className="badge bg-purple-50 text-purple-700 text-[11px] flex items-center gap-1">
                               <GraduationCap size={10} /> Cap. requerida

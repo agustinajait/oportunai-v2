@@ -311,7 +311,7 @@ export default function EmpresaDashboard() {
 
   // Servicios (módulos de trabajo)
   type ServicioEmpresa = {
-    id: string; titulo: string; descripcion: string; frecuencia: string; estado: string;
+    id: string; titulo: string; descripcion: string; frecuencia: string; duracion_jornada: string | null; estado: string;
     deadline: string | null; contrato_template: string | null;
     protocolo: { item: string; descripcion: string }[];
     capacitacion: { id: string; titulo: string } | null;
@@ -349,7 +349,7 @@ export default function EmpresaDashboard() {
   const [remitoMsg, setRemitoMsg] = useState<{ id: string; msg: string; ok: boolean } | null>(null);
   const PROTOCOLO_ITEM_EMPTY = { item: '', descripcion: '' };
   const [servicioForm, setServicioForm] = useState({
-    titulo: '', descripcion: '', frecuencia: 'mensual', deadline: '',
+    titulo: '', descripcion: '', frecuencia: 'mensual', duracion_jornada: '', deadline: '',
     capacitacion_id: '', contrato_template: '',
     protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }],
   });
@@ -391,7 +391,7 @@ export default function EmpresaDashboard() {
     if (data.ok) {
       setServicioMsg('✓ Servicio creado correctamente');
       setNewServicioOpen(false);
-      setServicioForm({ titulo: '', descripcion: '', frecuencia: 'mensual', deadline: '', capacitacion_id: '', contrato_template: '', protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }] });
+      setServicioForm({ titulo: '', descripcion: '', frecuencia: 'mensual', duracion_jornada: '', deadline: '', capacitacion_id: '', contrato_template: '', protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }] });
       cargarServiciosEmpresa();
     } else {
       setServicioMsg(data.error ?? 'Error al crear el servicio');
@@ -1836,6 +1836,12 @@ export default function EmpresaDashboard() {
                     </select>
                   </div>
                   <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Duración de jornada</label>
+                    <input value={servicioForm.duracion_jornada} onChange={e => setServicioForm(p => ({ ...p, duracion_jornada: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      placeholder="Ej: 6 hs/día, 4 hs los sábados, 20 hs semanales" />
+                  </div>
+                  <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Deadline (opcional)</label>
                     <input type="date" value={servicioForm.deadline} onChange={e => setServicioForm(p => ({ ...p, deadline: e.target.value }))}
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
@@ -1921,7 +1927,8 @@ export default function EmpresaDashboard() {
                           </span>
                         </div>
                         <p className="text-xs text-gray-500 mt-1 line-clamp-1">{s.descripcion}</p>
-                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-400 flex-wrap">
+                          {s.duracion_jornada && <span className="font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full">{s.duracion_jornada}</span>}
                           <span>{s._count.postulaciones} postulantes</span>
                           <span>{s._count.modulos_asignados} módulos activos</span>
                           {s.deadline && <span>Deadline: {new Date(s.deadline).toLocaleDateString('es-AR')}</span>}

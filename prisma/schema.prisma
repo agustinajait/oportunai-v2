@@ -373,6 +373,7 @@ model Servicio {
   titulo             String
   descripcion        String
   frecuencia         FrecuenciaModulo @default(mensual)
+  duracion_jornada   String?
   deadline           DateTime?
   capacitacion_id    String?
   contrato_template  String?

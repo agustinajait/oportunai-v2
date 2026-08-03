@@ -54,7 +54,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const body = await req.json();
-    const { titulo, descripcion, frecuencia, deadline, capacitacion_id, contrato_template, protocolo, estado } = body;
+    const { titulo, descripcion, frecuencia, duracion_jornada, deadline, capacitacion_id, contrato_template, protocolo, estado } = body;
 
     const updated = await prisma.servicio.update({
       where: { id: params.id },
@@ -62,6 +62,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         ...(titulo !== undefined && { titulo: titulo.trim() }),
         ...(descripcion !== undefined && { descripcion: descripcion.trim() }),
         ...(frecuencia !== undefined && { frecuencia }),
+        ...(duracion_jornada !== undefined && { duracion_jornada: duracion_jornada?.trim() || null }),
         ...(deadline !== undefined && { deadline: deadline ? new Date(deadline) : null }),
         ...(capacitacion_id !== undefined && { capacitacion_id: capacitacion_id || null }),
         ...(contrato_template !== undefined && { contrato_template: contrato_template?.trim() || null }),

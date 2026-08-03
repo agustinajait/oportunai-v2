@@ -28,7 +28,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const body = await req.json();
-    const { estado, contrato_url } = body;
+    const { estado, contrato_url, horas_asignadas, precio_hora, deadline } = body;
 
     const ESTADOS_VALIDOS = ['en_progreso', 'en_riesgo', 'completado', 'aprobado'];
     if (estado && !ESTADOS_VALIDOS.includes(estado)) {
@@ -40,6 +40,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       data: {
         ...(estado !== undefined && { estado }),
         ...(contrato_url !== undefined && { contrato_url }),
+        ...(horas_asignadas !== undefined && { horas_asignadas: horas_asignadas ? parseInt(horas_asignadas) : null }),
+        ...(precio_hora !== undefined && { precio_hora: precio_hora ? parseFloat(precio_hora) : null }),
+        ...(deadline !== undefined && { deadline: deadline ? new Date(deadline) : null }),
       },
     });
 

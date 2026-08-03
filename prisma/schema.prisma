@@ -379,6 +379,7 @@ model Servicio {
   deadline           DateTime?
   capacitacion_id    String?
   contrato_template  String?
+  docs_requeridos    Json             @default("[]") // string[]
   protocolo          Json             // [{item: string, descripcion: string}]
   estado             EstadoServicio   @default(activo)
   created_at         DateTime         @default(now())

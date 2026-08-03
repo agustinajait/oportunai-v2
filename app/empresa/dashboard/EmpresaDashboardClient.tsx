@@ -456,7 +456,7 @@ export default function EmpresaDashboard() {
   // Servicios (módulos de trabajo)
   type ServicioEmpresa = {
     id: string; titulo: string; descripcion: string; frecuencia: string; duracion_jornada: string | null; horas_modulo: number | null; precio_hora: number | null; estado: string;
-    deadline: string | null; contrato_template: string | null;
+    deadline: string | null; contrato_template: string | null; docs_requeridos: string[];
     protocolo: { item: string; descripcion: string }[];
     capacitacion: { id: string; titulo: string } | null;
     created_at: string;
@@ -500,8 +500,10 @@ export default function EmpresaDashboard() {
     titulo: '', descripcion: '', frecuencia: 'mensual', duracion_jornada: '',
     horas_modulo: '', precio_hora: '', deadline: '',
     capacitacion_id: '', contrato_template: '',
+    docs_requeridos: [] as string[],
     protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }],
   });
+  const [otroLabelServicio, setOtroLabelServicio] = useState('');
   const [vistaServicio, setVistaServicio] = useState<'postulantes' | 'modulos'>('postulantes');
 
   function toggleSeleccionado(id: string) {
@@ -518,8 +520,23 @@ export default function EmpresaDashboard() {
     if (data.servicios) setServiciosEmpresa(data.servicios);
   }
 
+  function toggleDocServicio(tipo: string) {
+    setServicioForm(prev => {
+      const tiene = prev.docs_requeridos.some(d => parseDocTipo(d) === tipo);
+      if (tiene) return { ...prev, docs_requeridos: prev.docs_requeridos.filter(d => parseDocTipo(d) !== tipo) };
+      if (tipo === 'otro') {
+        const label = otroLabelServicio.trim();
+        return { ...prev, docs_requeridos: [...prev.docs_requeridos.filter(d => parseDocTipo(d) !== 'otro'), label ? `otro:${label}` : 'otro'] };
+      }
+      return { ...prev, docs_requeridos: [...prev.docs_requeridos, tipo] };
+    });
+  }
+
   function editarServicio(s: ServicioEmpresa) {
     setEditandoServicioId(s.id);
+    const docs = (s.docs_requeridos as string[]) ?? [];
+    const otroDoc = docs.find(d => d.startsWith('otro:'));
+    setOtroLabelServicio(otroDoc ? otroDoc.slice(5) : '');
     setServicioForm({
       titulo: s.titulo,
       descripcion: s.descripcion,
@@ -530,6 +547,7 @@ export default function EmpresaDashboard() {
       deadline: s.deadline ? new Date(s.deadline).toISOString().slice(0, 10) : '',
       capacitacion_id: s.capacitacion?.id ?? '',
       contrato_template: s.contrato_template ?? '',
+      docs_requeridos: docs,
       protocolo: (s.protocolo as { item: string; descripcion: string }[]).length > 0
         ? (s.protocolo as { item: string; descripcion: string }[])
         : [{ ...PROTOCOLO_ITEM_EMPTY }],
@@ -567,7 +585,7 @@ export default function EmpresaDashboard() {
       setServicioMsg(editandoServicioId ? '✓ Servicio actualizado' : '✓ Servicio creado correctamente');
       setNewServicioOpen(false);
       setEditandoServicioId(null);
-      setServicioForm({ titulo: '', descripcion: '', frecuencia: 'mensual', duracion_jornada: '', horas_modulo: '', precio_hora: '', deadline: '', capacitacion_id: '', contrato_template: '', protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }] });
+      setServicioForm({ titulo: '', descripcion: '', frecuencia: 'mensual', duracion_jornada: '', horas_modulo: '', precio_hora: '', deadline: '', capacitacion_id: '', contrato_template: '', docs_requeridos: [], protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }] });
       cargarServiciosEmpresa();
     } else {
       setServicioMsg(data.error ?? (editandoServicioId ? 'Error al actualizar el servicio' : 'Error al crear el servicio'));
@@ -2070,6 +2088,41 @@ export default function EmpresaDashboard() {
                     )}
                   </div>
                 </div>
+                {/* Documentos requeridos */}
+                <div>
+                  <label className="text-xs font-medium text-gray-700 block mb-2">Documentos requeridos al prestador</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {DOCS_CONFIG.map(doc => (
+                      <div key={doc.tipo}>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox"
+                            checked={servicioForm.docs_requeridos.some(d => parseDocTipo(d) === doc.tipo)}
+                            onChange={() => toggleDocServicio(doc.tipo)}
+                            className="w-4 h-4 accent-teal-600 flex-shrink-0" />
+                          <span className="text-xs text-gray-700">{doc.label}</span>
+                        </label>
+                        {doc.tipo === 'otro' && servicioForm.docs_requeridos.some(d => parseDocTipo(d) === 'otro') && (
+                          <input
+                            value={otroLabelServicio}
+                            onChange={e => {
+                              setOtroLabelServicio(e.target.value);
+                              setServicioForm(p => ({
+                                ...p,
+                                docs_requeridos: [
+                                  ...p.docs_requeridos.filter(d => parseDocTipo(d) !== 'otro'),
+                                  e.target.value.trim() ? `otro:${e.target.value}` : 'otro',
+                                ],
+                              }));
+                            }}
+                            placeholder="Nombre del documento"
+                            className="mt-1 ml-6 w-full border border-gray-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-teal-500"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Protocolo */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -2105,7 +2158,7 @@ export default function EmpresaDashboard() {
                     {savingServicio ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                     {editandoServicioId ? 'Guardar cambios' : 'Crear servicio'}
                   </button>
-                  <button onClick={() => { setNewServicioOpen(false); setEditandoServicioId(null); setServicioForm({ titulo: '', descripcion: '', frecuencia: 'mensual', duracion_jornada: '', horas_modulo: '', precio_hora: '', deadline: '', capacitacion_id: '', contrato_template: '', protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }] }); }}
+                  <button onClick={() => { setNewServicioOpen(false); setEditandoServicioId(null); setServicioForm({ titulo: '', descripcion: '', frecuencia: 'mensual', duracion_jornada: '', horas_modulo: '', precio_hora: '', deadline: '', capacitacion_id: '', contrato_template: '', docs_requeridos: [], protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }] }); }}
                     className="border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
                 </div>
               </div>

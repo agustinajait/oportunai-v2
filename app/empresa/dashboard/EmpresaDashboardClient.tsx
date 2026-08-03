@@ -482,6 +482,7 @@ export default function EmpresaDashboard() {
   };
   const [serviciosEmpresa, setServiciosEmpresa] = useState<ServicioEmpresa[]>([]);
   const [newServicioOpen, setNewServicioOpen] = useState(false);
+  const [editandoServicioId, setEditandoServicioId] = useState<string | null>(null);
   const [savingServicio, setSavingServicio] = useState(false);
   const [servicioMsg, setServicioMsg] = useState<string | null>(null);
   const [servicioSeleccionado, setServicioSeleccionado] = useState<ServicioEmpresa | null>(null);
@@ -517,6 +518,25 @@ export default function EmpresaDashboard() {
     if (data.servicios) setServiciosEmpresa(data.servicios);
   }
 
+  function editarServicio(s: ServicioEmpresa) {
+    setEditandoServicioId(s.id);
+    setServicioForm({
+      titulo: s.titulo,
+      descripcion: s.descripcion,
+      frecuencia: s.frecuencia,
+      duracion_jornada: s.duracion_jornada ?? '',
+      horas_modulo: s.horas_modulo?.toString() ?? '',
+      precio_hora: s.precio_hora?.toString() ?? '',
+      deadline: s.deadline ? new Date(s.deadline).toISOString().slice(0, 10) : '',
+      capacitacion_id: s.capacitacion?.id ?? '',
+      contrato_template: s.contrato_template ?? '',
+      protocolo: (s.protocolo as { item: string; descripcion: string }[]).length > 0
+        ? (s.protocolo as { item: string; descripcion: string }[])
+        : [{ ...PROTOCOLO_ITEM_EMPTY }],
+    });
+    setNewServicioOpen(true);
+  }
+
   async function crearServicio() {
     if (!servicioForm.titulo.trim() || !servicioForm.descripcion.trim() || servicioForm.protocolo.every(p => !p.item.trim())) {
       setServicioMsg('Completá título, descripción y al menos un item del protocolo.');
@@ -524,25 +544,33 @@ export default function EmpresaDashboard() {
     }
     setSavingServicio(true);
     setServicioMsg(null);
-    const res = await fetch('/api/servicios', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...servicioForm,
-        protocolo: servicioForm.protocolo.filter(p => p.item.trim()),
-        deadline: servicioForm.deadline || null,
-        capacitacion_id: servicioForm.capacitacion_id || null,
-        contrato_template: servicioForm.contrato_template || null,
-      }),
-    });
+    const payload = {
+      ...servicioForm,
+      protocolo: servicioForm.protocolo.filter(p => p.item.trim()),
+      deadline: servicioForm.deadline || null,
+      capacitacion_id: servicioForm.capacitacion_id || null,
+      contrato_template: servicioForm.contrato_template || null,
+    };
+    const res = editandoServicioId
+      ? await fetch(`/api/servicios/${editandoServicioId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      : await fetch('/api/servicios', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
     const data = await res.json();
     if (data.ok) {
-      setServicioMsg('✓ Servicio creado correctamente');
+      setServicioMsg(editandoServicioId ? '✓ Servicio actualizado' : '✓ Servicio creado correctamente');
       setNewServicioOpen(false);
+      setEditandoServicioId(null);
       setServicioForm({ titulo: '', descripcion: '', frecuencia: 'mensual', duracion_jornada: '', horas_modulo: '', precio_hora: '', deadline: '', capacitacion_id: '', contrato_template: '', protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }] });
       cargarServiciosEmpresa();
     } else {
-      setServicioMsg(data.error ?? 'Error al crear el servicio');
+      setServicioMsg(data.error ?? (editandoServicioId ? 'Error al actualizar el servicio' : 'Error al crear el servicio'));
     }
     setSavingServicio(false);
     setTimeout(() => setServicioMsg(null), 5000);
@@ -1959,7 +1987,7 @@ export default function EmpresaDashboard() {
             {newServicioOpen && (
               <div className="bg-white rounded-xl border border-teal-200 p-5 space-y-4">
                 <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                  <Layers size={16} className="text-teal-600" /> Nuevo servicio
+                  <Layers size={16} className="text-teal-600" /> {editandoServicioId ? 'Editar servicio' : 'Nuevo servicio'}
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
@@ -2074,9 +2102,10 @@ export default function EmpresaDashboard() {
                 <div className="flex gap-2 pt-2">
                   <button onClick={crearServicio} disabled={savingServicio}
                     className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 disabled:opacity-50">
-                    {savingServicio ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Crear servicio
+                    {savingServicio ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                    {editandoServicioId ? 'Guardar cambios' : 'Crear servicio'}
                   </button>
-                  <button onClick={() => setNewServicioOpen(false)}
+                  <button onClick={() => { setNewServicioOpen(false); setEditandoServicioId(null); setServicioForm({ titulo: '', descripcion: '', frecuencia: 'mensual', duracion_jornada: '', horas_modulo: '', precio_hora: '', deadline: '', capacitacion_id: '', contrato_template: '', protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }] }); }}
                     className="border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
                 </div>
               </div>
@@ -2119,6 +2148,12 @@ export default function EmpresaDashboard() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => editarServicio(s)}
+                          className="text-xs border border-teal-200 text-teal-600 px-3 py-1.5 rounded-lg hover:bg-teal-50 transition-colors flex items-center gap-1"
+                        >
+                          <Pencil size={12} /> Editar
+                        </button>
                         <button
                           onClick={() => { verPostulantesServicio(s); }}
                           className="text-xs bg-teal-600 text-white px-3 py-1.5 rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-1"

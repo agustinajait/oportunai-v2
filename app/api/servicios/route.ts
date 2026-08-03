@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     if (!miembro) return NextResponse.json({ error: 'Sin empresa' }, { status: 403 });
 
     const body = await req.json();
-    const { titulo, descripcion, frecuencia, duracion_jornada, horas_modulo, precio_hora, deadline, capacitacion_id, contrato_template, protocolo } = body;
+    const { titulo, descripcion, frecuencia, duracion_jornada, horas_modulo, precio_hora, deadline, capacitacion_id, contrato_template, protocolo, docs_requeridos } = body;
 
     if (!titulo?.trim() || !descripcion?.trim() || !Array.isArray(protocolo) || protocolo.length === 0) {
       return NextResponse.json({ error: 'Faltan campos requeridos (titulo, descripcion, protocolo)' }, { status: 400 });
@@ -63,6 +63,7 @@ export async function POST(req: NextRequest) {
         capacitacion_id: capacitacion_id || null,
         contrato_template: contrato_template?.trim() || null,
         protocolo,
+        docs_requeridos: Array.isArray(docs_requeridos) ? docs_requeridos : [],
       },
     });
 

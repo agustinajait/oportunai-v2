@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const modulos = await prisma.moduloAsignado.findMany({
       where: { usuario_id: session.userId },
       include: {
-        servicio: { select: { id: true, titulo: true, descripcion: true, frecuencia: true } },
+        servicio: { select: { id: true, titulo: true, descripcion: true, frecuencia: true, contrato_template: true, docs_requeridos: true } },
         empresa: { select: { id: true, nombre: true, logo_url: true } },
         evidencias: { orderBy: { item_index: 'asc' } },
         remito: { select: { id: true, numero_remito: true, pdf_url: true, created_at: true } },

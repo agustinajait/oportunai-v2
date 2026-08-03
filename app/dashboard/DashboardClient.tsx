@@ -247,6 +247,7 @@ export default function DashboardClient({
     id: string; titulo: string; descripcion: string; frecuencia: string;
     duracion_jornada: string | null; horas_modulo: number | null; precio_hora: number | null;
     deadline: string | null; estado: string; created_at: string;
+    docs_requeridos: string[];
     empresa: { id: string; nombre: string; logo_url: string | null; slug: string };
     capacitacion: { id: string; titulo: string } | null;
     _count: { postulaciones: number };
@@ -254,7 +255,7 @@ export default function DashboardClient({
   type ModuloAsignadoItem = {
     id: string; estado: string; fecha_inicio: string; deadline: string | null; horas_asignadas: number | null; precio_hora: number | null; contrato_url: string | null;
     protocolo: { item: string; descripcion: string }[];
-    servicio: { id: string; titulo: string; descripcion: string; frecuencia: string };
+    servicio: { id: string; titulo: string; descripcion: string; frecuencia: string; contrato_template: string | null; docs_requeridos: string[] };
     empresa: { id: string; nombre: string; logo_url: string | null };
     evidencias: { id: string; item_index: number; texto: string | null; archivo_url: string | null; estado: string }[];
     remito: { id: string; numero_remito: string; pdf_url: string | null; created_at: string } | null;
@@ -754,6 +755,17 @@ export default function DashboardClient({
                                 </span>
                               )}
                             </div>
+                            {/* Acuerdo de servicio */}
+                            {mod.servicio.contrato_template && (
+                              <details className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                                <summary className="cursor-pointer px-3 py-2.5 text-xs font-semibold text-gray-700 flex items-center gap-2 hover:bg-gray-50 select-none list-none">
+                                  <FileText size={13} className="text-teal-600 flex-shrink-0" /> Ver acuerdo de servicio
+                                </summary>
+                                <div className="px-3 pb-3 pt-1 border-t border-gray-100">
+                                  <pre className="text-xs text-gray-600 whitespace-pre-wrap font-sans leading-relaxed">{mod.servicio.contrato_template}</pre>
+                                </div>
+                              </details>
+                            )}
                             <p className="text-xs text-ink-500 font-medium uppercase tracking-wide">Protocolo de trabajo</p>
                             <div className="space-y-3">
                               {protocolo.map((item, idx) => {
@@ -877,6 +889,18 @@ export default function DashboardClient({
                             </span>
                           )}
                         </div>
+                        {s.docs_requeridos && s.docs_requeridos.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 pt-0.5">
+                            <span className="text-[11px] text-ink-400 flex items-center gap-1 mr-0.5">
+                              <FileText size={10} /> Docs:
+                            </span>
+                            {s.docs_requeridos.map((d, i) => (
+                              <span key={i} className="text-[11px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-md">
+                                {d.startsWith('otro:') ? d.slice(5) || 'Otro' : d === 'dni' ? 'DNI' : d === 'antecedentes_penales' ? 'Antecedentes' : d === 'manipulacion_alimentos' ? 'Manip. Alimentos' : d === 'libreta_sanitaria' ? 'Lib. Sanitaria' : d === 'registro_conducir' ? 'Registro Conducir' : d}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         {msgServicio && (
                           <p className={`text-xs rounded-lg px-2 py-1 ${msgServicio.ok ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
                             {msgServicio.msg}

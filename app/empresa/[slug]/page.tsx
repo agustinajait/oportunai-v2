@@ -16,6 +16,7 @@ import {
   Car, Gauge, Fuel,
   Leaf, Sun, Flower2,
   Scissors, Shirt, Sparkles,
+  Layers, Clock, CalendarClock,
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import HeroGallery from '@/components/ui/HeroGallery';
@@ -126,6 +127,10 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
+const FRECUENCIA_LABEL: Record<string, string> = {
+  diaria: 'Diaria', semanal: 'Semanal', mensual: 'Mensual', unica: 'Única vez',
+};
+
 export default async function EmpresaPublicaPage({ params }: { params: { slug: string } }) {
   const empresa = await prisma.empresa.findUnique({
     where: { slug: params.slug },
@@ -133,6 +138,15 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
       ofertas: {
         where: { estado: 'activa' },
         orderBy: { created_at: 'desc' },
+      },
+      servicios: {
+        where: { estado: 'activo' },
+        orderBy: { created_at: 'desc' },
+        select: {
+          id: true, titulo: true, descripcion: true, frecuencia: true,
+          deadline: true, protocolo: true,
+          _count: { select: { postulaciones: true } },
+        },
       },
     },
   });
@@ -144,6 +158,7 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
   const color = (empresa.color_primario as string | null) ?? '#16a34a';
   const bienvenida = (empresa.mensaje_bienvenida as string | null) || 'QUEREMOS CONOCERTE';
   const totalOfertas = (empresa as any).ofertas?.length ?? 0;
+  const totalServicios = (empresa as any).servicios?.length ?? 0;
   const { heroBg, pageBg, colorLight, colorDark } = derivePalette(color);
   const decoIcons = getDecoIcons(empresa.rubro);
   const font = resolveFont((empresa as any).fuente);
@@ -270,21 +285,35 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
             )}
 
             {/* CTA row */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-              <a href="#ofertas" style={{
-                display: 'inline-flex', alignItems: 'center', gap: 10,
-                background: colorDark, color: '#fff',
-                padding: '13px 32px', borderRadius: 10,
-                fontSize: 15, fontWeight: 900, textDecoration: 'none',
-                textTransform: 'uppercase', letterSpacing: '0.07em',
-                boxShadow: `0 4px 20px ${colorDark}80`,
-              }}>
-                <Send size={16} /> VER OFERTAS ›
-              </a>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               {totalOfertas > 0 && (
+                <a href="#ofertas" style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 10,
+                  background: colorDark, color: '#fff',
+                  padding: '13px 28px', borderRadius: 10,
+                  fontSize: 14, fontWeight: 900, textDecoration: 'none',
+                  textTransform: 'uppercase', letterSpacing: '0.07em',
+                  boxShadow: `0 4px 20px ${colorDark}80`,
+                }}>
+                  <Send size={15} /> Ver ofertas
+                </a>
+              )}
+              {totalServicios > 0 && (
+                <a href="#servicios" style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  background: 'rgba(255,255,255,0.12)', color: '#e2e8f0',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  padding: '13px 24px', borderRadius: 10,
+                  fontSize: 14, fontWeight: 800, textDecoration: 'none',
+                  textTransform: 'uppercase', letterSpacing: '0.06em',
+                }}>
+                  <Layers size={14} /> Servicios disponibles
+                </a>
+              )}
+              {(totalOfertas > 0 || totalServicios > 0) && (
                 <span style={{ color: 'rgba(148,163,184,0.8)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 5 }}>
                   <Users size={14} style={{ opacity: 0.6 }} />
-                  {totalOfertas} {totalOfertas === 1 ? 'posición disponible' : 'posiciones disponibles'}
+                  {totalOfertas + totalServicios} {(totalOfertas + totalServicios) === 1 ? 'oportunidad disponible' : 'oportunidades disponibles'}
                 </span>
               )}
             </div>
@@ -429,6 +458,85 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
         </p>
         </div>
       </div>
+
+      {/* SERVICIOS */}
+      {totalServicios > 0 && (
+        <div id="servicios" style={{ position: 'relative', overflow: 'hidden', background: `${pageBg}` }}>
+          <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            background: `radial-gradient(circle 400px at 90% 50%, ${color}08 0%, transparent 60%)`,
+          }} />
+          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 48px', position: 'relative', zIndex: 1 }}>
+            <p style={{ fontWeight: 700, fontSize: 11, color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16, borderBottom: `2px solid ${color}`, paddingBottom: 8, display: 'inline-block' }}>
+              <Layers size={12} style={{ display: 'inline', marginRight: 6 }} />
+              Servicios disponibles
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {(empresa as any).servicios.map((s: any) => {
+                const protocolo = (s.protocolo as { item: string; descripcion: string }[]) ?? [];
+                return (
+                  <div key={s.id} className="oferta-card" style={{
+                    background: '#fff', borderRadius: 16, padding: '20px 24px',
+                    border: '1px solid #e2e8f0', borderLeft: `4px solid ${color}80`,
+                    display: 'flex', alignItems: 'flex-start',
+                    justifyContent: 'space-between', gap: 16,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                  }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+                        <p style={{ fontWeight: 700, fontSize: 16, color: '#0f172a', margin: 0 }}>{s.titulo}</p>
+                        <span style={{ background: `${color}15`, color, fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                          {FRECUENCIA_LABEL[s.frecuencia] ?? s.frecuencia}
+                        </span>
+                      </div>
+                      <p style={{ color: '#64748b', fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 }}>{s.descripcion}</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                        {s.deadline && (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#94a3b8', fontSize: 12 }}>
+                            <Clock size={12} /> Deadline: {new Date(s.deadline).toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}
+                          </span>
+                        )}
+                        {protocolo.length > 0 && (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#94a3b8', fontSize: 12 }}>
+                            <Layers size={12} /> {protocolo.length} {protocolo.length === 1 ? 'ítem en protocolo' : 'ítems en protocolo'}
+                          </span>
+                        )}
+                        {s._count.postulaciones > 0 && (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#94a3b8', fontSize: 12 }}>
+                            <Users size={12} /> {s._count.postulaciones} postulante{s._count.postulaciones !== 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </div>
+                      {protocolo.length > 0 && (
+                        <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                          {protocolo.slice(0, 4).map((item, idx) => (
+                            <span key={idx} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 11, color: '#475569', padding: '3px 10px', fontWeight: 500 }}>
+                              {item.item}
+                            </span>
+                          ))}
+                          {protocolo.length > 4 && (
+                            <span style={{ fontSize: 11, color: '#94a3b8', padding: '3px 6px' }}>+{protocolo.length - 4} más</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <Link href="/register" className="oferta-btn" style={{
+                      background: colorDark, color: '#fff',
+                      borderRadius: 10, fontSize: 13, fontWeight: 700,
+                      padding: '10px 22px', flexShrink: 0,
+                      display: 'inline-flex', alignItems: 'center', gap: 6,
+                      boxShadow: `0 4px 14px ${colorDark}50`,
+                      textDecoration: 'none', whiteSpace: 'nowrap',
+                    }}>
+                      Aplicar <ChevronRight size={14} />
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     </>
   );

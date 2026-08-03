@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FONT_OPTIONS, type FontKey } from '@/lib/fonts';
-import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2, Pencil, ToggleLeft, ToggleRight, Globe, Copy, ExternalLink, LogOut, CalendarPlus, Loader2, GraduationCap, Star } from 'lucide-react';
+import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2, Pencil, ToggleLeft, ToggleRight, Globe, Copy, ExternalLink, LogOut, CalendarPlus, Loader2, GraduationCap, Star, Layers, PlayCircle, CheckCircle2, XCircle, ChevronDown, FileText } from 'lucide-react';
 
 function getYouTubeId(url: string): string | null {
   const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?\s]{11})/);
@@ -127,9 +127,155 @@ type Cap = {
   _count: { completadas: number };
 };
 
+function ModuloEmpresaCard({
+  modulo, onGenerarRemito, onCambiarEstado, onAprobarItem, generandoRemito, remitoMsg,
+}: {
+  modulo: {
+    id: string; estado: string; deadline: string | null;
+    protocolo: { item: string; descripcion: string }[];
+    usuario: { id: string; nombre_completo: string; email: string; telefono: string; slug: string; foto_url: string | null };
+    evidencias: { item_index: number; texto: string | null; archivo_url: string | null; estado: string }[];
+    remito: { id: string; numero_remito: string; pdf_url: string | null } | null;
+  };
+  onGenerarRemito: (id: string) => void;
+  onCambiarEstado: (id: string, estado: string) => void;
+  onAprobarItem: (moduloId: string, itemIndex: number, estado: 'aprobado' | 'rechazado') => void;
+  generandoRemito: string | null;
+  remitoMsg: { id: string; msg: string; ok: boolean } | null;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const ESTADO_COLOR: Record<string, string> = {
+    en_progreso: 'bg-blue-100 text-blue-700',
+    en_riesgo: 'bg-orange-100 text-orange-700',
+    completado: 'bg-green-100 text-green-700',
+    aprobado: 'bg-teal-100 text-teal-700',
+  };
+  const ESTADO_LABEL: Record<string, string> = {
+    en_progreso: 'En progreso', en_riesgo: 'En riesgo', completado: 'Completado', aprobado: 'Aprobado',
+  };
+
+  const protocolo = modulo.protocolo as { item: string; descripcion: string }[];
+  const aprobados = modulo.evidencias.filter(e => e.estado === 'aprobado').length;
+  const msgRemito = remitoMsg?.id === modulo.id ? remitoMsg : null;
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <button onClick={() => setOpen(v => !v)} className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+        <div className="flex items-center gap-3 text-left">
+          {modulo.usuario.foto_url ? (
+            <img src={modulo.usuario.foto_url} alt="" className="w-9 h-9 rounded-full object-cover border border-gray-200 flex-shrink-0" />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-sm flex-shrink-0">
+              {modulo.usuario.nombre_completo[0]}
+            </div>
+          )}
+          <div>
+            <p className="font-medium text-gray-900 text-sm">{modulo.usuario.nombre_completo}</p>
+            <p className="text-xs text-gray-400">{modulo.usuario.email}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {modulo.remito && (
+            <span className="text-xs bg-teal-600 text-white px-2 py-0.5 rounded-full">#{modulo.remito.numero_remito}</span>
+          )}
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ESTADO_COLOR[modulo.estado] ?? 'bg-gray-100 text-gray-600'}`}>
+            {ESTADO_LABEL[modulo.estado] ?? modulo.estado}
+          </span>
+          <span className="text-xs text-gray-400">{aprobados}/{protocolo.length}</span>
+          <ChevronDown size={14} className={`text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+        </div>
+      </button>
+
+      {open && (
+        <div className="border-t border-gray-100 p-4 bg-gray-50/50 space-y-3">
+          {modulo.deadline && (
+            <p className="text-xs text-gray-500 flex items-center gap-1.5">
+              <Clock size={12} /> Deadline: {new Date(modulo.deadline).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </p>
+          )}
+          {/* Cambiar estado */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-gray-500">Estado:</span>
+            {(['en_progreso', 'en_riesgo', 'completado', 'aprobado'] as const).map(e => (
+              <button key={e} onClick={() => onCambiarEstado(modulo.id, e)}
+                className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${modulo.estado === e ? (ESTADO_COLOR[e] + ' border-transparent') : 'border-gray-200 text-gray-500 hover:border-gray-400'}`}>
+                {ESTADO_LABEL[e]}
+              </button>
+            ))}
+          </div>
+          {/* Protocolo + evidencias */}
+          <div className="space-y-2">
+            {protocolo.map((item, idx) => {
+              const ev = modulo.evidencias.find(e => e.item_index === idx);
+              return (
+                <div key={idx} className={`bg-white rounded-lg border p-3 ${
+                  ev?.estado === 'aprobado' ? 'border-green-200' :
+                  ev?.estado === 'rechazado' ? 'border-red-200' :
+                  ev ? 'border-blue-200' : 'border-gray-200'
+                }`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-800">{item.item}</p>
+                      {item.descripcion && <p className="text-xs text-gray-400 mt-0.5">{item.descripcion}</p>}
+                      {ev && (
+                        <p className="text-xs text-gray-600 mt-1.5 bg-gray-50 rounded px-2 py-1">
+                          <span className="text-gray-400">Evidencia: </span>{ev.texto}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      {ev?.estado === 'aprobado' && <CheckCircle2 size={16} className="text-green-500" />}
+                      {ev?.estado === 'rechazado' && <XCircle size={16} className="text-red-500" />}
+                      {ev && ev.estado === 'pendiente' && (
+                        <>
+                          <button onClick={() => onAprobarItem(modulo.id, idx, 'aprobado')}
+                            className="text-xs bg-green-600 text-white px-2 py-1 rounded-lg hover:bg-green-700 flex items-center gap-0.5">
+                            <Check size={11} /> OK
+                          </button>
+                          <button onClick={() => onAprobarItem(modulo.id, idx, 'rechazado')}
+                            className="text-xs border border-red-200 text-red-600 px-2 py-1 rounded-lg hover:bg-red-50 flex items-center gap-0.5">
+                            <X size={11} /> Rechazar
+                          </button>
+                        </>
+                      )}
+                      {!ev && <span className="text-xs text-gray-300">Sin evidencia</span>}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {/* Generar remito */}
+          {(modulo.estado === 'completado' || modulo.estado === 'aprobado') && (
+            <div className="pt-2">
+              {modulo.remito ? (
+                <div className="flex items-center gap-2 text-xs text-teal-700 bg-teal-50 rounded-lg px-3 py-2">
+                  <FileText size={14} />
+                  Remito generado: <strong>{modulo.remito.numero_remito}</strong>
+                </div>
+              ) : (
+                <button onClick={() => onGenerarRemito(modulo.id)}
+                  disabled={generandoRemito === modulo.id}
+                  className="text-sm bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 flex items-center gap-2 disabled:opacity-50">
+                  {generandoRemito === modulo.id ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}
+                  Generar remito
+                </button>
+              )}
+              {msgRemito && (
+                <p className={`text-xs mt-1 ${msgRemito.ok ? 'text-teal-700' : 'text-red-600'}`}>{msgRemito.msg}</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function EmpresaDashboard() {
   const router = useRouter();
-  const [tab, setTab] = useState<'ofertas' | 'nueva' | 'editar' | 'postulantes' | 'perfil' | 'citas' | 'capacitaciones'>('ofertas');
+  const [tab, setTab] = useState<'ofertas' | 'nueva' | 'editar' | 'postulantes' | 'perfil' | 'citas' | 'capacitaciones' | 'servicios'>('ofertas');
   const [citas, setCitas] = useState<CitaEmpresa[]>([]);
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const [postulantes, setPostulantes] = useState<Postulante[]>([]);
@@ -163,12 +309,182 @@ export default function EmpresaDashboard() {
     pregunta: '', opciones: ['', '', '', ''], respuesta_correcta: 0,
   });
 
+  // Servicios (módulos de trabajo)
+  type ServicioEmpresa = {
+    id: string; titulo: string; descripcion: string; frecuencia: string; estado: string;
+    deadline: string | null; contrato_template: string | null;
+    protocolo: { item: string; descripcion: string }[];
+    capacitacion: { id: string; titulo: string } | null;
+    created_at: string;
+    _count: { postulaciones: number; modulos_asignados: number };
+  };
+  type PostulanteServicio = {
+    id: string; estado: string; created_at: string;
+    usuario: {
+      id: string; nombre_completo: string; email: string; telefono: string;
+      slug: string; bio: string | null; foto_url: string | null; direccion: string | null;
+      cv_datos: { resumen?: string; habilidades?: string[] } | null;
+      alfa_score: number | null;
+      videos: { id: string; video_url: string; tipo: string }[];
+    };
+  };
+  type ModuloConDetalle = {
+    id: string; estado: string; fecha_inicio: string; deadline: string | null;
+    protocolo: { item: string; descripcion: string }[];
+    usuario: { id: string; nombre_completo: string; email: string; telefono: string; slug: string; foto_url: string | null };
+    evidencias: { id: string; item_index: number; texto: string | null; archivo_url: string | null; estado: string }[];
+    remito: { id: string; numero_remito: string; pdf_url: string | null } | null;
+  };
+  const [serviciosEmpresa, setServiciosEmpresa] = useState<ServicioEmpresa[]>([]);
+  const [newServicioOpen, setNewServicioOpen] = useState(false);
+  const [savingServicio, setSavingServicio] = useState(false);
+  const [servicioMsg, setServicioMsg] = useState<string | null>(null);
+  const [servicioSeleccionado, setServicioSeleccionado] = useState<ServicioEmpresa | null>(null);
+  const [postulantesServicio, setPostulantesServicio] = useState<PostulanteServicio[]>([]);
+  const [loadingPostulantesServ, setLoadingPostulantesServ] = useState(false);
+  const [procesandoPostServ, setProcesandoPostServ] = useState<string | null>(null);
+  const [modulosServicio, setModulosServicio] = useState<ModuloConDetalle[]>([]);
+  const [loadingModulos, setLoadingModulos] = useState(false);
+  const [generandoRemito, setGenerandoRemito] = useState<string | null>(null);
+  const [remitoMsg, setRemitoMsg] = useState<{ id: string; msg: string; ok: boolean } | null>(null);
+  const PROTOCOLO_ITEM_EMPTY = { item: '', descripcion: '' };
+  const [servicioForm, setServicioForm] = useState({
+    titulo: '', descripcion: '', frecuencia: 'mensual', deadline: '',
+    capacitacion_id: '', contrato_template: '',
+    protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }],
+  });
+  const [vistaServicio, setVistaServicio] = useState<'postulantes' | 'modulos'>('postulantes');
+
   function toggleSeleccionado(id: string) {
     setSeleccionados(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
+  }
+
+  async function cargarServiciosEmpresa() {
+    const res = await fetch('/api/empresa/servicios');
+    const data = await res.json();
+    if (data.servicios) setServiciosEmpresa(data.servicios);
+  }
+
+  async function crearServicio() {
+    if (!servicioForm.titulo.trim() || !servicioForm.descripcion.trim() || servicioForm.protocolo.every(p => !p.item.trim())) {
+      setServicioMsg('Completá título, descripción y al menos un item del protocolo.');
+      return;
+    }
+    setSavingServicio(true);
+    setServicioMsg(null);
+    const res = await fetch('/api/servicios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...servicioForm,
+        protocolo: servicioForm.protocolo.filter(p => p.item.trim()),
+        deadline: servicioForm.deadline || null,
+        capacitacion_id: servicioForm.capacitacion_id || null,
+        contrato_template: servicioForm.contrato_template || null,
+      }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      setServicioMsg('✓ Servicio creado correctamente');
+      setNewServicioOpen(false);
+      setServicioForm({ titulo: '', descripcion: '', frecuencia: 'mensual', deadline: '', capacitacion_id: '', contrato_template: '', protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }] });
+      cargarServiciosEmpresa();
+    } else {
+      setServicioMsg(data.error ?? 'Error al crear el servicio');
+    }
+    setSavingServicio(false);
+    setTimeout(() => setServicioMsg(null), 5000);
+  }
+
+  async function cerrarServicio(id: string) {
+    await fetch(`/api/servicios/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ estado: 'cerrado' }),
+    });
+    cargarServiciosEmpresa();
+  }
+
+  async function verPostulantesServicio(servicio: ServicioEmpresa) {
+    setServicioSeleccionado(servicio);
+    setVistaServicio('postulantes');
+    setPostulantesServicio([]);
+    setModulosServicio([]);
+    setLoadingPostulantesServ(true);
+    const res = await fetch(`/api/empresa/servicios/${servicio.id}/postulantes`);
+    const data = await res.json();
+    if (data.postulaciones) setPostulantesServicio(data.postulaciones);
+    setLoadingPostulantesServ(false);
+  }
+
+  async function cargarModulosServicio(servicio_id: string) {
+    setLoadingModulos(true);
+    const res = await fetch(`/api/empresa/servicios/${servicio_id}/modulos`);
+    const data = await res.json();
+    if (data.modulos) setModulosServicio(data.modulos);
+    setLoadingModulos(false);
+  }
+
+  async function procesarPostulanteServicio(postulacion_id: string, estado: 'aceptado' | 'rechazado') {
+    if (!servicioSeleccionado) return;
+    setProcesandoPostServ(postulacion_id);
+    const res = await fetch(`/api/empresa/servicios/${servicioSeleccionado.id}/postulantes`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ postulacion_id, estado }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      setPostulantesServicio(prev => prev.map(p => p.id === postulacion_id ? { ...p, estado } : p));
+      if (estado === 'aceptado') {
+        // Refrescar módulos
+        setModulosServicio([]);
+      }
+    }
+    setProcesandoPostServ(null);
+  }
+
+  async function generarRemito(modulo_id: string) {
+    setGenerandoRemito(modulo_id);
+    setRemitoMsg(null);
+    const res = await fetch(`/api/modulos/${modulo_id}/remito`, { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      setRemitoMsg({ id: modulo_id, msg: `Remito ${data.remito.numero_remito} generado`, ok: true });
+      setModulosServicio(prev => prev.map(m => m.id === modulo_id
+        ? { ...m, estado: 'aprobado', remito: data.remito }
+        : m
+      ));
+    } else {
+      setRemitoMsg({ id: modulo_id, msg: data.error ?? 'Error al generar remito', ok: false });
+    }
+    setGenerandoRemito(null);
+    setTimeout(() => setRemitoMsg(null), 6000);
+  }
+
+  async function cambiarEstadoModulo(modulo_id: string, estado: string) {
+    await fetch(`/api/modulos/${modulo_id}/estado`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ estado }),
+    });
+    setModulosServicio(prev => prev.map(m => m.id === modulo_id ? { ...m, estado } : m));
+  }
+
+  async function aprobarItemEvidencia(modulo_id: string, item_index: number, estado: 'aprobado' | 'rechazado') {
+    await fetch(`/api/modulos/${modulo_id}/aprobar-item`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item_index, estado }),
+    });
+    setModulosServicio(prev => prev.map(m => m.id === modulo_id
+      ? { ...m, evidencias: m.evidencias.map(e => e.item_index === item_index ? { ...e, estado } : e) }
+      : m
+    ));
   }
 
   async function enviarCita() {
@@ -295,7 +611,7 @@ export default function EmpresaDashboard() {
     nombre: '', descripcion: '', rubro: '', ciudad: '', sitio_web: '', mensaje_bienvenida: '',
   });
 
-  useEffect(() => { cargarOfertas(); cargarEmpresa(); cargarCitas(); cargarCapacitaciones(); }, []);
+  useEffect(() => { cargarOfertas(); cargarEmpresa(); cargarCitas(); cargarCapacitaciones(); cargarServiciosEmpresa(); }, []);
 
   async function cargarCitas() {
     const res = await fetch('/api/empresa/citas');
@@ -572,6 +888,7 @@ export default function EmpresaDashboard() {
     { key: 'postulantes', label: ofertaSeleccionada ? `Candidatos — ${ofertaSeleccionada.titulo}` : 'Candidatos' },
     { key: 'citas', label: `Citas${citas.length > 0 ? ` (${citas.length})` : ''}` },
     { key: 'capacitaciones', label: `Capacitaciones${capacitaciones.length > 0 ? ` (${capacitaciones.length})` : ''}` },
+    { key: 'servicios', label: `Servicios${serviciosEmpresa.length > 0 ? ` (${serviciosEmpresa.length})` : ''}` },
     { key: 'perfil', label: 'Perfil empresa' },
   ];
 
@@ -1461,6 +1778,290 @@ export default function EmpresaDashboard() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab: Servicios */}
+        {tab === 'servicios' && (
+          <div className="space-y-6 max-w-4xl">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Servicios y módulos</h2>
+                <p className="text-sm text-gray-500 mt-0.5">Publicá servicios, aceptá candidatos y gestioná sus módulos de trabajo.</p>
+              </div>
+              <button
+                onClick={() => { setNewServicioOpen(v => !v); setServicioSeleccionado(null); }}
+                className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors"
+              >
+                <Plus size={15} /> Nuevo servicio
+              </button>
+            </div>
+
+            {servicioMsg && (
+              <div className={`rounded-lg px-4 py-3 text-sm font-medium ${servicioMsg.startsWith('✓') ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                {servicioMsg}
+              </div>
+            )}
+
+            {/* Formulario nuevo servicio */}
+            {newServicioOpen && (
+              <div className="bg-white rounded-xl border border-teal-200 p-5 space-y-4">
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                  <Layers size={16} className="text-teal-600" /> Nuevo servicio
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Título *</label>
+                    <input value={servicioForm.titulo} onChange={e => setServicioForm(p => ({ ...p, titulo: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      placeholder="Ej: Limpieza de oficinas mensual" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Descripción *</label>
+                    <textarea value={servicioForm.descripcion} onChange={e => setServicioForm(p => ({ ...p, descripcion: e.target.value }))}
+                      rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      placeholder="Describí qué involucra este servicio..." />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Frecuencia</label>
+                    <select value={servicioForm.frecuencia} onChange={e => setServicioForm(p => ({ ...p, frecuencia: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+                      <option value="diaria">Diaria</option>
+                      <option value="semanal">Semanal</option>
+                      <option value="mensual">Mensual</option>
+                      <option value="unica">Única vez</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Deadline (opcional)</label>
+                    <input type="date" value={servicioForm.deadline} onChange={e => setServicioForm(p => ({ ...p, deadline: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+                  </div>
+                  {capacitaciones.length > 0 && (
+                    <div className="col-span-2">
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Capacitación requerida (opcional)</label>
+                      <select value={servicioForm.capacitacion_id} onChange={e => setServicioForm(p => ({ ...p, capacitacion_id: e.target.value }))}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <option value="">Sin capacitación requerida</option>
+                        {capacitaciones.map(c => <option key={c.id} value={c.id}>{c.titulo}</option>)}
+                      </select>
+                    </div>
+                  )}
+                  <div className="col-span-2">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Modelo de contrato / acuerdo (opcional)</label>
+                    <textarea value={servicioForm.contrato_template} onChange={e => setServicioForm(p => ({ ...p, contrato_template: e.target.value }))}
+                      rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      placeholder="Texto base del acuerdo entre las partes..." />
+                  </div>
+                </div>
+                {/* Protocolo */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-medium text-gray-700">Protocolo de trabajo *</label>
+                    <button onClick={() => setServicioForm(p => ({ ...p, protocolo: [...p.protocolo, { ...PROTOCOLO_ITEM_EMPTY }] }))}
+                      className="text-xs text-teal-600 hover:underline flex items-center gap-1">
+                      <Plus size={12} /> Agregar item
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {servicioForm.protocolo.map((pi, idx) => (
+                      <div key={idx} className="flex gap-2 items-start">
+                        <span className="text-xs text-gray-400 mt-2 w-5 text-right flex-shrink-0">{idx + 1}.</span>
+                        <div className="flex-1 grid grid-cols-2 gap-2">
+                          <input value={pi.item} onChange={e => setServicioForm(p => { const pr = [...p.protocolo]; pr[idx] = { ...pr[idx], item: e.target.value }; return { ...p, protocolo: pr }; })}
+                            className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                            placeholder="Item *" />
+                          <input value={pi.descripcion} onChange={e => setServicioForm(p => { const pr = [...p.protocolo]; pr[idx] = { ...pr[idx], descripcion: e.target.value }; return { ...p, protocolo: pr }; })}
+                            className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                            placeholder="Descripción (opcional)" />
+                        </div>
+                        {servicioForm.protocolo.length > 1 && (
+                          <button onClick={() => setServicioForm(p => ({ ...p, protocolo: p.protocolo.filter((_, i) => i !== idx) }))}
+                            className="p-2 text-red-400 hover:text-red-600 flex-shrink-0"><X size={14} /></button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <button onClick={crearServicio} disabled={savingServicio}
+                    className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 disabled:opacity-50">
+                    {savingServicio ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Crear servicio
+                  </button>
+                  <button onClick={() => setNewServicioOpen(false)}
+                    className="border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
+                </div>
+              </div>
+            )}
+
+            {/* Lista de servicios */}
+            {!servicioSeleccionado && (
+              <div className="space-y-3">
+                {serviciosEmpresa.length === 0 && !newServicioOpen && (
+                  <div className="bg-white rounded-xl border border-dashed border-gray-300 p-8 text-center text-gray-500">
+                    <Layers size={32} className="mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">Todavía no creaste ningún servicio.</p>
+                    <button onClick={() => setNewServicioOpen(true)} className="mt-3 text-sm text-teal-600 hover:underline">Crear el primero</button>
+                  </div>
+                )}
+                {serviciosEmpresa.map(s => (
+                  <div key={s.id} className="bg-white rounded-xl border border-gray-200 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-semibold text-gray-900 text-sm">{s.titulo}</h3>
+                          <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${s.estado === 'activo' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                            {s.estado === 'activo' ? 'Activo' : 'Cerrado'}
+                          </span>
+                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-teal-50 text-teal-700">
+                            {s.frecuencia === 'diaria' ? 'Diaria' : s.frecuencia === 'semanal' ? 'Semanal' : s.frecuencia === 'mensual' ? 'Mensual' : 'Única'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1 line-clamp-1">{s.descripcion}</p>
+                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                          <span>{s._count.postulaciones} postulantes</span>
+                          <span>{s._count.modulos_asignados} módulos activos</span>
+                          {s.deadline && <span>Deadline: {new Date(s.deadline).toLocaleDateString('es-AR')}</span>}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => { verPostulantesServicio(s); }}
+                          className="text-xs bg-teal-600 text-white px-3 py-1.5 rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-1"
+                        >
+                          <Users size={12} /> Gestionar
+                        </button>
+                        {s.estado === 'activo' && (
+                          <button onClick={() => cerrarServicio(s.id)}
+                            className="text-xs border border-gray-200 text-gray-500 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors">
+                            Cerrar
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Vista detalle de un servicio */}
+            {servicioSeleccionado && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <button onClick={() => { setServicioSeleccionado(null); setPostulantesServicio([]); }}
+                    className="text-sm text-teal-600 hover:underline flex items-center gap-1">
+                    ← Volver
+                  </button>
+                  <h3 className="font-semibold text-gray-900">{servicioSeleccionado.titulo}</h3>
+                </div>
+
+                {/* Sub-tabs */}
+                <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-fit">
+                  {(['postulantes', 'modulos'] as const).map(v => (
+                    <button key={v} onClick={() => {
+                      setVistaServicio(v);
+                      if (v === 'modulos' && modulosServicio.length === 0) cargarModulosServicio(servicioSeleccionado.id);
+                    }}
+                      className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${vistaServicio === v ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
+                      {v === 'postulantes' ? 'Postulantes' : 'Módulos activos'}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Vista Postulantes */}
+                {vistaServicio === 'postulantes' && (
+                  <div className="space-y-3">
+                    {loadingPostulantesServ && (
+                      <div className="text-center py-8 text-gray-400"><Loader2 size={20} className="animate-spin mx-auto" /></div>
+                    )}
+                    {!loadingPostulantesServ && postulantesServicio.length === 0 && (
+                      <div className="bg-white rounded-xl border border-dashed border-gray-200 p-8 text-center text-gray-400 text-sm">
+                        No hay postulantes todavía
+                      </div>
+                    )}
+                    {postulantesServicio.map(p => (
+                      <div key={p.id} className={`bg-white rounded-xl border p-4 ${
+                        p.estado === 'aceptado' ? 'border-green-200' : p.estado === 'rechazado' ? 'border-red-100' : 'border-gray-200'
+                      }`}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            {p.usuario.foto_url ? (
+                              <img src={p.usuario.foto_url} alt="" className="w-10 h-10 rounded-full object-cover border border-gray-200 flex-shrink-0" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold flex-shrink-0">
+                                {p.usuario.nombre_completo[0]}
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <p className="font-medium text-gray-900 text-sm">{p.usuario.nombre_completo}</p>
+                              <p className="text-xs text-gray-400">{p.usuario.email} · {p.usuario.telefono}</p>
+                              {p.usuario.cv_datos?.resumen && (
+                                <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{p.usuario.cv_datos.resumen}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {p.usuario.videos.length > 0 && (
+                              <a href={p.usuario.videos[0].video_url} target="_blank" rel="noopener noreferrer"
+                                className="text-xs border border-gray-200 text-gray-600 px-2 py-1.5 rounded-lg hover:bg-gray-50 flex items-center gap-1">
+                                <PlayCircle size={12} /> Video
+                              </a>
+                            )}
+                            <a href={`/u/${p.usuario.slug}`} target="_blank" rel="noopener noreferrer"
+                              className="text-xs border border-gray-200 text-gray-600 px-2 py-1.5 rounded-lg hover:bg-gray-50 flex items-center gap-1">
+                              <ExternalLink size={12} /> Perfil
+                            </a>
+                            {p.estado === 'pendiente' && (
+                              <>
+                                <button onClick={() => procesarPostulanteServicio(p.id, 'aceptado')}
+                                  disabled={procesandoPostServ === p.id}
+                                  className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 flex items-center gap-1 disabled:opacity-50">
+                                  {procesandoPostServ === p.id ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />} Aceptar
+                                </button>
+                                <button onClick={() => procesarPostulanteServicio(p.id, 'rechazado')}
+                                  disabled={procesandoPostServ === p.id}
+                                  className="text-xs border border-red-200 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50 flex items-center gap-1 disabled:opacity-50">
+                                  <X size={12} /> Rechazar
+                                </button>
+                              </>
+                            )}
+                            {p.estado !== 'pendiente' && (
+                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.estado === 'aceptado' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                                {p.estado === 'aceptado' ? 'Aceptado' : 'Rechazado'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Vista Módulos */}
+                {vistaServicio === 'modulos' && (
+                  <div className="space-y-3">
+                    {loadingModulos && <div className="text-center py-8 text-gray-400"><Loader2 size={20} className="animate-spin mx-auto" /></div>}
+                    {!loadingModulos && modulosServicio.length === 0 && (
+                      <div className="bg-white rounded-xl border border-dashed border-gray-200 p-8 text-center text-gray-400 text-sm">
+                        No hay módulos asignados todavía. Aceptá candidatos desde la vista de Postulantes.
+                      </div>
+                    )}
+                    {modulosServicio.map(mod => (
+                      <ModuloEmpresaCard
+                        key={mod.id}
+                        modulo={mod}
+                        onGenerarRemito={generarRemito}
+                        onCambiarEstado={cambiarEstadoModulo}
+                        onAprobarItem={aprobarItemEvidencia}
+                        generandoRemito={generandoRemito}
+                        remitoMsg={remitoMsg}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

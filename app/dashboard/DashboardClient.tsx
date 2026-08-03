@@ -15,7 +15,7 @@ import {
   ExternalLink, Copy, CheckCheck, Clock, Circle,
   BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck,
   CalendarDays, MapPin, Loader2, Plus, GraduationCap, Briefcase as BriefcaseIcon, Wrench,
-  Star, Building2, Link2, Trash2, PlayCircle, Download
+  Star, Building2, Link2, Trash2, PlayCircle, Download, Layers, AlertTriangle, CheckCircle2, XCircle, ChevronRight
 } from 'lucide-react';
 import OfertasTab from '@/components/ui/OfertasTab';
 import CapacitacionPlayer from '@/components/ui/CapacitacionPlayer';
@@ -130,11 +130,12 @@ export default function DashboardClient({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [tab, setTab] = useState<'perfil' | 'ofertas' | 'documentos' | 'citas'>(() => {
+  const [tab, setTab] = useState<'perfil' | 'ofertas' | 'documentos' | 'citas' | 'servicios'>(() => {
     const t = searchParams.get('tab');
     if (t === 'ofertas') return 'ofertas';
     if (t === 'documentos') return 'documentos';
     if (t === 'citas') return 'citas';
+    if (t === 'servicios') return 'servicios';
     return 'perfil';
   });
   const [citasState, setCitasState] = useState<CitaInvitado[]>(citas);
@@ -241,6 +242,31 @@ export default function DashboardClient({
   const [capacitaciones, setCapacitaciones] = useState<CapacitacionItem[]>([]);
   const [playerCap, setPlayerCap] = useState<CapacitacionItem | null>(null);
 
+  // Servicios
+  type ServicioPublico = {
+    id: string; titulo: string; descripcion: string; frecuencia: string;
+    deadline: string | null; estado: string; created_at: string;
+    empresa: { id: string; nombre: string; logo_url: string | null; slug: string };
+    capacitacion: { id: string; titulo: string } | null;
+    _count: { postulaciones: number };
+  };
+  type ModuloAsignadoItem = {
+    id: string; estado: string; fecha_inicio: string; deadline: string | null; contrato_url: string | null;
+    protocolo: { item: string; descripcion: string }[];
+    servicio: { id: string; titulo: string; descripcion: string; frecuencia: string };
+    empresa: { id: string; nombre: string; logo_url: string | null };
+    evidencias: { id: string; item_index: number; texto: string | null; archivo_url: string | null; estado: string }[];
+    remito: { id: string; numero_remito: string; pdf_url: string | null; created_at: string } | null;
+  };
+  const [servicios, setServicios] = useState<ServicioPublico[]>([]);
+  const [misModulos, setMisModulos] = useState<ModuloAsignadoItem[]>([]);
+  const [loadingServicios, setLoadingServicios] = useState(false);
+  const [aplicandoServicio, setAplicandoServicio] = useState<string | null>(null);
+  const [servicioMsg, setServicioMsg] = useState<{ id: string; msg: string; ok: boolean } | null>(null);
+  const [moduloAbierto, setModuloAbierto] = useState<string | null>(null);
+  const [evidenciaTexto, setEvidenciaTexto] = useState<Record<string, string>>({});
+  const [subiendoEvidencia, setSubiendoEvidencia] = useState<string | null>(null);
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
   const cvUrl = `${appUrl}/u/${usuario.slug}/cv`;
   const pitchUrl = `${appUrl}/u/${usuario.slug}/pitch`;
@@ -253,6 +279,7 @@ export default function DashboardClient({
     if (tab === 'documentos') cargarDocumentos();
     if (tab === 'perfil' && referencias.length === 0) cargarReferencias();
     if (tab === 'perfil' && capacitaciones.length === 0) cargarCapacitaciones();
+    if (tab === 'servicios') cargarServicios();
   }, [tab]);
 
   async function cargarReferencias() {
@@ -307,6 +334,49 @@ export default function DashboardClient({
     const res = await fetch('/api/documentos');
     const data = await res.json();
     if (data.documentos) setDocumentos(data.documentos);
+  }
+
+  async function cargarServicios() {
+    setLoadingServicios(true);
+    const [sRes, mRes] = await Promise.all([
+      fetch('/api/servicios'),
+      fetch('/api/modulos/mis-modulos'),
+    ]);
+    const [sData, mData] = await Promise.all([sRes.json(), mRes.json()]);
+    if (sData.servicios) setServicios(sData.servicios);
+    if (mData.modulos) setMisModulos(mData.modulos);
+    setLoadingServicios(false);
+  }
+
+  async function aplicarServicio(servicio_id: string) {
+    setAplicandoServicio(servicio_id);
+    setServicioMsg(null);
+    const res = await fetch(`/api/servicios/${servicio_id}/aplicar`, { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      setServicioMsg({ id: servicio_id, msg: 'Postulacion enviada. La empresa revisara tu perfil.', ok: true });
+      cargarServicios();
+    } else {
+      setServicioMsg({ id: servicio_id, msg: data.error ?? 'Error al aplicar', ok: false });
+    }
+    setAplicandoServicio(null);
+    setTimeout(() => setServicioMsg(null), 5000);
+  }
+
+  async function enviarEvidencia(modulo_id: string, item_index: number) {
+    const texto = evidenciaTexto[`${modulo_id}-${item_index}`] ?? '';
+    if (!texto.trim()) return;
+    setSubiendoEvidencia(`${modulo_id}-${item_index}`);
+    const res = await fetch(`/api/modulos/${modulo_id}/evidencia`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item_index, texto }),
+    });
+    if (res.ok) {
+      setEvidenciaTexto(prev => { const n = { ...prev }; delete n[`${modulo_id}-${item_index}`]; return n; });
+      cargarServicios();
+    }
+    setSubiendoEvidencia(null);
   }
 
   async function subirDocumento(e: React.ChangeEvent<HTMLInputElement>, tipo: string) {
@@ -512,6 +582,20 @@ export default function DashboardClient({
                   </span>
                 )}
               </button>
+              <button
+                onClick={() => setTab('servicios')}
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                  tab === 'servicios' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
+                }`}
+              >
+                <Layers size={14} />
+                Servicios
+                {misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length > 0 && (
+                  <span className="bg-teal-500 text-white text-[10px] px-1.5 rounded-full">
+                    {misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -580,6 +664,205 @@ export default function DashboardClient({
         {/* Tab Ofertas */}
         {tab === 'ofertas' && (
           <OfertasTab videos={usuario.videos} initialOfertaId={initialOfertaId} />
+        )}
+
+        {/* Tab Servicios */}
+        {tab === 'servicios' && (
+          <div className="space-y-8">
+            {loadingServicios && (
+              <div className="flex items-center justify-center py-12 text-ink-400">
+                <Loader2 size={24} className="animate-spin mr-2" /> Cargando...
+              </div>
+            )}
+
+            {/* Mis Módulos activos */}
+            {!loadingServicios && misModulos.length > 0 && (
+              <div>
+                <h2 className="text-base font-semibold text-ink-800 mb-3 flex items-center gap-2">
+                  <Layers size={16} className="text-teal-600" /> Mis módulos asignados
+                </h2>
+                <div className="space-y-3">
+                  {misModulos.map(mod => {
+                    const ESTADO_COLOR: Record<string, string> = {
+                      en_progreso: 'bg-blue-100 text-blue-700',
+                      en_riesgo: 'bg-orange-100 text-orange-700',
+                      completado: 'bg-green-100 text-green-700',
+                      aprobado: 'bg-teal-100 text-teal-700',
+                    };
+                    const ESTADO_LABEL: Record<string, string> = {
+                      en_progreso: 'En progreso', en_riesgo: 'En riesgo',
+                      completado: 'Completado', aprobado: 'Aprobado',
+                    };
+                    const protocolo = mod.protocolo as { item: string; descripcion: string }[];
+                    const isOpen = moduloAbierto === mod.id;
+                    const totalItems = protocolo.length;
+                    const aprobados = mod.evidencias.filter(e => e.estado === 'aprobado').length;
+
+                    return (
+                      <div key={mod.id} className="card border border-gray-200 overflow-hidden">
+                        <button
+                          onClick={() => setModuloAbierto(isOpen ? null : mod.id)}
+                          className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3 text-left">
+                            {mod.empresa.logo_url ? (
+                              <img src={mod.empresa.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover border border-gray-200" />
+                            ) : (
+                              <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-sm">
+                                {mod.empresa.nombre[0]}
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-medium text-ink-800 text-sm">{mod.servicio.titulo}</p>
+                              <p className="text-xs text-ink-400">{mod.empresa.nombre}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {mod.remito && (
+                              <span className="text-xs bg-teal-600 text-white px-2 py-0.5 rounded-full">Remito #{mod.remito.numero_remito}</span>
+                            )}
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ESTADO_COLOR[mod.estado] ?? 'bg-gray-100 text-gray-600'}`}>
+                              {ESTADO_LABEL[mod.estado] ?? mod.estado}
+                            </span>
+                            <span className="text-xs text-ink-400">{aprobados}/{totalItems}</span>
+                            <ChevronRight size={14} className={`text-ink-400 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+                          </div>
+                        </button>
+
+                        {isOpen && (
+                          <div className="border-t border-gray-100 p-4 space-y-3 bg-gray-50/50">
+                            {mod.deadline && (
+                              <p className="text-xs text-ink-500 flex items-center gap-1">
+                                <Clock size={12} /> Deadline: {new Date(mod.deadline).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                              </p>
+                            )}
+                            <p className="text-xs text-ink-500 font-medium uppercase tracking-wide">Protocolo de trabajo</p>
+                            <div className="space-y-3">
+                              {protocolo.map((item, idx) => {
+                                const ev = mod.evidencias.find(e => e.item_index === idx);
+                                const keyEv = `${mod.id}-${idx}`;
+                                const enviando = subiendoEvidencia === keyEv;
+                                return (
+                                  <div key={idx} className={`bg-white rounded-xl border p-3 ${
+                                    ev?.estado === 'aprobado' ? 'border-green-200' :
+                                    ev?.estado === 'rechazado' ? 'border-red-200' :
+                                    ev ? 'border-blue-200' : 'border-gray-200'
+                                  }`}>
+                                    <div className="flex items-start justify-between gap-2 mb-1">
+                                      <p className="text-sm font-medium text-ink-800">{item.item}</p>
+                                      {ev?.estado === 'aprobado' && <CheckCircle2 size={16} className="text-green-500 flex-shrink-0" />}
+                                      {ev?.estado === 'rechazado' && <XCircle size={16} className="text-red-500 flex-shrink-0" />}
+                                      {ev?.estado === 'pendiente' && <Clock size={16} className="text-blue-400 flex-shrink-0" />}
+                                    </div>
+                                    {item.descripcion && <p className="text-xs text-ink-400 mb-2">{item.descripcion}</p>}
+                                    {ev && (
+                                      <div className="bg-gray-50 rounded-lg px-2 py-1.5 text-xs text-ink-600 mb-2">
+                                        <span className="text-ink-400">Tu evidencia: </span>{ev.texto}
+                                      </div>
+                                    )}
+                                    {(!ev || ev.estado === 'rechazado') && mod.estado !== 'aprobado' && (
+                                      <div className="flex gap-2 mt-2">
+                                        <input
+                                          type="text"
+                                          placeholder={ev?.estado === 'rechazado' ? 'Reenviar evidencia...' : 'Descripción de tu evidencia...'}
+                                          value={evidenciaTexto[keyEv] ?? ''}
+                                          onChange={e => setEvidenciaTexto(prev => ({ ...prev, [keyEv]: e.target.value }))}
+                                          className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                                        />
+                                        <button
+                                          onClick={() => enviarEvidencia(mod.id, idx)}
+                                          disabled={enviando || !(evidenciaTexto[keyEv] ?? '').trim()}
+                                          className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg hover:bg-brand-700 disabled:opacity-40 flex items-center gap-1"
+                                        >
+                                          {enviando ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                                          Enviar
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Servicios disponibles */}
+            {!loadingServicios && (
+              <div>
+                <h2 className="text-base font-semibold text-ink-800 mb-3 flex items-center gap-2">
+                  <Briefcase size={16} className="text-brand-600" /> Servicios disponibles
+                </h2>
+                {servicios.length === 0 && (
+                  <div className="card p-8 text-center text-ink-400">
+                    <Layers size={32} className="mx-auto mb-2 opacity-40" />
+                    <p>No hay servicios disponibles por el momento</p>
+                  </div>
+                )}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {servicios.map(s => {
+                    const yaEnMisModulos = misModulos.some(m => m.servicio.id === s.id);
+                    const msgServicio = servicioMsg?.id === s.id ? servicioMsg : null;
+                    return (
+                      <div key={s.id} className="card p-4 flex flex-col gap-3">
+                        <div className="flex items-start gap-3">
+                          {s.empresa.logo_url ? (
+                            <img src={s.empresa.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover border border-gray-100 flex-shrink-0" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 font-bold flex-shrink-0">
+                              {s.empresa.nombre[0]}
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-semibold text-ink-800 text-sm leading-tight">{s.titulo}</p>
+                            <p className="text-xs text-ink-400 mt-0.5">{s.empresa.nombre}</p>
+                          </div>
+                        </div>
+                        <p className="text-xs text-ink-600 line-clamp-2">{s.descripcion}</p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="badge bg-brand-50 text-brand-700 text-[11px]">
+                            {s.frecuencia === 'diaria' ? 'Diaria' : s.frecuencia === 'semanal' ? 'Semanal' : s.frecuencia === 'mensual' ? 'Mensual' : 'Única vez'}
+                          </span>
+                          {s.capacitacion && (
+                            <span className="badge bg-purple-50 text-purple-700 text-[11px] flex items-center gap-1">
+                              <GraduationCap size={10} /> Cap. requerida
+                            </span>
+                          )}
+                          {s.deadline && (
+                            <span className="badge bg-orange-50 text-orange-700 text-[11px] flex items-center gap-1">
+                              <Clock size={10} /> {new Date(s.deadline).toLocaleDateString('es-AR')}
+                            </span>
+                          )}
+                        </div>
+                        {msgServicio && (
+                          <p className={`text-xs rounded-lg px-2 py-1 ${msgServicio.ok ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                            {msgServicio.msg}
+                          </p>
+                        )}
+                        <button
+                          onClick={() => aplicarServicio(s.id)}
+                          disabled={yaEnMisModulos || aplicandoServicio === s.id}
+                          className={`mt-auto text-sm py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
+                            yaEnMisModulos
+                              ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                              : 'bg-brand-600 text-white hover:bg-brand-700'
+                          }`}
+                        >
+                          {aplicandoServicio === s.id ? <Loader2 size={14} className="animate-spin" /> : null}
+                          {yaEnMisModulos ? 'Ya participás' : 'Aplicar'}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Tab Documentos */}

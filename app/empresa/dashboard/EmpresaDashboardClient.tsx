@@ -2289,7 +2289,7 @@ export default function EmpresaDashboard() {
                                 <PlayCircle size={12} /> Video
                               </a>
                             )}
-                            <a href={`/u/${p.usuario.slug}`} target="_blank" rel="noopener noreferrer"
+                            <a href={`/u/${p.usuario.slug}/cv`} target="_blank" rel="noopener noreferrer"
                               className="text-xs border border-gray-200 text-gray-600 px-2 py-1.5 rounded-lg hover:bg-gray-50 flex items-center gap-1">
                               <ExternalLink size={12} /> Perfil
                             </a>

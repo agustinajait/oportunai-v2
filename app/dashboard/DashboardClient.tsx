@@ -878,16 +878,6 @@ export default function DashboardClient({
                                 {s.horas_modulo} hs/módulo
                               </span>
                             )}
-                            {s.precio_hora && (
-                              <span className="badge bg-green-50 text-green-700 text-[11px] font-semibold">
-                                ${Number(s.precio_hora).toLocaleString('es-AR')}/hs
-                              </span>
-                            )}
-                            {s.horas_modulo && s.precio_hora && (
-                              <span className="badge bg-yellow-50 text-yellow-800 text-[11px] font-bold border border-yellow-200">
-                                ${(s.horas_modulo * Number(s.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })} total
-                              </span>
-                            )}
                             {s.capacitacion && (
                               <span className="badge bg-purple-50 text-purple-700 text-[11px] flex items-center gap-1">
                                 <GraduationCap size={10} /> Cap. requerida
@@ -899,6 +889,30 @@ export default function DashboardClient({
                               </span>
                             )}
                           </div>
+
+                          {/* Precio destacado */}
+                          {s.precio_hora && (
+                            <div className="flex items-center gap-3 bg-green-50 border border-green-100 rounded-xl px-3 py-2.5">
+                              <div className="flex-1">
+                                <p className="text-[11px] text-green-600 font-medium">Honorario por módulo</p>
+                                <div className="flex items-baseline gap-1.5 flex-wrap mt-0.5">
+                                  <span className="text-base font-bold text-green-700">
+                                    ${Number(s.precio_hora).toLocaleString('es-AR')}<span className="text-xs font-medium">/hs</span>
+                                  </span>
+                                  {s.horas_modulo && (
+                                    <>
+                                      <span className="text-xs text-green-500">×</span>
+                                      <span className="text-xs text-green-600">{s.horas_modulo} hs</span>
+                                      <span className="text-xs text-green-500">=</span>
+                                      <span className="text-lg font-extrabold text-green-700">
+                                        ${(s.horas_modulo * Number(s.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
                           {/* Descripción (preview o completa) */}
                           <p className={`text-xs text-ink-600 leading-relaxed ${expandido ? '' : 'line-clamp-2'}`}>{s.descripcion}</p>

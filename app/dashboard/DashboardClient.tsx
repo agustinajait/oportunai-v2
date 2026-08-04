@@ -248,6 +248,8 @@ export default function DashboardClient({
     duracion_jornada: string | null; horas_modulo: number | null; precio_hora: number | null;
     deadline: string | null; estado: string; created_at: string;
     docs_requeridos: string[];
+    protocolo: { item: string; descripcion: string }[];
+    contrato_template: string | null;
     empresa: { id: string; nombre: string; logo_url: string | null; slug: string };
     capacitacion: { id: string; titulo: string } | null;
     _count: { postulaciones: number };
@@ -266,6 +268,7 @@ export default function DashboardClient({
   const [aplicandoServicio, setAplicandoServicio] = useState<string | null>(null);
   const [servicioMsg, setServicioMsg] = useState<{ id: string; msg: string; ok: boolean } | null>(null);
   const [moduloAbierto, setModuloAbierto] = useState<string | null>(null);
+  const [servicioExpandido, setServicioExpandido] = useState<string | null>(null);
   const [evidenciaTexto, setEvidenciaTexto] = useState<Record<string, string>>({});
   const [subiendoEvidencia, setSubiendoEvidencia] = useState<string | null>(null);
 
@@ -834,90 +837,162 @@ export default function DashboardClient({
                     <p>No hay servicios disponibles por el momento</p>
                   </div>
                 )}
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-4">
                   {servicios.map(s => {
                     const yaEnMisModulos = misModulos.some(m => m.servicio.id === s.id);
                     const msgServicio = servicioMsg?.id === s.id ? servicioMsg : null;
+                    const expandido = servicioExpandido === s.id;
+                    const protocolo = (s.protocolo ?? []) as { item: string; descripcion: string }[];
+                    const docLabel = (d: string) => d.startsWith('otro:') ? d.slice(5) || 'Otro' : d === 'dni' ? 'DNI' : d === 'antecedentes_penales' ? 'Antecedentes Penales' : d === 'manipulacion_alimentos' ? 'Manip. Alimentos' : d === 'libreta_sanitaria' ? 'Lib. Sanitaria' : d === 'registro_conducir' ? 'Reg. Conducir' : d;
                     return (
-                      <div key={s.id} className="card p-4 flex flex-col gap-3">
-                        <div className="flex items-start gap-3">
-                          {s.empresa.logo_url ? (
-                            <img src={s.empresa.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover border border-gray-100 flex-shrink-0" />
-                          ) : (
-                            <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 font-bold flex-shrink-0">
-                              {s.empresa.nombre[0]}
+                      <div key={s.id} className="card overflow-hidden">
+                        {/* Header siempre visible */}
+                        <div className="p-4 flex flex-col gap-3">
+                          <div className="flex items-start gap-3">
+                            {s.empresa.logo_url ? (
+                              <img src={s.empresa.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover border border-gray-100 flex-shrink-0" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 font-bold flex-shrink-0">
+                                {s.empresa.nombre[0]}
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="font-semibold text-ink-800 text-sm leading-tight">{s.titulo}</p>
+                              <p className="text-xs text-ink-400 mt-0.5">{s.empresa.nombre}</p>
                             </div>
-                          )}
-                          <div className="min-w-0">
-                            <p className="font-semibold text-ink-800 text-sm leading-tight">{s.titulo}</p>
-                            <p className="text-xs text-ink-400 mt-0.5">{s.empresa.nombre}</p>
+                            <span className="text-xs text-ink-400 flex-shrink-0">{s._count.postulaciones} postulantes</span>
                           </div>
-                        </div>
-                        <p className="text-xs text-ink-600 line-clamp-2">{s.descripcion}</p>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="badge bg-brand-50 text-brand-700 text-[11px]">
-                            {s.frecuencia === 'diaria' ? 'Diaria' : s.frecuencia === 'semanal' ? 'Semanal' : s.frecuencia === 'mensual' ? 'Mensual' : 'Única vez'}
-                          </span>
-                          {s.duracion_jornada && (
-                            <span className="badge bg-teal-50 text-teal-700 text-[11px] flex items-center gap-1">
-                              <Clock size={10} /> {s.duracion_jornada}
+
+                          {/* Chips resumen */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="badge bg-brand-50 text-brand-700 text-[11px]">
+                              {s.frecuencia === 'diaria' ? 'Diaria' : s.frecuencia === 'semanal' ? 'Semanal' : s.frecuencia === 'mensual' ? 'Mensual' : 'Única vez'}
                             </span>
-                          )}
-                          {s.horas_modulo && (
-                            <span className="badge bg-teal-50 text-teal-700 text-[11px] font-semibold">
-                              {s.horas_modulo} hs
-                            </span>
-                          )}
-                          {s.precio_hora && (
-                            <span className="badge bg-green-50 text-green-700 text-[11px] font-semibold">
-                              ${Number(s.precio_hora).toLocaleString('es-AR')}/hs
-                            </span>
-                          )}
-                          {s.horas_modulo && s.precio_hora && (
-                            <span className="badge bg-yellow-50 text-yellow-800 text-[11px] font-bold border border-yellow-200">
-                              ${(s.horas_modulo * Number(s.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })} total
-                            </span>
-                          )}
-                          {s.capacitacion && (
-                            <span className="badge bg-purple-50 text-purple-700 text-[11px] flex items-center gap-1">
-                              <GraduationCap size={10} /> Cap. requerida
-                            </span>
-                          )}
-                          {s.deadline && (
-                            <span className="badge bg-orange-50 text-orange-700 text-[11px] flex items-center gap-1">
-                              <Clock size={10} /> {new Date(s.deadline).toLocaleDateString('es-AR')}
-                            </span>
-                          )}
-                        </div>
-                        {s.docs_requeridos && s.docs_requeridos.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 pt-0.5">
-                            <span className="text-[11px] text-ink-400 flex items-center gap-1 mr-0.5">
-                              <FileText size={10} /> Docs:
-                            </span>
-                            {s.docs_requeridos.map((d, i) => (
-                              <span key={i} className="text-[11px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-md">
-                                {d.startsWith('otro:') ? d.slice(5) || 'Otro' : d === 'dni' ? 'DNI' : d === 'antecedentes_penales' ? 'Antecedentes' : d === 'manipulacion_alimentos' ? 'Manip. Alimentos' : d === 'libreta_sanitaria' ? 'Lib. Sanitaria' : d === 'registro_conducir' ? 'Registro Conducir' : d}
+                            {s.duracion_jornada && (
+                              <span className="badge bg-teal-50 text-teal-700 text-[11px] flex items-center gap-1">
+                                <Clock size={10} /> {s.duracion_jornada}
                               </span>
-                            ))}
+                            )}
+                            {s.horas_modulo && (
+                              <span className="badge bg-teal-50 text-teal-700 text-[11px] font-semibold">
+                                {s.horas_modulo} hs/módulo
+                              </span>
+                            )}
+                            {s.precio_hora && (
+                              <span className="badge bg-green-50 text-green-700 text-[11px] font-semibold">
+                                ${Number(s.precio_hora).toLocaleString('es-AR')}/hs
+                              </span>
+                            )}
+                            {s.horas_modulo && s.precio_hora && (
+                              <span className="badge bg-yellow-50 text-yellow-800 text-[11px] font-bold border border-yellow-200">
+                                ${(s.horas_modulo * Number(s.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })} total
+                              </span>
+                            )}
+                            {s.capacitacion && (
+                              <span className="badge bg-purple-50 text-purple-700 text-[11px] flex items-center gap-1">
+                                <GraduationCap size={10} /> Cap. requerida
+                              </span>
+                            )}
+                            {s.deadline && (
+                              <span className="badge bg-orange-50 text-orange-700 text-[11px] flex items-center gap-1">
+                                <Clock size={10} /> hasta {new Date(s.deadline).toLocaleDateString('es-AR')}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Descripción (preview o completa) */}
+                          <p className={`text-xs text-ink-600 leading-relaxed ${expandido ? '' : 'line-clamp-2'}`}>{s.descripcion}</p>
+
+                          {/* Ver más / menos */}
+                          <button
+                            onClick={() => setServicioExpandido(expandido ? null : s.id)}
+                            className="text-xs text-brand-600 hover:underline text-left flex items-center gap-1 -mt-1"
+                          >
+                            <ChevronRight size={12} className={`transition-transform ${expandido ? 'rotate-90' : ''}`} />
+                            {expandido ? 'Ver menos' : 'Ver detalle completo'}
+                          </button>
+                        </div>
+
+                        {/* Detalle expandido */}
+                        {expandido && (
+                          <div className="border-t border-gray-100 bg-gray-50/60 px-4 pb-4 pt-3 space-y-4">
+                            {/* Protocolo */}
+                            {protocolo.length > 0 && (
+                              <div>
+                                <p className="text-[11px] font-semibold text-ink-500 uppercase tracking-wide mb-2">Protocolo de trabajo</p>
+                                <div className="space-y-2">
+                                  {protocolo.map((item, idx) => (
+                                    <div key={idx} className="flex gap-2.5 bg-white rounded-lg border border-gray-200 px-3 py-2.5">
+                                      <span className="text-xs text-brand-600 font-bold flex-shrink-0 mt-0.5">{idx + 1}.</span>
+                                      <div>
+                                        <p className="text-xs font-medium text-ink-800">{item.item}</p>
+                                        {item.descripcion && <p className="text-[11px] text-ink-400 mt-0.5">{item.descripcion}</p>}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Documentos requeridos */}
+                            {s.docs_requeridos && s.docs_requeridos.length > 0 && (
+                              <div>
+                                <p className="text-[11px] font-semibold text-ink-500 uppercase tracking-wide mb-2">Documentos requeridos</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {s.docs_requeridos.map((d, i) => (
+                                    <span key={i} className="text-[11px] bg-white border border-gray-200 text-gray-600 px-2 py-1 rounded-lg flex items-center gap-1">
+                                      <FileText size={10} /> {docLabel(d)}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Capacitación requerida */}
+                            {s.capacitacion && (
+                              <div className="bg-purple-50 rounded-lg px-3 py-2 flex items-center gap-2">
+                                <GraduationCap size={14} className="text-purple-600 flex-shrink-0" />
+                                <div>
+                                  <p className="text-[11px] font-semibold text-purple-700">Capacitación obligatoria</p>
+                                  <p className="text-xs text-purple-600">{s.capacitacion.titulo}</p>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Acuerdo */}
+                            {s.contrato_template && (
+                              <details className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-gray-700 flex items-center gap-2 hover:bg-gray-50 select-none list-none">
+                                  <FileText size={12} className="text-teal-600" /> Ver modelo de acuerdo
+                                </summary>
+                                <div className="px-3 pb-3 pt-1 border-t border-gray-100">
+                                  <pre className="text-[11px] text-gray-600 whitespace-pre-wrap font-sans leading-relaxed">{s.contrato_template}</pre>
+                                </div>
+                              </details>
+                            )}
                           </div>
                         )}
-                        {msgServicio && (
-                          <p className={`text-xs rounded-lg px-2 py-1 ${msgServicio.ok ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
-                            {msgServicio.msg}
-                          </p>
-                        )}
-                        <button
-                          onClick={() => aplicarServicio(s.id)}
-                          disabled={yaEnMisModulos || aplicandoServicio === s.id}
-                          className={`mt-auto text-sm py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
-                            yaEnMisModulos
-                              ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                              : 'bg-brand-600 text-white hover:bg-brand-700'
-                          }`}
-                        >
-                          {aplicandoServicio === s.id ? <Loader2 size={14} className="animate-spin" /> : null}
-                          {yaEnMisModulos ? 'Ya participás' : 'Aplicar'}
-                        </button>
+
+                        {/* Footer con botón aplicar */}
+                        <div className="px-4 pb-4 pt-2 border-t border-gray-100">
+                          {msgServicio && (
+                            <p className={`text-xs rounded-lg px-2 py-1 mb-2 ${msgServicio.ok ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                              {msgServicio.msg}
+                            </p>
+                          )}
+                          <button
+                            onClick={() => aplicarServicio(s.id)}
+                            disabled={yaEnMisModulos || aplicandoServicio === s.id}
+                            className={`w-full text-sm py-2.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
+                              yaEnMisModulos
+                                ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                                : 'bg-brand-600 text-white hover:bg-brand-700'
+                            }`}
+                          >
+                            {aplicandoServicio === s.id ? <Loader2 size={14} className="animate-spin" /> : null}
+                            {yaEnMisModulos ? 'Ya aplicaste' : 'Aplicar a este servicio'}
+                          </button>
+                        </div>
                       </div>
                     );
                   })}

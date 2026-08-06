@@ -11,7 +11,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 import {
-  Video, Mic, FileText, Edit3, Check, X, Upload,
+  Video, FileText, Edit3, Check, X, Upload,
   ExternalLink, Copy, CheckCheck, Clock, Circle,
   BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck,
   CalendarDays, MapPin, Loader2, Plus, GraduationCap, Briefcase as BriefcaseIcon, Wrench,
@@ -226,7 +226,7 @@ export default function DashboardClient({
   const [docMsg, setDocMsg] = useState<string | null>(null);
 
   const [selectedTaller, setSelectedTaller] = useState<string>('');
-  const [selectedTipo, setSelectedTipo] = useState<'video_cv' | 'video_pitch'>('video_cv');
+  const [selectedTipo, setSelectedTipo] = useState<'video_cv'>('video_cv');
   const [alfaBadge, setAlfaBadge] = useState(usuario.alfa_digital);
 
   // Referencias
@@ -274,10 +274,8 @@ export default function DashboardClient({
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
   const cvUrl = `${appUrl}/u/${usuario.slug}/cv`;
-  const pitchUrl = `${appUrl}/u/${usuario.slug}/pitch`;
 
   const videoCV = usuario.videos.find(v => v.tipo === 'video_cv' && !v.taller && !v.oferta_id);
-  const videoPitch = usuario.videos.find(v => v.tipo === 'video_pitch' && !v.taller && !v.oferta_id);
   const archivoCV = usuario.archivos[0] ?? null;
 
   useEffect(() => {
@@ -516,10 +514,7 @@ export default function DashboardClient({
 
   const tallerSeleccionado = tallersAsignados.find(t => t.taller.id === selectedTaller)?.taller;
   const tiposDisponibles = tallerSeleccionado
-    ? [
-        ...(tallerSeleccionado.habilita_cv ? [{ value: 'video_cv', label: 'Video CV' }] : []),
-        ...(tallerSeleccionado.habilita_pitch ? [{ value: 'video_pitch', label: 'Video Pitch' }] : []),
-      ]
+    ? (tallerSeleccionado.habilita_cv ? [{ value: 'video_cv', label: 'Video CV' }] : [])
     : [];
 
   const handleIrATaller = () => {
@@ -1453,7 +1448,7 @@ export default function DashboardClient({
                           {tiposDisponibles.map(t => (
                             <button
                               key={t.value}
-                              onClick={() => setSelectedTipo(t.value as 'video_cv' | 'video_pitch')}
+                              onClick={() => setSelectedTipo(t.value as 'video_cv')}
                               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
                                 selectedTipo === t.value
                                   ? t.value === 'video_cv'
@@ -1462,7 +1457,7 @@ export default function DashboardClient({
                                   : 'bg-white text-ink-600 border-ink-200 hover:border-ink-300'
                               }`}
                             >
-                              {t.value === 'video_cv' ? <Video size={14} /> : <Mic size={14} />}
+                              <Video size={14} />
                               {t.label}
                             </button>
                           ))}
@@ -1769,17 +1764,6 @@ export default function DashboardClient({
                 onCopy={() => copyUrl(cvUrl, 'cv')}
                 copiedKey="cv"
               />
-              <VideoCard
-                tipo="video_pitch" titulo="Video Pitch"
-                descripcion="Presentá tu emprendimiento en 4 módulos guiados"
-                icon={Mic} color="emerald"
-                recordHref="/dashboard/grabar-pitch"
-                video={videoPitch}
-                shareUrl={pitchUrl}
-                copied={copied}
-                onCopy={() => copyUrl(pitchUrl, 'pitch')}
-                copiedKey="pitch"
-              />
 
               {usuario.videos.filter(v => v.taller).length > 0 && (
                 <div className="card p-6">
@@ -1792,7 +1776,7 @@ export default function DashboardClient({
                       <div key={v.id} className="flex items-center gap-3 bg-ink-50 rounded-xl p-3">
                         <VideoThumbnail src={v.video_url} size="sm" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-ink-700">{v.tipo === 'video_cv' ? 'Video CV' : 'Video Pitch'}</p>
+                          <p className="text-sm font-medium text-ink-700">Video CV</p>
                           <p className="text-xs text-ink-400 truncate">{v.taller?.nombre} · {new Date(v.created_at).toLocaleDateString('es-AR')}</p>
                         </div>
                       </div>

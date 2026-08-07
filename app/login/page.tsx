@@ -38,7 +38,10 @@ function LoginForm() {
       setServerError(json.error ?? 'Error al iniciar sesión');
       return;
     }
-    const dest = json.role === 'super_admin' ? '/super-admin'
+    const redirectParam = searchParams.get('redirect');
+    const dest = redirectParam && redirectParam.startsWith('/')
+      ? redirectParam
+      : json.role === 'super_admin' ? '/super-admin'
       : json.role === 'admin' ? '/admin'
       : json.role === 'empleador' ? '/empresa/dashboard'
       : '/dashboard';

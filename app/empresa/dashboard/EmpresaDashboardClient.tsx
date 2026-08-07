@@ -636,8 +636,9 @@ export default function EmpresaDashboard() {
     if (data.ok) {
       setPostulantesServicio(prev => prev.map(p => p.id === postulacion_id ? { ...p, estado } : p));
       if (estado === 'aceptado') {
-        // Refrescar módulos
-        setModulosServicio([]);
+        // Refrescar módulos y mostrar la pestaña de módulos
+        setVistaServicio('modulos');
+        await cargarModulosServicio(servicioSeleccionado.id);
       }
     }
     setProcesandoPostServ(null);
@@ -2242,7 +2243,7 @@ export default function EmpresaDashboard() {
                   {(['postulantes', 'modulos'] as const).map(v => (
                     <button key={v} onClick={() => {
                       setVistaServicio(v);
-                      if (v === 'modulos' && modulosServicio.length === 0) cargarModulosServicio(servicioSeleccionado.id);
+                      if (v === 'modulos') cargarModulosServicio(servicioSeleccionado.id);
                     }}
                       className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${vistaServicio === v ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
                       {v === 'postulantes' ? 'Postulantes' : 'Módulos activos'}

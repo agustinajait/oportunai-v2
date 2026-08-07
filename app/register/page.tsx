@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { registerSchema, RegisterInput } from '@/lib/validations';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPass, setShowPass] = useState(false);
   const [serverError, setServerError] = useState('');
 
@@ -24,7 +25,9 @@ export default function RegisterPage() {
     });
     const json = await res.json();
     if (!res.ok) { setServerError(json.error ?? 'Error al registrarse'); return; }
-    router.push('/dashboard');
+    const redirectParam = searchParams.get('redirect');
+    const dest = redirectParam && redirectParam.startsWith('/') ? redirectParam : '/dashboard';
+    router.push(dest);
     router.refresh();
   };
 
@@ -106,5 +109,13 @@ export default function RegisterPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterForm />
+    </Suspense>
   );
 }

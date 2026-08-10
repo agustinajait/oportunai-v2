@@ -1,0 +1,28 @@
+[project]
+id = "oportunai"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://oportunai.com.ar"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+
+[edge_runtime]
+enabled = true
+policy = "per_worker"
+inspector_port = 8083
+
+[functions.whatsapp_webhook]
+verify_jwt = false  # Meta llama sin JWT
+
+[functions.send_whatsapp]
+verify_jwt = false  # Se protege con service key

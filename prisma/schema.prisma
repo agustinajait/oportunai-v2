@@ -28,6 +28,11 @@ fecha_nacimiento DateTime?
   grabaciones_cv  Int      @default(0)
   created_at      DateTime @default(now())
 
+  // Acompañamiento WhatsApp (Korai integration)
+  whatsapp_activo Boolean  @default(false)  // bot activo para este usuario
+  korai_opt_in    Boolean  @default(false)  // aceptó recibir acompañamiento
+  korai_semaforo  Json?                     // último semáforo derivado desde Korai
+
   videos                Video[]
   archivos              Archivo[]
   documentos            Documento[]
@@ -38,6 +43,7 @@ fecha_nacimiento DateTime?
   capacitaciones_ok     CapacitacionUsuario[]
   postulaciones_servicio PostulacionServicio[]
   modulos_asignados     ModuloAsignado[]
+  bot_mensajes          BotMensaje[]
 }
 
 enum Role {
@@ -491,4 +497,22 @@ model GaleriaHome {
   big        Boolean  @default(false)
   activa     Boolean  @default(true)
   created_at DateTime @default(now())
+}
+
+// ─── Bot WhatsApp (Oportunai companion) ──────────────────────────────────────
+
+model BotMensaje {
+  id         String         @id @default(cuid())
+  usuario_id String
+  tipo       BotMensajeTipo // 'usuario' | 'bot'
+  texto      String
+  leido      Boolean        @default(false)
+  created_at DateTime       @default(now())
+
+  usuario Usuario @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+}
+
+enum BotMensajeTipo {
+  usuario
+  bot
 }

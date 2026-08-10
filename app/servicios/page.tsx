@@ -90,8 +90,9 @@ export default async function ServiciosPublicosPage() {
             {servicios.map((s) => {
               const precio = formatPrecio(s.precio_hora?.toNumber(), s.horas_modulo);
               const protocolo = (s.protocolo as { item: string; descripcion?: string }[]) ?? [];
+              const href = isCandidate ? `/servicios/${s.id}` : `/register?redirect=/servicios/${s.id}`;
               return (
-                <div key={s.id} className="card p-6 hover:shadow-md transition-shadow">
+                <Link key={s.id} href={`/servicios/${s.id}`} className="card p-6 hover:shadow-md hover:border-brand-200 transition-all block group">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-4 flex-1 min-w-0">
                       {/* Logo empresa */}
@@ -103,8 +104,13 @@ export default async function ServiciosPublicosPage() {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <h2 className="font-semibold text-ink-900 text-lg leading-tight mb-1">{s.titulo}</h2>
-                        <p className="text-brand-600 text-sm font-medium mb-2">{s.empresa.nombre}</p>
+                        <h2 className="font-semibold text-ink-900 text-lg leading-tight mb-1 group-hover:text-brand-700 transition-colors">{s.titulo}</h2>
+                        <span
+                          onClick={e => { e.preventDefault(); window.location.href = `/empresa/${s.empresa.slug}`; }}
+                          className="text-brand-600 text-sm font-medium mb-2 hover:underline cursor-pointer inline-block"
+                        >
+                          {s.empresa.nombre}
+                        </span>
 
                         <div className="flex flex-wrap gap-x-4 gap-y-1 text-ink-500 text-sm mb-3">
                           {precio && (
@@ -123,7 +129,7 @@ export default async function ServiciosPublicosPage() {
                           <span className="text-ink-400">{s._count.postulaciones} postulantes</span>
                         </div>
 
-                        <p className="text-ink-500 text-sm line-clamp-2 leading-relaxed mb-3">{s.descripcion}</p>
+                        <p className="text-ink-500 text-sm leading-relaxed mb-3">{s.descripcion}</p>
 
                         {protocolo.length > 0 && (
                           <div className="flex flex-wrap gap-1.5 mb-3">
@@ -147,24 +153,12 @@ export default async function ServiciosPublicosPage() {
                     </div>
 
                     <div className="flex flex-col gap-2 flex-shrink-0">
-                      {isCandidate ? (
-                        <Link
-                          href={`/servicios/${s.id}`}
-                          className="btn-primary text-sm py-2.5 px-5 flex items-center gap-1"
-                        >
-                          Ver y aplicar <ChevronRight size={14} />
-                        </Link>
-                      ) : (
-                        <Link
-                          href={`/register?redirect=/servicios/${s.id}`}
-                          className="btn-primary text-sm py-2.5 px-5 flex items-center gap-1"
-                        >
-                          Aplicar <ChevronRight size={14} />
-                        </Link>
-                      )}
+                      <span className="btn-primary text-sm py-2.5 px-5 flex items-center gap-1">
+                        Ver oferta <ChevronRight size={14} />
+                      </span>
                     </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>

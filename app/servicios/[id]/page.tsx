@@ -112,7 +112,9 @@ export default async function ServicioDetallePage({ params }: Props) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h1 className="font-display text-2xl font-semibold text-ink-900 mb-1">{servicio.titulo}</h1>
-                  <p className="text-brand-600 font-medium">{servicio.empresa.nombre}</p>
+                  <Link href={`/empresa/${servicio.empresa.slug}`} className="text-brand-600 font-medium hover:underline">
+                    {servicio.empresa.nombre}
+                  </Link>
                 </div>
               </div>
 

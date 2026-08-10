@@ -2,17 +2,13 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase';
 import {
   Video, Mic, Circle, Square, ChevronRight, CheckCircle, AlertCircle,
   Loader2, ArrowLeft, Clock, SkipForward, RotateCcw
 } from 'lucide-react';
 import type { SessionPayload } from '@/lib/auth';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 interface Modulo {
   id: string;
@@ -315,13 +311,13 @@ export default function VideoRecorder({
       const filename = `${session.userId}/${tipo}-${Date.now()}.${ext}`;
 
       setUploadProgress('Subiendo video...');
-      const { error } = await supabase.storage
+      const { error } = await getSupabase().storage
         .from('videos')
         .upload(filename, finalBlob, { contentType: mimeType, upsert: true });
 
       if (error) throw new Error(error.message);
 
-      const { data: urlData } = supabase.storage.from('videos').getPublicUrl(filename);
+      const { data: urlData } = getSupabase().storage.from('videos').getPublicUrl(filename);
 
       setUploadProgress('Guardando...');
       const attempts = sectionAttemptsRef.current;

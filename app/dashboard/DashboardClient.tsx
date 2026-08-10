@@ -3,13 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase';
 import Navbar from '@/components/layout/Navbar';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 import {
   Video, FileText, Edit3, Check, X, Upload,
   ExternalLink, Copy, CheckCheck, Clock, Circle,
@@ -409,7 +404,7 @@ export default function DashboardClient({
 
     const ext = file.name.split('.').pop() ?? 'pdf';
     const filename = `${usuario.id}/doc-${tipo}-${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await getSupabase().storage
       .from('videos')
       .upload(filename, file, { contentType: file.type, upsert: true });
 
@@ -420,7 +415,7 @@ export default function DashboardClient({
       return;
     }
 
-    const { data: urlData } = supabase.storage.from('videos').getPublicUrl(filename);
+    const { data: urlData } = getSupabase().storage.from('videos').getPublicUrl(filename);
     const res = await fetch('/api/documentos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -505,7 +500,7 @@ export default function DashboardClient({
 
     const ext = 'pdf';
     const filename = `${usuario.id}/cv-${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await getSupabase().storage
       .from('videos')
       .upload(filename, file, { contentType: file.type, upsert: true });
 
@@ -515,7 +510,7 @@ export default function DashboardClient({
       return;
     }
 
-    const { data: urlData } = supabase.storage.from('videos').getPublicUrl(filename);
+    const { data: urlData } = getSupabase().storage.from('videos').getPublicUrl(filename);
     const res = await fetch('/api/files/upload', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

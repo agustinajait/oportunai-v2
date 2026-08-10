@@ -349,9 +349,23 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                 <Download size={15} />
                 Descargar CV
               </a>
+            ) : usuario.cv_datos && (
+              (usuario.cv_datos as any)?.resumen ||
+              ((usuario.cv_datos as any)?.experiencia?.length ?? 0) > 0 ||
+              ((usuario.cv_datos as any)?.habilidades?.length ?? 0) > 0
+            ) ? (
+              <a
+                href={`/u/${usuario.slug}/cv`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary w-full justify-center text-sm py-2.5"
+              >
+                <Download size={15} />
+                Ver CV de OportunAI
+              </a>
             ) : (
               <p className="text-xs text-ink-400 leading-relaxed">
-                Este usuario aún no subió su CV.
+                Este candidato aún no completó su CV.
               </p>
             )}
           </div>

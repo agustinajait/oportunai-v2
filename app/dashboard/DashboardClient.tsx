@@ -523,8 +523,21 @@ export default function DashboardClient({
     });
     setUploading(false);
     if (res.ok) {
-      setUploadMsg('CV subido correctamente ✓');
-      setTimeout(() => router.refresh(), 1200);
+      setUploadMsg('CV subido. Extrayendo datos...');
+      // Auto-analizar el CV para poblar cv_datos
+      try {
+        const analyzeRes = await fetch('/api/user/cv', { method: 'POST' });
+        const analyzeData = await analyzeRes.json();
+        if (analyzeRes.ok) {
+          setCvDatos(analyzeData.cv_datos);
+          setUploadMsg('CV subido y analizado ✓ — tu perfil fue actualizado');
+        } else {
+          setUploadMsg('CV subido ✓ (analizá el CV para completar tu perfil)');
+        }
+      } catch {
+        setUploadMsg('CV subido ✓ (analizá el CV para completar tu perfil)');
+      }
+      setTimeout(() => router.refresh(), 2000);
     } else {
       const j = await res.json();
       setUploadMsg(j.error ?? 'Error al subir');

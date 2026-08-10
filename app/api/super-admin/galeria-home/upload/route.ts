@@ -1,12 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionFromRequest, isSuperAdmin } from '@/lib/auth';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { getSupabase } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   const session = await getSessionFromRequest(req);
@@ -22,12 +17,12 @@ export async function POST(req: NextRequest) {
   const ext = file.name.split('.').pop() || 'jpg';
   const filename = `galeria-home/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
 
-  const { error } = await supabase.storage
+  const { error } = await getSupabase().storage
     .from('videos')
     .upload(filename, buffer, { contentType: file.type, upsert: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const { data: urlData } = supabase.storage.from('videos').getPublicUrl(filename);
+  const { data: urlData } = getSupabase().storage.from('videos').getPublicUrl(filename);
   return NextResponse.json({ ok: true, src: urlData.publicUrl });
 }

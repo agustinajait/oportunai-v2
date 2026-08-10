@@ -2,12 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { getSupabase } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   const session = await getSessionFromRequest(req);
@@ -28,13 +23,13 @@ export async function POST(req: NextRequest) {
   const ext = file.name.split('.').pop() || 'jpg';
   const filename = `logos/${miembro.empresa_id}.${ext}`;
 
-  const { error } = await supabase.storage
+  const { error } = await getSupabase().storage
     .from('videos')
     .upload(filename, buffer, { contentType: file.type, upsert: true });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const { data: urlData } = supabase.storage.from('videos').getPublicUrl(filename);
+  const { data: urlData } = getSupabase().storage.from('videos').getPublicUrl(filename);
 
   await prisma.empresa.update({
     where: { id: miembro.empresa_id },

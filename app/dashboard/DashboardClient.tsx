@@ -3,13 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase';
 import Navbar from '@/components/layout/Navbar';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 import {
   Video, FileText, Edit3, Check, X, Upload,
   ExternalLink, Copy, CheckCheck, Clock, Circle,
@@ -163,6 +158,12 @@ export default function DashboardClient({
   const [waActivo, setWaActivo] = useState(usuario.whatsapp_activo ?? false);
   const [waLoading, setWaLoading] = useState(false);
   const [waModalOpen, setWaModalOpen] = useState(false);
+
+  // Link de WhatsApp a OportunAI — configurar NEXT_PUBLIC_WA_SOPORTE en Vercel
+  const waSoporte = process.env.NEXT_PUBLIC_WA_SOPORTE;
+  const waHref = waSoporte
+    ? `https://wa.me/${waSoporte}?text=Hola%20OportunAI%2C%20quiero%20activar%20el%20acompa%C3%B1amiento`
+    : 'https://api.whatsapp.com/send/';
 
   const [bio, setBio] = useState(usuario.bio ?? '');
   const [editingBio, setEditingBio] = useState(false);
@@ -409,7 +410,7 @@ export default function DashboardClient({
 
     const ext = file.name.split('.').pop() ?? 'pdf';
     const filename = `${usuario.id}/doc-${tipo}-${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await getSupabase().storage
       .from('videos')
       .upload(filename, file, { contentType: file.type, upsert: true });
 
@@ -420,7 +421,7 @@ export default function DashboardClient({
       return;
     }
 
-    const { data: urlData } = supabase.storage.from('videos').getPublicUrl(filename);
+    const { data: urlData } = getSupabase().storage.from('videos').getPublicUrl(filename);
     const res = await fetch('/api/documentos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -505,7 +506,7 @@ export default function DashboardClient({
 
     const ext = 'pdf';
     const filename = `${usuario.id}/cv-${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await getSupabase().storage
       .from('videos')
       .upload(filename, file, { contentType: file.type, upsert: true });
 
@@ -515,7 +516,7 @@ export default function DashboardClient({
       return;
     }
 
-    const { data: urlData } = supabase.storage.from('videos').getPublicUrl(filename);
+    const { data: urlData } = getSupabase().storage.from('videos').getPublicUrl(filename);
     const res = await fetch('/api/files/upload', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1198,12 +1199,7 @@ export default function DashboardClient({
               </div>
 
               {/* Acompañamiento WhatsApp */}
-              {(() => {
-                const waSoporte = process.env.NEXT_PUBLIC_WA_SOPORTE;
-                const waHref = waSoporte
-                  ? `https://wa.me/${waSoporte}?text=Hola%20OportunAI%2C%20acabo%20de%20activar%20el%20acompa%C3%B1amiento`
-                  : 'https://api.whatsapp.com/send/';
-                return (
+              {(
                   <div className={`card p-4 sm:p-6 ${waActivo ? 'border-green-200 bg-green-50/30' : ''}`}>
                     {/* Header */}
                     <div className="flex items-start justify-between gap-3 mb-4">
@@ -1261,31 +1257,40 @@ export default function DashboardClient({
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        <div className="bg-green-100 border border-green-200 rounded-xl p-3">
-                          <p className="text-sm text-green-800 font-semibold flex items-center gap-1.5">
-                            <span>✅</span> Acompañamiento activo
-                          </p>
-                          <p className="text-xs text-green-700 mt-1">
-                            Te enviamos un mensaje al número <span className="font-semibold break-all">{usuario.telefono}</span>.
-                          </p>
-                          <p className="text-xs text-green-700 mt-0.5">Abrí WhatsApp y respondé para empezar.</p>
+                        {/* Paso 1: listo */}
+                        <div className="flex items-center gap-2.5 bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
+                          <span className="text-lg flex-shrink-0">✅</span>
+                          <div>
+                            <p className="text-sm text-green-800 font-semibold leading-tight">Paso 1 listo — Activación guardada</p>
+                            <p className="text-xs text-green-700 mt-0.5">Tu número: <span className="font-semibold break-all">{usuario.telefono}</span></p>
+                          </div>
                         </div>
+
+                        {/* Paso 2: acción requerida */}
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-1">
+                          <p className="text-sm font-bold text-amber-800 flex items-center gap-1.5">
+                            <span>📲</span> Paso 2: Escribile a OportunAI
+                          </p>
+                          <p className="text-xs text-amber-700 leading-relaxed">
+                            Para que el bot pueda escribirte, <strong>vos tenés que mandar el primer mensaje</strong>. Tocá el botón y enviá el mensaje que ya está escrito.
+                          </p>
+                        </div>
+
                         <a
                           href={waHref}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b958] active:bg-[#1da851] text-white text-sm font-semibold px-4 py-3 rounded-xl transition-colors shadow-sm active:scale-[0.98]"
+                          className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b958] active:bg-[#1da851] text-white text-sm font-bold px-4 py-3.5 rounded-xl transition-colors shadow-sm active:scale-[0.98]"
                         >
-                          <span className="text-base">💬</span> Abrir WhatsApp
+                          <span className="text-base">💬</span> Mandar mensaje a OportunAI →
                         </a>
                         <p className="text-xs text-ink-400 text-center leading-relaxed">
-                          Para desactivar, tocá el botón verde de arriba.
+                          Para desactivar, tocá el botón verde de arriba a la derecha.
                         </p>
                       </div>
                     )}
                   </div>
-                );
-              })()}
+              )}
 
               {/* Modal confirmación WhatsApp opt-in */}
               {waModalOpen && (
@@ -1301,24 +1306,28 @@ export default function DashboardClient({
                       <div className="w-16 h-16 bg-[#25D366]/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
                         <span className="text-4xl">💬</span>
                       </div>
-                      <h3 className="text-xl font-bold text-ink-800">¿Activar acompañamiento?</h3>
+                      <h3 className="text-xl font-bold text-ink-800">Activar acompañamiento</h3>
                       <p className="text-sm text-ink-500 mt-2 leading-relaxed">
-                        El equipo de OportunAI te va a contactar por WhatsApp al:
+                        Son 2 pasos rápidos para empezar:
                       </p>
-                      <p className="text-lg font-bold text-ink-800 mt-1 break-all">{usuario.telefono}</p>
                     </div>
 
-                    <div className="bg-green-50 border border-green-100 rounded-2xl p-4 space-y-2">
-                      <p className="text-xs text-green-700 font-semibold uppercase tracking-wide">Al activar vas a recibir</p>
-                      {[
-                        '👋 Un mensaje de bienvenida del equipo',
-                        '🎯 Orientación personalizada para tu búsqueda',
-                        '📢 Avisos de oportunidades laborales',
-                      ].map(item => (
-                        <div key={item} className="flex items-center gap-2">
-                          <p className="text-sm text-green-800">{item}</p>
+                    {/* Pasos */}
+                    <div className="space-y-2">
+                      <div className="flex items-start gap-3 bg-brand-50 border border-brand-100 rounded-xl p-3">
+                        <span className="w-6 h-6 rounded-full bg-brand-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                        <div>
+                          <p className="text-sm font-semibold text-ink-800">Confirmás acá</p>
+                          <p className="text-xs text-ink-500 mt-0.5">Guardamos tu número <span className="font-semibold">{usuario.telefono}</span></p>
                         </div>
-                      ))}
+                      </div>
+                      <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl p-3">
+                        <span className="w-6 h-6 rounded-full bg-[#25D366] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                        <div>
+                          <p className="text-sm font-semibold text-ink-800">Mandás un WhatsApp a OportunAI</p>
+                          <p className="text-xs text-ink-500 mt-0.5">Te abrimos el chat con el mensaje ya escrito. Solo tocás <strong>Enviar</strong>.</p>
+                        </div>
+                      </div>
                     </div>
 
                     <p className="text-xs text-ink-400 text-center">
@@ -1333,12 +1342,17 @@ export default function DashboardClient({
                         Cancelar
                       </button>
                       <button
-                        onClick={async () => { setWaModalOpen(false); await toggleWhatsapp(); }}
+                        onClick={async () => {
+                          setWaModalOpen(false);
+                          await toggleWhatsapp();
+                          // Abrir WhatsApp automáticamente después de activar
+                          window.open(waHref, '_blank');
+                        }}
                         disabled={waLoading}
                         className="flex-1 px-4 py-3.5 rounded-xl bg-[#25D366] hover:bg-[#20b958] active:bg-[#1da851] text-white text-sm font-bold transition-colors disabled:opacity-50 shadow-md active:scale-[0.98] flex items-center justify-center gap-2"
                       >
                         <span className="text-base">💬</span>
-                        {waLoading ? 'Activando...' : 'Sí, activar'}
+                        {waLoading ? 'Activando...' : 'Activar y abrir WhatsApp →'}
                       </button>
                     </div>
                   </div>

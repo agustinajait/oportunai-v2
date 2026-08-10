@@ -162,6 +162,7 @@ export default function DashboardClient({
   // WhatsApp opt-in
   const [waActivo, setWaActivo] = useState(usuario.whatsapp_activo ?? false);
   const [waLoading, setWaLoading] = useState(false);
+  const [waModalOpen, setWaModalOpen] = useState(false);
 
   const [bio, setBio] = useState(usuario.bio ?? '');
   const [editingBio, setEditingBio] = useState(false);
@@ -522,8 +523,21 @@ export default function DashboardClient({
     });
     setUploading(false);
     if (res.ok) {
-      setUploadMsg('CV subido correctamente ✓');
-      setTimeout(() => router.refresh(), 1200);
+      setUploadMsg('CV subido. Extrayendo datos...');
+      // Auto-analizar el CV para poblar cv_datos
+      try {
+        const analyzeRes = await fetch('/api/user/cv', { method: 'POST' });
+        const analyzeData = await analyzeRes.json();
+        if (analyzeRes.ok) {
+          setCvDatos(analyzeData.cv_datos);
+          setUploadMsg('CV subido y analizado ✓ — tu perfil fue actualizado');
+        } else {
+          setUploadMsg('CV subido ✓ (analizá el CV para completar tu perfil)');
+        }
+      } catch {
+        setUploadMsg('CV subido ✓ (analizá el CV para completar tu perfil)');
+      }
+      setTimeout(() => router.refresh(), 2000);
     } else {
       const j = await res.json();
       setUploadMsg(j.error ?? 'Error al subir');
@@ -607,7 +621,7 @@ export default function DashboardClient({
                 }`}
               >
                 <Layers size={14} />
-                Servicios
+                Módulos
                 {misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length > 0 && (
                   <span className="bg-teal-500 text-white text-[10px] px-1.5 rounded-full">
                     {misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length}
@@ -838,16 +852,16 @@ export default function DashboardClient({
               </div>
             )}
 
-            {/* Servicios disponibles */}
+            {/* Módulos de trabajo disponibles */}
             {!loadingServicios && (
               <div>
                 <h2 className="text-base font-semibold text-ink-800 mb-3 flex items-center gap-2">
-                  <Briefcase size={16} className="text-brand-600" /> Servicios disponibles
+                  <Briefcase size={16} className="text-brand-600" /> Módulos de trabajo disponibles
                 </h2>
                 {servicios.length === 0 && (
                   <div className="card p-8 text-center text-ink-400">
                     <Layers size={32} className="mx-auto mb-2 opacity-40" />
-                    <p>No hay servicios disponibles por el momento</p>
+                    <p>No hay módulos de trabajo disponibles por el momento</p>
                   </div>
                 )}
                 <div className="flex flex-col gap-4">
@@ -1107,7 +1121,7 @@ export default function DashboardClient({
                     <FileText size={20} color="#fff" strokeWidth={1.75} />
                   </div>
                   <div>
-                    <p className="font-semibold text-ink-800 text-sm">Mi flyer</p>
+                    <p className="font-semibold text-ink-800 text-sm">Mi perfil laboral</p>
                     <p className="text-xs text-ink-400">Tarjeta con QR para imprimir o compartir</p>
                   </div>
                 </div>
@@ -1130,7 +1144,7 @@ export default function DashboardClient({
                   </div>
                 </div>
                 <Link href="/dashboard/flyer" className="btn-primary w-full justify-center text-sm py-2.5" style={{ textDecoration:'none', display:'flex', alignItems:'center', gap:6 }}>
-                  <FileText size={15} /> Ver mi flyer
+                  <FileText size={15} /> Ver mi perfil laboral
                 </Link>
               </div>
 
@@ -1158,8 +1172,8 @@ export default function DashboardClient({
                     <FileText size={18} color="#fff" />
                   </div>
                   <div>
-                    <p className="font-semibold text-ink-800 text-sm">CV para postulaciones</p>
-                    <p className="text-xs text-ink-400">Formato DOCX compatible con ATS</p>
+                    <p className="font-semibold text-ink-800 text-sm">Descargá tu CV para postularte</p>
+                    <p className="text-xs text-ink-400">Oportunai lo arma con tus datos · optimizado para filtros ATS</p>
                   </div>
                 </div>
                 <a href="/api/cv/download" download style={{ textDecoration:'none', display:'flex', alignItems:'center', justifyContent:'center', gap:6, background:'linear-gradient(135deg,#4B33CC,#7048F0)', color:'#fff', borderRadius:10, padding:'10px 14px', fontWeight:700, fontSize:13, whiteSpace:'nowrap' }}>
@@ -1210,40 +1224,133 @@ export default function DashboardClient({
               </div>
 
               {/* Acompañamiento WhatsApp */}
-              <div className="card p-6">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">💬</span>
-                    <h2 className="font-semibold text-ink-800">Acompañamiento por WhatsApp</h2>
+              <div className={`card p-6 ${waActivo ? 'border-green-200 bg-green-50/30' : ''}`}>
+                {/* Header */}
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 bg-[#25D366]/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <span className="text-xl">💬</span>
+                    </div>
+                    <div>
+                      <h2 className="font-semibold text-ink-800 leading-tight">Acompañamiento por WhatsApp</h2>
+                      <p className="text-xs text-ink-400 mt-0.5">Gratis · Podés desactivarlo cuando quieras</p>
+                    </div>
                   </div>
-                  <button
-                    onClick={toggleWhatsapp}
-                    disabled={waLoading}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 ${waActivo ? 'bg-green-500' : 'bg-ink-200'}`}
-                    title={waActivo ? 'Desactivar' : 'Activar'}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${waActivo ? 'translate-x-6' : 'translate-x-1'}`} />
-                  </button>
+                  {waActivo && (
+                    <button
+                      onClick={toggleWhatsapp}
+                      disabled={waLoading}
+                      className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 flex-shrink-0 mt-1 bg-green-500"
+                      title="Desactivar"
+                    >
+                      <span className="inline-block h-4 w-4 transform rounded-full bg-white shadow translate-x-6 transition-transform" />
+                    </button>
+                  )}
                 </div>
-                <p className="text-xs text-ink-400 mb-3 mt-1">
-                  {waActivo
-                    ? `Activo · recibirás mensajes en ${usuario.telefono}`
-                    : 'Activá para recibir orientación laboral por WhatsApp'}
-                </p>
+
                 {!waActivo ? (
-                  <div className="space-y-2">
-                    <p className="text-sm text-ink-500 leading-relaxed">
-                      El equipo de OportunAI te acompaña por WhatsApp en tu búsqueda de trabajo. Te ayudamos a prepararte, entender los servicios disponibles y conectar con oportunidades.
+                  <div className="space-y-3">
+                    <p className="text-sm text-ink-600 leading-relaxed">
+                      Activá esta opción y el equipo de OportunAI te va a escribir por WhatsApp para ayudarte con tu búsqueda de trabajo.
                     </p>
-                    <p className="text-xs text-ink-300">Gratis · Podés desactivarlo cuando quieras</p>
+                    <div className="space-y-1.5">
+                      {[
+                        'Te orientamos según tu perfil y experiencia',
+                        'Te avisamos cuando hay oportunidades para vos',
+                        'Te preparamos para entrevistas',
+                      ].map(item => (
+                        <div key={item} className="flex items-center gap-2">
+                          <span className="text-green-500 text-sm">✓</span>
+                          <p className="text-sm text-ink-500">{item}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="bg-ink-50 rounded-xl p-3">
+                      <p className="text-xs text-ink-400">
+                        📱 Los mensajes llegan al número que registraste: <span className="font-medium text-ink-600">{usuario.telefono}</span>
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setWaModalOpen(true)}
+                      className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b958] text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors"
+                    >
+                      💬 Activar acompañamiento
+                    </button>
                   </div>
                 ) : (
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-3">
-                    <p className="text-sm text-green-800 font-medium">✓ Acompañamiento activo</p>
-                    <p className="text-xs text-green-700 mt-0.5">Escribinos directamente por WhatsApp cuando necesites ayuda.</p>
+                  <div className="space-y-3">
+                    <div className="bg-green-100 border border-green-200 rounded-xl p-3">
+                      <p className="text-sm text-green-800 font-medium">✓ Acompañamiento activo</p>
+                      <p className="text-xs text-green-700 mt-1">
+                        Te enviamos un mensaje al <span className="font-medium">{usuario.telefono}</span>. Abrí WhatsApp y respondé para empezar.
+                      </p>
+                    </div>
+                    <a
+                      href="https://wa.me"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b958] text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors"
+                    >
+                      💬 Abrir WhatsApp
+                    </a>
+                    <p className="text-xs text-ink-400 text-center">
+                      Para desactivar, apagá el botón de arriba a la derecha.
+                    </p>
                   </div>
                 )}
               </div>
+
+              {/* Modal confirmación WhatsApp opt-in */}
+              {waModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+                  <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
+                    <div className="text-center">
+                      <div className="w-14 h-14 bg-[#25D366]/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <span className="text-3xl">💬</span>
+                      </div>
+                      <h3 className="text-lg font-semibold text-ink-800">Activar acompañamiento</h3>
+                      <p className="text-sm text-ink-500 mt-2 leading-relaxed">
+                        El equipo de OportunAI te va a contactar por WhatsApp al número:
+                      </p>
+                      <p className="text-base font-semibold text-ink-800 mt-1">{usuario.telefono}</p>
+                    </div>
+
+                    <div className="bg-ink-50 rounded-xl p-3 space-y-1.5">
+                      <p className="text-xs text-ink-500 font-medium">Al aceptar vas a recibir:</p>
+                      {[
+                        'Un mensaje de bienvenida del equipo',
+                        'Orientación personalizada para tu búsqueda',
+                        'Avisos de oportunidades laborales',
+                      ].map(item => (
+                        <div key={item} className="flex items-center gap-2">
+                          <span className="text-green-500 text-xs">✓</span>
+                          <p className="text-xs text-ink-500">{item}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <p className="text-xs text-ink-400 text-center">
+                      Podés desactivarlo cuando quieras desde tu perfil.
+                    </p>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setWaModalOpen(false)}
+                        className="flex-1 px-4 py-2.5 rounded-xl border border-ink-200 text-sm text-ink-600 hover:bg-ink-50 transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={async () => { setWaModalOpen(false); await toggleWhatsapp(); }}
+                        disabled={waLoading}
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20b958] text-white text-sm font-medium transition-colors disabled:opacity-50"
+                      >
+                        {waLoading ? 'Activando...' : 'Sí, activar'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Referencias */}
               <div className="card p-6">
@@ -1561,7 +1668,10 @@ export default function DashboardClient({
                     </button>
                   )}
                 </div>
-                <p className="text-xs text-ink-400 mb-4">Estos datos se usan para generar tu CV, tu flyer y tu perfil público.</p>
+                <div className="bg-brand-50 border border-brand-100 rounded-xl p-3 mb-4">
+                  <p className="text-xs text-brand-700 font-medium mb-0.5">📄 Con estos datos Oportunai construye tu CV</p>
+                  <p className="text-xs text-brand-600 leading-relaxed">Cuanto más completes, mejor queda tu CV y más chances tenés. Oportunai lo optimiza automáticamente para pasar los filtros ATS de las empresas.</p>
+                </div>
 
                 {!editandoDatos ? (
                   <div className="space-y-4 text-sm text-ink-600">

@@ -337,23 +337,30 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
             )}
           </div>
 
-          {/* CV file */}
+          {/* CV generado por Oportunai */}
           <div className="card p-5">
-            <h3 className="font-medium text-ink-800 text-sm mb-3">Currículum</h3>
-            {archivo ? (
-              <a
-                href={`/api/files/download?url=${encodeURIComponent(archivo.file_url)}`}
-                download
-                className="btn-primary w-full justify-center text-sm py-2.5"
-              >
-                <Download size={15} />
-                Descargar CV
-              </a>
-            ) : (
-              <p className="text-xs text-ink-400 leading-relaxed">
-                Este usuario aún no subió su CV.
-              </p>
-            )}
+            <h3 className="font-medium text-ink-800 text-sm mb-1">Currículum</h3>
+            {(() => {
+              const cv = usuario.cv_datos as any;
+              const tieneCv = cv?.resumen || (cv?.experiencia?.length ?? 0) > 0 || (cv?.habilidades?.length ?? 0) > 0;
+              return tieneCv ? (
+                <div className="space-y-2">
+                  <p className="text-xs text-ink-400 mb-2">Generado y optimizado por Oportunai</p>
+                  <a
+                    href={`/api/cv/public/${usuario.slug}`}
+                    download
+                    className="btn-primary w-full justify-center text-sm py-2.5"
+                  >
+                    <Download size={15} />
+                    Descargar CV (.docx)
+                  </a>
+                </div>
+              ) : (
+                <p className="text-xs text-ink-400 leading-relaxed mt-2">
+                  Este candidato aún no completó su CV.
+                </p>
+              );
+            })()}
           </div>
         </div>
 

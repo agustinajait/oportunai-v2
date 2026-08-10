@@ -19,7 +19,7 @@ import { corsHeaders } from "../_shared/cors.ts";
 const VERIFY_TOKEN        = Deno.env.get("WA_VERIFY_TOKEN") ?? "oportunai-webhook-2024";
 const WHATSAPP_TOKEN      = Deno.env.get("WHATSAPP_TOKEN") ?? "";       // token de Korai (número compartido)
 const PHONE_NUMBER_ID     = Deno.env.get("WA_PHONE_NUMBER_ID") ?? "";   // phone number ID de Korai
-const ANTHROPIC_API_KEY   = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
+const ANTHROPIC_API_KEY   = (Deno.env.get("ANTHROPIC_API_KEY") ?? "").trim();
 const SUPABASE_URL        = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 // Key compartida: Korai la incluye en el header cuando reenvía mensajes
@@ -177,6 +177,7 @@ ${mensajeUsuario}
     messages[0].content = userContext;
   }
 
+  console.log("ANTHROPIC_API_KEY ok, length:", ANTHROPIC_API_KEY.length);
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {

@@ -87,6 +87,7 @@ interface Usuario {
   alfa_digital: string | null; alfa_score: number | null;
   fecha_nacimiento: string | null;
   created_at: string; videos: VideoItem[]; archivos: Archivo[];
+  whatsapp_activo: boolean; korai_opt_in: boolean;
 }
 
 interface Documento {
@@ -158,6 +159,10 @@ export default function DashboardClient({
     }
   }
   const initialOfertaId = searchParams.get('oferta_id') ?? undefined;
+  // WhatsApp opt-in
+  const [waActivo, setWaActivo] = useState(usuario.whatsapp_activo ?? false);
+  const [waLoading, setWaLoading] = useState(false);
+
   const [bio, setBio] = useState(usuario.bio ?? '');
   const [editingBio, setEditingBio] = useState(false);
   const [bioSaving, setBioSaving] = useState(false);
@@ -337,6 +342,19 @@ export default function DashboardClient({
     const res = await fetch('/api/documentos');
     const data = await res.json();
     if (data.documentos) setDocumentos(data.documentos);
+  }
+
+  async function toggleWhatsapp() {
+    setWaLoading(true);
+    const nuevoEstado = !waActivo;
+    const res = await fetch('/api/whatsapp/opt-in', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activo: nuevoEstado }),
+    });
+    const data = await res.json();
+    if (data.ok) setWaActivo(nuevoEstado);
+    setWaLoading(false);
   }
 
   async function cargarServicios() {
@@ -1187,6 +1205,42 @@ export default function DashboardClient({
                       <Zap size={14} />
                       Empezar →
                     </Link>
+                  </div>
+                )}
+              </div>
+
+              {/* Acompañamiento WhatsApp */}
+              <div className="card p-6">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">💬</span>
+                    <h2 className="font-semibold text-ink-800">Acompañamiento por WhatsApp</h2>
+                  </div>
+                  <button
+                    onClick={toggleWhatsapp}
+                    disabled={waLoading}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 ${waActivo ? 'bg-green-500' : 'bg-ink-200'}`}
+                    title={waActivo ? 'Desactivar' : 'Activar'}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${waActivo ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+                <p className="text-xs text-ink-400 mb-3 mt-1">
+                  {waActivo
+                    ? `Activo · recibirás mensajes en ${usuario.telefono}`
+                    : 'Activá para recibir orientación laboral por WhatsApp'}
+                </p>
+                {!waActivo ? (
+                  <div className="space-y-2">
+                    <p className="text-sm text-ink-500 leading-relaxed">
+                      El equipo de OportunAI te acompaña por WhatsApp en tu búsqueda de trabajo. Te ayudamos a prepararte, entender los servicios disponibles y conectar con oportunidades.
+                    </p>
+                    <p className="text-xs text-ink-300">Gratis · Podés desactivarlo cuando quieras</p>
+                  </div>
+                ) : (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-3">
+                    <p className="text-sm text-green-800 font-medium">✓ Acompañamiento activo</p>
+                    <p className="text-xs text-green-700 mt-0.5">Escribinos directamente por WhatsApp cuando necesites ayuda.</p>
                   </div>
                 )}
               </div>

@@ -27,6 +27,8 @@ export default async function DashboardPage() {
         alfa_score: true,
         fecha_nacimiento: true,
         created_at: true,
+        whatsapp_activo: true,
+        korai_opt_in: true,
         videos: {
           where: { es_fragmento: false },
           orderBy: { created_at: 'desc' },

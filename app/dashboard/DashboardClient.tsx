@@ -159,11 +159,9 @@ export default function DashboardClient({
   const [waLoading, setWaLoading] = useState(false);
   const [waModalOpen, setWaModalOpen] = useState(false);
 
-  // Link de WhatsApp a OportunAI — configurar NEXT_PUBLIC_WA_SOPORTE en Vercel
-  const waSoporte = process.env.NEXT_PUBLIC_WA_SOPORTE;
-  const waHref = waSoporte
-    ? `https://wa.me/${waSoporte}?text=Hola%20OportunAI%2C%20quiero%20activar%20el%20acompa%C3%B1amiento`
-    : 'https://api.whatsapp.com/send/';
+  // Link de WhatsApp a OportunAI
+  const WA_OPORTUNAI = process.env.NEXT_PUBLIC_WA_SOPORTE ?? '5491161210313';
+  const waHref = `https://wa.me/${WA_OPORTUNAI}?text=Hola%20OportunAI%2C%20quiero%20activar%20el%20acompa%C3%B1amiento`;
 
   const [bio, setBio] = useState(usuario.bio ?? '');
   const [editingBio, setEditingBio] = useState(false);

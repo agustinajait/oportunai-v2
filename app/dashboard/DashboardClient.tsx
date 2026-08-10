@@ -162,6 +162,7 @@ export default function DashboardClient({
   // WhatsApp opt-in
   const [waActivo, setWaActivo] = useState(usuario.whatsapp_activo ?? false);
   const [waLoading, setWaLoading] = useState(false);
+  const [waModalOpen, setWaModalOpen] = useState(false);
 
   const [bio, setBio] = useState(usuario.bio ?? '');
   const [editingBio, setEditingBio] = useState(false);
@@ -1222,14 +1223,16 @@ export default function DashboardClient({
                       <p className="text-xs text-ink-400 mt-0.5">Gratis · Podés desactivarlo cuando quieras</p>
                     </div>
                   </div>
-                  <button
-                    onClick={toggleWhatsapp}
-                    disabled={waLoading}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 flex-shrink-0 mt-1 ${waActivo ? 'bg-green-500' : 'bg-ink-200'}`}
-                    title={waActivo ? 'Desactivar' : 'Activar'}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${waActivo ? 'translate-x-6' : 'translate-x-1'}`} />
-                  </button>
+                  {waActivo && (
+                    <button
+                      onClick={toggleWhatsapp}
+                      disabled={waLoading}
+                      className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 flex-shrink-0 mt-1 bg-green-500"
+                      title="Desactivar"
+                    >
+                      <span className="inline-block h-4 w-4 transform rounded-full bg-white shadow translate-x-6 transition-transform" />
+                    </button>
+                  )}
                 </div>
 
                 {!waActivo ? (
@@ -1255,27 +1258,86 @@ export default function DashboardClient({
                       </p>
                     </div>
                     <button
-                      onClick={toggleWhatsapp}
-                      disabled={waLoading}
-                      className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b958] text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50"
+                      onClick={() => setWaModalOpen(true)}
+                      className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b958] text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors"
                     >
-                      {waLoading ? 'Activando...' : '💬 Activar acompañamiento'}
+                      💬 Activar acompañamiento
                     </button>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <div className="bg-green-100 border border-green-200 rounded-xl p-3">
                       <p className="text-sm text-green-800 font-medium">✓ Acompañamiento activo</p>
-                      <p className="text-xs text-green-700 mt-0.5">
-                        Te estamos escribiendo al <span className="font-medium">{usuario.telefono}</span>. Respondé el mensaje para empezar.
+                      <p className="text-xs text-green-700 mt-1">
+                        Te enviamos un mensaje al <span className="font-medium">{usuario.telefono}</span>. Abrí WhatsApp y respondé para empezar.
                       </p>
                     </div>
+                    <a
+                      href="https://wa.me"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b958] text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors"
+                    >
+                      💬 Abrir WhatsApp
+                    </a>
                     <p className="text-xs text-ink-400 text-center">
                       Para desactivar, apagá el botón de arriba a la derecha.
                     </p>
                   </div>
                 )}
               </div>
+
+              {/* Modal confirmación WhatsApp opt-in */}
+              {waModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+                  <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
+                    <div className="text-center">
+                      <div className="w-14 h-14 bg-[#25D366]/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <span className="text-3xl">💬</span>
+                      </div>
+                      <h3 className="text-lg font-semibold text-ink-800">Activar acompañamiento</h3>
+                      <p className="text-sm text-ink-500 mt-2 leading-relaxed">
+                        El equipo de OportunAI te va a contactar por WhatsApp al número:
+                      </p>
+                      <p className="text-base font-semibold text-ink-800 mt-1">{usuario.telefono}</p>
+                    </div>
+
+                    <div className="bg-ink-50 rounded-xl p-3 space-y-1.5">
+                      <p className="text-xs text-ink-500 font-medium">Al aceptar vas a recibir:</p>
+                      {[
+                        'Un mensaje de bienvenida del equipo',
+                        'Orientación personalizada para tu búsqueda',
+                        'Avisos de oportunidades laborales',
+                      ].map(item => (
+                        <div key={item} className="flex items-center gap-2">
+                          <span className="text-green-500 text-xs">✓</span>
+                          <p className="text-xs text-ink-500">{item}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <p className="text-xs text-ink-400 text-center">
+                      Podés desactivarlo cuando quieras desde tu perfil.
+                    </p>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setWaModalOpen(false)}
+                        className="flex-1 px-4 py-2.5 rounded-xl border border-ink-200 text-sm text-ink-600 hover:bg-ink-50 transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={async () => { setWaModalOpen(false); await toggleWhatsapp(); }}
+                        disabled={waLoading}
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20b958] text-white text-sm font-medium transition-colors disabled:opacity-50"
+                      >
+                        {waLoading ? 'Activando...' : 'Sí, activar'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Referencias */}
               <div className="card p-6">

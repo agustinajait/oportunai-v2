@@ -1229,107 +1229,125 @@ export default function DashboardClient({
               </div>
 
               {/* Acompañamiento WhatsApp */}
-              <div className={`card p-6 ${waActivo ? 'border-green-200 bg-green-50/30' : ''}`}>
-                {/* Header */}
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 bg-[#25D366]/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <span className="text-xl">💬</span>
-                    </div>
-                    <div>
-                      <h2 className="font-semibold text-ink-800 leading-tight">Acompañamiento por WhatsApp</h2>
-                      <p className="text-xs text-ink-400 mt-0.5">Gratis · Podés desactivarlo cuando quieras</p>
-                    </div>
-                  </div>
-                  {waActivo && (
-                    <button
-                      onClick={toggleWhatsapp}
-                      disabled={waLoading}
-                      className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 flex-shrink-0 mt-1 bg-green-500"
-                      title="Desactivar"
-                    >
-                      <span className="inline-block h-4 w-4 transform rounded-full bg-white shadow translate-x-6 transition-transform" />
-                    </button>
-                  )}
-                </div>
-
-                {!waActivo ? (
-                  <div className="space-y-3">
-                    <p className="text-sm text-ink-600 leading-relaxed">
-                      Activá esta opción y el equipo de OportunAI te va a escribir por WhatsApp para ayudarte con tu búsqueda de trabajo.
-                    </p>
-                    <div className="space-y-1.5">
-                      {[
-                        'Te orientamos según tu perfil y experiencia',
-                        'Te avisamos cuando hay oportunidades para vos',
-                        'Te preparamos para entrevistas',
-                      ].map(item => (
-                        <div key={item} className="flex items-center gap-2">
-                          <span className="text-green-500 text-sm">✓</span>
-                          <p className="text-sm text-ink-500">{item}</p>
+              {(() => {
+                const waSoporte = process.env.NEXT_PUBLIC_WA_SOPORTE;
+                const waHref = waSoporte
+                  ? `https://wa.me/${waSoporte}?text=Hola%20OportunAI%2C%20acabo%20de%20activar%20el%20acompa%C3%B1amiento`
+                  : 'https://api.whatsapp.com/send/';
+                return (
+                  <div className={`card p-4 sm:p-6 ${waActivo ? 'border-green-200 bg-green-50/30' : ''}`}>
+                    {/* Header */}
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-11 h-11 bg-[#25D366]/10 rounded-2xl flex items-center justify-center flex-shrink-0">
+                          <span className="text-2xl">💬</span>
                         </div>
-                      ))}
+                        <div className="min-w-0">
+                          <h2 className="font-semibold text-ink-800 leading-tight">Acompañamiento por WhatsApp</h2>
+                          <p className="text-xs text-ink-400 mt-0.5">Gratis · Podés desactivarlo cuando quieras</p>
+                        </div>
+                      </div>
+                      {waActivo && (
+                        <button
+                          onClick={toggleWhatsapp}
+                          disabled={waLoading}
+                          className="relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 flex-shrink-0 mt-0.5 bg-green-500 active:scale-95"
+                          title="Desactivar acompañamiento"
+                          aria-label="Desactivar acompañamiento"
+                        >
+                          <span className="inline-block h-5 w-5 transform rounded-full bg-white shadow translate-x-6 transition-transform" />
+                        </button>
+                      )}
                     </div>
-                    <div className="bg-ink-50 rounded-xl p-3">
-                      <p className="text-xs text-ink-400">
-                        📱 Los mensajes llegan al número que registraste: <span className="font-medium text-ink-600">{usuario.telefono}</span>
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setWaModalOpen(true)}
-                      className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b958] text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors"
-                    >
-                      💬 Activar acompañamiento
-                    </button>
+
+                    {!waActivo ? (
+                      <div className="space-y-3">
+                        <p className="text-sm text-ink-600 leading-relaxed">
+                          Activá esta opción y el equipo de OportunAI te va a escribir por WhatsApp para ayudarte con tu búsqueda de trabajo.
+                        </p>
+                        <div className="space-y-2">
+                          {[
+                            'Te orientamos según tu perfil y experiencia',
+                            'Te avisamos cuando hay oportunidades para vos',
+                            'Te preparamos para entrevistas',
+                          ].map(item => (
+                            <div key={item} className="flex items-start gap-2">
+                              <span className="text-green-500 text-base leading-none mt-0.5 flex-shrink-0">✓</span>
+                              <p className="text-sm text-ink-500">{item}</p>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="bg-ink-50 rounded-xl p-3 flex items-center gap-2 flex-wrap">
+                          <span className="text-base flex-shrink-0">📱</span>
+                          <p className="text-xs text-ink-500">
+                            Los mensajes llegan al: <span className="font-semibold text-ink-700 break-all">{usuario.telefono}</span>
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setWaModalOpen(true)}
+                          className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b958] active:bg-[#1da851] text-white text-sm font-semibold px-4 py-3 rounded-xl transition-colors shadow-sm active:scale-[0.98]"
+                        >
+                          <span className="text-base">💬</span> Activar acompañamiento
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="bg-green-100 border border-green-200 rounded-xl p-3">
+                          <p className="text-sm text-green-800 font-semibold flex items-center gap-1.5">
+                            <span>✅</span> Acompañamiento activo
+                          </p>
+                          <p className="text-xs text-green-700 mt-1">
+                            Te enviamos un mensaje al número <span className="font-semibold break-all">{usuario.telefono}</span>.
+                          </p>
+                          <p className="text-xs text-green-700 mt-0.5">Abrí WhatsApp y respondé para empezar.</p>
+                        </div>
+                        <a
+                          href={waHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b958] active:bg-[#1da851] text-white text-sm font-semibold px-4 py-3 rounded-xl transition-colors shadow-sm active:scale-[0.98]"
+                        >
+                          <span className="text-base">💬</span> Abrir WhatsApp
+                        </a>
+                        <p className="text-xs text-ink-400 text-center leading-relaxed">
+                          Para desactivar, tocá el botón verde de arriba.
+                        </p>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="bg-green-100 border border-green-200 rounded-xl p-3">
-                      <p className="text-sm text-green-800 font-medium">✓ Acompañamiento activo</p>
-                      <p className="text-xs text-green-700 mt-1">
-                        Te enviamos un mensaje al <span className="font-medium">{usuario.telefono}</span>. Abrí WhatsApp y respondé para empezar.
-                      </p>
-                    </div>
-                    <a
-                      href="https://wa.me"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b958] text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors"
-                    >
-                      💬 Abrir WhatsApp
-                    </a>
-                    <p className="text-xs text-ink-400 text-center">
-                      Para desactivar, apagá el botón de arriba a la derecha.
-                    </p>
-                  </div>
-                )}
-              </div>
+                );
+              })()}
 
               {/* Modal confirmación WhatsApp opt-in */}
               {waModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-                  <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
+                <div
+                  className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm"
+                  onClick={e => { if (e.target === e.currentTarget) setWaModalOpen(false); }}
+                >
+                  <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm p-6 space-y-5 animate-slide-up sm:animate-none">
+                    {/* Handle bar mobile */}
+                    <div className="w-10 h-1 bg-ink-200 rounded-full mx-auto sm:hidden" />
+
                     <div className="text-center">
-                      <div className="w-14 h-14 bg-[#25D366]/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                        <span className="text-3xl">💬</span>
+                      <div className="w-16 h-16 bg-[#25D366]/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <span className="text-4xl">💬</span>
                       </div>
-                      <h3 className="text-lg font-semibold text-ink-800">Activar acompañamiento</h3>
+                      <h3 className="text-xl font-bold text-ink-800">¿Activar acompañamiento?</h3>
                       <p className="text-sm text-ink-500 mt-2 leading-relaxed">
-                        El equipo de OportunAI te va a contactar por WhatsApp al número:
+                        El equipo de OportunAI te va a contactar por WhatsApp al:
                       </p>
-                      <p className="text-base font-semibold text-ink-800 mt-1">{usuario.telefono}</p>
+                      <p className="text-lg font-bold text-ink-800 mt-1 break-all">{usuario.telefono}</p>
                     </div>
 
-                    <div className="bg-ink-50 rounded-xl p-3 space-y-1.5">
-                      <p className="text-xs text-ink-500 font-medium">Al aceptar vas a recibir:</p>
+                    <div className="bg-green-50 border border-green-100 rounded-2xl p-4 space-y-2">
+                      <p className="text-xs text-green-700 font-semibold uppercase tracking-wide">Al activar vas a recibir</p>
                       {[
-                        'Un mensaje de bienvenida del equipo',
-                        'Orientación personalizada para tu búsqueda',
-                        'Avisos de oportunidades laborales',
+                        '👋 Un mensaje de bienvenida del equipo',
+                        '🎯 Orientación personalizada para tu búsqueda',
+                        '📢 Avisos de oportunidades laborales',
                       ].map(item => (
                         <div key={item} className="flex items-center gap-2">
-                          <span className="text-green-500 text-xs">✓</span>
-                          <p className="text-xs text-ink-500">{item}</p>
+                          <p className="text-sm text-green-800">{item}</p>
                         </div>
                       ))}
                     </div>
@@ -1338,18 +1356,19 @@ export default function DashboardClient({
                       Podés desactivarlo cuando quieras desde tu perfil.
                     </p>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-col-reverse sm:flex-row gap-2.5">
                       <button
                         onClick={() => setWaModalOpen(false)}
-                        className="flex-1 px-4 py-2.5 rounded-xl border border-ink-200 text-sm text-ink-600 hover:bg-ink-50 transition-colors"
+                        className="flex-1 px-4 py-3 rounded-xl border border-ink-200 text-sm font-medium text-ink-600 hover:bg-ink-50 active:bg-ink-100 transition-colors"
                       >
                         Cancelar
                       </button>
                       <button
                         onClick={async () => { setWaModalOpen(false); await toggleWhatsapp(); }}
                         disabled={waLoading}
-                        className="flex-1 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20b958] text-white text-sm font-medium transition-colors disabled:opacity-50"
+                        className="flex-1 px-4 py-3.5 rounded-xl bg-[#25D366] hover:bg-[#20b958] active:bg-[#1da851] text-white text-sm font-bold transition-colors disabled:opacity-50 shadow-md active:scale-[0.98] flex items-center justify-center gap-2"
                       >
+                        <span className="text-base">💬</span>
                         {waLoading ? 'Activando...' : 'Sí, activar'}
                       </button>
                     </div>

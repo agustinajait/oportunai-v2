@@ -9,11 +9,13 @@ import {
 
 function formatPrecio(precio_hora: number | null | undefined, horas_modulo: number | null) {
   if (!precio_hora) return null;
-  if (horas_modulo) {
-    const total = precio_hora * horas_modulo;
-    return `$${precio_hora.toLocaleString('es-AR')}/hs · $${total.toLocaleString('es-AR')} total`;
-  }
   return `$${precio_hora.toLocaleString('es-AR')}/hs`;
+}
+
+function formatTotal(precio_hora: number | null | undefined, horas_modulo: number | null) {
+  if (!precio_hora || !horas_modulo) return null;
+  const total = precio_hora * horas_modulo;
+  return `$${total.toLocaleString('es-AR')} total`;
 }
 
 export default async function ServiciosPublicosPage() {
@@ -35,24 +37,24 @@ export default async function ServiciosPublicosPage() {
   return (
     <div className="min-h-screen bg-ink-50">
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
+      <nav className="flex items-center justify-between px-4 sm:px-6 py-4 max-w-6xl mx-auto">
         <Link href="/" className="flex items-center gap-2">
           <img src="/logo.png" alt="Oportunai" className="w-8 h-8" />
           <span className="font-display text-xl font-semibold text-ink-800">Oportunai</span>
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {isCandidate ? (
             <Link href="/dashboard" className="btn-ghost text-sm">Mi panel</Link>
           ) : (
             <>
               <Link href="/login" className="btn-ghost text-sm">Iniciar sesión</Link>
-              <Link href="/register" className="btn-primary text-sm py-2">Registrarse gratis</Link>
+              <Link href="/register" className="hidden sm:inline-flex btn-primary text-sm py-2">Registrarse gratis</Link>
             </>
           )}
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-6 py-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-ink-500 hover:text-brand-600 transition-colors mb-6">
           <ArrowLeft size={15} /> Volver al inicio
         </Link>
@@ -89,12 +91,13 @@ export default async function ServiciosPublicosPage() {
           <div className="space-y-4">
             {servicios.map((s) => {
               const precio = formatPrecio(s.precio_hora?.toNumber(), s.horas_modulo);
+              const totalPrecio = formatTotal(s.precio_hora?.toNumber(), s.horas_modulo);
               const protocolo = (s.protocolo as { item: string; descripcion?: string }[]) ?? [];
               const href = isCandidate ? `/servicios/${s.id}` : `/register?redirect=/servicios/${s.id}`;
               return (
-                <Link key={s.id} href={`/servicios/${s.id}`} className="card p-6 hover:shadow-md hover:border-brand-200 transition-all block group">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-4 flex-1 min-w-0">
+                <Link key={s.id} href={href} className="card p-4 sm:p-6 hover:shadow-md hover:border-brand-200 transition-all block group">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                    <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
                       {/* Logo empresa */}
                       <div className="w-12 h-12 rounded-xl bg-ink-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {s.empresa.logo_url
@@ -116,6 +119,7 @@ export default async function ServiciosPublicosPage() {
                           {precio && (
                             <span className="flex items-center gap-1 text-teal-700 font-semibold">
                               <DollarSign size={13} /> {precio}
+                              {totalPrecio && <span className="font-normal text-teal-600">· {totalPrecio}</span>}
                             </span>
                           )}
                           {s.horas_modulo && (
@@ -152,8 +156,8 @@ export default async function ServiciosPublicosPage() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-2 flex-shrink-0">
-                      <span className="btn-primary text-sm py-2.5 px-5 flex items-center gap-1">
+                    <div className="sm:flex-shrink-0">
+                      <span className="w-full sm:w-auto btn-primary text-sm py-2.5 px-5 flex items-center justify-center gap-1">
                         Ver oferta <ChevronRight size={14} />
                       </span>
                     </div>

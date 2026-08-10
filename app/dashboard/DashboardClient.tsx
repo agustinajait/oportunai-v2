@@ -571,63 +571,32 @@ export default function DashboardClient({
           </div>
 
           {/* Tabs — scroll horizontal en móvil */}
-          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-            <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 w-max sm:w-auto">
-              <button
-                onClick={() => setTab('perfil')}
-                className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                  tab === 'perfil' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
-                }`}
-              >
-                <Video size={14} />
-                Mi perfil
-              </button>
-              <button
-                onClick={() => setTab('documentos')}
-                className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                  tab === 'documentos' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
-                }`}
-              >
-                <ShieldCheck size={14} />
-                Documentos
-              </button>
-              <button
-                onClick={() => setTab('ofertas')}
-                className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                  tab === 'ofertas' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
-                }`}
-              >
-                <Briefcase size={14} />
-                Ofertas
-              </button>
-              <button
-                onClick={() => setTab('citas')}
-                className={`relative flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                  tab === 'citas' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
-                }`}
-              >
-                <CalendarDays size={14} />
-                Citas
-                {citasPendientes > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
-                    {citasPendientes}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => setTab('servicios')}
-                className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                  tab === 'servicios' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
-                }`}
-              >
-                <Layers size={14} />
-                Módulos
-                {misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length > 0 && (
-                  <span className="bg-teal-500 text-white text-[10px] px-1.5 rounded-full">
-                    {misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length}
-                  </span>
-                )}
-              </button>
+          <div className="overflow-x-auto -mx-4 sm:mx-0 scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 mx-4 sm:mx-0 w-max sm:w-auto min-w-0">
+              {[
+                { id: 'perfil',     Icon: Video,        label: 'Mi perfil',   badge: null },
+                { id: 'documentos', Icon: ShieldCheck,  label: 'Documentos',  badge: null },
+                { id: 'ofertas',    Icon: Briefcase,    label: 'Ofertas',     badge: null },
+                { id: 'citas',      Icon: CalendarDays, label: 'Citas',       badge: citasPendientes > 0 ? citasPendientes : null },
+                { id: 'servicios',  Icon: Layers,       label: 'Módulos',     badge: misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length || null },
+              ].map(({ id, Icon, label, badge }) => (
+                <button
+                  key={id}
+                  onClick={() => setTab(id as typeof tab)}
+                  className={`relative flex items-center gap-1.5 px-2.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
+                    tab === id ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
+                  }`}
+                >
+                  <Icon size={13} className="sm:hidden flex-shrink-0" />
+                  <Icon size={14} className="hidden sm:block flex-shrink-0" />
+                  {label}
+                  {badge !== null && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${tab === id ? 'bg-white/30 text-white' : 'bg-red-500 text-white'}`}>
+                      {badge}
+                    </span>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -1173,16 +1142,16 @@ export default function DashboardClient({
                   </div>
                   <div className="min-w-0">
                     <p className="font-semibold text-ink-800 text-sm">Descargá tu CV para postularte</p>
-                    <p className="text-xs text-ink-400">Oportunai lo arma con tus datos · optimizado para filtros ATS</p>
+                    <p className="text-xs text-ink-400 leading-relaxed">Oportunai lo arma con tus datos · optimizado para filtros ATS</p>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Link href={`/u/${usuario.slug}/cv`} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors" style={{ textDecoration:'none' }}>
-                    <FileText size={14} /> Ver CV
-                  </Link>
-                  <a href="/api/cv/download" download className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold text-white transition-colors" style={{ textDecoration:'none', background:'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
-                    <Download size={14} /> Descargar
+                <div className="flex flex-col gap-2">
+                  <a href="/api/cv/download" download className="w-full flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98]" style={{ textDecoration:'none', background:'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
+                    <Download size={15} /> Descargar CV
                   </a>
+                  <Link href={`/u/${usuario.slug}/cv`} target="_blank" className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors" style={{ textDecoration:'none' }}>
+                    <FileText size={14} /> Vista previa
+                  </Link>
                 </div>
               </div>
               {/* Perfil digital */}

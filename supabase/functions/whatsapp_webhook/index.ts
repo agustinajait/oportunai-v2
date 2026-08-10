@@ -231,9 +231,18 @@ serve(async (req) => {
     return new Response("Forbidden", { status: 403 });
   }
 
-  // Mensaje entrante (POST de Meta)
+  // Mensaje entrante (POST de Meta — reenviado por Korai)
   if (req.method === "POST") {
     try {
+      // Validar que el POST viene de Korai con la clave compartida
+      if (KORAI_FORWARD_KEY) {
+        const fwdKey = req.headers.get("x-forward-key") ?? "";
+        if (fwdKey !== KORAI_FORWARD_KEY) {
+          console.error("whatsapp_webhook: invalid x-forward-key");
+          return new Response("Unauthorized", { status: 401 });
+        }
+      }
+
       const body = await req.json() as Record<string, unknown>;
 
       // Extraer mensaje

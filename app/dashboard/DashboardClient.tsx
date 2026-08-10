@@ -621,7 +621,7 @@ export default function DashboardClient({
                 }`}
               >
                 <Layers size={14} />
-                Servicios
+                Módulos
                 {misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length > 0 && (
                   <span className="bg-teal-500 text-white text-[10px] px-1.5 rounded-full">
                     {misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length}
@@ -852,16 +852,16 @@ export default function DashboardClient({
               </div>
             )}
 
-            {/* Servicios disponibles */}
+            {/* Módulos de trabajo disponibles */}
             {!loadingServicios && (
               <div>
                 <h2 className="text-base font-semibold text-ink-800 mb-3 flex items-center gap-2">
-                  <Briefcase size={16} className="text-brand-600" /> Servicios disponibles
+                  <Briefcase size={16} className="text-brand-600" /> Módulos de trabajo disponibles
                 </h2>
                 {servicios.length === 0 && (
                   <div className="card p-8 text-center text-ink-400">
                     <Layers size={32} className="mx-auto mb-2 opacity-40" />
-                    <p>No hay servicios disponibles por el momento</p>
+                    <p>No hay módulos de trabajo disponibles por el momento</p>
                   </div>
                 )}
                 <div className="flex flex-col gap-4">
@@ -1121,7 +1121,7 @@ export default function DashboardClient({
                     <FileText size={20} color="#fff" strokeWidth={1.75} />
                   </div>
                   <div>
-                    <p className="font-semibold text-ink-800 text-sm">Mi flyer</p>
+                    <p className="font-semibold text-ink-800 text-sm">Mi perfil laboral</p>
                     <p className="text-xs text-ink-400">Tarjeta con QR para imprimir o compartir</p>
                   </div>
                 </div>
@@ -1144,7 +1144,7 @@ export default function DashboardClient({
                   </div>
                 </div>
                 <Link href="/dashboard/flyer" className="btn-primary w-full justify-center text-sm py-2.5" style={{ textDecoration:'none', display:'flex', alignItems:'center', gap:6 }}>
-                  <FileText size={15} /> Ver mi flyer
+                  <FileText size={15} /> Ver mi perfil laboral
                 </Link>
               </div>
 
@@ -1172,8 +1172,8 @@ export default function DashboardClient({
                     <FileText size={18} color="#fff" />
                   </div>
                   <div>
-                    <p className="font-semibold text-ink-800 text-sm">CV para postulaciones</p>
-                    <p className="text-xs text-ink-400">Formato DOCX compatible con ATS</p>
+                    <p className="font-semibold text-ink-800 text-sm">Descargá tu CV para postularte</p>
+                    <p className="text-xs text-ink-400">Oportunai lo arma con tus datos · optimizado para filtros ATS</p>
                   </div>
                 </div>
                 <a href="/api/cv/download" download style={{ textDecoration:'none', display:'flex', alignItems:'center', justifyContent:'center', gap:6, background:'linear-gradient(135deg,#4B33CC,#7048F0)', color:'#fff', borderRadius:10, padding:'10px 14px', fontWeight:700, fontSize:13, whiteSpace:'nowrap' }}>
@@ -1668,7 +1668,10 @@ export default function DashboardClient({
                     </button>
                   )}
                 </div>
-                <p className="text-xs text-ink-400 mb-4">Estos datos se usan para generar tu CV, tu flyer y tu perfil público.</p>
+                <div className="bg-brand-50 border border-brand-100 rounded-xl p-3 mb-4">
+                  <p className="text-xs text-brand-700 font-medium mb-0.5">📄 Con estos datos Oportunai construye tu CV</p>
+                  <p className="text-xs text-brand-600 leading-relaxed">Cuanto más completes, mejor queda tu CV y más chances tenés. Oportunai lo optimiza automáticamente para pasar los filtros ATS de las empresas.</p>
+                </div>
 
                 {!editandoDatos ? (
                   <div className="space-y-4 text-sm text-ink-600">

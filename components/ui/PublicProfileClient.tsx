@@ -180,8 +180,8 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                   : usuario.nombre_completo.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
                 }
               </div>
-              <div>
-                <h1 className="font-display text-2xl font-semibold text-ink-900 leading-tight">
+              <div className="min-w-0">
+                <h1 className="font-display text-2xl font-semibold text-ink-900 leading-tight truncate">
                   {usuario.nombre_completo}
                 </h1>
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -321,7 +321,7 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                   <Phone size={14} className="text-brand-500 flex-shrink-0" />
                   {usuario.telefono}
                 </a>
-                <a href={`mailto:${usuario.email}`} className="flex items-center gap-2 text-sm text-ink-700 hover:text-brand-600 transition-colors truncate">
+                <a href={`mailto:${usuario.email}`} className="flex items-center gap-2 text-sm text-ink-700 hover:text-brand-600 transition-colors min-w-0">
                   <Mail size={14} className="text-brand-500 flex-shrink-0" />
                   <span className="truncate">{usuario.email}</span>
                 </a>
@@ -538,7 +538,7 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                     </span>
                   </div>
                   {r.mensaje && (
-                    <p className="text-sm text-ink-600 italic leading-relaxed pl-12">"{r.mensaje}"</p>
+                    <p className="text-sm text-ink-600 italic leading-relaxed pl-4 sm:pl-12">"{r.mensaje}"</p>
                   )}
                 </div>
               ))}

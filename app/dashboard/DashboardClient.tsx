@@ -575,7 +575,7 @@ export default function DashboardClient({
             <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 w-max sm:w-auto">
               <button
                 onClick={() => setTab('perfil')}
-                className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                   tab === 'perfil' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
                 }`}
               >
@@ -584,7 +584,7 @@ export default function DashboardClient({
               </button>
               <button
                 onClick={() => setTab('documentos')}
-                className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                   tab === 'documentos' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
                 }`}
               >
@@ -593,7 +593,7 @@ export default function DashboardClient({
               </button>
               <button
                 onClick={() => setTab('ofertas')}
-                className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                   tab === 'ofertas' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
                 }`}
               >
@@ -602,7 +602,7 @@ export default function DashboardClient({
               </button>
               <button
                 onClick={() => setTab('citas')}
-                className={`relative flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                className={`relative flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                   tab === 'citas' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
                 }`}
               >
@@ -616,7 +616,7 @@ export default function DashboardClient({
               </button>
               <button
                 onClick={() => setTab('servicios')}
-                className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                   tab === 'servicios' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
                 }`}
               >
@@ -749,7 +749,7 @@ export default function DashboardClient({
                               <p className="text-xs text-ink-400">{mod.empresa.nombre}</p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5 flex-wrap justify-end max-w-[55%]">
                             {mod.remito && (
                               <span className="text-xs bg-teal-600 text-white px-2 py-0.5 rounded-full">Remito #{mod.remito.numero_remito}</span>
                             )}
@@ -757,7 +757,7 @@ export default function DashboardClient({
                               {ESTADO_LABEL[mod.estado] ?? mod.estado}
                             </span>
                             <span className="text-xs text-ink-400">{aprobados}/{totalItems}</span>
-                            <ChevronRight size={14} className={`text-ink-400 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+                            <ChevronRight size={14} className={`text-ink-400 transition-transform flex-shrink-0 ${isOpen ? 'rotate-90' : ''}`} />
                           </div>
                         </button>
 
@@ -832,7 +832,7 @@ export default function DashboardClient({
                                         <button
                                           onClick={() => enviarEvidencia(mod.id, idx)}
                                           disabled={enviando || !(evidenciaTexto[keyEv] ?? '').trim()}
-                                          className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg hover:bg-brand-700 disabled:opacity-40 flex items-center gap-1"
+                                          className="text-xs bg-brand-600 text-white px-3 py-2.5 rounded-lg hover:bg-brand-700 disabled:opacity-40 flex items-center gap-1"
                                         >
                                           {enviando ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
                                           Enviar
@@ -1166,21 +1166,21 @@ export default function DashboardClient({
               </div>
 
               {/* Descargar CV */}
-              <div className="card p-4 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
+              <div className="card p-4">
+                <div className="flex items-center gap-3 mb-3">
                   <div className="w-11 h-11 rounded-xl flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                     <FileText size={18} color="#fff" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="font-semibold text-ink-800 text-sm">Descargá tu CV para postularte</p>
                     <p className="text-xs text-ink-400">Oportunai lo arma con tus datos · optimizado para filtros ATS</p>
                   </div>
                 </div>
-                <div className="flex gap-2 flex-shrink-0">
-                  <Link href={`/u/${usuario.slug}/cv`} target="_blank" style={{ textDecoration:'none', display:'flex', alignItems:'center', gap:5, background:'#f1effe', color:'#4B33CC', borderRadius:10, padding:'10px 12px', fontWeight:600, fontSize:13, whiteSpace:'nowrap' }}>
+                <div className="flex gap-2">
+                  <Link href={`/u/${usuario.slug}/cv`} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors" style={{ textDecoration:'none' }}>
                     <FileText size={14} /> Ver CV
                   </Link>
-                  <a href="/api/cv/download" download style={{ textDecoration:'none', display:'flex', alignItems:'center', justifyContent:'center', gap:6, background:'linear-gradient(135deg,#4B33CC,#7048F0)', color:'#fff', borderRadius:10, padding:'10px 14px', fontWeight:700, fontSize:13, whiteSpace:'nowrap' }}>
+                  <a href="/api/cv/download" download className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold text-white transition-colors" style={{ textDecoration:'none', background:'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
                     <Download size={14} /> Descargar
                   </a>
                 </div>
@@ -1741,7 +1741,7 @@ export default function DashboardClient({
                   </div>
                 ) : (
                   <div className="space-y-5">
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="text-xs font-medium text-ink-600 block mb-1">Teléfono</label>
                         <input type="tel" value={telefono} onChange={e => setTelefono(e.target.value)} placeholder="Ej: 11 1234-5678" className="input-field text-sm" />
@@ -1762,7 +1762,7 @@ export default function DashboardClient({
                       <textarea value={resumenPerfil} onChange={e => setResumenPerfil(e.target.value)} rows={3} placeholder="Describí brevemente tu perfil y objetivos..." className="input-field resize-none text-sm" />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="text-xs font-medium text-ink-600 block mb-1">Nivel de estudios</label>
                         <select value={nivelEstudios} onChange={e => setNivelEstudios(e.target.value)} className="input-field text-sm">
@@ -1805,7 +1805,7 @@ export default function DashboardClient({
                       <div className="space-y-2">
                         {experiencias.map((e, i) => (
                           <div key={i} className="bg-ink-50 rounded-xl p-3 space-y-2">
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                               <input value={e.cargo} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, cargo: ev.target.value } : x))} placeholder="Cargo / puesto" className="input-field text-xs py-1.5" />
                               <input value={e.empresa} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, empresa: ev.target.value } : x))} placeholder="Empresa" className="input-field text-xs py-1.5" />
                             </div>

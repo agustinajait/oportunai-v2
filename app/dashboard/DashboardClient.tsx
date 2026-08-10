@@ -1176,9 +1176,14 @@ export default function DashboardClient({
                     <p className="text-xs text-ink-400">Oportunai lo arma con tus datos · optimizado para filtros ATS</p>
                   </div>
                 </div>
-                <a href="/api/cv/download" download style={{ textDecoration:'none', display:'flex', alignItems:'center', justifyContent:'center', gap:6, background:'linear-gradient(135deg,#4B33CC,#7048F0)', color:'#fff', borderRadius:10, padding:'10px 14px', fontWeight:700, fontSize:13, whiteSpace:'nowrap' }}>
-                  <Download size={14} /> Descargar
-                </a>
+                <div className="flex gap-2 flex-shrink-0">
+                  <Link href={`/u/${usuario.slug}/cv`} target="_blank" style={{ textDecoration:'none', display:'flex', alignItems:'center', gap:5, background:'#f1effe', color:'#4B33CC', borderRadius:10, padding:'10px 12px', fontWeight:600, fontSize:13, whiteSpace:'nowrap' }}>
+                    <FileText size={14} /> Ver CV
+                  </Link>
+                  <a href="/api/cv/download" download style={{ textDecoration:'none', display:'flex', alignItems:'center', justifyContent:'center', gap:6, background:'linear-gradient(135deg,#4B33CC,#7048F0)', color:'#fff', borderRadius:10, padding:'10px 14px', fontWeight:700, fontSize:13, whiteSpace:'nowrap' }}>
+                    <Download size={14} /> Descargar
+                  </a>
+                </div>
               </div>
               {/* Perfil digital */}
               <div className="card p-6">

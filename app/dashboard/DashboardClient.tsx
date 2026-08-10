@@ -1210,37 +1210,69 @@ export default function DashboardClient({
               </div>
 
               {/* Acompañamiento WhatsApp */}
-              <div className="card p-6">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">💬</span>
-                    <h2 className="font-semibold text-ink-800">Acompañamiento por WhatsApp</h2>
+              <div className={`card p-6 ${waActivo ? 'border-green-200 bg-green-50/30' : ''}`}>
+                {/* Header */}
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 bg-[#25D366]/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <span className="text-xl">💬</span>
+                    </div>
+                    <div>
+                      <h2 className="font-semibold text-ink-800 leading-tight">Acompañamiento por WhatsApp</h2>
+                      <p className="text-xs text-ink-400 mt-0.5">Gratis · Podés desactivarlo cuando quieras</p>
+                    </div>
                   </div>
                   <button
                     onClick={toggleWhatsapp}
                     disabled={waLoading}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 ${waActivo ? 'bg-green-500' : 'bg-ink-200'}`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 flex-shrink-0 mt-1 ${waActivo ? 'bg-green-500' : 'bg-ink-200'}`}
                     title={waActivo ? 'Desactivar' : 'Activar'}
                   >
                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${waActivo ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
                 </div>
-                <p className="text-xs text-ink-400 mb-3 mt-1">
-                  {waActivo
-                    ? `Activo · recibirás mensajes en ${usuario.telefono}`
-                    : 'Activá para recibir orientación laboral por WhatsApp'}
-                </p>
+
                 {!waActivo ? (
-                  <div className="space-y-2">
-                    <p className="text-sm text-ink-500 leading-relaxed">
-                      El equipo de OportunAI te acompaña por WhatsApp en tu búsqueda de trabajo. Te ayudamos a prepararte, entender los servicios disponibles y conectar con oportunidades.
+                  <div className="space-y-3">
+                    <p className="text-sm text-ink-600 leading-relaxed">
+                      Activá esta opción y el equipo de OportunAI te va a escribir por WhatsApp para ayudarte con tu búsqueda de trabajo.
                     </p>
-                    <p className="text-xs text-ink-300">Gratis · Podés desactivarlo cuando quieras</p>
+                    <div className="space-y-1.5">
+                      {[
+                        'Te orientamos según tu perfil y experiencia',
+                        'Te avisamos cuando hay oportunidades para vos',
+                        'Te preparamos para entrevistas',
+                      ].map(item => (
+                        <div key={item} className="flex items-center gap-2">
+                          <span className="text-green-500 text-sm">✓</span>
+                          <p className="text-sm text-ink-500">{item}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="bg-ink-50 rounded-xl p-3">
+                      <p className="text-xs text-ink-400">
+                        📱 Los mensajes llegan al número que registraste: <span className="font-medium text-ink-600">{usuario.telefono}</span>
+                      </p>
+                    </div>
+                    <button
+                      onClick={toggleWhatsapp}
+                      disabled={waLoading}
+                      className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b958] text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50"
+                    >
+                      {waLoading ? 'Activando...' : '💬 Activar acompañamiento'}
+                    </button>
                   </div>
                 ) : (
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-3">
-                    <p className="text-sm text-green-800 font-medium">✓ Acompañamiento activo</p>
-                    <p className="text-xs text-green-700 mt-0.5">Escribinos directamente por WhatsApp cuando necesites ayuda.</p>
+                  <div className="space-y-3">
+                    <div className="bg-green-100 border border-green-200 rounded-xl p-3">
+                      <p className="text-sm text-green-800 font-medium">✓ Acompañamiento activo</p>
+                      <p className="text-xs text-green-700 mt-0.5">
+                        Te estamos escribiendo al <span className="font-medium">{usuario.telefono}</span>. Respondé el mensaje para empezar.
+                      </p>
+                    </div>
+                    <p className="text-xs text-ink-400 text-center">
+                      Para desactivar, apagá el botón de arriba a la derecha.
+                    </p>
                   </div>
                 )}
               </div>

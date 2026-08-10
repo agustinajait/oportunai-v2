@@ -17,11 +17,13 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
 const VERIFY_TOKEN        = Deno.env.get("WA_VERIFY_TOKEN") ?? "oportunai-webhook-2024";
-const WHATSAPP_TOKEN      = Deno.env.get("WHATSAPP_TOKEN") ?? "";
-const PHONE_NUMBER_ID     = Deno.env.get("WA_PHONE_NUMBER_ID") ?? "";
+const WHATSAPP_TOKEN      = Deno.env.get("WHATSAPP_TOKEN") ?? "";       // token de Korai (número compartido)
+const PHONE_NUMBER_ID     = Deno.env.get("WA_PHONE_NUMBER_ID") ?? "";   // phone number ID de Korai
 const ANTHROPIC_API_KEY   = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
 const SUPABASE_URL        = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+// Key compartida: Korai la incluye en el header cuando reenvía mensajes
+const KORAI_FORWARD_KEY   = Deno.env.get("KORAI_FORWARD_KEY") ?? "";
 
 const ANTHROPIC_MODEL = "claude-haiku-4-5-20251001"; // modelo rápido y barato
 

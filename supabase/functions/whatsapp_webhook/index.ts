@@ -244,6 +244,7 @@ serve(async (req) => {
       }
 
       const body = await req.json() as Record<string, unknown>;
+      console.log("WA webhook POST recibido");
 
       // Extraer mensaje
       const entry   = (body?.entry as Array<Record<string, unknown>>)?.[0];
@@ -252,28 +253,33 @@ serve(async (req) => {
       const messages = value?.messages as Array<Record<string, unknown>>;
 
       if (!messages || messages.length === 0) {
+        console.log("Sin mensajes en payload");
         return new Response("ok", { status: 200 });
       }
 
       const msg = messages[0];
       if (msg.type !== "text") return new Response("ok", { status: 200 }); // ignorar multimedia
 
-      const from   = msg.from as string;   // número del candidato (e.g. "5491112345678")
+      const from   = msg.from as string;
       const texto  = (msg.text as Record<string, unknown>)?.body as string;
+
+      console.log("Mensaje de:", from, "texto:", texto);
 
       if (!from || !texto) return new Response("ok", { status: 200 });
 
       // Buscar usuario en Oportunai
       const usuario = await buscarUsuario(from);
+      console.log("Usuario encontrado:", usuario ? usuario.id : "null");
 
       if (!usuario) {
-        // Usuario no registrado: responder con CTA
         await enviarWhatsApp(from,
           "¡Hola! 👋 Soy el asistente de OportunAI.\n\n" +
-          "No encontramos tu cuenta. Registrate gratis en oportunai.com.ar para que podamos acompañarte en tu búsqueda de trabajo."
+          "No encontramos tu cuenta. Registrate gratis en oportunai.korai.lat para que podamos acompañarte en tu búsqueda de trabajo."
         );
         return new Response("ok", { status: 200 });
       }
+
+      console.log("whatsapp_activo:", usuario.whatsapp_activo);
 
       // Verificar que el usuario tiene bot activo
       if (!usuario.whatsapp_activo) {
@@ -285,12 +291,16 @@ serve(async (req) => {
 
       // Cargar historial
       const historial = await cargarHistorial(usuario.id);
+      console.log("Historial cargado:", historial.length, "mensajes");
 
       // Generar respuesta con Claude
+      console.log("Generando respuesta con Claude...");
       const respuesta = await generarRespuesta(usuario, historial, texto);
+      console.log("Respuesta generada, enviando WA...");
 
       // Enviar respuesta
       await enviarWhatsApp(from, respuesta);
+      console.log("WA enviado OK");
 
       // Guardar respuesta del bot
       await guardarMensaje(usuario.id, "bot", respuesta);

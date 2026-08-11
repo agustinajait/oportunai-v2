@@ -75,6 +75,19 @@ const HERRAMIENTAS_DIGITALES = [
   'Redes sociales', 'Canva', 'Mercado Libre / e-commerce',
 ];
 
+type SemaforoColor = 'verde' | 'amarillo' | 'rojo';
+interface KoraiSemaforo {
+  empleo?: SemaforoColor;
+  educacion?: SemaforoColor;
+  ingresos?: SemaforoColor;
+  salud?: SemaforoColor;
+  vivienda?: SemaforoColor;
+  red?: SemaforoColor;
+  motivo?: string;
+  derivado_at?: string;
+  ultima_actualizacion?: string;
+}
+
 interface Usuario {
   id: string; nombre_completo: string; email: string; telefono: string; direccion: string;
   bio: string | null; foto_url: string | null; slug: string; role: 'super_admin' | 'admin' | 'user';
@@ -83,6 +96,7 @@ interface Usuario {
   fecha_nacimiento: string | null;
   created_at: string; videos: VideoItem[]; archivos: Archivo[];
   whatsapp_activo: boolean; korai_opt_in: boolean;
+  korai_semaforo?: KoraiSemaforo | null;
 }
 
 interface Documento {
@@ -1153,6 +1167,105 @@ export default function DashboardClient({
                   </Link>
                 </div>
               </div>
+              {/* ── Semáforo de Oportunidades ─────────────────────── */}
+              {usuario.korai_semaforo && Object.keys(usuario.korai_semaforo).some(k =>
+                ['empleo','educacion','ingresos','salud','vivienda','red'].includes(k)
+              ) && (() => {
+                const sem = usuario.korai_semaforo!;
+                const DIMS = [
+                  { key: 'empleo' as const,    label: 'Empleo',     icon: '💼' },
+                  { key: 'educacion' as const, label: 'Educación',  icon: '📚' },
+                  { key: 'ingresos' as const,  label: 'Ingresos',   icon: '💰' },
+                  { key: 'salud' as const,     label: 'Salud',      icon: '❤️' },
+                  { key: 'vivienda' as const,  label: 'Vivienda',   icon: '🏠' },
+                  { key: 'red' as const,       label: 'Red',        icon: '🤝' },
+                ];
+                const colorCls = (c?: SemaforoColor) =>
+                  c === 'verde'   ? 'bg-emerald-500' :
+                  c === 'amarillo'? 'bg-amber-400'   :
+                  c === 'rojo'    ? 'bg-red-500'     : 'bg-gray-200';
+                const textCls = (c?: SemaforoColor) =>
+                  c === 'verde'   ? 'text-emerald-700' :
+                  c === 'amarillo'? 'text-amber-700'   :
+                  c === 'rojo'    ? 'text-red-700'     : 'text-gray-400';
+                const labelColor = (c?: SemaforoColor) =>
+                  c === 'verde'   ? 'Bien' :
+                  c === 'amarillo'? 'Mejorable' :
+                  c === 'rojo'    ? 'Prioritario' : 'Sin datos';
+
+                // Plan de acción basado en dimensiones rojas y amarillas
+                const acciones: { dim: string; icon: string; texto: string }[] = [];
+                if (sem.empleo === 'rojo' || sem.empleo === 'amarillo') {
+                  acciones.push({ dim: 'Empleo', icon: '💼', texto: 'Completá tu perfil y Video CV para aplicar a módulos de trabajo disponibles.' });
+                }
+                if (sem.educacion === 'rojo' || sem.educacion === 'amarillo') {
+                  acciones.push({ dim: 'Educación', icon: '📚', texto: 'Completá las capacitaciones disponibles en la plataforma para sumar certificados a tu perfil.' });
+                }
+                if (sem.ingresos === 'rojo' || sem.ingresos === 'amarillo') {
+                  acciones.push({ dim: 'Ingresos', icon: '💰', texto: 'Revisá los módulos de trabajo disponibles — pueden ser una fuente de ingresos rápida.' });
+                }
+                if (sem.red === 'rojo' || sem.red === 'amarillo') {
+                  acciones.push({ dim: 'Red', icon: '🤝', texto: 'Agregá referencias laborales a tu perfil para fortalecer tu red de contactos.' });
+                }
+
+                return (
+                  <div className="card p-5 border border-brand-100 bg-gradient-to-br from-brand-50/60 to-white">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-xl">🚦</span>
+                      <h2 className="font-semibold text-ink-800 text-sm">Tu diagnóstico</h2>
+                      {sem.ultima_actualizacion && (
+                        <span className="ml-auto text-[10px] text-ink-300">
+                          {new Date(sem.ultima_actualizacion).toLocaleDateString('es-AR')}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* 6 dimensiones */}
+                    <div className="grid grid-cols-3 gap-2 mb-4">
+                      {DIMS.map(d => (
+                        <div key={d.key} className="flex flex-col items-center gap-1 bg-white rounded-xl border border-gray-100 px-2 py-2.5">
+                          <span className="text-lg">{d.icon}</span>
+                          <div className={`w-2.5 h-2.5 rounded-full ${colorCls(sem[d.key])}`} />
+                          <p className="text-[10px] font-medium text-ink-600 text-center leading-tight">{d.label}</p>
+                          <p className={`text-[9px] font-semibold ${textCls(sem[d.key])}`}>
+                            {labelColor(sem[d.key])}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Plan de acción */}
+                    {acciones.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-semibold text-ink-400 uppercase tracking-wide mb-2">Plan de acción sugerido</p>
+                        <div className="space-y-2">
+                          {acciones.map((a, i) => (
+                            <div key={i} className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-2">
+                              <span className="text-base flex-shrink-0">{a.icon}</span>
+                              <div>
+                                <p className="text-[10px] font-bold text-amber-800">{a.dim}</p>
+                                <p className="text-[10px] text-amber-700 leading-relaxed">{a.texto}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {acciones.length === 0 && (
+                      <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
+                        <span className="text-base">🌟</span>
+                        <p className="text-xs text-emerald-700 font-medium">¡Todo en orden! Seguí activo en la plataforma.</p>
+                      </div>
+                    )}
+
+                    <p className="text-[10px] text-ink-300 mt-3 text-center">
+                      El equipo de OportunAI actualiza este diagnóstico en base a tu conversación
+                    </p>
+                  </div>
+                );
+              })()}
+
               {/* Perfil digital */}
               <div className="card p-6">
                 <div className="flex items-center gap-2 mb-4">

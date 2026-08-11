@@ -2,10 +2,15 @@
  * whatsapp_webhook — Oportunai Edge Function
  *
  * Recibe mensajes de WhatsApp (reenviados por Korai), genera respuesta
- * con Claude usando perfil del usuario + oportunidades activas.
+ * con Claude usando perfil del usuario + oportunidades activas + semáforo.
+ * Actualiza gradualmente el semáforo según lo aprendido en conversación.
  */
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { corsHeaders } from "../_shared/cors.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-forward-key",
+};
 
 const VERIFY_TOKEN         = Deno.env.get("WA_VERIFY_TOKEN") ?? "oportunai-webhook-2024";
 const WHATSAPP_TOKEN       = Deno.env.get("WHATSAPP_TOKEN") ?? "";
@@ -14,61 +19,54 @@ const ANTHROPIC_API_KEY    = (Deno.env.get("ANTHROPIC_API_KEY") ?? "").replace(/
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const KORAI_FORWARD_KEY    = Deno.env.get("KORAI_FORWARD_KEY") ?? "";
+const OPORTUNAI_APP_URL    = Deno.env.get("OPORTUNAI_APP_URL") ?? "https://oportunai.korai.lat";
+const BOT_INTERNAL_KEY     = Deno.env.get("BOT_INTERNAL_KEY") ?? "";
 
 const ANTHROPIC_MODEL = "claude-haiku-4-5-20251001";
 
-const SYSTEM_PROMPT = `Sos el asistente de acompañamiento de OportunAI.
-Representás al equipo de OportunAI. Siempre hablás en plural ("Te ayudamos", "Queremos saber", "Estamos para acompañarte").
-Nunca decís que sos una inteligencia artificial. La persona debe sentir que conversa con un equipo humano.
+// ─── Sistema de Semáforo ─────────────────────────────────────────────────────
 
-MISIÓN
-Ayudar a la persona a encontrar trabajo, prepararse para entrevistas, mejorar su perfil y conectar con oportunidades reales.
+type SemaforoColor = "verde" | "amarillo" | "rojo";
+type Dimension = "empleo" | "educacion" | "ingresos" | "salud" | "vivienda" | "red";
 
-PLATAFORMA OPORTUNAI
-En la plataforma el usuario puede:
-- Ver y completar su perfil laboral / Video CV: https://oportunai.korai.lat/dashboard/flyer
-- Postularse a ofertas de empleo y módulos de trabajo: https://oportunai.korai.lat/dashboard
-  (desde el dashboard: tab "Módulos" para módulos de trabajo, tab "Ofertas" para empleos)
-- Completar capacitaciones disponibles
-- Subir documentos requeridos
+interface Semaforo {
+  empleo?: SemaforoColor;
+  educacion?: SemaforoColor;
+  ingresos?: SemaforoColor;
+  salud?: SemaforoColor;
+  vivienda?: SemaforoColor;
+  red?: SemaforoColor;
+  motivo?: string;
+  derivado_at?: string;
+  ultima_actualizacion?: string;
+}
 
-SECTORES PRINCIPALES
-Estaciones de servicio (playeros, cajeros), atención al cliente (call center, recepción, vendedores) y gastronomía (cocina, caja, atención al público).
+const DIMENSIONES_INFO: Record<Dimension, { label: string; pregunta: string }> = {
+  empleo:    { label: "Empleo",    pregunta: "¿Estás trabajando actualmente o estás buscando trabajo?" },
+  educacion: { label: "Educación", pregunta: "¿Hasta qué nivel llegaste con tus estudios?" },
+  ingresos:  { label: "Ingresos",  pregunta: "¿Tenés algún ingreso fijo actualmente?" },
+  salud:     { label: "Salud",     pregunta: "¿Cómo estás de salud en general?" },
+  vivienda:  { label: "Vivienda",  pregunta: "¿Tu situación de vivienda es estable?" },
+  red:       { label: "Red social",pregunta: "¿Tenés personas en tu entorno que te puedan ayudar con contactos laborales?" },
+};
 
-CONTEXTO QUE RECIBÍS ANTES DE CADA RESPUESTA
-- Nombre y perfil del usuario (bio, experiencia, habilidades, estudios)
-- Historial de conversación
-- Lista de MÓDULOS DE TRABAJO ACTIVOS (servicios publicados por empresas)
-- Lista de OFERTAS DE EMPLEO ACTIVAS
+/** Encuentra la primera dimensión sin datos en el semáforo */
+function dimensionFaltante(semaforo: Semaforo | null): Dimension | null {
+  if (!semaforo) return "empleo";
+  const orden: Dimension[] = ["empleo", "educacion", "ingresos", "salud", "vivienda", "red"];
+  return orden.find(d => !semaforo[d]) ?? null;
+}
 
-CÓMO USAR LAS OPORTUNIDADES DISPONIBLES
-- Si hay módulos o ofertas que se adaptan al perfil del usuario, mencionalos por nombre.
-- Siempre mandá el link al dashboard para que se postule: https://oportunai.korai.lat/dashboard
-- No inventés oportunidades que no están en la lista que recibís.
-- Si no hay oportunidades, igual acompañá con consejos de búsqueda y preparación.
-
-CÓMO CONVERSAR
-- Español rioplatense simple, sin tecnicismos.
-- Una sola pregunta por vez. No hacer múltiples preguntas juntas.
-- Escuchar antes de recomendar.
-- Emojis con moderación: máximo 2 por mensaje.
-- Sin frases vacías como "Gracias por contarnos" si no tienen sentido.
-- Nunca ignorés el contexto. Nunca volvás a preguntar algo que ya sabemos.
-
-QUÉ PODÉS HACER POR EL USUARIO
-- Orientarlo sobre cómo completar mejor su perfil y Video CV
-- Explicar cómo postularse a módulos y ofertas
-- Ayudarlo a prepararse para entrevistas
-- Recordarle capacitaciones disponibles
-- Hacer seguimiento si ya aplicó a algo
-- Detectar si necesita apoyo adicional
-
-CASOS SENSIBLES
-Si detectás violencia, desempleo crítico, salud mental o emergencia social: respondé con contención, recomendá recursos (Línea 144, 147, ANSES) y marcá con [ALERTA_HUMANA] al inicio.
-
-REGLA PRINCIPAL
-Devolvé únicamente el texto del mensaje de WhatsApp, sin explicaciones ni comillas.
-Máximo 2 emojis en todo el mensaje.`;
+/** Texto legible del semáforo para el contexto del bot */
+function semaforoTexto(semaforo: Semaforo | null): string {
+  if (!semaforo) return "Sin datos de diagnóstico todavía.";
+  const DIMS: Dimension[] = ["empleo", "educacion", "ingresos", "salud", "vivienda", "red"];
+  const partes = DIMS.filter(d => semaforo[d]).map(d => {
+    const emoji = semaforo[d] === "verde" ? "🟢" : semaforo[d] === "amarillo" ? "🟡" : "🔴";
+    return `${emoji} ${DIMENSIONES_INFO[d].label}: ${semaforo[d]}`;
+  });
+  return partes.length > 0 ? partes.join(" | ") : "Sin datos de diagnóstico todavía.";
+}
 
 // ─── Helpers Supabase ─────────────────────────────────────────────────────────
 
@@ -78,6 +76,20 @@ async function sbGet(path: string) {
       "apikey": SUPABASE_SERVICE_KEY,
       "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}`,
     },
+  });
+  return res.json();
+}
+
+async function sbPatch(path: string, data: unknown) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    method: "PATCH",
+    headers: {
+      "apikey": SUPABASE_SERVICE_KEY,
+      "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}`,
+      "Content-Type": "application/json",
+      "Prefer": "return=representation",
+    },
+    body: JSON.stringify(data),
   });
   return res.json();
 }
@@ -123,7 +135,7 @@ async function cargarHistorial(usuario_id: string) {
 /** Carga módulos de trabajo activos */
 async function cargarModulos() {
   try {
-    const rows = await sbGet(`Servicio?estado=eq.activo&select=titulo,descripcion,duracion_jornada,frecuencia&order=created_at.desc&limit=10`);
+    const rows = await sbGet(`Servicio?estado=eq.activo&select=titulo,descripcion,duracion_jornada,frecuencia,precio_hora,horas_modulo&order=created_at.desc&limit=10`);
     return Array.isArray(rows) ? rows : [];
   } catch { return []; }
 }
@@ -141,13 +153,144 @@ async function guardarMensaje(usuario_id: string, tipo: "usuario" | "bot", texto
   await sbPost("BotMensaje", { usuario_id, tipo, texto });
 }
 
-/** Genera respuesta con Claude */
+/** Actualiza el semáforo del usuario por REST (fallback si no hay app URL) */
+async function actualizarSemaforoREST(
+  usuario_id: string,
+  semaforo_actual: Semaforo | null,
+  dimension: Dimension,
+  valor: SemaforoColor,
+) {
+  const nuevo = {
+    ...(semaforo_actual ?? {}),
+    [dimension]: valor,
+    ultima_actualizacion: new Date().toISOString(),
+    fuente_ultima: "bot_conversacion",
+  };
+  await sbPatch(
+    `Usuario?id=eq.${usuario_id}`,
+    { korai_semaforo: nuevo },
+  );
+  return nuevo;
+}
+
+// ─── Generación de respuesta con Claude ──────────────────────────────────────
+
+const SYSTEM_PROMPT = `Sos el asistente de acompañamiento de OportunAI.
+Representás al equipo de OportunAI. Siempre hablás en plural ("Te ayudamos", "Queremos saber", "Estamos para acompañarte").
+Nunca decís que sos una inteligencia artificial. La persona debe sentir que conversa con un equipo humano.
+
+MISIÓN
+Ayudar a la persona a encontrar trabajo, prepararse para entrevistas, mejorar su perfil y conectar con oportunidades reales.
+También vas completando su diagnóstico de 6 dimensiones de manera natural en la conversación.
+
+PLATAFORMA OPORTUNAI
+En la plataforma el usuario puede:
+- Ver y completar su perfil laboral / Video CV: https://oportunai.korai.lat/dashboard/flyer
+- Ver su diagnóstico y plan de acción: https://oportunai.korai.lat/dashboard
+- Postularse a ofertas de empleo y módulos de trabajo: https://oportunai.korai.lat/dashboard
+  (desde el dashboard: tab "Módulos" para módulos de trabajo, tab "Ofertas" para empleos)
+- Completar capacitaciones disponibles
+- Subir documentos requeridos
+
+SECTORES PRINCIPALES
+Estaciones de servicio (playeros, cajeros), atención al cliente (call center, recepción, vendedores) y gastronomía (cocina, caja, atención al público).
+
+CONTEXTO QUE RECIBÍS ANTES DE CADA RESPUESTA
+- Nombre y perfil del usuario (bio, experiencia, habilidades, estudios)
+- Diagnóstico actual (semáforo de 6 dimensiones) — dimensiones que faltan indicadas
+- Historial de conversación
+- Lista de MÓDULOS DE TRABAJO ACTIVOS (servicios publicados por empresas)
+- Lista de OFERTAS DE EMPLEO ACTIVAS
+
+DIAGNÓSTICO DE 6 DIMENSIONES (semáforo)
+Las 6 dimensiones son: empleo, educación, ingresos, salud, vivienda, red.
+- Si hay una DIMENSIÓN_FALTANTE en el contexto, hacé UNA PREGUNTA NATURAL para descubrirla.
+- Integrala en la conversación, no la hagas sonar como encuesta.
+- NO preguntes más de una dimensión por mensaje.
+- Si la persona ya respondió algo relacionado, no preguntes de nuevo.
+
+ACTUALIZACIÓN DEL SEMÁFORO
+Al final de tu respuesta, si aprendiste algo nuevo sobre una dimensión, agregá esta línea OCULTA:
+[SEMAFORO: dimension=valor]
+Donde dimension es una de: empleo, educacion, ingresos, salud, vivienda, red
+Y valor es: verde, amarillo, o rojo
+
+Criterios para evaluar:
+- verde: situación buena/estable
+- amarillo: situación regular/mejorable
+- rojo: situación crítica/urgente
+
+Ejemplos:
+- "estoy trabajando full time y me va bien" → [SEMAFORO: empleo=verde]
+- "no tengo trabajo" / "busco hace meses" → [SEMAFORO: empleo=rojo]
+- "tengo algunos changas" / "trabajo pero poco" → [SEMAFORO: empleo=amarillo]
+- "terminé el secundario" → [SEMAFORO: educacion=amarillo]
+- "soy universitario" / "tengo carrera" → [SEMAFORO: educacion=verde]
+- "no terminé la primaria" → [SEMAFORO: educacion=rojo]
+- "tengo casa propia" / "vivo bien" → [SEMAFORO: vivienda=verde]
+- "alquilo y se me hace difícil" → [SEMAFORO: vivienda=amarillo]
+- "no tengo donde vivir" / "estoy en situación de calle" → [SEMAFORO: vivienda=rojo]
+
+CÓMO USAR LAS OPORTUNIDADES DISPONIBLES
+- Si hay módulos o ofertas que se adaptan al perfil del usuario, mencionálos por nombre.
+- Siempre mandá el link al dashboard para que se postule: https://oportunai.korai.lat/dashboard
+- No inventés oportunidades que no están en la lista que recibís.
+- Si no hay oportunidades, igual acompañá con consejos de búsqueda y preparación.
+
+CÓMO CONVERSAR
+- Español rioplatense simple, sin tecnicismos.
+- Una sola pregunta por vez. No hacer múltiples preguntas juntas.
+- Escuchar antes de recomendar.
+- Emojis con moderación: máximo 2 por mensaje.
+- Sin frases vacías como "Gracias por contarnos" si no tienen sentido.
+- Nunca ignorés el contexto. Nunca volvás a preguntar algo que ya sabemos.
+
+QUÉ PODÉS HACER POR EL USUARIO
+- Orientarlo sobre cómo completar mejor su perfil y Video CV
+- Explicar cómo postularse a módulos y ofertas
+- Ayudarlo a prepararse para entrevistas
+- Recordarle capacitaciones disponibles
+- Hacer seguimiento si ya aplicó a algo
+- Detectar si necesita apoyo adicional
+
+PRIMERA RESPUESTA
+Si es el primer mensaje del usuario, presentate brevemente y mandá el link al perfil laboral:
+https://oportunai.korai.lat/dashboard/flyer
+
+CASOS SENSIBLES
+Si detectás violencia, desempleo crítico, salud mental o emergencia social: respondé con contención, recomendá recursos (Línea 144, 147, ANSES) y marcá con [ALERTA_HUMANA] al inicio.
+
+REGLA PRINCIPAL
+El texto que va al usuario es solo el mensaje de WhatsApp.
+La línea [SEMAFORO: ...] y [ALERTA_HUMANA] son marcadores internos — van al final separados del texto.`;
+
+/** Parsea el marcador [SEMAFORO: dimension=valor] de la respuesta de Claude */
+function parsearSemaforo(texto: string): { dimension: Dimension; valor: SemaforoColor } | null {
+  const match = texto.match(/\[SEMAFORO:\s*(\w+)=(\w+)\]/i);
+  if (!match) return null;
+  const dimension = match[1].toLowerCase() as Dimension;
+  const valor = match[2].toLowerCase() as SemaforoColor;
+  const DIMS_VALIDAS: Dimension[] = ["empleo", "educacion", "ingresos", "salud", "vivienda", "red"];
+  const COLORES_VALIDOS: SemaforoColor[] = ["verde", "amarillo", "rojo"];
+  if (!DIMS_VALIDAS.includes(dimension) || !COLORES_VALIDOS.includes(valor)) return null;
+  return { dimension, valor };
+}
+
+/** Elimina los marcadores internos del texto antes de enviarlo al usuario */
+function limpiarTexto(texto: string): string {
+  return texto
+    .replace(/\[SEMAFORO:[^\]]*\]/gi, "")
+    .replace(/\[ALERTA_HUMANA\]/gi, "")
+    .trim();
+}
+
 async function generarRespuesta(
   usuario: Record<string, unknown>,
   historial: Array<{ tipo: string; texto: string }>,
   mensajeUsuario: string,
   modulos: Array<Record<string, unknown>>,
   ofertas: Array<Record<string, unknown>>,
+  semaforo: Semaforo | null,
 ): Promise<string> {
   const nombre = usuario.nombre_completo as string ?? "candidato";
   const cvDatos = usuario.cv_datos as Record<string, unknown> ?? {};
@@ -170,10 +313,17 @@ async function generarRespuesta(
       : "",
   ].filter(Boolean).join("\n");
 
+  // Semáforo
+  const semaforoInfo = semaforoTexto(semaforo);
+  const dimFaltante = dimensionFaltante(semaforo);
+  const preguntaDimension = dimFaltante
+    ? `DIMENSIÓN_FALTANTE: ${dimFaltante} — preguntá naturalmente: "${DIMENSIONES_INFO[dimFaltante].pregunta}"`
+    : "DIAGNÓSTICO COMPLETO — no hace falta preguntar más dimensiones";
+
   // Oportunidades activas
   const modulosTexto = modulos.length > 0
     ? `MÓDULOS DE TRABAJO ACTIVOS:\n` + modulos.map(m =>
-        `- ${m.titulo}${m.duracion_jornada ? ` (${m.duracion_jornada})` : ""}${m.descripcion ? `: ${String(m.descripcion).slice(0, 100)}` : ""}`
+        `- ${m.titulo}${m.duracion_jornada ? ` (${m.duracion_jornada})` : ""}${m.precio_hora ? ` · $${m.precio_hora}/hs` : ""}${m.descripcion ? `: ${String(m.descripcion).slice(0, 100)}` : ""}`
       ).join("\n")
     : "No hay módulos de trabajo activos en este momento.";
 
@@ -199,6 +349,10 @@ async function generarRespuesta(
 [PERFIL DEL USUARIO]
 ${perfilTexto || "Sin perfil completo todavía."}
 
+[DIAGNÓSTICO ACTUAL]
+${semaforoInfo}
+${preguntaDimension}
+
 [OPORTUNIDADES DISPONIBLES EN OPORTUNAI]
 ${modulosTexto}
 
@@ -208,9 +362,10 @@ ${ofertasTexto}
 ${mensajeUsuario}
 `.trim();
 
-  if (messages.length === 1) {
-    messages[0].content = userContext;
-  }
+  // Siempre inyectamos el contexto completo en el mensaje del usuario más reciente
+  messages[messages.length - 1].content = messages.length === 1
+    ? userContext
+    : `${mensajeUsuario}\n\n[CONTEXTO]\n${semaforoInfo}\n${modulosTexto}\n${ofertasTexto}`;
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -221,7 +376,7 @@ ${mensajeUsuario}
     },
     body: JSON.stringify({
       model: ANTHROPIC_MODEL,
-      max_tokens: 400,
+      max_tokens: 450,
       system: SYSTEM_PROMPT,
       messages,
     }),
@@ -324,9 +479,26 @@ serve(async (req) => {
         cargarOfertas(),
       ]);
 
-      console.log(`Historial: ${historial.length} msgs | Módulos: ${modulos.length} | Ofertas: ${ofertas.length}`);
+      const semaforo = (usuario.korai_semaforo ?? null) as Semaforo | null;
 
-      const respuesta = await generarRespuesta(usuario, historial, texto, modulos, ofertas);
+      console.log(`Historial: ${historial.length} msgs | Módulos: ${modulos.length} | Ofertas: ${ofertas.length} | Semáforo: ${semaforoTexto(semaforo)}`);
+
+      const respuestaRaw = await generarRespuesta(usuario, historial, texto, modulos, ofertas, semaforo);
+
+      // Extraer y procesar el marcador de semáforo si lo hay
+      const updateSemaforo = parsearSemaforo(respuestaRaw);
+      if (updateSemaforo) {
+        console.log(`Actualizando semáforo: ${updateSemaforo.dimension}=${updateSemaforo.valor}`);
+        await actualizarSemaforoREST(
+          usuario.id,
+          semaforo,
+          updateSemaforo.dimension,
+          updateSemaforo.valor,
+        ).catch(err => console.error("Error actualizando semáforo:", err));
+      }
+
+      // Limpiar marcadores internos antes de enviar
+      const respuesta = limpiarTexto(respuestaRaw);
 
       await enviarWhatsApp(from, respuesta);
       await guardarMensaje(usuario.id, "bot", respuesta);

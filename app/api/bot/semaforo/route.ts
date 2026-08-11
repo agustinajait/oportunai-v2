@@ -59,7 +59,7 @@ export async function PATCH(req: NextRequest) {
 
     await prisma.usuario.update({
       where: { id: usuario_id },
-      data: { korai_semaforo: nuevoSemaforo },
+      data: { korai_semaforo: nuevoSemaforo as object },
     });
 
     return NextResponse.json({ ok: true, semaforo: nuevoSemaforo });

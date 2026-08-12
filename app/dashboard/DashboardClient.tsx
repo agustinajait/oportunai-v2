@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase';
@@ -10,7 +10,8 @@ import {
   ExternalLink, Copy, CheckCheck, Clock, Circle,
   BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck,
   CalendarDays, MapPin, Loader2, Plus, GraduationCap, Briefcase as BriefcaseIcon, Wrench,
-  Star, Building2, Link2, Trash2, PlayCircle, Download, Layers, AlertTriangle, CheckCircle2, XCircle, ChevronRight
+  Star, Building2, Link2, Trash2, PlayCircle, Download, Layers, AlertTriangle, CheckCircle2, XCircle, ChevronRight,
+  User,
 } from 'lucide-react';
 import OfertasTab from '@/components/ui/OfertasTab';
 import CapacitacionPlayer from '@/components/ui/CapacitacionPlayer';
@@ -614,7 +615,7 @@ export default function DashboardClient({
     <div className="min-h-screen bg-ink-50">
       <Navbar session={{ nombre: usuario.nombre_completo, role: usuario.role, slug: usuario.slug }} />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-24 sm:pb-10">
 
         {/* ── Banner bienvenida Korai ── */}
         {koraiWelcome && (
@@ -645,8 +646,8 @@ export default function DashboardClient({
             <p className="text-ink-400 mt-1 text-sm">Administrá tu perfil y tus contenidos</p>
           </div>
 
-          {/* Tabs — scroll horizontal en móvil */}
-          <div className="overflow-x-auto -mx-4 sm:mx-0 scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
+          {/* Tabs — solo desktop; en mobile se usa la bottom nav */}
+          <div className="hidden sm:block overflow-x-auto -mx-4 sm:mx-0 scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
             <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 mx-4 sm:mx-0 w-max sm:w-auto min-w-0">
               {[
                 { id: 'perfil',     Icon: Video,        label: 'Mi perfil',   badge: null },
@@ -678,7 +679,7 @@ export default function DashboardClient({
 
         {/* Tab Citas */}
         {tab === 'citas' && (
-          <div className="max-w-2xl space-y-4">
+          <div className="max-w-2xl space-y-4 animate-fade-in">
             {citasState.length === 0 && (
               <div className="card p-8 text-center text-ink-400">
                 <CalendarDays size={32} className="mx-auto mb-2 opacity-40" />
@@ -739,12 +740,14 @@ export default function DashboardClient({
 
         {/* Tab Ofertas */}
         {tab === 'ofertas' && (
-          <OfertasTab videos={usuario.videos} initialOfertaId={initialOfertaId} />
+          <div className="animate-fade-in">
+            <OfertasTab videos={usuario.videos} initialOfertaId={initialOfertaId} />
+          </div>
         )}
 
         {/* Tab Servicios */}
         {tab === 'servicios' && (
-          <div className="space-y-8">
+          <div className="space-y-8 animate-fade-in">
             {loadingServicios && (
               <div className="flex items-center justify-center py-12 text-ink-400">
                 <Loader2 size={24} className="animate-spin mr-2" /> Cargando...
@@ -1089,7 +1092,7 @@ export default function DashboardClient({
 
         {/* Tab Documentos */}
         {tab === 'documentos' && (
-          <div className="max-w-2xl space-y-4">
+          <div className="max-w-2xl space-y-4 animate-fade-in">
             <p className="text-ink-500 text-sm mb-6">
               Subí tus documentos para que las empresas puedan verificar tu perfil al revisar tu postulación.
             </p>
@@ -1155,7 +1158,7 @@ export default function DashboardClient({
 
         {/* Tab Perfil */}
         {tab === 'perfil' && (
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid lg:grid-cols-3 gap-6 animate-fade-in">
             {/* ── Columna izquierda ──────────────────────────────── */}
             <div className="space-y-5">
               {/* Flyer card */}
@@ -2186,6 +2189,42 @@ export default function DashboardClient({
           }}
         />
       )}
+
+      {/* ── Bottom navigation — mobile only ───────────────────────────────────── */}
+      <nav
+        className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        <div className="flex items-stretch">
+          {([
+            { id: 'perfil',     Icon: User,         label: 'Perfil',   badge: null },
+            { id: 'ofertas',    Icon: Briefcase,     label: 'Ofertas',  badge: null },
+            { id: 'servicios',  Icon: Layers,        label: 'Módulos',  badge: misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length || null },
+            { id: 'citas',      Icon: CalendarDays,  label: 'Citas',    badge: citasPendientes > 0 ? citasPendientes : null },
+            { id: 'documentos', Icon: FileText,      label: 'Docs',     badge: null },
+          ] as { id: typeof tab; Icon: React.ElementType; label: string; badge: number | null }[]).map(({ id, Icon, label, badge }) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors ${
+                tab === id ? 'text-brand-600' : 'text-ink-400 active:text-ink-600'
+              }`}
+            >
+              <div className="relative">
+                <Icon size={22} strokeWidth={tab === id ? 2.25 : 1.75} />
+                {badge !== null && badge > 0 && (
+                  <span className="absolute -top-1 -right-2 min-w-[16px] h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-0.5">
+                    {badge}
+                  </span>
+                )}
+              </div>
+              <span className={`text-[10px] leading-tight ${tab === id ? 'font-semibold' : 'font-medium'}`}>
+                {label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </nav>
 
       {/* ── Promo WhatsApp: aparece cuando el perfil está completo y no hay opt-in ── */}
       {waPromoVisible && !waActivo && (

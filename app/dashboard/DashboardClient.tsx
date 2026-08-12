@@ -177,6 +177,18 @@ export default function DashboardClient({
   // Promo modal: invitar al opt-in cuando el perfil está completo
   const [waPromoVisible, setWaPromoVisible] = useState(false);
 
+  // Banner de bienvenida para usuarios que vienen desde Korai (magic link)
+  const [koraiWelcome, setKoraiWelcome] = useState(false);
+  useEffect(() => {
+    if (searchParams.get('bienvenida') === 'korai') {
+      setKoraiWelcome(true);
+      // Limpiar el query param sin recargar
+      const url = new URL(window.location.href);
+      url.searchParams.delete('bienvenida');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [searchParams]);
+
   const cvDatosActual = usuario.cv_datos;
   const perfilCompleto = !!(
     usuario.videos.some(v => v.tipo === 'video_cv' && !v.taller && !v.oferta_id) ||
@@ -603,6 +615,28 @@ export default function DashboardClient({
       <Navbar session={{ nombre: usuario.nombre_completo, role: usuario.role, slug: usuario.slug }} />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+
+        {/* ── Banner bienvenida Korai ── */}
+        {koraiWelcome && (
+          <div className="mb-4 flex items-start gap-3 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800">
+            <span className="text-lg shrink-0">🎉</span>
+            <div className="flex-1">
+              <p className="font-semibold">¡Bienvenido/a a OportunAI!</p>
+              <p className="text-emerald-700 mt-0.5">
+                Llegaste desde Korai. Tu diagnóstico ya está cargado en tu perfil.
+                Completá tu CV y empezá a conectar con oportunidades laborales.
+              </p>
+            </div>
+            <button
+              onClick={() => setKoraiWelcome(false)}
+              className="shrink-0 text-emerald-400 hover:text-emerald-600 transition-colors"
+              aria-label="Cerrar"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         <div className="mb-6 sm:mb-8">
           <div className="mb-4">
             <h1 className="font-display text-2xl sm:text-3xl font-light text-ink-900">

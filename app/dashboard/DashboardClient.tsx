@@ -168,10 +168,38 @@ export default function DashboardClient({
     }
   }
   const initialOfertaId = searchParams.get('oferta_id') ?? undefined;
+
   // WhatsApp opt-in
   const [waActivo, setWaActivo] = useState(usuario.whatsapp_activo ?? false);
   const [waLoading, setWaLoading] = useState(false);
   const [waModalOpen, setWaModalOpen] = useState(false);
+
+  // Promo modal: invitar al opt-in cuando el perfil está completo
+  const [waPromoVisible, setWaPromoVisible] = useState(false);
+
+  const cvDatosActual = usuario.cv_datos;
+  const perfilCompleto = !!(
+    usuario.videos.some(v => v.tipo === 'video_cv' && !v.taller && !v.oferta_id) ||
+    cvDatosActual?.resumen ||
+    (cvDatosActual?.experiencia?.length ?? 0) > 0 ||
+    (cvDatosActual?.habilidades?.length ?? 0) > 0
+  );
+
+  useEffect(() => {
+    if (!waActivo && perfilCompleto) {
+      // Mostrar promo después de 2 s, solo si el usuario no la descartó antes
+      const descartado = localStorage.getItem('wa_promo_dismissed_v1');
+      if (!descartado) {
+        const t = setTimeout(() => setWaPromoVisible(true), 2000);
+        return () => clearTimeout(t);
+      }
+    }
+  }, [waActivo, perfilCompleto]);
+
+  function descartarPromo() {
+    setWaPromoVisible(false);
+    localStorage.setItem('wa_promo_dismissed_v1', '1');
+  }
 
   // Link de WhatsApp a OportunAI
   const WA_OPORTUNAI = process.env.NEXT_PUBLIC_WA_SOPORTE ?? '5491161210313';
@@ -2123,6 +2151,64 @@ export default function DashboardClient({
             setPlayerCap(null);
           }}
         />
+      )}
+
+      {/* ── Promo WhatsApp: aparece cuando el perfil está completo y no hay opt-in ── */}
+      {waPromoVisible && !waActivo && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm p-6 space-y-5 animate-slide-up sm:animate-none">
+            {/* Handle bar mobile */}
+            <div className="w-10 h-1 bg-ink-200 rounded-full mx-auto sm:hidden" />
+
+            {/* Header */}
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[#25D366]/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <span className="text-4xl">💬</span>
+              </div>
+              <h3 className="text-xl font-bold text-ink-800">¡Tu perfil está listo!</h3>
+              <p className="text-sm text-ink-500 mt-2 leading-relaxed">
+                ¿Querés que te acompañemos por WhatsApp en tu búsqueda de trabajo?
+              </p>
+            </div>
+
+            {/* Beneficios */}
+            <div className="space-y-2.5 bg-ink-50 rounded-2xl p-4">
+              {[
+                { icon: '🔗', text: 'Te mandamos el link de tu perfil laboral' },
+                { icon: '🚦', text: 'Te guiamos al diagnóstico para recomendarte oportunidades según tu situación' },
+                { icon: '💼', text: 'Te avisamos cuando hay módulos u ofertas que encajan con vos' },
+              ].map(({ icon, text }) => (
+                <div key={text} className="flex items-start gap-3">
+                  <span className="text-lg flex-shrink-0">{icon}</span>
+                  <p className="text-sm text-ink-600 leading-snug">{text}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-xs text-ink-400 text-center leading-relaxed">
+              Gratis · Podés desactivarlo cuando quieras
+            </p>
+
+            <div className="flex flex-col-reverse sm:flex-row gap-2.5">
+              <button
+                onClick={descartarPromo}
+                className="flex-1 px-4 py-3 rounded-xl border border-ink-200 text-sm font-medium text-ink-500 hover:bg-ink-50 transition-colors"
+              >
+                Ahora no
+              </button>
+              <button
+                onClick={async () => {
+                  descartarPromo();
+                  setWaModalOpen(true);
+                }}
+                disabled={waLoading}
+                className="flex-1 px-4 py-3.5 rounded-xl bg-[#25D366] hover:bg-[#20b958] active:bg-[#1da851] text-white text-sm font-bold transition-colors shadow-md active:scale-[0.98] flex items-center justify-center gap-2"
+              >
+                <span className="text-base">💬</span> Sí, activar →
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

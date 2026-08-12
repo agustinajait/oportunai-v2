@@ -1,72 +1,67 @@
 /**
  * whatsapp_webhook — Oportunai Edge Function
  *
- * Recibe mensajes entrantes de WhatsApp (Meta Business API),
- * busca al usuario en la DB de Oportunai, genera una respuesta
- * con Claude y la envía de vuelta.
- *
- * Flujo:
- *   1. Meta llama al webhook con el mensaje del candidato
- *   2. Buscamos al usuario por teléfono en la tabla Usuario
- *   3. Cargamos el historial de BotMensaje del usuario
- *   4. Llamamos a Claude con contexto laboral de Oportunai
- *   5. Enviamos la respuesta vía WhatsApp
- *   6. Guardamos ambos mensajes en BotMensaje
+ * Recibe mensajes de WhatsApp (reenviados por Korai), genera respuesta
+ * con Claude. El semáforo de 6 dimensiones lo completa Korai (app.korai.lat);
+ * este bot lo usa para personalizar el acompañamiento en empleabilidad.
  */
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { corsHeaders } from "../_shared/cors.ts";
 
-const VERIFY_TOKEN        = Deno.env.get("WA_VERIFY_TOKEN") ?? "oportunai-webhook-2024";
-const WHATSAPP_TOKEN      = Deno.env.get("WHATSAPP_TOKEN") ?? "";       // token de Korai (número compartido)
-const PHONE_NUMBER_ID     = Deno.env.get("WA_PHONE_NUMBER_ID") ?? "";   // phone number ID de Korai
-const ANTHROPIC_API_KEY   = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
-const SUPABASE_URL        = Deno.env.get("SUPABASE_URL") ?? "";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-forward-key",
+};
+
+const VERIFY_TOKEN         = Deno.env.get("WA_VERIFY_TOKEN") ?? "oportunai-webhook-2024";
+const WHATSAPP_TOKEN       = Deno.env.get("WHATSAPP_TOKEN") ?? "";
+const PHONE_NUMBER_ID      = Deno.env.get("WA_PHONE_NUMBER_ID") ?? "";
+const ANTHROPIC_API_KEY    = (Deno.env.get("ANTHROPIC_API_KEY") ?? "").replace(/[^\x21-\x7E]/g, "").trim();
+const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-// Key compartida: Korai la incluye en el header cuando reenvía mensajes
-const KORAI_FORWARD_KEY   = Deno.env.get("KORAI_FORWARD_KEY") ?? "";
+const KORAI_FORWARD_KEY    = Deno.env.get("KORAI_FORWARD_KEY") ?? "";
 
-const ANTHROPIC_MODEL = "claude-haiku-4-5-20251001"; // modelo rápido y barato
+const ANTHROPIC_MODEL = "claude-haiku-4-5-20251001";
 
-// ─── Prompt del asistente Oportunai ──────────────────────────────────────────
+// ─── Semáforo ────────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `Sos el asistente de acompañamiento de OportunAI.
-Representás al equipo de OportunAI. Siempre hablás en plural ("Te ayudamos", "Queremos saber", "Estamos para acompañarte").
-Nunca decís que sos una inteligencia artificial. La persona debe sentir que conversa con un equipo humano.
+type SemaforoColor = "verde" | "amarillo" | "rojo";
+interface Semaforo {
+  empleo?:    SemaforoColor;
+  educacion?: SemaforoColor;
+  ingresos?:  SemaforoColor;
+  salud?:     SemaforoColor;
+  vivienda?:  SemaforoColor;
+  red?:       SemaforoColor;
+  motivo?:    string;
+}
 
-MISIÓN
-Ayudar a la persona a encontrar trabajo, prepararse para entrevistas, mejorar su perfil y conectar con oportunidades reales en estaciones de servicio, atención al cliente y gastronomía.
+const DIMS_SEMAFORO = ["empleo", "educacion", "ingresos", "salud", "vivienda", "red"] as const;
 
-CONTEXTO QUE RECIBÍS
-Antes de responder siempre recibís: nombre del usuario, perfil en Oportunai (bio, experiencia, habilidades), historial de conversación, servicios disponibles actualmente.
-Nunca ignorés ese contexto. Nunca volvás a preguntar algo que ya sabemos.
+/** ¿El usuario tiene el diagnóstico de Korai completo? */
+function tieneDiagnostico(semaforo: Semaforo | null): boolean {
+  if (!semaforo) return false;
+  return DIMS_SEMAFORO.some(d => semaforo[d]);
+}
 
-CÓMO CONVERSAR
-- Español rioplatense simple, sin tecnicismos.
-- Una sola pregunta por vez. No hacer múltiples preguntas juntas.
-- Escuchar antes de recomendar.
-- Emojis con moderación: máximo 2 por mensaje.
-- Sin frases vacías como "Gracias por contarnos" si no tienen sentido.
+/** Texto legible del semáforo para el contexto del bot */
+function semaforoResumen(semaforo: Semaforo): string {
+  const LABEL: Record<string, string> = {
+    empleo: "Empleo", educacion: "Educación", ingresos: "Ingresos",
+    salud: "Salud", vivienda: "Vivienda", red: "Red social",
+  };
+  return DIMS_SEMAFORO
+    .filter(d => semaforo[d])
+    .map(d => {
+      const emoji = semaforo[d] === "verde" ? "🟢" : semaforo[d] === "amarillo" ? "🟡" : "🔴";
+      return `${emoji} ${LABEL[d]}: ${semaforo[d]}`;
+    })
+    .join(" | ");
+}
 
-QUÉ PODÉS HACER POR EL USUARIO
-- Orientarlo sobre cómo completar mejor su perfil y Video CV en OportunAI
-- Explicar cómo funcionan los servicios publicados (módulos de trabajo)
-- Ayudarlo a prepararse para entrevistas según el sector que le interesa
-- Recordarle capacitaciones disponibles en la plataforma
-- Si el usuario aplica a un servicio, hacer seguimiento del proceso
-- Detectar si necesita apoyo adicional (derivación a otros recursos)
-
-SECTORES PRINCIPALES DE OPORTUNAI
-Estaciones de servicio (playeros, cajeros), atención al cliente (call center, recepción, vendedores) y gastronomía (cocina, caja, atención). Si el usuario busca otro rubro, igual lo acompañamos con consejos generales.
-
-CÓMO RECOMENDAR
-No recomendar de forma automática. Primero entender qué busca la persona, qué experiencia tiene, cuál es su disponibilidad. Después orientar con precisión.
-
-CASOS SENSIBLES
-Si detectás una situación de violencia, desempleo crítico, salud mental o emergencia social: respondé con contención, recomendá recursos (Línea 144, 147, ANSES) y marcá el mensaje con [ALERTA_HUMANA] al inicio.
-
-REGLA PRINCIPAL
-Devolvé únicamente el texto del mensaje de WhatsApp, sin explicaciones ni comillas.
-Máximo 2 emojis en todo el mensaje.`;
+/** Dimensiones prioritarias (rojo o amarillo) para enfocar el acompañamiento */
+function dimensionesPrioritarias(semaforo: Semaforo): string[] {
+  return DIMS_SEMAFORO.filter(d => semaforo[d] === "rojo" || semaforo[d] === "amarillo");
+}
 
 // ─── Helpers Supabase ─────────────────────────────────────────────────────────
 
@@ -94,27 +89,23 @@ async function sbPost(path: string, data: unknown) {
   return res;
 }
 
-/** Busca usuario por teléfono. Normaliza número argentino. */
+/** Busca usuario por teléfono. Prioriza whatsapp_activo=true */
 async function buscarUsuario(telefono: string) {
-  // Intentar múltiples formatos del número
   const digits = telefono.replace(/\D/g, "");
   const variantes = new Set<string>();
   variantes.add(digits);
-  // 549XXXXXXXXXX → 9XXXXXXXXXX (sin código país)
   if (digits.startsWith("549")) variantes.add(digits.slice(3));
-  // 549XXXXXXXXXX → 0XXXXXXXXXX
   if (digits.startsWith("549")) variantes.add("0" + digits.slice(3));
-  // 549XXXXXXXXXX → 15XXXXXXXX (viejo formato)
   if (digits.startsWith("549")) variantes.add("15" + digits.slice(5));
 
   for (const v of variantes) {
-    const rows = await sbGet(`Usuario?telefono=ilike.%25${v}%25&limit=1`);
+    const rows = await sbGet(`Usuario?telefono=ilike.%25${v}%25&order=whatsapp_activo.desc&limit=1`);
     if (Array.isArray(rows) && rows.length > 0) return rows[0];
   }
   return null;
 }
 
-/** Carga últimos 20 mensajes del historial del usuario */
+/** Carga últimos 20 mensajes del historial */
 async function cargarHistorial(usuario_id: string) {
   const rows = await sbGet(
     `BotMensaje?usuario_id=eq.${usuario_id}&order=created_at.asc&limit=20`
@@ -122,22 +113,127 @@ async function cargarHistorial(usuario_id: string) {
   return Array.isArray(rows) ? rows : [];
 }
 
+/** Carga módulos de trabajo activos */
+async function cargarModulos() {
+  try {
+    const rows = await sbGet(
+      `Servicio?estado=eq.activo&select=titulo,descripcion,duracion_jornada,frecuencia,precio_hora,horas_modulo&order=created_at.desc&limit=10`
+    );
+    return Array.isArray(rows) ? rows : [];
+  } catch { return []; }
+}
+
+/** Carga ofertas de empleo activas */
+async function cargarOfertas() {
+  try {
+    const rows = await sbGet(
+      `Oferta?estado=eq.activa&select=titulo,descripcion,area,ciudad,modalidad&order=created_at.desc&limit=10`
+    );
+    return Array.isArray(rows) ? rows : [];
+  } catch { return []; }
+}
+
 /** Guarda un mensaje en BotMensaje */
 async function guardarMensaje(usuario_id: string, tipo: "usuario" | "bot", texto: string) {
   await sbPost("BotMensaje", { usuario_id, tipo, texto });
 }
 
-/** Genera respuesta con Claude */
+// ─── Prompt del sistema ───────────────────────────────────────────────────────
+
+const SYSTEM_PROMPT = `Sos el asistente de acompañamiento de OportunAI.
+
+OportunAI es una plataforma que combina diagnóstico social y acompañamiento para la empleabilidad.
+Tenemos un sistema de diagnóstico semaforizado (inspirado en el Semáforo de la Pobreza) que permite conocer
+la situación de cada persona en 6 dimensiones: empleo, educación, ingresos, salud, vivienda y red social.
+A partir de ese diagnóstico, acompañamos a cada persona en el armado de su perfil, CV y VideoCV,
+y luego en su recorrido hacia distintas oportunidades laborales.
+
+Representás al equipo de OportunAI. Siempre hablás en plural ("Te ayudamos", "Estamos para acompañarte").
+Nunca decís que sos una inteligencia artificial. La persona siente que conversa con un equipo humano.
+
+────────────────────────────────────────────
+PLATAFORMA OPORTUNAI
+────────────────────────────────────────────
+- Perfil laboral y Video CV:  https://oportunai.korai.lat/dashboard/flyer
+- Dashboard (módulos y ofertas): https://oportunai.korai.lat/dashboard
+- Diagnóstico de situación (Korai): https://app.korai.lat
+
+────────────────────────────────────────────
+CONTEXTO QUE RECIBÍS ANTES DE CADA RESPUESTA
+────────────────────────────────────────────
+- Nombre y perfil del usuario
+- Estado del diagnóstico Korai (semáforo de 6 dimensiones) — puede estar completo, parcial o ausente
+- Historial de conversación
+- Módulos de trabajo activos y ofertas de empleo activas
+
+────────────────────────────────────────────
+CUANDO EL DIAGNÓSTICO KORAI ESTÁ AUSENTE O INCOMPLETO
+────────────────────────────────────────────
+El diagnóstico de Korai es el punto de partida de todo el acompañamiento.
+Si el usuario NO tiene diagnóstico todavía:
+→ Explicale brevemente qué es (conocer su situación para acompañarlo mejor)
+→ Invitalo a hacerlo gratis en: https://app.korai.lat — solo toma 3 minutos
+→ Aclará que es rápido y que después volvemos con recomendaciones personalizadas
+→ No hagas muchas preguntas antes de eso; el diagnóstico nos da toda la info que necesitamos
+
+Si ya tiene diagnóstico parcial: usá lo que hay y acompañá según esas dimensiones.
+
+────────────────────────────────────────────
+CUANDO EL DIAGNÓSTICO KORAI ESTÁ COMPLETO
+────────────────────────────────────────────
+Usá el semáforo para personalizar el acompañamiento:
+- 🔴 Rojo en empleo → prioridad máxima, mencioná módulos y ofertas disponibles
+- 🟡 Amarillo en empleo → ya tiene algo pero puede mejorar, orientá hacia módulos y capacitaciones
+- 🟢 Verde en empleo → celebrá y ayudalo a mantener/crecer
+- 🔴/🟡 en educación → recomendá las capacitaciones disponibles en la plataforma
+- 🔴/🟡 en ingresos → módulos de trabajo son una opción de ingresos rápida
+- 🔴/🟡 en red → sugerí agregar referencias laborales al perfil
+
+────────────────────────────────────────────
+OPORTUNIDADES DISPONIBLES
+────────────────────────────────────────────
+- Mencioná módulos y ofertas por nombre si aplican al perfil del usuario
+- Siempre mandá el link al dashboard: https://oportunai.korai.lat/dashboard
+- No inventés oportunidades que no están en la lista que recibís
+- Si no hay oportunidades activas, acompañá con consejos de perfil y preparación
+
+────────────────────────────────────────────
+CÓMO CONVERSAR
+────────────────────────────────────────────
+- Español rioplatense simple, sin tecnicismos
+- Una sola pregunta por vez
+- Escuchar antes de recomendar
+- Emojis con moderación: máximo 2 por mensaje
+- Sin frases vacías tipo "Gracias por contarnos" si no tienen sentido
+- Nunca ignorés el contexto ni volvás a preguntar algo que ya sabemos
+
+CASOS SENSIBLES
+Si detectás violencia, desempleo crítico, salud mental o emergencia social:
+respondé con contención, recomendá recursos (Línea 144, 147, ANSES) y marcá [ALERTA_HUMANA] al inicio.
+
+PRIMERA RESPUESTA
+Si es el primer mensaje del usuario, presentate brevemente y preguntá en qué podés ayudarlo.
+Si no tiene diagnóstico, rápidamente guialo a app.korai.lat.
+
+REGLA PRINCIPAL
+Devolvé únicamente el texto del mensaje de WhatsApp, sin explicaciones ni comillas.
+Máximo 2 emojis en todo el mensaje.`;
+
+// ─── Generación de respuesta ──────────────────────────────────────────────────
+
 async function generarRespuesta(
   usuario: Record<string, unknown>,
   historial: Array<{ tipo: string; texto: string }>,
   mensajeUsuario: string,
+  modulos: Array<Record<string, unknown>>,
+  ofertas: Array<Record<string, unknown>>,
+  semaforo: Semaforo | null,
 ): Promise<string> {
-  const nombre = usuario.nombre_completo as string ?? "candidato";
-  const cvDatos = usuario.cv_datos as Record<string, unknown> ?? {};
-  const bio = usuario.bio as string ?? "";
+  const nombre = (usuario.nombre_completo as string) ?? "candidato";
+  const cvDatos = (usuario.cv_datos as Record<string, unknown>) ?? {};
+  const bio = (usuario.bio as string) ?? "";
 
-  // Construir contexto del usuario
+  // Perfil del usuario
   const perfilTexto = [
     `Nombre: ${nombre}`,
     bio ? `Bio: ${bio}` : "",
@@ -148,34 +244,64 @@ async function generarRespuesta(
     Array.isArray(cvDatos.habilidades) && cvDatos.habilidades.length > 0
       ? `Habilidades: ${(cvDatos.habilidades as string[]).join(", ")}`
       : "",
+    Array.isArray(cvDatos.experiencia) && cvDatos.experiencia.length > 0
+      ? `Experiencia: ${(cvDatos.experiencia as Array<{ cargo: string; empresa: string }>)
+          .map(e => `${e.cargo} en ${e.empresa}`).join(", ")}`
+      : "",
   ].filter(Boolean).join("\n");
 
-  // Armar mensajes para Claude
-  const messages: Array<{ role: string; content: string }> = [];
+  // Estado del diagnóstico Korai
+  const tieneDiag = tieneDiagnostico(semaforo);
+  const diagnosticoTexto = tieneDiag && semaforo
+    ? `DIAGNÓSTICO KORAI COMPLETO:\n${semaforoResumen(semaforo)}` +
+      (dimensionesPrioritarias(semaforo).length > 0
+        ? `\nDIMENSIONES PRIORITARIAS (rojo/amarillo): ${dimensionesPrioritarias(semaforo).join(", ")}`
+        : "\nTodas las dimensiones en verde ✓")
+    : "DIAGNÓSTICO KORAI: NO REALIZADO — invitarlo a hacerlo en https://app.korai.lat";
 
-  // Historial previo
+  // Oportunidades
+  const modulosTexto = modulos.length > 0
+    ? `MÓDULOS DE TRABAJO ACTIVOS:\n` + modulos.map(m =>
+        `- ${m.titulo}${m.duracion_jornada ? ` (${m.duracion_jornada})` : ""}${m.precio_hora ? ` · $${m.precio_hora}/hs` : ""}${m.horas_modulo ? ` · ${m.horas_modulo} hs` : ""}${m.descripcion ? `: ${String(m.descripcion).slice(0, 100)}` : ""}`
+      ).join("\n")
+    : "No hay módulos de trabajo activos en este momento.";
+
+  const ofertasTexto = ofertas.length > 0
+    ? `OFERTAS DE EMPLEO ACTIVAS:\n` + ofertas.map(o =>
+        `- ${o.titulo}${o.area ? ` [${o.area}]` : ""}${o.ciudad ? ` en ${o.ciudad}` : ""}${o.descripcion ? `: ${String(o.descripcion).slice(0, 100)}` : ""}`
+      ).join("\n")
+    : "No hay ofertas de empleo activas en este momento.";
+
+  // Construir mensajes para Claude
+  const messages: Array<{ role: string; content: string }> = [];
   for (const msg of historial.slice(-18)) {
     messages.push({
       role: msg.tipo === "usuario" ? "user" : "assistant",
       content: msg.texto,
     });
   }
-
-  // Mensaje actual del usuario
   messages.push({ role: "user", content: mensajeUsuario });
 
+  // Contexto completo en el primer mensaje o inyectado en el último
   const userContext = `
-[PERFIL DEL USUARIO EN OPORTUNAI]
+[PERFIL DEL USUARIO]
 ${perfilTexto || "Sin perfil completo todavía."}
+
+[ESTADO DEL DIAGNÓSTICO]
+${diagnosticoTexto}
+
+[OPORTUNIDADES DISPONIBLES]
+${modulosTexto}
+
+${ofertasTexto}
 
 [MENSAJE DEL USUARIO]
 ${mensajeUsuario}
 `.trim();
 
-  // Si no hay historial, el primer mensaje incluye el contexto completo
-  if (messages.length === 1) {
-    messages[0].content = userContext;
-  }
+  messages[messages.length - 1].content = messages.length === 1
+    ? userContext
+    : `${mensajeUsuario}\n\n[CONTEXTO]\n${diagnosticoTexto}\n${modulosTexto}\n${ofertasTexto}`;
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -186,7 +312,7 @@ ${mensajeUsuario}
     },
     body: JSON.stringify({
       model: ANTHROPIC_MODEL,
-      max_tokens: 300,
+      max_tokens: 450,
       system: SYSTEM_PROMPT,
       messages,
     }),
@@ -199,7 +325,7 @@ ${mensajeUsuario}
 
 /** Envía mensaje por WhatsApp */
 async function enviarWhatsApp(numero: string, mensaje: string) {
-  await fetch(`https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`, {
+  const res = await fetch(`https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${WHATSAPP_TOKEN}`,
@@ -212,6 +338,8 @@ async function enviarWhatsApp(numero: string, mensaje: string) {
       text: { body: mensaje },
     }),
   });
+  const data = await res.json();
+  console.log("WA API status:", res.status, JSON.stringify(data));
 }
 
 // ─── Handler principal ────────────────────────────────────────────────────────
@@ -219,7 +347,6 @@ async function enviarWhatsApp(numero: string, mensaje: string) {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
-  // Verificación del webhook Meta (GET)
   if (req.method === "GET") {
     const url = new URL(req.url);
     const mode      = url.searchParams.get("hub.mode");
@@ -231,15 +358,22 @@ serve(async (req) => {
     return new Response("Forbidden", { status: 403 });
   }
 
-  // Mensaje entrante (POST de Meta)
   if (req.method === "POST") {
     try {
-      const body = await req.json() as Record<string, unknown>;
+      if (KORAI_FORWARD_KEY) {
+        const fwdKey = req.headers.get("x-forward-key") ?? "";
+        if (fwdKey !== KORAI_FORWARD_KEY) {
+          console.error("whatsapp_webhook: invalid x-forward-key");
+          return new Response("Unauthorized", { status: 401 });
+        }
+      }
 
-      // Extraer mensaje
-      const entry   = (body?.entry as Array<Record<string, unknown>>)?.[0];
-      const changes = (entry?.changes as Array<Record<string, unknown>>)?.[0];
-      const value   = changes?.value as Record<string, unknown>;
+      const body = await req.json() as Record<string, unknown>;
+      console.log("WA webhook POST recibido");
+
+      const entry    = (body?.entry as Array<Record<string, unknown>>)?.[0];
+      const changes  = (entry?.changes as Array<Record<string, unknown>>)?.[0];
+      const value    = changes?.value as Record<string, unknown>;
       const messages = value?.messages as Array<Record<string, unknown>>;
 
       if (!messages || messages.length === 0) {
@@ -247,49 +381,53 @@ serve(async (req) => {
       }
 
       const msg = messages[0];
-      if (msg.type !== "text") return new Response("ok", { status: 200 }); // ignorar multimedia
+      if (msg.type !== "text") return new Response("ok", { status: 200 });
 
-      const from   = msg.from as string;   // número del candidato (e.g. "5491112345678")
-      const texto  = (msg.text as Record<string, unknown>)?.body as string;
+      const from  = msg.from as string;
+      const texto = (msg.text as Record<string, unknown>)?.body as string;
 
+      console.log("Mensaje de:", from, "| texto:", texto);
       if (!from || !texto) return new Response("ok", { status: 200 });
 
-      // Buscar usuario en Oportunai
       const usuario = await buscarUsuario(from);
+      console.log("Usuario:", usuario ? `${usuario.id} activo:${usuario.whatsapp_activo}` : "null");
 
       if (!usuario) {
-        // Usuario no registrado: responder con CTA
         await enviarWhatsApp(from,
-          "¡Hola! 👋 Soy el asistente de OportunAI.\n\n" +
-          "No encontramos tu cuenta. Registrate gratis en oportunai.com.ar para que podamos acompañarte en tu búsqueda de trabajo."
+          "¡Hola! 👋 No encontramos tu cuenta en OportunAI.\n\n" +
+          "Registrate gratis en oportunai.korai.lat para que podamos acompañarte en tu búsqueda de trabajo."
         );
         return new Response("ok", { status: 200 });
       }
 
-      // Verificar que el usuario tiene bot activo
       if (!usuario.whatsapp_activo) {
-        return new Response("ok", { status: 200 }); // opt-out, ignorar
+        return new Response("ok", { status: 200 });
       }
 
-      // Guardar mensaje del usuario
       await guardarMensaje(usuario.id, "usuario", texto);
 
-      // Cargar historial
-      const historial = await cargarHistorial(usuario.id);
+      const [historial, modulos, ofertas] = await Promise.all([
+        cargarHistorial(usuario.id),
+        cargarModulos(),
+        cargarOfertas(),
+      ]);
 
-      // Generar respuesta con Claude
-      const respuesta = await generarRespuesta(usuario, historial, texto);
+      const semaforo = (usuario.korai_semaforo ?? null) as Semaforo | null;
 
-      // Enviar respuesta
+      console.log(
+        `Historial: ${historial.length} | Módulos: ${modulos.length} | Ofertas: ${ofertas.length}`,
+        `| Semáforo: ${tieneDiagnostico(semaforo) ? semaforoResumen(semaforo!) : "sin diagnóstico"}`
+      );
+
+      const respuesta = await generarRespuesta(usuario, historial, texto, modulos, ofertas, semaforo);
+
       await enviarWhatsApp(from, respuesta);
-
-      // Guardar respuesta del bot
       await guardarMensaje(usuario.id, "bot", respuesta);
 
       return new Response("ok", { status: 200 });
     } catch (err) {
       console.error("whatsapp_webhook error:", err);
-      return new Response("ok", { status: 200 }); // siempre 200 a Meta
+      return new Response("ok", { status: 200 });
     }
   }
 

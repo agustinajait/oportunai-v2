@@ -29,6 +29,7 @@ export default async function DashboardPage() {
         created_at: true,
         whatsapp_activo: true,
         korai_opt_in: true,
+        korai_semaforo: true,
         videos: {
           where: { es_fragmento: false },
           orderBy: { created_at: 'desc' },

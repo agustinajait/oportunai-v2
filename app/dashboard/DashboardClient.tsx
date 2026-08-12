@@ -75,6 +75,19 @@ const HERRAMIENTAS_DIGITALES = [
   'Redes sociales', 'Canva', 'Mercado Libre / e-commerce',
 ];
 
+type SemaforoColor = 'verde' | 'amarillo' | 'rojo';
+interface KoraiSemaforo {
+  empleo?: SemaforoColor;
+  educacion?: SemaforoColor;
+  ingresos?: SemaforoColor;
+  salud?: SemaforoColor;
+  vivienda?: SemaforoColor;
+  red?: SemaforoColor;
+  motivo?: string;
+  derivado_at?: string;
+  ultima_actualizacion?: string;
+}
+
 interface Usuario {
   id: string; nombre_completo: string; email: string; telefono: string; direccion: string;
   bio: string | null; foto_url: string | null; slug: string; role: 'super_admin' | 'admin' | 'user';
@@ -83,6 +96,7 @@ interface Usuario {
   fecha_nacimiento: string | null;
   created_at: string; videos: VideoItem[]; archivos: Archivo[];
   whatsapp_activo: boolean; korai_opt_in: boolean;
+  korai_semaforo?: KoraiSemaforo | null;
 }
 
 interface Documento {
@@ -154,10 +168,38 @@ export default function DashboardClient({
     }
   }
   const initialOfertaId = searchParams.get('oferta_id') ?? undefined;
+
   // WhatsApp opt-in
   const [waActivo, setWaActivo] = useState(usuario.whatsapp_activo ?? false);
   const [waLoading, setWaLoading] = useState(false);
   const [waModalOpen, setWaModalOpen] = useState(false);
+
+  // Promo modal: invitar al opt-in cuando el perfil está completo
+  const [waPromoVisible, setWaPromoVisible] = useState(false);
+
+  const cvDatosActual = usuario.cv_datos;
+  const perfilCompleto = !!(
+    usuario.videos.some(v => v.tipo === 'video_cv' && !v.taller && !v.oferta_id) ||
+    cvDatosActual?.resumen ||
+    (cvDatosActual?.experiencia?.length ?? 0) > 0 ||
+    (cvDatosActual?.habilidades?.length ?? 0) > 0
+  );
+
+  useEffect(() => {
+    if (!waActivo && perfilCompleto) {
+      // Mostrar promo después de 2 s, solo si el usuario no la descartó antes
+      const descartado = localStorage.getItem('wa_promo_dismissed_v1');
+      if (!descartado) {
+        const t = setTimeout(() => setWaPromoVisible(true), 2000);
+        return () => clearTimeout(t);
+      }
+    }
+  }, [waActivo, perfilCompleto]);
+
+  function descartarPromo() {
+    setWaPromoVisible(false);
+    localStorage.setItem('wa_promo_dismissed_v1', '1');
+  }
 
   // Link de WhatsApp a OportunAI
   const WA_OPORTUNAI = process.env.NEXT_PUBLIC_WA_SOPORTE ?? '5491161210313';
@@ -1153,6 +1195,148 @@ export default function DashboardClient({
                   </Link>
                 </div>
               </div>
+              {/* ── Diagnóstico Korai / Semáforo ─────────────────── */}
+              {(() => {
+                const sem = usuario.korai_semaforo ?? null;
+                const DIMS_SEMAFORO = ['empleo','educacion','ingresos','salud','vivienda','red'] as const;
+                const tieneDiag = sem && DIMS_SEMAFORO.some(d => sem[d]);
+
+                const DIMS = [
+                  { key: 'empleo' as const,    label: 'Empleo',    icon: '💼' },
+                  { key: 'educacion' as const, label: 'Educación', icon: '📚' },
+                  { key: 'ingresos' as const,  label: 'Ingresos',  icon: '💰' },
+                  { key: 'salud' as const,     label: 'Salud',     icon: '❤️' },
+                  { key: 'vivienda' as const,  label: 'Vivienda',  icon: '🏠' },
+                  { key: 'red' as const,       label: 'Red',       icon: '🤝' },
+                ];
+                const colorCls = (c?: SemaforoColor) =>
+                  c === 'verde'    ? 'bg-emerald-500' :
+                  c === 'amarillo' ? 'bg-amber-400'   :
+                  c === 'rojo'     ? 'bg-red-500'     : 'bg-gray-200';
+                const textCls = (c?: SemaforoColor) =>
+                  c === 'verde'    ? 'text-emerald-700' :
+                  c === 'amarillo' ? 'text-amber-700'   :
+                  c === 'rojo'     ? 'text-red-700'     : 'text-gray-400';
+                const labelColor = (c?: SemaforoColor) =>
+                  c === 'verde'    ? 'Bien'        :
+                  c === 'amarillo' ? 'Mejorable'   :
+                  c === 'rojo'     ? 'Prioritario' : '—';
+
+                // Plan de acción para dimensiones rojas/amarillas
+                const ACCIONES: { dim: typeof DIMS[number]['key']; icon: string; texto: string; accion?: { label: string; href: string } }[] = [
+                  { dim: 'empleo',    icon: '💼', texto: 'Completá tu Video CV y aplicá a los módulos de trabajo disponibles.', accion: { label: 'Ver módulos', href: '/dashboard?tab=servicios' } },
+                  { dim: 'educacion', icon: '📚', texto: 'Completá las capacitaciones disponibles para sumar certificados a tu perfil.', accion: { label: 'Ver capacitaciones', href: '/dashboard' } },
+                  { dim: 'ingresos',  icon: '💰', texto: 'Los módulos de trabajo pueden ser una fuente de ingresos rápida.', accion: { label: 'Ver módulos', href: '/dashboard?tab=servicios' } },
+                  { dim: 'red',       icon: '🤝', texto: 'Agregá referencias laborales a tu perfil para fortalecer tu red.', accion: { label: 'Mi perfil', href: '/dashboard' } },
+                ];
+                const accionesFiltradas = tieneDiag
+                  ? ACCIONES.filter(a => sem![a.dim] === 'rojo' || sem![a.dim] === 'amarillo')
+                  : [];
+
+                return (
+                  <div className="card p-5 border border-brand-100 bg-gradient-to-br from-brand-50/40 to-white">
+                    {/* Header */}
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-xl">🚦</span>
+                      <div>
+                        <h2 className="font-semibold text-ink-800 text-sm leading-tight">Mi diagnóstico</h2>
+                        <p className="text-[10px] text-ink-400">Semáforo de situación — Korai</p>
+                      </div>
+                      {tieneDiag && sem?.ultima_actualizacion && (
+                        <span className="ml-auto text-[10px] text-ink-300">
+                          {new Date(sem.ultima_actualizacion as string).toLocaleDateString('es-AR')}
+                        </span>
+                      )}
+                    </div>
+
+                    {!tieneDiag ? (
+                      /* Sin diagnóstico → CTA a Korai */
+                      <div className="space-y-3">
+                        <p className="text-xs text-ink-600 leading-relaxed">
+                          El diagnóstico nos ayuda a conocer tu situación en 6 dimensiones para
+                          acompañarte mejor hacia el trabajo.
+                        </p>
+                        <div className="grid grid-cols-3 gap-1.5 opacity-40">
+                          {DIMS.map(d => (
+                            <div key={d.key} className="flex flex-col items-center gap-1 bg-gray-50 rounded-lg px-1 py-2">
+                              <span className="text-base">{d.icon}</span>
+                              <div className="w-2 h-2 rounded-full bg-gray-200" />
+                              <p className="text-[9px] text-ink-400 text-center">{d.label}</p>
+                            </div>
+                          ))}
+                        </div>
+                        <a
+                          href="https://app.korai.lat"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98]"
+                          style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', textDecoration: 'none' }}
+                        >
+                          🚦 Hacer el diagnóstico →
+                        </a>
+                        <p className="text-[10px] text-ink-300 text-center">Gratis · 5 minutos · app.korai.lat</p>
+                      </div>
+                    ) : (
+                      /* Con diagnóstico → semáforo + plan */
+                      <div className="space-y-4">
+                        {/* 6 dimensiones */}
+                        <div className="grid grid-cols-3 gap-2">
+                          {DIMS.map(d => (
+                            <div key={d.key} className="flex flex-col items-center gap-1 bg-white rounded-xl border border-gray-100 px-2 py-2.5">
+                              <span className="text-lg">{d.icon}</span>
+                              <div className={`w-2.5 h-2.5 rounded-full ${colorCls(sem![d.key])}`} />
+                              <p className="text-[10px] font-medium text-ink-600 text-center leading-tight">{d.label}</p>
+                              <p className={`text-[9px] font-semibold ${textCls(sem![d.key])}`}>
+                                {labelColor(sem![d.key])}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Plan de acción */}
+                        {accionesFiltradas.length > 0 && (
+                          <div>
+                            <p className="text-[10px] font-semibold text-ink-400 uppercase tracking-wide mb-2">Plan de acción</p>
+                            <div className="space-y-2">
+                              {accionesFiltradas.map(a => (
+                                <div key={a.dim} className="bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-2">
+                                  <div className="flex items-start gap-1.5">
+                                    <span className="text-sm flex-shrink-0">{a.icon}</span>
+                                    <p className="text-[10px] text-amber-800 leading-relaxed">{a.texto}</p>
+                                  </div>
+                                  {a.accion && (
+                                    <Link href={a.accion.href} className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-semibold text-brand-600 hover:underline">
+                                      {a.accion.label} →
+                                    </Link>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {accionesFiltradas.length === 0 && (
+                          <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
+                            <span>🌟</span>
+                            <p className="text-xs text-emerald-700 font-medium">¡Todo en orden! Seguí activo en la plataforma.</p>
+                          </div>
+                        )}
+
+                        <a
+                          href="https://app.korai.lat"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-1.5 text-[10px] text-ink-400 hover:text-brand-600 hover:underline transition-colors"
+                          style={{ textDecoration: 'none' }}
+                        >
+                          Actualizar diagnóstico en Korai →
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
               {/* Perfil digital */}
               <div className="card p-6">
                 <div className="flex items-center gap-2 mb-4">
@@ -1967,6 +2151,64 @@ export default function DashboardClient({
             setPlayerCap(null);
           }}
         />
+      )}
+
+      {/* ── Promo WhatsApp: aparece cuando el perfil está completo y no hay opt-in ── */}
+      {waPromoVisible && !waActivo && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm p-6 space-y-5 animate-slide-up sm:animate-none">
+            {/* Handle bar mobile */}
+            <div className="w-10 h-1 bg-ink-200 rounded-full mx-auto sm:hidden" />
+
+            {/* Header */}
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[#25D366]/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <span className="text-4xl">💬</span>
+              </div>
+              <h3 className="text-xl font-bold text-ink-800">¡Tu perfil está listo!</h3>
+              <p className="text-sm text-ink-500 mt-2 leading-relaxed">
+                ¿Querés que te acompañemos por WhatsApp en tu búsqueda de trabajo?
+              </p>
+            </div>
+
+            {/* Beneficios */}
+            <div className="space-y-2.5 bg-ink-50 rounded-2xl p-4">
+              {[
+                { icon: '🔗', text: 'Te mandamos el link de tu perfil laboral' },
+                { icon: '🚦', text: 'Te guiamos al diagnóstico para recomendarte oportunidades según tu situación' },
+                { icon: '💼', text: 'Te avisamos cuando hay módulos u ofertas que encajan con vos' },
+              ].map(({ icon, text }) => (
+                <div key={text} className="flex items-start gap-3">
+                  <span className="text-lg flex-shrink-0">{icon}</span>
+                  <p className="text-sm text-ink-600 leading-snug">{text}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-xs text-ink-400 text-center leading-relaxed">
+              Gratis · Podés desactivarlo cuando quieras
+            </p>
+
+            <div className="flex flex-col-reverse sm:flex-row gap-2.5">
+              <button
+                onClick={descartarPromo}
+                className="flex-1 px-4 py-3 rounded-xl border border-ink-200 text-sm font-medium text-ink-500 hover:bg-ink-50 transition-colors"
+              >
+                Ahora no
+              </button>
+              <button
+                onClick={async () => {
+                  descartarPromo();
+                  setWaModalOpen(true);
+                }}
+                disabled={waLoading}
+                className="flex-1 px-4 py-3.5 rounded-xl bg-[#25D366] hover:bg-[#20b958] active:bg-[#1da851] text-white text-sm font-bold transition-colors shadow-md active:scale-[0.98] flex items-center justify-center gap-2"
+              >
+                <span className="text-base">💬</span> Sí, activar →
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

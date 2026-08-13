@@ -1158,41 +1158,28 @@ export default function DashboardClient({
 
         {/* Tab Perfil */}
         {tab === 'perfil' && (
-          <div className="grid lg:grid-cols-3 gap-6 animate-fade-in">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
 
             {/* ── Acciones rápidas — solo mobile ─────────────────── */}
-            <div className="lg:hidden order-1 grid grid-cols-3 gap-2">
-              <Link
-                href="/dashboard/flyer"
-                className="flex flex-col items-center gap-1.5 bg-white border border-gray-200 rounded-2xl py-3.5 px-2 text-center transition-colors active:bg-gray-50"
-                style={{ textDecoration: 'none' }}
-              >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
-                  <FileText size={18} color="#fff" strokeWidth={1.75} />
-                </div>
-                <span className="text-[11px] font-semibold text-ink-700 leading-tight">Ver perfil</span>
-              </Link>
-              <Link
-                href="/dashboard/card"
-                className="flex flex-col items-center gap-1.5 bg-white border border-gray-200 rounded-2xl py-3.5 px-2 text-center transition-colors active:bg-gray-50"
-                style={{ textDecoration: 'none' }}
-              >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#0A9485,#0FBFA8)' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                </div>
-                <span className="text-[11px] font-semibold text-ink-700 leading-tight">Mi tarjeta</span>
-              </Link>
-              <a
-                href="/api/cv/download"
-                download
-                className="flex flex-col items-center gap-1.5 bg-white border border-gray-200 rounded-2xl py-3.5 px-2 text-center transition-colors active:bg-gray-50"
-                style={{ textDecoration: 'none' }}
-              >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
-                  <Download size={18} color="#fff" strokeWidth={1.75} />
-                </div>
-                <span className="text-[11px] font-semibold text-ink-700 leading-tight">Descargar CV</span>
-              </a>
+            <div className="lg:hidden order-1 flex gap-2">
+              {[
+                { href: '/dashboard/flyer', label: 'Ver perfil', gradient: 'linear-gradient(135deg,#4B33CC,#7048F0)', Icon: () => <FileText size={18} color="#fff" strokeWidth={1.75} />, isLink: true },
+                { href: '/dashboard/card',  label: 'Mi tarjeta',  gradient: 'linear-gradient(135deg,#0A9485,#0FBFA8)', Icon: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>, isLink: true },
+                { href: '/api/cv/download', label: 'Descargar CV', gradient: 'linear-gradient(135deg,#4B33CC,#7048F0)', Icon: () => <Download size={18} color="#fff" strokeWidth={1.75} />, isLink: false },
+              ].map(({ href, label, gradient, Icon, isLink }) => {
+                const inner = (
+                  <>
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-1 flex-shrink-0" style={{ background: gradient }}>
+                      <Icon />
+                    </div>
+                    <span className="text-[11px] font-semibold text-ink-700 leading-tight text-center">{label}</span>
+                  </>
+                );
+                const cls = "flex-1 flex flex-col items-center justify-center gap-0.5 bg-white border border-gray-200 rounded-2xl py-3 px-1 transition-colors active:bg-gray-50";
+                return isLink
+                  ? <Link key={href} href={href} className={cls} style={{ textDecoration: 'none' }}>{inner}</Link>
+                  : <a key={href} href={href} download className={cls} style={{ textDecoration: 'none' }}>{inner}</a>;
+              })}
             </div>
 
             {/* ── Columna izquierda ──────────────────────────────── */}

@@ -6,10 +6,36 @@
  */
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
+import { SignJWT } from 'jose';
 import { prisma } from '@/lib/prisma';
 import { getSessionFromRequest } from '@/lib/auth';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://oportunai.korai.lat';
+const APP_URL       = process.env.NEXT_PUBLIC_APP_URL ?? 'https://oportunai.korai.lat';
+const KORAI_APP_URL = process.env.KORAI_APP_URL ?? 'https://app.korai.lat';
+const JOIN_SECRET   = new TextEncoder().encode(
+  process.env.KORAI_JOIN_SECRET ?? process.env.JWT_SECRET ?? 'dev-secret'
+);
+
+/** Genera un magic link personalizado hacia el test de Korai (válido 48 h) */
+async function generarLinkKorai(usuario: {
+  id: string; nombre_completo: string; email: string; telefono: string;
+}): Promise<string> {
+  try {
+    const token = await new SignJWT({
+      nombre_completo:   usuario.nombre_completo,
+      email:             usuario.email,
+      telefono:          usuario.telefono,
+      oportunai_user_id: usuario.id,
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('48h')
+      .sign(JOIN_SECRET);
+    return `${KORAI_APP_URL}/join/${token}`;
+  } catch {
+    return KORAI_APP_URL; // fallback al sitio directo
+  }
+}
 
 type CvDatos = {
   resumen?: string;
@@ -119,23 +145,30 @@ export async function PATCH(req: NextRequest) {
         ((usuario.cv_datos as CvDatos | null)?.habilidades?.length ?? 0) > 0
       );
 
+      // Magic link personalizado a Korai — el usuario llega sin tener que registrarse
+      const koraiLink = await generarLinkKorai({
+        id:              usuario.id,
+        nombre_completo: usuario.nombre_completo,
+        email:           (await prisma.usuario.findUnique({ where: { id: usuario.id }, select: { email: true } }))?.email ?? '',
+        telefono:        usuario.telefono,
+      });
+
       const bienvenida = tienePerfilLaboral
         ? `¡Hola ${primer_nombre}! 👋 Somos el equipo de OportunAI.\n\n` +
           `Ya tenés tu perfil laboral armado — eso nos da una gran ventaja para acompañarte. ` +
           `Te mandamos el link para que lo compartas cuando quieras:\n` +
           `🔗 ${perfilUrl}\n\n` +
           `Para recomendarte oportunidades que encajen con tu situación real, ` +
-          `te falta hacer el diagnóstico de Korai — son solo 3 minutos:\n` +
-          `📋 app.korai.lat\n\n` +
-          `Como ya cargaste tu experiencia laboral, una buena parte ya la conocemos. ` +
-          `¡Cuando completes el diagnóstico, te damos recomendaciones personalizadas!`
+          `hacé el diagnóstico de Korai — son solo 3 minutos y tus datos ya están cargados:\n` +
+          `📋 ${koraiLink}\n\n` +
+          `¡Cuando lo completes, te damos recomendaciones personalizadas!`
         : `¡Hola ${primer_nombre}! 👋 Somos el equipo de OportunAI.\n\n` +
           `Estamos acá para acompañarte en tu búsqueda de trabajo.\n\n` +
           `Tu perfil laboral ya está disponible:\n` +
           `🔗 ${perfilUrl}\n\n` +
           `Para poder recomendarte oportunidades según tus habilidades y tu situación, ` +
           `hacé el diagnóstico gratuito de Korai — solo toma 3 minutos:\n` +
-          `📋 app.korai.lat\n\n` +
+          `📋 ${koraiLink}\n\n` +
           `¡Cuando lo completes, seguimos con recomendaciones personalizadas!`;
 
       await fetch(`${process.env.SUPABASE_FUNCTIONS_URL}/send_whatsapp`, {

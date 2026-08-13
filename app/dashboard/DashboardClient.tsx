@@ -1326,15 +1326,13 @@ export default function DashboardClient({
                           ))}
                         </div>
                         <a
-                          href="https://app.korai.lat"
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          href="/api/korai/redirect"
                           className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98]"
                           style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', textDecoration: 'none' }}
                         >
                           🚦 Hacer el diagnóstico →
                         </a>
-                        <p className="text-[10px] text-ink-300 text-center">Gratis · 5 minutos · app.korai.lat</p>
+                        <p className="text-[10px] text-ink-300 text-center">Gratis · 5 minutos · tus datos ya están cargados</p>
                       </div>
                     ) : (
                       /* Con diagnóstico → semáforo + plan */
@@ -1383,9 +1381,7 @@ export default function DashboardClient({
                         )}
 
                         <a
-                          href="https://app.korai.lat"
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          href="/api/korai/redirect"
                           className="flex items-center justify-center gap-1.5 text-[10px] text-ink-400 hover:text-brand-600 hover:underline transition-colors"
                           style={{ textDecoration: 'none' }}
                         >

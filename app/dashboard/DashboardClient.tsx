@@ -615,7 +615,7 @@ export default function DashboardClient({
     <div className="min-h-screen bg-ink-50">
       <Navbar session={{ nombre: usuario.nombre_completo, role: usuario.role, slug: usuario.slug }} />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-24 sm:pb-10">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-32 sm:pb-10">
 
         {/* ── Banner bienvenida Korai ── */}
         {koraiWelcome && (
@@ -1159,10 +1159,46 @@ export default function DashboardClient({
         {/* Tab Perfil */}
         {tab === 'perfil' && (
           <div className="grid lg:grid-cols-3 gap-6 animate-fade-in">
+
+            {/* ── Acciones rápidas — solo mobile ─────────────────── */}
+            <div className="lg:hidden order-1 grid grid-cols-3 gap-2">
+              <Link
+                href="/dashboard/flyer"
+                className="flex flex-col items-center gap-1.5 bg-white border border-gray-200 rounded-2xl py-3.5 px-2 text-center transition-colors active:bg-gray-50"
+                style={{ textDecoration: 'none' }}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
+                  <FileText size={18} color="#fff" strokeWidth={1.75} />
+                </div>
+                <span className="text-[11px] font-semibold text-ink-700 leading-tight">Ver perfil</span>
+              </Link>
+              <Link
+                href="/dashboard/card"
+                className="flex flex-col items-center gap-1.5 bg-white border border-gray-200 rounded-2xl py-3.5 px-2 text-center transition-colors active:bg-gray-50"
+                style={{ textDecoration: 'none' }}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#0A9485,#0FBFA8)' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                </div>
+                <span className="text-[11px] font-semibold text-ink-700 leading-tight">Mi tarjeta</span>
+              </Link>
+              <a
+                href="/api/cv/download"
+                download
+                className="flex flex-col items-center gap-1.5 bg-white border border-gray-200 rounded-2xl py-3.5 px-2 text-center transition-colors active:bg-gray-50"
+                style={{ textDecoration: 'none' }}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
+                  <Download size={18} color="#fff" strokeWidth={1.75} />
+                </div>
+                <span className="text-[11px] font-semibold text-ink-700 leading-tight">Descargar CV</span>
+              </a>
+            </div>
+
             {/* ── Columna izquierda ──────────────────────────────── */}
-            <div className="space-y-5">
-              {/* Flyer card */}
-              <div className="card p-5 space-y-4">
+            <div className="space-y-5 order-3 lg:order-1">
+              {/* Flyer card — oculto en mobile (reemplazado por barra de acciones rápidas) */}
+              <div className="hidden lg:block card p-5 space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-xl flex items-center justify-content-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                     <FileText size={20} color="#fff" strokeWidth={1.75} />
@@ -1195,8 +1231,8 @@ export default function DashboardClient({
                 </Link>
               </div>
 
-              {/* Tarjeta digital */}
-              <div className="card p-5">
+              {/* Tarjeta digital — oculto en mobile */}
+              <div className="hidden lg:block card p-5">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-11 h-11 rounded-xl flex-shrink-0" style={{ background: 'linear-gradient(135deg,#0A9485,#0FBFA8)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
@@ -1212,8 +1248,8 @@ export default function DashboardClient({
                 </Link>
               </div>
 
-              {/* Descargar CV */}
-              <div className="card p-4">
+              {/* Descargar CV — oculto en mobile */}
+              <div className="hidden lg:block card p-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-11 h-11 rounded-xl flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                     <FileText size={18} color="#fff" />
@@ -1881,7 +1917,7 @@ export default function DashboardClient({
             </div>
 
             {/* ── Columna derecha (2 cols) ───────────────────────── */}
-            <div className="lg:col-span-2 space-y-5">
+            <div className="lg:col-span-2 space-y-5 order-2 lg:order-2">
 
               {/* ── Mis datos ──────────────────────────────────────── */}
               <div className="card p-6">

@@ -1283,11 +1283,12 @@ export default function DashboardClient({
                   c === 'rojo'     ? 'Prioritario' : '—';
 
                 // Plan de acción para dimensiones rojas/amarillas
-                const ACCIONES: { dim: typeof DIMS[number]['key']; icon: string; texto: string; accion?: { label: string; href: string } }[] = [
-                  { dim: 'empleo',    icon: '💼', texto: 'Completá tu Video CV y aplicá a los módulos de trabajo disponibles.', accion: { label: 'Ver módulos', href: '/dashboard?tab=servicios' } },
-                  { dim: 'educacion', icon: '📚', texto: 'Completá las capacitaciones disponibles para sumar certificados a tu perfil.', accion: { label: 'Ver capacitaciones', href: '/dashboard' } },
-                  { dim: 'ingresos',  icon: '💰', texto: 'Los módulos de trabajo pueden ser una fuente de ingresos rápida.', accion: { label: 'Ver módulos', href: '/dashboard?tab=servicios' } },
-                  { dim: 'red',       icon: '🤝', texto: 'Agregá referencias laborales a tu perfil para fortalecer tu red.', accion: { label: 'Mi perfil', href: '/dashboard' } },
+                const tieneVideoCV = !!videoCV;
+                const ACCIONES: { dim: typeof DIMS[number]['key']; icon: string; texto: string; accion?: { label: string; tab?: typeof tab; href?: string } }[] = [
+                  { dim: 'empleo',    icon: '💼', texto: tieneVideoCV ? 'Aplicá a los módulos de trabajo disponibles según tu situación laboral.' : 'Completá tu Video CV y aplicá a los módulos de trabajo disponibles.', accion: { label: 'Ver módulos', tab: 'servicios' } },
+                  { dim: 'educacion', icon: '📚', texto: 'Completá las capacitaciones disponibles para sumar certificados a tu perfil.', accion: { label: 'Ver capacitaciones', tab: 'servicios' } },
+                  { dim: 'ingresos',  icon: '💰', texto: 'Los módulos de trabajo pueden ser una fuente de ingresos rápida.', accion: { label: 'Ver módulos', tab: 'servicios' } },
+                  { dim: 'red',       icon: '🤝', texto: 'Agregá referencias laborales a tu perfil para fortalecer tu red.', accion: { label: 'Mi perfil', tab: 'perfil' } },
                 ];
                 const accionesFiltradas = tieneDiag
                   ? ACCIONES.filter(a => sem![a.dim] === 'rojo' || sem![a.dim] === 'amarillo')
@@ -1363,9 +1364,12 @@ export default function DashboardClient({
                                     <p className="text-[10px] text-amber-800 leading-relaxed">{a.texto}</p>
                                   </div>
                                   {a.accion && (
-                                    <Link href={a.accion.href} className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-semibold text-brand-600 hover:underline">
+                                    <button
+                                      onClick={() => a.accion!.tab && setTab(a.accion!.tab)}
+                                      className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-semibold text-brand-600 hover:underline"
+                                    >
                                       {a.accion.label} →
-                                    </Link>
+                                    </button>
                                   )}
                                 </div>
                               ))}
@@ -1385,13 +1389,13 @@ export default function DashboardClient({
                           href="/api/korai/redirect"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs font-semibold text-white transition-colors active:scale-[0.98]"
+                          className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl text-sm font-bold text-white shadow-md transition-all active:scale-[0.98] hover:shadow-lg"
                           style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', textDecoration: 'none' }}
                         >
-                          🚦 Ver mi diagnóstico completo en Korai →
+                          🚦 Ver mi diagnóstico y plan de acción →
                         </a>
-                        <p className="text-[9px] text-ink-300 text-center -mt-1">
-                          Cada área tiene su explicación, recursos y pasos concretos para mejorar
+                        <p className="text-[10px] text-ink-400 text-center -mt-1">
+                          Cada área tiene explicación, recursos y pasos para mejorar
                         </p>
                         <a
                           href="/api/korai/redirect"

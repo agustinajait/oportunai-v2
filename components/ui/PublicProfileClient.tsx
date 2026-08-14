@@ -22,6 +22,17 @@ interface CvDatos {
   idiomas?: string[];
 }
 
+type SemaforoColor = 'verde' | 'amarillo' | 'rojo';
+interface KoraiSemaforo {
+  empleo?: SemaforoColor;
+  educacion?: SemaforoColor;
+  ingresos?: SemaforoColor;
+  salud?: SemaforoColor;
+  vivienda?: SemaforoColor;
+  red?: SemaforoColor;
+  ultima_actualizacion?: string;
+}
+
 interface UsuarioPublico {
   nombre_completo: string;
   bio: string | null;
@@ -38,6 +49,7 @@ interface UsuarioPublico {
   archivos: ArchivoItem[];
   documentos?: DocumentoItem[];
   referencias?: ReferenciaItem[];
+  korai_semaforo?: KoraiSemaforo | null;
 }
 
 const DOCS_LABELS: Record<string, string> = {
@@ -217,6 +229,87 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
             </p>
           )}
         </div>
+
+        {/* ── SEMÁFORO KORAI ────────────────────────────────────── */}
+        {(() => {
+          const sem = usuario.korai_semaforo ?? null;
+          const DIMS = [
+            { key: 'empleo' as const,    label: 'Empleo',    icon: '💼' },
+            { key: 'educacion' as const, label: 'Educación', icon: '📚' },
+            { key: 'ingresos' as const,  label: 'Ingresos',  icon: '💰' },
+            { key: 'salud' as const,     label: 'Salud',     icon: '❤️' },
+            { key: 'vivienda' as const,  label: 'Vivienda',  icon: '🏠' },
+            { key: 'red' as const,       label: 'Red',       icon: '🤝' },
+          ];
+          const tieneDiag = sem && DIMS.some(d => sem[d.key]);
+          if (!tieneDiag) return null;
+
+          const colorDot = (c?: SemaforoColor) =>
+            c === 'verde'    ? 'bg-emerald-500' :
+            c === 'amarillo' ? 'bg-amber-400'   :
+            c === 'rojo'     ? 'bg-red-500'     : 'bg-gray-200';
+          const colorText = (c?: SemaforoColor) =>
+            c === 'verde'    ? 'text-emerald-700' :
+            c === 'amarillo' ? 'text-amber-700'   :
+            c === 'rojo'     ? 'text-red-600'     : 'text-gray-400';
+          const colorLabel = (c?: SemaforoColor) =>
+            c === 'verde'    ? 'Bien'        :
+            c === 'amarillo' ? 'Atención'    :
+            c === 'rojo'     ? 'Prioritario' : '—';
+
+          const rojas    = DIMS.filter(d => sem![d.key] === 'rojo');
+          const amarillas = DIMS.filter(d => sem![d.key] === 'amarillo');
+
+          return (
+            <div className="card p-5 border border-amber-100 bg-gradient-to-br from-amber-50/40 to-white">
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🚦</span>
+                  <div>
+                    <h2 className="font-semibold text-ink-800 text-sm leading-tight">Contexto de vida</h2>
+                    <p className="text-[10px] text-ink-400">Diagnóstico de bienestar — Korai</p>
+                  </div>
+                </div>
+                {sem?.ultima_actualizacion && (
+                  <span className="text-[10px] text-ink-300">
+                    {new Date(sem.ultima_actualizacion).toLocaleDateString('es-AR')}
+                  </span>
+                )}
+              </div>
+
+              {/* 6 dimensiones */}
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-4">
+                {DIMS.map(d => (
+                  <div key={d.key} className="flex flex-col items-center gap-1 bg-white rounded-xl border border-gray-100 px-2 py-2.5">
+                    <span className="text-base">{d.icon}</span>
+                    <div className={`w-2.5 h-2.5 rounded-full ${colorDot(sem![d.key])}`} />
+                    <p className="text-[10px] font-medium text-ink-600 text-center leading-tight">{d.label}</p>
+                    <p className={`text-[9px] font-semibold ${colorText(sem![d.key])}`}>
+                      {colorLabel(sem![d.key])}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Resumen contextual */}
+              {rojas.length > 0 && (
+                <p className="text-xs text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2 leading-relaxed">
+                  <span className="font-semibold">Áreas prioritarias:</span> {rojas.map(d => d.label).join(', ')}. El candidato puede necesitar flexibilidad o apoyo en estas dimensiones.
+                </p>
+              )}
+              {rojas.length === 0 && amarillas.length > 0 && (
+                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 leading-relaxed">
+                  <span className="font-semibold">En proceso de mejora:</span> {amarillas.map(d => d.label).join(', ')}.
+                </p>
+              )}
+              {rojas.length === 0 && amarillas.length === 0 && (
+                <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2 leading-relaxed">
+                  🌟 <span className="font-semibold">Situación estable</span> en todas las dimensiones.
+                </p>
+              )}
+            </div>
+          );
+        })()}
 
         {/* ── VIDEO PLAYER ──────────────────────────────────────── */}
         <div className="card overflow-hidden">

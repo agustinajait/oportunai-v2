@@ -1380,12 +1380,27 @@ export default function DashboardClient({
                           </div>
                         )}
 
+                        {/* CTA a Korai — detalle completo + plan de acción */}
                         <a
                           href="/api/korai/redirect"
-                          className="flex items-center justify-center gap-1.5 text-[10px] text-ink-400 hover:text-brand-600 hover:underline transition-colors"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs font-semibold text-white transition-colors active:scale-[0.98]"
+                          style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', textDecoration: 'none' }}
+                        >
+                          🚦 Ver mi diagnóstico completo en Korai →
+                        </a>
+                        <p className="text-[9px] text-ink-300 text-center -mt-1">
+                          Cada área tiene su explicación, recursos y pasos concretos para mejorar
+                        </p>
+                        <a
+                          href="/api/korai/redirect"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-1.5 text-[10px] text-ink-300 hover:text-brand-600 hover:underline transition-colors"
                           style={{ textDecoration: 'none' }}
                         >
-                          Actualizar diagnóstico en Korai →
+                          Actualizar diagnóstico →
                         </a>
                       </div>
                     )}

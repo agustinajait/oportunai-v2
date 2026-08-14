@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import {
   Users, Settings, Video, Mic, Edit3, Check, X,
-  Loader2, ChevronDown, ChevronUp, Clock, FileText
+  Loader2, ChevronDown, ChevronUp, Clock, FileText, Trash2
 } from 'lucide-react';
 import { SessionPayload } from '@/lib/auth';
 import VideoThumbnail from '@/components/ui/VideoThumbnail';
@@ -16,7 +16,7 @@ interface ConfigItem {
 }
 interface UsuarioRow {
   id: string; nombre_completo: string; email: string; dni: string;
-  role: string; slug: string; created_at: string;
+  role: string; slug: string; created_at: string; ultimo_ingreso: string | null;
   _count: { videos: number; archivos: number };
   videos: { video_url: string }[];
 }
@@ -28,6 +28,7 @@ export default function AdminClient({
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<'config' | 'users'>('config');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Record<string, { duracion_base: number; texto_guia: string }>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
@@ -64,6 +65,25 @@ export default function AdminClient({
 
   const handleCancel = (id: string) => {
     setEditing((prev) => { const n = { ...prev }; delete n[id]; return n; });
+  };
+
+  const handleDeleteUsuario = async (u: UsuarioRow) => {
+    const confirmar = window.confirm(
+      `¿Eliminár permanentemente a ${u.nombre_completo} (${u.email})?\n\nEsta acción no se puede deshacer. Se borrarán todos sus datos: videos, postulaciones, citas, documentos y archivos.`
+    );
+    if (!confirmar) return;
+    setDeletingId(u.id);
+    try {
+      const res = await fetch(`/api/admin/usuarios/${u.id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.ok) {
+        router.refresh();
+      } else {
+        alert(data.error ?? 'Error al eliminar');
+      }
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const isDirty = (item: ConfigItem) => {
@@ -211,7 +231,9 @@ export default function AdminClient({
                     <th className="text-left px-4 py-3">Email</th>
                     <th className="text-left px-4 py-3">DNI</th>
                     <th className="text-left px-4 py-3">Rol</th>
-                    <th className="text-left px-4 py-3">Fecha</th>
+                    <th className="text-left px-4 py-3">Registro</th>
+                    <th className="text-left px-4 py-3">Último ingreso</th>
+                    {session.role === 'super_admin' && <th className="px-4 py-3" />}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-ink-100">
@@ -234,9 +256,30 @@ export default function AdminClient({
                           {u.role}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-ink-400 text-xs">
+                      <td className="px-4 py-3 text-ink-400 text-xs whitespace-nowrap">
                         {new Date(u.created_at).toLocaleDateString('es-AR')}
                       </td>
+                      <td className="px-4 py-3 text-xs whitespace-nowrap">
+                        {u.ultimo_ingreso
+                          ? <span className="text-ink-600">{new Date(u.ultimo_ingreso).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                          : <span className="text-ink-300">—</span>
+                        }
+                      </td>
+                      {session.role === 'super_admin' && (
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => handleDeleteUsuario(u)}
+                            disabled={deletingId === u.id}
+                            title="Eliminar usuario"
+                            className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+                          >
+                            {deletingId === u.id
+                              ? <Loader2 size={15} className="animate-spin" />
+                              : <Trash2 size={15} />
+                            }
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

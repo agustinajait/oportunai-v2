@@ -80,6 +80,12 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // Registrar último ingreso
+    prisma.usuario.update({
+      where: { id: usuario.id },
+      data: { ultimo_ingreso: new Date() },
+    }).catch(() => {});
+
     const token = await createToken({
       userId: usuario.id,
       email: usuario.email,

@@ -6,14 +6,14 @@ import AdminClient from './AdminClient';
 
 export default async function AdminPage() {
   const session = await getSession();
-  if (!session || session.role !== 'admin') redirect('/dashboard');
+  if (!session || (session.role !== 'admin' && session.role !== 'super_admin')) redirect('/dashboard');
 
   const [usuarios, config] = await Promise.all([
     prisma.usuario.findMany({
       orderBy: { created_at: 'desc' },
       select: {
         id: true, nombre_completo: true, email: true,
-        dni: true, role: true, slug: true, created_at: true,
+        dni: true, role: true, slug: true, created_at: true, ultimo_ingreso: true,
         _count: { select: { videos: true, archivos: true } },
       },
     }),

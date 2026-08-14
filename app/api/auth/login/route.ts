@@ -26,6 +26,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email o contraseña incorrectos' }, { status: 401 });
     }
 
+    // Registrar último ingreso (fire-and-forget, no bloquea el login)
+    prisma.usuario.update({
+      where: { id: usuario.id },
+      data: { ultimo_ingreso: new Date() },
+    }).catch(() => {});
+
     const token = await createToken({
       userId: usuario.id,
       email: usuario.email,

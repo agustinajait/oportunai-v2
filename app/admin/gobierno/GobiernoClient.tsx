@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import {
   Users, Activity, MessageCircle, AlertTriangle, TrendingUp,
   BarChart2, Download, X, Phone, ExternalLink, ChevronRight,
+  MapPin, Quote,
 } from 'lucide-react';
 
 const DIMS_META: Record<string, { label: string; icon: string }> = {
@@ -27,8 +28,19 @@ interface GobData {
     total_usuarios: number; con_diagnostico: number; whatsapp_activo: number;
     pct_diagnostico: number; pct_wa: number; registrados_30d: number;
   };
+  estadoGeneral: {
+    critico: number; alerta: number; estable: number;
+    pct_critico: number; pct_alerta: number; pct_estable: number;
+  };
   porDimension: Record<string, { verde: number; amarillo: number; rojo: number; sin_dato: number }>;
   rankingCriticidad: DimStat[];
+  estadisticasSociales: {
+    situacion_laboral: Record<string, number>;
+    ingreso_hogar:     Record<string, number>;
+    tipo_vivienda:     Record<string, number>;
+  };
+  porBarrio: { barrio: string; total: number; rojo: number; amarillo: number; pct_rojo: number }[];
+  voces: { barrio: string; texto: string; fecha: string }[];
 }
 
 interface Candidato {
@@ -60,8 +72,7 @@ function StatTile({ label, value, sub, icon: Icon, color = 'brand' }: {
 
 /* ── Barra apilada clickeable ──────────────────────────── */
 function StackedBar({ dim, data, onDrillDown }: {
-  dim: string;
-  data: DimStat;
+  dim: string; data: DimStat;
   onDrillDown: (dim: string, color: Color) => void;
 }) {
   const [tooltip, setTooltip] = useState<string | null>(null);
@@ -77,19 +88,14 @@ function StackedBar({ dim, data, onDrillDown }: {
       <div className="flex items-center gap-3 mb-1.5">
         <span className="text-base w-6 text-center flex-shrink-0">{meta.icon}</span>
         <span className="text-sm font-medium text-ink-700 w-20 flex-shrink-0">{meta.label}</span>
-
         <div className="flex-1 relative">
-          <div
-            className="h-7 rounded-lg overflow-hidden flex cursor-pointer"
-            onMouseLeave={() => setTooltip(null)}
-          >
+          <div className="h-7 rounded-lg overflow-hidden flex cursor-pointer" onMouseLeave={() => setTooltip(null)}>
             {pVerde > 0 && (
               <div
                 className="h-full bg-emerald-500 hover:brightness-110 transition-all"
                 style={{ width: `${pVerde}%`, borderRight: pAmarillo > 0 || pRojo > 0 ? '2px solid white' : undefined }}
                 onMouseEnter={() => setTooltip(`✅ Bien: ${data.verde} personas (${data.pct_verde}%)`)}
                 onClick={() => onDrillDown(dim, 'verde')}
-                title={`Ver ${data.verde} personas en Bien`}
               />
             )}
             {pAmarillo > 0 && (
@@ -98,7 +104,6 @@ function StackedBar({ dim, data, onDrillDown }: {
                 style={{ width: `${pAmarillo}%`, borderRight: pRojo > 0 ? '2px solid white' : undefined }}
                 onMouseEnter={() => setTooltip(`⚠️ Atención: ${data.amarillo} personas (${data.pct_amarillo}%)`)}
                 onClick={() => onDrillDown(dim, 'amarillo')}
-                title={`Ver ${data.amarillo} personas en Atención`}
               />
             )}
             {pRojo > 0 && (
@@ -107,7 +112,6 @@ function StackedBar({ dim, data, onDrillDown }: {
                 style={{ width: `${pRojo}%` }}
                 onMouseEnter={() => setTooltip(`🔴 Prioritario: ${data.rojo} personas (${data.pct_rojo}%)`)}
                 onClick={() => onDrillDown(dim, 'rojo')}
-                title={`Ver ${data.rojo} personas en Prioritario`}
               />
             )}
           </div>
@@ -117,8 +121,6 @@ function StackedBar({ dim, data, onDrillDown }: {
             </div>
           )}
         </div>
-
-        {/* Números */}
         <div className="flex items-center gap-1.5 flex-shrink-0 text-xs text-ink-500 w-28 justify-end">
           {data.rojo > 0 && <span className="text-red-600 font-semibold">{data.pct_rojo}% crit.</span>}
           <span className="text-ink-300">|</span>
@@ -129,30 +131,42 @@ function StackedBar({ dim, data, onDrillDown }: {
   );
 }
 
+/* ── Fila de stat social ───────────────────────────────── */
+function SocialStatRow({ label, value, total, color }: {
+  label: string; value: number; total: number; color: 'emerald' | 'amber' | 'red' | 'gray';
+}) {
+  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+  const barColor = {
+    emerald: 'bg-emerald-500',
+    amber:   'bg-amber-400',
+    red:     'bg-red-500',
+    gray:    'bg-gray-300',
+  }[color];
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-ink-600">{label}</span>
+        <span className="font-semibold text-ink-800">{pct}% <span className="text-ink-400 font-normal">({value})</span></span>
+      </div>
+      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className={`h-full ${barColor} rounded-full transition-all duration-500`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
 /* ── Panel drill-down ──────────────────────────────────── */
 const COLOR_LABEL: Record<Color, string> = {
-  verde: '✅ Bien',
-  amarillo: '⚠️ Atención',
-  rojo: '🔴 Prioritario',
+  verde: '✅ Bien', amarillo: '⚠️ Atención', rojo: '🔴 Prioritario',
 };
 const COLOR_BG: Record<Color, string> = {
   verde: 'bg-emerald-50 border-emerald-200',
   amarillo: 'bg-amber-50 border-amber-200',
   rojo: 'bg-red-50 border-red-200',
 };
-const COLOR_TAG: Record<Color, string> = {
-  verde: 'bg-emerald-100 text-emerald-700',
-  amarillo: 'bg-amber-100 text-amber-700',
-  rojo: 'bg-red-100 text-red-700',
-};
-
 const DIMS_ALL = ['empleo', 'educacion', 'ingresos', 'salud', 'vivienda', 'red'] as const;
 
-function DrillDownPanel({
-  dim, color, onClose,
-}: {
-  dim: string; color: Color; onClose: () => void;
-}) {
+function DrillDownPanel({ dim, color, onClose }: { dim: string; color: Color; onClose: () => void }) {
   const [candidatos, setCandidatos] = useState<Candidato[]>([]);
   const [loading, setLoading] = useState(true);
   const meta = DIMS_META[dim];
@@ -172,7 +186,6 @@ function DrillDownPanel({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm px-4 pb-4 sm:p-6">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
-        {/* Header */}
         <div className={`flex items-center justify-between px-5 py-4 border-b ${COLOR_BG[color]}`}>
           <div className="flex items-center gap-2">
             <span className="text-xl">{meta?.icon}</span>
@@ -185,8 +198,6 @@ function DrillDownPanel({
             <X size={18} className="text-ink-500" />
           </button>
         </div>
-
-        {/* Lista */}
         <div className="overflow-y-auto flex-1">
           {loading ? (
             <div className="flex items-center justify-center h-32 text-ink-400">
@@ -207,9 +218,7 @@ function DrillDownPanel({
                       <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                         <p className="font-medium text-ink-800 text-sm">{c.nombre_completo}</p>
                         {c.whatsapp_activo && (
-                          <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-semibold flex items-center gap-0.5">
-                            💬 WA
-                          </span>
+                          <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-semibold">💬 WA</span>
                         )}
                       </div>
                       <p className="text-xs text-ink-400">{c.email}</p>
@@ -219,7 +228,6 @@ function DrillDownPanel({
                         </p>
                       )}
                     </div>
-                    {/* Semáforo compacto todas las dims */}
                     <div className="flex items-center gap-1 flex-shrink-0">
                       {DIMS_ALL.map(d => (
                         <div
@@ -244,17 +252,9 @@ function DrillDownPanel({
             </div>
           )}
         </div>
-
-        {/* Footer */}
         <div className="px-5 py-3 border-t border-ink-100 flex items-center justify-between bg-ink-50/50">
-          <p className="text-[11px] text-ink-400">
-            Hacé clic en una barra del semáforo para filtrar otra dimensión
-          </p>
-          <a
-            href={`/api/admin/gobierno/export`}
-            download
-            className="text-xs flex items-center gap-1 text-brand-600 hover:underline"
-          >
+          <p className="text-[11px] text-ink-400">Hacé clic en una barra para filtrar otra dimensión</p>
+          <a href="/api/admin/gobierno/export" download className="text-xs flex items-center gap-1 text-brand-600 hover:underline">
             <Download size={12} /> Exportar todo
           </a>
         </div>
@@ -262,6 +262,37 @@ function DrillDownPanel({
     </div>
   );
 }
+
+/* ── Helpers ───────────────────────────────────────────── */
+const SIT_LABORAL_LABEL: Record<string, string> = {
+  con_trabajo:  'Con trabajo',
+  buscando:     'Buscando trabajo',
+  sin_trabajo:  'Sin trabajo',
+};
+const SIT_LABORAL_COLOR: Record<string, 'emerald' | 'amber' | 'red'> = {
+  con_trabajo: 'emerald', buscando: 'amber', sin_trabajo: 'red',
+};
+
+const INGRESO_LABEL: Record<string, string> = {
+  '<700k':           '< $700K',
+  '700k-1.3m':       '$700K – $1.3M',
+  '1.3m-2m':         '$1.3M – $2M',
+  '>2m':             '> $2M',
+  'prefiere_no_decir': 'Prefiere no decir',
+};
+const INGRESO_COLOR: Record<string, 'red' | 'amber' | 'emerald' | 'gray'> = {
+  '<700k': 'red', '700k-1.3m': 'amber', '1.3m-2m': 'emerald', '>2m': 'emerald', 'prefiere_no_decir': 'gray',
+};
+
+const VIVIENDA_LABEL: Record<string, string> = {
+  propia:     'Propia',
+  alquilada:  'Alquilada',
+  prestada:   'Prestada',
+  inestable:  'Inestable / Sin vivienda',
+};
+const VIVIENDA_COLOR: Record<string, 'emerald' | 'amber' | 'red' | 'gray'> = {
+  propia: 'emerald', alquilada: 'amber', prestada: 'gray', inestable: 'red',
+};
 
 /* ── Componente principal ──────────────────────────────── */
 export default function GobiernoClient() {
@@ -287,15 +318,21 @@ export default function GobiernoClient() {
 
   if (!data) return <p className="text-red-600 p-8">Error al cargar datos</p>;
 
-  const { kpis, rankingCriticidad } = data;
+  const { kpis, estadoGeneral, rankingCriticidad, estadisticasSociales, porBarrio, voces } = data;
   const totalConDiag = kpis.con_diagnostico;
-
   const areasCriticas = rankingCriticidad.filter(d => d.pct_rojo >= 20);
-  const topRojo = [...rankingCriticidad].sort((a, b) => b.rojo - a.rojo).slice(0, 3);
+
+  // Detectar si hay datos sociodemográficos
+  const haySocial = Object.keys(estadisticasSociales.situacion_laboral).length > 0
+    || Object.keys(estadisticasSociales.ingreso_hogar).length > 0
+    || Object.keys(estadisticasSociales.tipo_vivienda).length > 0;
+
+  const totalSL  = Object.values(estadisticasSociales.situacion_laboral).reduce((a, b) => a + b, 0);
+  const totalIH  = Object.values(estadisticasSociales.ingreso_hogar).reduce((a, b) => a + b, 0);
+  const totalTV  = Object.values(estadisticasSociales.tipo_vivienda).reduce((a, b) => a + b, 0);
 
   return (
     <>
-      {/* Panel drill-down */}
       {drillDown && (
         <DrillDownPanel
           dim={drillDown.dim}
@@ -323,12 +360,60 @@ export default function GobiernoClient() {
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
             <StatTile label="Candidatos registrados" value={kpis.total_usuarios}
               sub={`+${kpis.registrados_30d} últimos 30 días`} icon={Users} />
-            <StatTile label="Con diagnóstico Korai" value={kpis.con_diagnostico}
+            <StatTile label="Con diagnóstico Korai" value={totalConDiag}
               sub={`${kpis.pct_diagnostico}% del total`} icon={BarChart2} color="brand" />
-            <StatTile label="Acompañamiento activo" value={kpis.whatsapp_activo}
+            <StatTile label="Con acompañamiento WA" value={kpis.whatsapp_activo}
               sub={`${kpis.pct_wa}% activaron WhatsApp`} icon={MessageCircle} color="emerald" />
           </div>
         </div>
+
+        {/* ── Estado general del territorio ──────────────── */}
+        {totalConDiag > 0 && (
+          <div className="card p-6">
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div>
+                <h2 className="text-base font-bold text-ink-900 uppercase tracking-wide">
+                  Estado general del territorio
+                </h2>
+                <p className="text-xs text-ink-400 mt-0.5">
+                  Basado en {totalConDiag} diagnósticos
+                  {porBarrio.length > 0 && ` — ${porBarrio.length} barrios`}
+                </p>
+              </div>
+              <div className="flex items-center gap-4 text-sm flex-shrink-0">
+                <div className="text-center">
+                  <p className="text-2xl font-extrabold text-red-500">{estadoGeneral.pct_critico}%</p>
+                  <p className="text-[11px] font-semibold text-red-400 uppercase tracking-wide">Crítico</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-extrabold text-amber-500">{estadoGeneral.pct_alerta}%</p>
+                  <p className="text-[11px] font-semibold text-amber-400 uppercase tracking-wide">Alerta</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-extrabold text-emerald-500">{estadoGeneral.pct_estable}%</p>
+                  <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wide">Estable</p>
+                </div>
+              </div>
+            </div>
+            {/* Barra general */}
+            <div className="h-6 rounded-xl overflow-hidden flex bg-gray-100">
+              {estadoGeneral.pct_estable > 0 && (
+                <div className="h-full bg-emerald-500" style={{ width: `${estadoGeneral.pct_estable}%` }} />
+              )}
+              {estadoGeneral.pct_alerta > 0 && (
+                <div className="h-full bg-amber-400" style={{ width: `${estadoGeneral.pct_alerta}%` }} />
+              )}
+              {estadoGeneral.pct_critico > 0 && (
+                <div className="h-full bg-red-500" style={{ width: `${estadoGeneral.pct_critico}%` }} />
+              )}
+            </div>
+            <div className="flex items-center gap-4 mt-2 text-[11px] text-ink-400">
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" /> Estable: {estadoGeneral.estable}</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block" /> Alerta: {estadoGeneral.alerta}</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-red-500 inline-block" /> Crítico: {estadoGeneral.critico}</span>
+            </div>
+          </div>
+        )}
 
         {/* ── Semáforo por dimensión ──────────────────────── */}
         {totalConDiag > 0 && (
@@ -336,11 +421,10 @@ export default function GobiernoClient() {
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h2 className="text-sm font-semibold text-ink-800 flex items-center gap-2">
-                  🚦 Semáforo de bienestar — {totalConDiag} diagnósticos
+                  🚦 Diagnóstico por dimensión
                 </h2>
                 <p className="text-[11px] text-ink-400 mt-0.5">Hacé clic en una barra para ver los candidatos</p>
               </div>
-              {/* Leyenda */}
               <div className="flex items-center gap-3 text-[11px] text-ink-500">
                 <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-emerald-500 inline-block" /> Bien</span>
                 <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-amber-400 inline-block" /> Atención</span>
@@ -357,7 +441,7 @@ export default function GobiernoClient() {
                 />
               ))}
             </div>
-            <p className="text-[10px] text-ink-300 mt-4 text-right">Ordenado por % de situación prioritaria (rojo)</p>
+            <p className="text-[10px] text-ink-300 mt-4 text-right">Ordenado por % de situación prioritaria</p>
           </div>
         )}
 
@@ -397,16 +481,137 @@ export default function GobiernoClient() {
           </div>
         )}
 
-        {/* ── Ranking absoluto ────────────────────────────── */}
+        {/* ── Estadísticas sociales ───────────────────────── */}
+        {haySocial && (
+          <div className="card p-6">
+            <h2 className="text-sm font-semibold text-ink-800 mb-5 flex items-center gap-2">
+              <Users size={14} className="text-brand-600" /> Estadísticas sociales
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+
+              {/* Situación laboral */}
+              {totalSL > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3 flex items-center gap-1">
+                    💼 Situación laboral
+                  </p>
+                  <div className="space-y-3">
+                    {Object.entries(estadisticasSociales.situacion_laboral)
+                      .sort((a, b) => b[1] - a[1])
+                      .map(([key, val]) => (
+                        <SocialStatRow
+                          key={key}
+                          label={SIT_LABORAL_LABEL[key] ?? key}
+                          value={val}
+                          total={totalSL}
+                          color={SIT_LABORAL_COLOR[key] ?? 'gray'}
+                        />
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Ingreso del hogar */}
+              {totalIH > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3 flex items-center gap-1">
+                    💰 Ingreso del hogar
+                  </p>
+                  <div className="space-y-3">
+                    {['<700k', '700k-1.3m', '1.3m-2m', '>2m', 'prefiere_no_decir']
+                      .filter(k => estadisticasSociales.ingreso_hogar[k] > 0)
+                      .map(key => (
+                        <SocialStatRow
+                          key={key}
+                          label={INGRESO_LABEL[key] ?? key}
+                          value={estadisticasSociales.ingreso_hogar[key]}
+                          total={totalIH}
+                          color={INGRESO_COLOR[key] ?? 'gray'}
+                        />
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tipo de vivienda */}
+              {totalTV > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3 flex items-center gap-1">
+                    🏠 Tipo de vivienda
+                  </p>
+                  <div className="space-y-3">
+                    {['propia', 'alquilada', 'prestada', 'inestable']
+                      .filter(k => estadisticasSociales.tipo_vivienda[k] > 0)
+                      .map(key => (
+                        <SocialStatRow
+                          key={key}
+                          label={VIVIENDA_LABEL[key] ?? key}
+                          value={estadisticasSociales.tipo_vivienda[key]}
+                          total={totalTV}
+                          color={VIVIENDA_COLOR[key] ?? 'gray'}
+                        />
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {!haySocial && (
+              <p className="text-xs text-ink-400 text-center py-4">
+                Los datos sociales aparecerán cuando Korai los envíe junto al diagnóstico
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ── Por barrio ─────────────────────────────────── */}
+        {porBarrio.length > 0 && (
+          <div className="card p-6">
+            <h2 className="text-sm font-semibold text-ink-800 mb-4 flex items-center gap-2">
+              <MapPin size={14} className="text-brand-600" /> Distribución por barrio
+            </h2>
+            <div className="space-y-2">
+              {porBarrio.slice(0, 10).map(b => {
+                const maxTotal = porBarrio[0]?.total ?? 1;
+                const barW = (b.total / maxTotal) * 100;
+                const pRojo = b.total > 0 ? Math.round((b.rojo / b.total) * 100) : 0;
+                return (
+                  <div key={b.barrio} className="flex items-center gap-3">
+                    <span className="text-xs text-ink-600 w-28 flex-shrink-0 truncate" title={b.barrio}>{b.barrio}</span>
+                    <div className="flex-1 h-5 bg-gray-100 rounded-full overflow-hidden relative">
+                      <div className="h-full bg-brand-400 rounded-full" style={{ width: `${barW}%` }} />
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0 text-xs">
+                      <span className="text-ink-600 font-medium w-6 text-right">{b.total}</span>
+                      {pRojo > 0 && (
+                        <span className="text-red-500 font-semibold text-[10px] bg-red-50 px-1.5 py-0.5 rounded-full">
+                          {pRojo}% crit.
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {porBarrio.length > 10 && (
+              <p className="text-[11px] text-ink-300 mt-3 text-right">
+                Mostrando 10 de {porBarrio.length} barrios
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ── Dimensiones con más personas en riesgo ─────── */}
         {totalConDiag > 0 && (
           <div className="card p-6">
             <h2 className="text-sm font-semibold text-ink-800 mb-4 flex items-center gap-2">
               <TrendingUp size={14} className="text-brand-600" /> Dimensiones con más personas en riesgo
             </h2>
             <div className="space-y-3">
-              {topRojo.map((d, i) => {
+              {[...rankingCriticidad].sort((a, b) => b.rojo - a.rojo).slice(0, 3).map((d, i) => {
                 const meta = DIMS_META[d.dim];
-                const barW = topRojo[0].rojo > 0 ? (d.rojo / topRojo[0].rojo) * 100 : 0;
+                const maxRojo = [...rankingCriticidad].sort((a, b) => b.rojo - a.rojo)[0]?.rojo ?? 1;
+                const barW = maxRojo > 0 ? (d.rojo / maxRojo) * 100 : 0;
                 return (
                   <button
                     key={d.dim}
@@ -417,12 +622,9 @@ export default function GobiernoClient() {
                     <span className="text-sm w-5">{meta.icon}</span>
                     <span className="text-sm text-ink-700 w-20 flex-shrink-0 text-left">{meta.label}</span>
                     <div className="flex-1 h-4 bg-red-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-red-500 rounded-full transition-all duration-500"
-                        style={{ width: `${barW}%` }}
-                      />
+                      <div className="h-full bg-red-500 rounded-full transition-all duration-500" style={{ width: `${barW}%` }} />
                     </div>
-                    <span className="text-sm font-semibold text-red-600 w-12 text-right">{d.rojo}</span>
+                    <span className="text-sm font-semibold text-red-600 w-10 text-right">{d.rojo}</span>
                     <ChevronRight size={13} className="text-ink-200 group-hover:text-ink-400 flex-shrink-0 transition-colors" />
                   </button>
                 );
@@ -431,6 +633,31 @@ export default function GobiernoClient() {
           </div>
         )}
 
+        {/* ── Voces del territorio ────────────────────────── */}
+        {voces.length > 0 && (
+          <div className="card p-6">
+            <h2 className="text-sm font-semibold text-ink-800 mb-4 flex items-center gap-2">
+              <Quote size={14} className="text-brand-600" /> Voces del territorio
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {voces.map((v, i) => (
+                <div key={i} className="bg-ink-50 border border-ink-100 rounded-xl p-4">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="flex items-center gap-1 text-[11px] text-ink-500 font-medium">
+                      <MapPin size={10} /> {v.barrio}
+                    </span>
+                    <span className="text-[10px] text-ink-300">
+                      {new Date(v.fecha).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                  </div>
+                  <p className="text-xs text-ink-700 leading-relaxed italic">"{v.texto}"</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Sin datos ───────────────────────────────────── */}
         {totalConDiag === 0 && (
           <div className="card p-12 text-center text-ink-400">
             <BarChart2 size={40} className="mx-auto mb-3 opacity-30" />

@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import {
   Users, Settings, Video, Mic, Edit3, Check, X,
-  Loader2, ChevronDown, ChevronUp, Clock, FileText, Trash2
+  Loader2, ChevronDown, ChevronUp, Clock, FileText, Trash2, BarChart2
 } from 'lucide-react';
 import { SessionPayload } from '@/lib/auth';
 import VideoThumbnail from '@/components/ui/VideoThumbnail';
+import GobiernoClient from './gobierno/GobiernoClient';
 
 interface ConfigItem {
   id: string; tipo_video: string; nombre_modulo: string;
@@ -27,7 +28,7 @@ export default function AdminClient({
   usuarios: UsuarioRow[]; config: ConfigItem[]; session: SessionPayload;
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<'config' | 'users'>('config');
+  const [tab, setTab] = useState<'config' | 'users' | 'gobierno'>('config');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Record<string, { duracion_base: number; texto_guia: string }>>({});
   const [saving, setSaving] = useState<string | null>(null);
@@ -190,6 +191,7 @@ export default function AdminClient({
           {[
             { key: 'config', label: 'Configuración de video', icon: <Settings size={15} /> },
             { key: 'users', label: 'Usuarios', icon: <Users size={15} /> },
+            { key: 'gobierno', label: 'Dashboard gobierno', icon: <BarChart2 size={15} /> },
           ].map((t) => (
             <button
               key={t.key}
@@ -293,6 +295,9 @@ export default function AdminClient({
             </div>
           </div>
         )}
+
+        {/* Gobierno tab */}
+        {tab === 'gobierno' && <GobiernoClient />}
       </main>
     </div>
   );

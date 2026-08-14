@@ -13,7 +13,7 @@ export default async function AdminPage() {
       orderBy: { created_at: 'desc' },
       select: {
         id: true, nombre_completo: true, email: true,
-        dni: true, role: true, slug: true, created_at: true,
+        dni: true, role: true, slug: true, created_at: true, ultimo_ingreso: true,
         _count: { select: { videos: true, archivos: true } },
       },
     }),

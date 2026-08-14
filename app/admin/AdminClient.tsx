@@ -16,7 +16,7 @@ interface ConfigItem {
 }
 interface UsuarioRow {
   id: string; nombre_completo: string; email: string; dni: string;
-  role: string; slug: string; created_at: string;
+  role: string; slug: string; created_at: string; ultimo_ingreso: string | null;
   _count: { videos: number; archivos: number };
   videos: { video_url: string }[];
 }
@@ -231,7 +231,8 @@ export default function AdminClient({
                     <th className="text-left px-4 py-3">Email</th>
                     <th className="text-left px-4 py-3">DNI</th>
                     <th className="text-left px-4 py-3">Rol</th>
-                    <th className="text-left px-4 py-3">Fecha</th>
+                    <th className="text-left px-4 py-3">Registro</th>
+                    <th className="text-left px-4 py-3">Último ingreso</th>
                     {session.role === 'super_admin' && <th className="px-4 py-3" />}
                   </tr>
                 </thead>
@@ -255,8 +256,14 @@ export default function AdminClient({
                           {u.role}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-ink-400 text-xs">
+                      <td className="px-4 py-3 text-ink-400 text-xs whitespace-nowrap">
                         {new Date(u.created_at).toLocaleDateString('es-AR')}
+                      </td>
+                      <td className="px-4 py-3 text-xs whitespace-nowrap">
+                        {u.ultimo_ingreso
+                          ? <span className="text-ink-600">{new Date(u.ultimo_ingreso).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                          : <span className="text-ink-300">—</span>
+                        }
                       </td>
                       {session.role === 'super_admin' && (
                         <td className="px-4 py-3">

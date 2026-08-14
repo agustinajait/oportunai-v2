@@ -1284,7 +1284,8 @@ export default function DashboardClient({
 
                 // Plan de acción para dimensiones rojas/amarillas
                 const tieneVideoCV = !!videoCV;
-                const ACCIONES: { dim: typeof DIMS[number]['key']; icon: string; texto: string; accion?: { label: string; tab?: typeof tab; href?: string } }[] = [
+                type TabKey = 'perfil' | 'ofertas' | 'documentos' | 'citas' | 'servicios';
+                const ACCIONES: { dim: typeof DIMS[number]['key']; icon: string; texto: string; accion?: { label: string; tab?: TabKey } }[] = [
                   { dim: 'empleo',    icon: '💼', texto: tieneVideoCV ? 'Aplicá a los módulos de trabajo disponibles según tu situación laboral.' : 'Completá tu Video CV y aplicá a los módulos de trabajo disponibles.', accion: { label: 'Ver módulos', tab: 'servicios' } },
                   { dim: 'educacion', icon: '📚', texto: 'Completá las capacitaciones disponibles para sumar certificados a tu perfil.', accion: { label: 'Ver capacitaciones', tab: 'servicios' } },
                   { dim: 'ingresos',  icon: '💰', texto: 'Los módulos de trabajo pueden ser una fuente de ingresos rápida.', accion: { label: 'Ver módulos', tab: 'servicios' } },

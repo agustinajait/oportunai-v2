@@ -18,6 +18,12 @@
  *     vivienda?:  'verde' | 'amarillo' | 'rojo'
  *     red?:       'verde' | 'amarillo' | 'rojo'
  *   }
+ *   // Campos adicionales del diagnóstico Korai (opcionales)
+ *   situacion_laboral?: 'con_trabajo' | 'buscando' | 'sin_trabajo'
+ *   ingreso_hogar?:     '<700k' | '700k-1.3m' | '1.3m-2m' | '>2m' | 'prefiere_no_decir'
+ *   tipo_vivienda?:     'propia' | 'alquilada' | 'prestada' | 'inestable'
+ *   barrio?:            string
+ *   motivo?:            string   // "Voces del territorio"
  * }
  *
  * Returns: { ok: true, whatsapp_activo: boolean }
@@ -49,7 +55,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { oportunai_user_id, semaforo } = body;
+    const {
+      oportunai_user_id, semaforo,
+      situacion_laboral, ingreso_hogar, tipo_vivienda, barrio, motivo,
+    } = body;
 
     if (!oportunai_user_id) {
       return NextResponse.json({ error: 'oportunai_user_id requerido' }, { status: 400, headers });
@@ -88,6 +97,13 @@ export async function POST(req: NextRequest) {
         semaforoNuevo[dim] = semaforo[dim];
       }
     }
+    // Campos sociodemográficos opcionales del diagnóstico
+    if (situacion_laboral) semaforoNuevo.situacion_laboral = situacion_laboral;
+    if (ingreso_hogar)     semaforoNuevo.ingreso_hogar     = ingreso_hogar;
+    if (tipo_vivienda)     semaforoNuevo.tipo_vivienda     = tipo_vivienda;
+    if (barrio)            semaforoNuevo.barrio            = barrio;
+    if (motivo)            semaforoNuevo.motivo            = motivo;
+
     semaforoNuevo.ultima_actualizacion = new Date().toISOString();
     semaforoNuevo.fuente = 'korai_survey';
 

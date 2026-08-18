@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import {
   Users, Activity, MessageCircle, AlertTriangle, TrendingUp,
   BarChart2, Download, X, Phone, ExternalLink, ChevronRight,
-  MapPin, Quote,
+  MapPin, Quote, RefreshCw, Check, Loader2,
 } from 'lucide-react';
 
 const DIMS_META: Record<string, { label: string; icon: string }> = {
@@ -294,18 +294,129 @@ const VIVIENDA_COLOR: Record<string, 'emerald' | 'amber' | 'red' | 'gray'> = {
   propia: 'emerald', alquilada: 'amber', prestada: 'gray', inestable: 'red',
 };
 
+/* ── Panel carga manual de semáforo ────────────────────── */
+const DIMS_LIST = ['empleo', 'educacion', 'ingresos', 'salud', 'vivienda', 'red'] as const;
+const COLORES_OPT = [
+  { value: '', label: '—' },
+  { value: 'verde', label: '✅ Verde' },
+  { value: 'amarillo', label: '⚠️ Amarillo' },
+  { value: 'rojo', label: '🔴 Rojo' },
+];
+
+function SyncManualPanel({ onSuccess }: { onSuccess: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState('');
+  const [dims, setDims] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const handleSync = async () => {
+    if (!email.trim()) return;
+    const semaforo: Record<string, string> = {};
+    for (const d of DIMS_LIST) { if (dims[d]) semaforo[d] = dims[d]; }
+    if (Object.keys(semaforo).length === 0) {
+      setMsg({ ok: false, text: 'Completá al menos una dimensión' });
+      return;
+    }
+    setSaving(true);
+    setMsg(null);
+    try {
+      const res = await fetch('/api/admin/gobierno/sync-korai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), semaforo }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setMsg({ ok: true, text: `✓ ${data.usuario} sincronizado` });
+        setEmail(''); setDims({});
+        setTimeout(() => { onSuccess(); setMsg(null); }, 1500);
+      } else {
+        setMsg({ ok: false, text: data.error ?? 'Error' });
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!open) return (
+    <button
+      onClick={() => setOpen(true)}
+      className="flex items-center gap-1.5 text-xs text-ink-500 hover:text-brand-600 border border-ink-200 hover:border-brand-300 px-3 py-1.5 rounded-lg transition-colors"
+    >
+      <RefreshCw size={12} /> Cargar diagnóstico manual
+    </button>
+  );
+
+  return (
+    <div className="card p-5 border border-brand-200 bg-brand-50/30">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold text-ink-800">Cargar diagnóstico Korai manualmente</h3>
+        <button onClick={() => { setOpen(false); setMsg(null); }} className="text-ink-400 hover:text-ink-600">
+          <X size={16} />
+        </button>
+      </div>
+      <div className="space-y-3">
+        <div>
+          <label className="label">Email del candidato</label>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="candidato@email.com"
+            className="input-field text-sm"
+          />
+        </div>
+        <div>
+          <label className="label">Semáforo por dimensión</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {DIMS_LIST.map(d => (
+              <div key={d} className="flex items-center gap-2">
+                <span className="text-xs text-ink-600 w-16 capitalize">{d}</span>
+                <select
+                  value={dims[d] ?? ''}
+                  onChange={e => setDims(p => ({ ...p, [d]: e.target.value }))}
+                  className="flex-1 text-xs border border-ink-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white"
+                >
+                  {COLORES_OPT.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+            ))}
+          </div>
+        </div>
+        {msg && (
+          <p className={`text-xs px-3 py-2 rounded-lg ${msg.ok ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+            {msg.text}
+          </p>
+        )}
+        <button
+          onClick={handleSync}
+          disabled={saving || !email.trim()}
+          className="btn-primary py-2 px-4 text-sm w-full justify-center"
+        >
+          {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+          Guardar diagnóstico
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ── Componente principal ──────────────────────────────── */
 export default function GobiernoClient() {
   const [data, setData] = useState<GobData | null>(null);
   const [loading, setLoading] = useState(true);
   const [drillDown, setDrillDown] = useState<{ dim: string; color: Color } | null>(null);
 
-  useEffect(() => {
+  const cargarDatos = () => {
+    setLoading(true);
     fetch('/api/admin/gobierno')
       .then(r => r.json())
       .then(setData)
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { cargarDatos(); }, []);
 
   if (loading) {
     return (
@@ -349,13 +460,16 @@ export default function GobiernoClient() {
             <h2 className="text-sm font-semibold text-ink-500 uppercase tracking-wide flex items-center gap-2">
               <Activity size={14} /> Resumen general
             </h2>
-            <a
-              href="/api/admin/gobierno/export"
-              download
-              className="flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-800 font-medium border border-brand-200 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition-colors"
-            >
-              <Download size={13} /> Exportar CSV
-            </a>
+            <div className="flex items-center gap-2">
+              <SyncManualPanel onSuccess={cargarDatos} />
+              <a
+                href="/api/admin/gobierno/export"
+                download
+                className="flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-800 font-medium border border-brand-200 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                <Download size={13} /> Exportar CSV
+              </a>
+            </div>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
             <StatTile label="Candidatos registrados" value={kpis.total_usuarios}

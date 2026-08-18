@@ -22,17 +22,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
   }
 
-  const [totalUsuarios, usuariosConDiag, usuariosWA, usuariosRaw] = await Promise.all([
-    prisma.usuario.count({ where: { role: 'user' } }),
-    prisma.usuario.count({
-      where: { role: 'user', korai_semaforo: { not: { equals: null } } },
-    }),
-    prisma.usuario.count({ where: { role: 'user', whatsapp_activo: true } }),
+  // Traemos todos los usuarios de una sola vez para evitar el bug de
+  // Prisma con JSON nullable (korai_semaforo: { not: null }) y filtramos en JS
+  const [todosLosUsuarios] = await Promise.all([
     prisma.usuario.findMany({
-      where: { role: 'user', korai_semaforo: { not: { equals: null } } },
-      select: { id: true, korai_semaforo: true, created_at: true },
+      where: { role: 'user' },
+      select: { id: true, korai_semaforo: true, created_at: true, whatsapp_activo: true },
     }),
   ]);
+
+  const totalUsuarios  = todosLosUsuarios.length;
+  const usuariosWA     = todosLosUsuarios.filter(u => u.whatsapp_activo).length;
+  const usuariosRaw    = todosLosUsuarios.filter(u => u.korai_semaforo !== null);
+  const usuariosConDiag = usuariosRaw.length;
 
   // ── Inicializar contadores ──────────────────────────────
   const porDimension: Record<Dim, { verde: number; amarillo: number; rojo: number; sin_dato: number }> = {

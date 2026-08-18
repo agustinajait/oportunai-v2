@@ -25,11 +25,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
   }
 
-  const usuarios = await prisma.usuario.findMany({
-    where: {
-      role: 'user',
-      korai_semaforo: { not: { equals: null } },
-    },
+  const todosUsuarios = await prisma.usuario.findMany({
+    where: { role: 'user' },
     select: {
       nombre_completo: true,
       email: true,
@@ -51,6 +48,8 @@ export async function GET(req: NextRequest) {
     'Fecha registro',
     ...DIMS.map(d => `Semáforo ${d}`),
   ];
+
+  const usuarios = todosUsuarios.filter(u => u.korai_semaforo !== null);
 
   const rows = usuarios.map(u => {
     const sem = u.korai_semaforo as Record<string, unknown> | null;

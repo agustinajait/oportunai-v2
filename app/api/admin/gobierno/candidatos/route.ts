@@ -29,11 +29,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Color inválido' }, { status: 400 });
   }
 
-  const usuarios = await prisma.usuario.findMany({
-    where: {
-      role: 'user',
-      korai_semaforo: { not: { equals: null } },
-    },
+  const todosUsuarios = await prisma.usuario.findMany({
+    where: { role: 'user' },
     select: {
       id: true,
       nombre_completo: true,
@@ -47,7 +44,7 @@ export async function GET(req: NextRequest) {
     orderBy: { nombre_completo: 'asc' },
   });
 
-  const filtrados = usuarios.filter(u => {
+  const filtrados = todosUsuarios.filter(u => {
     const sem = u.korai_semaforo as Record<string, unknown> | null;
     return sem && sem[dim] === color;
   });

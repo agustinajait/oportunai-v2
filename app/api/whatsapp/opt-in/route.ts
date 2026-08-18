@@ -132,18 +132,23 @@ export async function PATCH(req: NextRequest) {
         nombre_completo: true,
         slug: true,
         cv_datos: true,
+        videos: {
+          where: { tipo: 'video_cv', es_fragmento: false },
+          select: { id: true },
+          take: 1,
+        },
       },
     });
 
     // Al activar: mensaje de bienvenida
     if (activo && process.env.SUPABASE_FUNCTIONS_URL) {
       const primer_nombre = usuario.nombre_completo.split(' ')[0];
-      const perfilUrl = `${APP_URL}/u/${usuario.slug}`;
       const tienePerfilLaboral = !!(
         (usuario.cv_datos as CvDatos | null)?.resumen ||
         ((usuario.cv_datos as CvDatos | null)?.experiencia?.length ?? 0) > 0 ||
         ((usuario.cv_datos as CvDatos | null)?.habilidades?.length ?? 0) > 0
       );
+      const tieneVideoCV = (usuario as any).videos?.length > 0;
 
       // Magic link personalizado a Korai — el usuario llega sin tener que registrarse
       const koraiLink = await generarLinkKorai({
@@ -153,23 +158,23 @@ export async function PATCH(req: NextRequest) {
         telefono:        usuario.telefono,
       });
 
-      const bienvenida = tienePerfilLaboral
-        ? `¡Hola ${primer_nombre}! 👋 Somos el equipo de OportunAI.\n\n` +
-          `Ya tenés tu perfil laboral armado — eso nos da una gran ventaja para acompañarte. ` +
-          `Te mandamos el link para que lo compartas cuando quieras:\n` +
-          `🔗 ${perfilUrl}\n\n` +
-          `Para recomendarte oportunidades que encajen con tu situación real, ` +
-          `hacé el diagnóstico de Korai — son solo 3 minutos y tus datos ya están cargados:\n` +
-          `📋 ${koraiLink}\n\n` +
-          `¡Cuando lo completes, te damos recomendaciones personalizadas!`
-        : `¡Hola ${primer_nombre}! 👋 Somos el equipo de OportunAI.\n\n` +
-          `Estamos acá para acompañarte en tu búsqueda de trabajo.\n\n` +
-          `Tu perfil laboral ya está disponible:\n` +
-          `🔗 ${perfilUrl}\n\n` +
-          `Para poder recomendarte oportunidades según tus habilidades y tu situación, ` +
-          `hacé el diagnóstico gratuito de Korai — solo toma 3 minutos:\n` +
-          `📋 ${koraiLink}\n\n` +
-          `¡Cuando lo completes, seguimos con recomendaciones personalizadas!`;
+      // Descripción del primer paso según lo que ya completó
+      const primerPasoDesc = tienePerfilLaboral && tieneVideoCV
+        ? 'creando tu perfil laboral y grabando tu VideoCV'
+        : tienePerfilLaboral
+          ? 'creando tu perfil laboral'
+          : tieneVideoCV
+            ? 'grabando tu VideoCV'
+            : 'registrándote en la plataforma';
+
+      const bienvenida =
+        `¡Perfecto, ${primer_nombre}! Nos alegra que quieras seguir acompañado en tu búsqueda laboral.\n\n` +
+        `Ya diste un primer paso en OportunAI ${primerPasoDesc}. Ahora queremos conocerte un poco más para poder acompañarte de una manera personalizada.\n\n` +
+        `Por eso te invitamos a realizar tu diagnóstico Korai. Es rápido, gratuito y te permite contarnos cómo estás hoy en distintas áreas de tu vida que pueden influir en tu camino laboral.\n\n` +
+        `A partir de lo que nos cuentes, Korai va a poder identificar qué necesitás y acercarte herramientas, oportunidades, programas y recursos que se adapten mejor a tu situación.\n\n` +
+        `Hacé tu diagnóstico acá:\n` +
+        `${koraiLink}\n\n` +
+        `Cuando termines el diagnóstico, Korai te va a indicar los próximos pasos para continuar. 💙`;
 
       await fetch(`${process.env.SUPABASE_FUNCTIONS_URL}/send_whatsapp`, {
         method: 'POST',

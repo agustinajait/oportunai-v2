@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
 
   await prisma.usuario.update({
     where: { id: usuario.id },
-    data: { korai_semaforo: nuevo },
+    data: { korai_semaforo: nuevo as any },
   });
 
   return NextResponse.json({ ok: true, usuario: usuario.nombre_completo, semaforo: nuevo });

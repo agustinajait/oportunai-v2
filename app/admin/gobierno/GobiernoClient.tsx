@@ -27,6 +27,7 @@ interface GobData {
   kpis: {
     total_usuarios: number; con_diagnostico: number; whatsapp_activo: number;
     pct_diagnostico: number; pct_wa: number; registrados_30d: number;
+    con_video_cv: number; con_capacitacion: number; con_modulo: number; con_postulacion: number;
   };
   estadoGeneral: {
     critico: number; alerta: number; estable: number;
@@ -39,7 +40,26 @@ interface GobData {
     ingreso_hogar:     Record<string, number>;
     tipo_vivienda:     Record<string, number>;
   };
-  porBarrio: { barrio: string; total: number; rojo: number; amarillo: number; pct_rojo: number }[];
+  perfilFormativo: {
+    nivelesEstudios: Record<string, number>;
+    topHabilidades:  { nombre: string; total: number }[];
+    topRubros:       { rubro: string; total: number }[];
+    topIdiomas:      { idioma: string; total: number }[];
+    experienciaPromedio: number;
+    conCvCargado: number;
+  };
+  alfabetizacionDigital: {
+    porNivel: Record<string, number>;
+    scorePromedio: number | null;
+    conDato: number;
+  };
+  actividadPlataforma: {
+    conVideoCV: number; sinVideoCV: number;
+    conCapacitacion: number; sinCapacitacion: number;
+    conTaller: number; conModulo: number; conPostulacion: number; conReferencia: number;
+    totalCapacitaciones: number; totalPostulaciones: number; totalModulos: number;
+  };
+  porBarrio: { barrio: string; total: number; rojo: number; amarillo: number; pct_rojo: number; topRubros?: string[] }[];
   voces: { barrio: string; texto: string; fecha: string }[];
 }
 
@@ -437,6 +457,20 @@ function SyncManualPanel({ onSuccess }: { onSuccess: () => void }) {
   );
 }
 
+/* ── Mini barra horizontal ─────────────────────────────── */
+function MiniBar({ value, total, color = 'brand' }: { value: number; total: number; color?: string }) {
+  const w = total > 0 ? Math.round((value / total) * 100) : 0;
+  const bg = color === 'red' ? 'bg-red-500' : color === 'amber' ? 'bg-amber-400' : color === 'emerald' ? 'bg-emerald-500' : 'bg-brand-500';
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className={`h-full ${bg} rounded-full`} style={{ width: `${w}%` }} />
+      </div>
+      <span className="text-[11px] text-ink-500 w-8 text-right">{w}%</span>
+    </div>
+  );
+}
+
 /* ── Componente principal ──────────────────────────────── */
 export default function GobiernoClient() {
   const [data, setData] = useState<GobData | null>(null);
@@ -464,7 +498,11 @@ export default function GobiernoClient() {
 
   if (!data) return <p className="text-red-600 p-8">Error al cargar datos</p>;
 
-  const { kpis, estadoGeneral, rankingCriticidad, estadisticasSociales, porBarrio, voces } = data;
+  const {
+    kpis, estadoGeneral, rankingCriticidad, estadisticasSociales,
+    perfilFormativo, alfabetizacionDigital, actividadPlataforma,
+    porBarrio, voces,
+  } = data;
   const totalConDiag = kpis.con_diagnostico;
   const areasCriticas = rankingCriticidad.filter(d => d.pct_rojo >= 20);
 
@@ -476,6 +514,9 @@ export default function GobiernoClient() {
   const totalSL  = Object.values(estadisticasSociales.situacion_laboral).reduce((a, b) => a + b, 0);
   const totalIH  = Object.values(estadisticasSociales.ingreso_hogar).reduce((a, b) => a + b, 0);
   const totalTV  = Object.values(estadisticasSociales.tipo_vivienda).reduce((a, b) => a + b, 0);
+
+  const hayFormativo   = perfilFormativo && (perfilFormativo.topRubros.length > 0 || perfilFormativo.topHabilidades.length > 0);
+  const hayActividad   = actividadPlataforma && kpis.total_usuarios > 0;
 
   return (
     <>
@@ -506,13 +547,16 @@ export default function GobiernoClient() {
               </a>
             </div>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <StatTile label="Candidatos registrados" value={kpis.total_usuarios}
               sub={`+${kpis.registrados_30d} últimos 30 días`} icon={Users} />
             <StatTile label="Con diagnóstico Korai" value={totalConDiag}
               sub={`${kpis.pct_diagnostico}% del total`} icon={BarChart2} color="brand" />
+            <StatTile label="Con Video CV" value={kpis.con_video_cv}
+              sub={`${kpis.total_usuarios > 0 ? Math.round(kpis.con_video_cv/kpis.total_usuarios*100) : 0}% del total`}
+              icon={Activity} color="emerald" />
             <StatTile label="Con acompañamiento WA" value={kpis.whatsapp_activo}
-              sub={`${kpis.pct_wa}% activaron WhatsApp`} icon={MessageCircle} color="emerald" />
+              sub={`${kpis.pct_wa}% activaron WhatsApp`} icon={MessageCircle} color="amber" />
           </div>
         </div>
 
@@ -713,43 +757,6 @@ export default function GobiernoClient() {
           </div>
         )}
 
-        {/* ── Por barrio ─────────────────────────────────── */}
-        {porBarrio.length > 0 && (
-          <div className="card p-6">
-            <h2 className="text-sm font-semibold text-ink-800 mb-4 flex items-center gap-2">
-              <MapPin size={14} className="text-brand-600" /> Distribución por barrio
-            </h2>
-            <div className="space-y-2">
-              {porBarrio.slice(0, 10).map(b => {
-                const maxTotal = porBarrio[0]?.total ?? 1;
-                const barW = (b.total / maxTotal) * 100;
-                const pRojo = b.total > 0 ? Math.round((b.rojo / b.total) * 100) : 0;
-                return (
-                  <div key={b.barrio} className="flex items-center gap-3">
-                    <span className="text-xs text-ink-600 w-28 flex-shrink-0 truncate" title={b.barrio}>{b.barrio}</span>
-                    <div className="flex-1 h-5 bg-gray-100 rounded-full overflow-hidden relative">
-                      <div className="h-full bg-brand-400 rounded-full" style={{ width: `${barW}%` }} />
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0 text-xs">
-                      <span className="text-ink-600 font-medium w-6 text-right">{b.total}</span>
-                      {pRojo > 0 && (
-                        <span className="text-red-500 font-semibold text-[10px] bg-red-50 px-1.5 py-0.5 rounded-full">
-                          {pRojo}% crit.
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            {porBarrio.length > 10 && (
-              <p className="text-[11px] text-ink-300 mt-3 text-right">
-                Mostrando 10 de {porBarrio.length} barrios
-              </p>
-            )}
-          </div>
-        )}
-
         {/* ── Dimensiones con más personas en riesgo ─────── */}
         {totalConDiag > 0 && (
           <div className="card p-6">
@@ -779,6 +786,233 @@ export default function GobiernoClient() {
                 );
               })}
             </div>
+          </div>
+        )}
+
+        {/* ── Actividad en plataforma ────────────────────── */}
+        {hayActividad && (
+          <div className="card p-6">
+            <h2 className="text-sm font-semibold text-ink-800 mb-5 flex items-center gap-2">
+              <TrendingUp size={14} className="text-brand-600" /> Actividad en plataforma
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {/* Video CV */}
+              <div className="bg-brand-50 rounded-xl p-4 text-center">
+                <p className="text-2xl font-extrabold text-brand-700">{actividadPlataforma.conVideoCV}</p>
+                <p className="text-[11px] font-semibold text-brand-500 uppercase tracking-wide mt-0.5">Con Video CV</p>
+                <MiniBar value={actividadPlataforma.conVideoCV} total={kpis.total_usuarios} />
+              </div>
+              {/* Capacitaciones */}
+              <div className="bg-emerald-50 rounded-xl p-4 text-center">
+                <p className="text-2xl font-extrabold text-emerald-700">{actividadPlataforma.conCapacitacion}</p>
+                <p className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wide mt-0.5">Con capacitación</p>
+                <MiniBar value={actividadPlataforma.conCapacitacion} total={kpis.total_usuarios} color="emerald" />
+              </div>
+              {/* Módulos */}
+              <div className="bg-amber-50 rounded-xl p-4 text-center">
+                <p className="text-2xl font-extrabold text-amber-700">{actividadPlataforma.conModulo}</p>
+                <p className="text-[11px] font-semibold text-amber-500 uppercase tracking-wide mt-0.5">En módulos</p>
+                <MiniBar value={actividadPlataforma.conModulo} total={kpis.total_usuarios} color="amber" />
+              </div>
+              {/* Postulaciones */}
+              <div className="bg-purple-50 rounded-xl p-4 text-center">
+                <p className="text-2xl font-extrabold text-purple-700">{actividadPlataforma.conPostulacion}</p>
+                <p className="text-[11px] font-semibold text-purple-500 uppercase tracking-wide mt-0.5">Con postulaciones</p>
+                <MiniBar value={actividadPlataforma.conPostulacion} total={kpis.total_usuarios} color="brand" />
+              </div>
+            </div>
+            {/* Totales acumulados */}
+            <div className="mt-4 flex flex-wrap gap-4 pt-4 border-t border-ink-100">
+              <div className="text-xs text-ink-500">
+                <span className="font-semibold text-ink-800">{actividadPlataforma.totalCapacitaciones}</span> capacitaciones completadas en total
+              </div>
+              <div className="text-xs text-ink-500">
+                <span className="font-semibold text-ink-800">{actividadPlataforma.totalPostulaciones}</span> postulaciones enviadas en total
+              </div>
+              <div className="text-xs text-ink-500">
+                <span className="font-semibold text-ink-800">{actividadPlataforma.totalModulos}</span> módulos de trabajo asignados
+              </div>
+              <div className="text-xs text-ink-500">
+                <span className="font-semibold text-ink-800">{actividadPlataforma.conReferencia}</span> personas con referencias laborales
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Inteligencia del mercado laboral ───────────── */}
+        {hayFormativo && (
+          <div className="card p-6">
+            <h2 className="text-sm font-semibold text-ink-800 mb-5 flex items-center gap-2">
+              🏭 Talento disponible en el territorio
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+
+              {/* Oficios / Rubros de experiencia */}
+              {perfilFormativo.topRubros.length > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">
+                    Oficios y rubros de experiencia
+                  </p>
+                  {perfilFormativo.topRubros.slice(0, 10).map(r => {
+                    const maxR = perfilFormativo.topRubros[0]?.total ?? 1;
+                    const w = Math.round((r.total / maxR) * 100);
+                    return (
+                      <div key={r.rubro} className="flex items-center gap-2 mb-2">
+                        <span className="text-xs text-ink-700 w-36 flex-shrink-0 truncate" title={r.rubro}>{r.rubro}</span>
+                        <div className="flex-1 h-5 bg-brand-50 rounded-full overflow-hidden">
+                          <div className="h-full bg-brand-400 rounded-full" style={{ width: `${w}%` }} />
+                        </div>
+                        <span className="text-xs font-semibold text-ink-600 w-6 text-right">{r.total}</span>
+                      </div>
+                    );
+                  })}
+                  {perfilFormativo.experienciaPromedio > 0 && (
+                    <p className="text-xs text-ink-400 mt-3">
+                      Promedio de experiencia laboral: <span className="font-semibold text-ink-700">{perfilFormativo.experienciaPromedio} años</span>
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Habilidades / Competencias */}
+              {perfilFormativo.topHabilidades.length > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">
+                    Habilidades y competencias
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {perfilFormativo.topHabilidades.slice(0, 20).map(h => (
+                      <span
+                        key={h.nombre}
+                        className="inline-flex items-center gap-1 text-[11px] bg-brand-50 text-brand-700 border border-brand-100 rounded-full px-2.5 py-0.5"
+                        title={`${h.total} personas`}
+                      >
+                        {h.nombre}
+                        <span className="text-brand-400 font-semibold">{h.total}</span>
+                      </span>
+                    ))}
+                  </div>
+                  {perfilFormativo.topIdiomas.length > 1 && (
+                    <div className="mt-4">
+                      <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-2">Idiomas</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {perfilFormativo.topIdiomas.map(i => (
+                          <span key={i.idioma} className="text-[11px] bg-ink-100 text-ink-600 rounded-full px-2.5 py-0.5">
+                            {i.idioma} ({i.total})
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── Nivel de estudios + Alfabetización digital ──── */}
+        {(Object.keys(perfilFormativo?.nivelesEstudios ?? {}).length > 0 || alfabetizacionDigital?.conDato > 0) && (
+          <div className="card p-6">
+            <h2 className="text-sm font-semibold text-ink-800 mb-5 flex items-center gap-2">
+              📚 Perfil formativo y digital
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+
+              {/* Nivel de estudios */}
+              {Object.keys(perfilFormativo?.nivelesEstudios ?? {}).length > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">Nivel de estudios</p>
+                  {['Universitario', 'Terciario / Técnico', 'Maestría', 'Doctorado', 'Secundario', 'Primario', 'Cursos / Capacitaciones', 'Otro']
+                    .filter(n => (perfilFormativo.nivelesEstudios[n] ?? 0) > 0)
+                    .map(nivel => {
+                      const val = perfilFormativo.nivelesEstudios[nivel] ?? 0;
+                      const totalN = Object.values(perfilFormativo.nivelesEstudios).reduce((a, b) => a + b, 0);
+                      return (
+                        <div key={nivel} className="flex items-center gap-2 mb-2">
+                          <span className="text-xs text-ink-700 w-36 flex-shrink-0 truncate">{nivel}</span>
+                          <div className="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-indigo-400 rounded-full" style={{ width: `${Math.round(val/totalN*100)}%` }} />
+                          </div>
+                          <span className="text-xs text-ink-500 w-8 text-right">{val}</span>
+                        </div>
+                      );
+                    })}
+                  {perfilFormativo.conCvCargado > 0 && (
+                    <p className="text-[11px] text-ink-400 mt-3">{perfilFormativo.conCvCargado} CVs procesados por IA</p>
+                  )}
+                </div>
+              )}
+
+              {/* Alfabetización digital */}
+              {alfabetizacionDigital?.conDato > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">Alfabetización digital</p>
+                  {[['Básico','bg-red-400'], ['Intermedio','bg-amber-400'], ['Avanzado','bg-emerald-500'], ['Sin dato','bg-gray-300']].map(([nivel, bg]) => {
+                    const val = alfabetizacionDigital.porNivel[nivel] ?? 0;
+                    const totalA = Object.values(alfabetizacionDigital.porNivel).reduce((a, b) => a + b, 0);
+                    if (val === 0) return null;
+                    return (
+                      <div key={nivel} className="flex items-center gap-2 mb-2">
+                        <span className="text-xs text-ink-700 w-24 flex-shrink-0">{nivel}</span>
+                        <div className="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden">
+                          <div className={`h-full ${bg} rounded-full`} style={{ width: `${Math.round(val/totalA*100)}%` }} />
+                        </div>
+                        <span className="text-xs text-ink-500 w-8 text-right">{val}</span>
+                      </div>
+                    );
+                  })}
+                  {alfabetizacionDigital.scorePromedio !== null && (
+                    <p className="text-xs text-ink-500 mt-3">
+                      Score promedio digital: <span className="font-semibold text-ink-800">{alfabetizacionDigital.scorePromedio} / 100</span>
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── Empleabilidad por zona ──────────────────────── */}
+        {porBarrio.length > 0 && (
+          <div className="card p-6">
+            <h2 className="text-sm font-semibold text-ink-800 mb-4 flex items-center gap-2">
+              <MapPin size={14} className="text-brand-600" /> Empleabilidad por barrio
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-[10px] text-ink-400 uppercase tracking-wide border-b border-ink-100">
+                    <th className="text-left pb-2 pr-4">Barrio</th>
+                    <th className="text-right pb-2 pr-4 w-16">Personas</th>
+                    <th className="text-right pb-2 pr-4 w-16">Crítico</th>
+                    <th className="text-left pb-2">Oficios frecuentes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {porBarrio.slice(0, 15).map(b => (
+                    <tr key={b.barrio} className="border-b border-ink-50 hover:bg-ink-50/50">
+                      <td className="py-2 pr-4 font-medium text-ink-800">{b.barrio}</td>
+                      <td className="py-2 pr-4 text-right text-ink-600">{b.total}</td>
+                      <td className="py-2 pr-4 text-right">
+                        {b.pct_rojo > 0 ? (
+                          <span className="text-red-600 font-semibold">{b.pct_rojo}%</span>
+                        ) : (
+                          <span className="text-emerald-500">—</span>
+                        )}
+                      </td>
+                      <td className="py-2 text-ink-500">
+                        {(b.topRubros ?? []).join(' · ') || '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {porBarrio.length > 15 && (
+              <p className="text-[11px] text-ink-300 mt-3 text-right">
+                Mostrando 15 de {porBarrio.length} barrios
+              </p>
+            )}
           </div>
         )}
 

@@ -43,11 +43,17 @@ export async function POST(req: NextRequest) {
 
   const usuario = await prisma.usuario.findUnique({
     where: { email },
-    select: { id: true, nombre_completo: true, korai_semaforo: true },
+    select: { id: true, nombre_completo: true, korai_semaforo: true, role: true },
   });
 
   if (!usuario) {
     return NextResponse.json({ error: `Usuario no encontrado: ${email}` }, { status: 404 });
+  }
+
+  if (usuario.role !== 'user') {
+    return NextResponse.json({
+      error: `Este email pertenece a una cuenta de "${usuario.role}", no a un candidato. El dashboard de gobierno solo muestra candidatos (role: user). Usá el email de un candidato real.`,
+    }, { status: 400 });
   }
 
   const actual = (usuario.korai_semaforo as Record<string, unknown>) ?? {};

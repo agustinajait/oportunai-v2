@@ -309,6 +309,19 @@ function SyncManualPanel({ onSuccess }: { onSuccess: () => void }) {
   const [dims, setDims] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [userCheck, setUserCheck] = useState<{ nombre_completo: string; role: string } | null | 'loading' | 'not_found'>(null);
+
+  const checkEmail = async (val: string) => {
+    const trimmed = val.trim();
+    if (!trimmed || !trimmed.includes('@')) { setUserCheck(null); return; }
+    setUserCheck('loading');
+    try {
+      const r = await fetch(`/api/admin/gobierno/debug-user?email=${encodeURIComponent(trimmed)}`);
+      const d = await r.json();
+      if (d.error) setUserCheck('not_found');
+      else setUserCheck({ nombre_completo: d.nombre_completo, role: d.role });
+    } catch { setUserCheck('not_found'); }
+  };
 
   const handleSync = async () => {
     if (!email.trim()) return;
@@ -328,8 +341,8 @@ function SyncManualPanel({ onSuccess }: { onSuccess: () => void }) {
       });
       const data = await res.json();
       if (data.ok) {
-        setMsg({ ok: true, text: `✓ ${data.usuario} sincronizado` });
-        setEmail(''); setDims({});
+        setMsg({ ok: true, text: `✓ ${data.usuario} sincronizado correctamente` });
+        setEmail(''); setDims({}); setUserCheck(null);
         setTimeout(() => { onSuccess(); setMsg(null); }, 1500);
       } else {
         setMsg({ ok: false, text: data.error ?? 'Error' });
@@ -338,6 +351,9 @@ function SyncManualPanel({ onSuccess }: { onSuccess: () => void }) {
       setSaving(false);
     }
   };
+
+  const isAdminAccount = userCheck && typeof userCheck === 'object' && userCheck.role !== 'user';
+  const isValidCandidate = userCheck && typeof userCheck === 'object' && userCheck.role === 'user';
 
   if (!open) return (
     <button
@@ -352,7 +368,7 @@ function SyncManualPanel({ onSuccess }: { onSuccess: () => void }) {
     <div className="card p-5 border border-brand-200 bg-brand-50/30">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-ink-800">Cargar diagnóstico Korai manualmente</h3>
-        <button onClick={() => { setOpen(false); setMsg(null); }} className="text-ink-400 hover:text-ink-600">
+        <button onClick={() => { setOpen(false); setMsg(null); setUserCheck(null); }} className="text-ink-400 hover:text-ink-600">
           <X size={16} />
         </button>
       </div>
@@ -362,10 +378,29 @@ function SyncManualPanel({ onSuccess }: { onSuccess: () => void }) {
           <input
             type="email"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={e => { setEmail(e.target.value); setUserCheck(null); }}
+            onBlur={e => checkEmail(e.target.value)}
             placeholder="candidato@email.com"
             className="input-field text-sm"
           />
+          {/* Feedback del check de usuario */}
+          {userCheck === 'loading' && (
+            <p className="text-xs text-ink-400 mt-1.5 flex items-center gap-1"><Loader2 size={10} className="animate-spin" /> Buscando usuario…</p>
+          )}
+          {userCheck === 'not_found' && (
+            <p className="text-xs text-red-600 mt-1.5">❌ No se encontró ningún usuario con ese email</p>
+          )}
+          {isAdminAccount && (
+            <div className="mt-1.5 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-xs text-amber-700 font-medium">⚠️ Esta cuenta es <strong>{(userCheck as {role:string}).role}</strong>, no un candidato</p>
+              <p className="text-xs text-amber-600 mt-0.5">El dashboard de gobierno solo muestra usuarios con rol <strong>user</strong>. Usá el email de un candidato real.</p>
+            </div>
+          )}
+          {isValidCandidate && (
+            <p className="text-xs text-emerald-600 mt-1.5 flex items-center gap-1">
+              <Check size={10} /> <strong>{(userCheck as {nombre_completo:string}).nombre_completo}</strong> — candidato válido
+            </p>
+          )}
         </div>
         <div>
           <label className="label">Semáforo por dimensión</label>

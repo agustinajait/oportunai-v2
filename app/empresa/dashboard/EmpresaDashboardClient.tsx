@@ -609,18 +609,27 @@ export default function EmpresaDashboard() {
     setPostulantesServicio([]);
     setModulosServicio([]);
     setLoadingPostulantesServ(true);
-    const res = await fetch(`/api/empresa/servicios/${servicio.id}/postulantes`);
-    const data = await res.json();
+    // Cargar postulantes y módulos en paralelo para que el tab "Módulos activos" esté listo
+    const [postRes] = await Promise.all([
+      fetch(`/api/empresa/servicios/${servicio.id}/postulantes`),
+      cargarModulosServicio(servicio.id),
+    ]);
+    const data = await postRes.json();
     if (data.postulaciones) setPostulantesServicio(data.postulaciones);
     setLoadingPostulantesServ(false);
   }
 
   async function cargarModulosServicio(servicio_id: string) {
     setLoadingModulos(true);
-    const res = await fetch(`/api/empresa/servicios/${servicio_id}/modulos`);
-    const data = await res.json();
-    if (data.modulos) setModulosServicio(data.modulos);
-    setLoadingModulos(false);
+    try {
+      const res = await fetch(`/api/empresa/servicios/${servicio_id}/modulos`);
+      const data = await res.json();
+      if (data.modulos) setModulosServicio(data.modulos);
+    } catch (err) {
+      console.error('[cargarModulosServicio]', err);
+    } finally {
+      setLoadingModulos(false);
+    }
   }
 
   async function procesarPostulanteServicio(postulacion_id: string, estado: 'aceptado' | 'rechazado', horas?: number) {
@@ -2240,15 +2249,20 @@ export default function EmpresaDashboard() {
 
                 {/* Sub-tabs */}
                 <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-fit">
-                  {(['postulantes', 'modulos'] as const).map(v => (
-                    <button key={v} onClick={() => {
-                      setVistaServicio(v);
-                      if (v === 'modulos') cargarModulosServicio(servicioSeleccionado.id);
-                    }}
-                      className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${vistaServicio === v ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
-                      {v === 'postulantes' ? 'Postulantes' : 'Módulos activos'}
-                    </button>
-                  ))}
+                  <button onClick={() => setVistaServicio('postulantes')}
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${vistaServicio === 'postulantes' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
+                    Postulantes
+                    {postulantesServicio.length > 0 && (
+                      <span className="ml-1.5 bg-gray-200 text-gray-600 text-xs rounded-full px-1.5 py-0.5">{postulantesServicio.length}</span>
+                    )}
+                  </button>
+                  <button onClick={() => { setVistaServicio('modulos'); }}
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${vistaServicio === 'modulos' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
+                    Módulos activos
+                    {modulosServicio.length > 0 && (
+                      <span className="bg-teal-500 text-white text-xs rounded-full px-1.5 py-0.5">{modulosServicio.length}</span>
+                    )}
+                  </button>
                 </div>
 
                 {/* Vista Postulantes */}
@@ -2330,9 +2344,21 @@ export default function EmpresaDashboard() {
                                 </button>
                               </>
                             )}
-                            {p.estado !== 'pendiente' && (
-                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.estado === 'aceptado' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
-                                {p.estado === 'aceptado' ? 'Aceptado' : 'Rechazado'}
+                            {p.estado === 'aceptado' && (
+                              <>
+                                <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700">
+                                  Aceptado
+                                </span>
+                                <button
+                                  onClick={() => { setVistaServicio('modulos'); }}
+                                  className="text-xs bg-teal-600 text-white px-3 py-1.5 rounded-lg hover:bg-teal-700 flex items-center gap-1">
+                                  <Layers size={12} /> Ver módulo
+                                </button>
+                              </>
+                            )}
+                            {p.estado === 'rechazado' && (
+                              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-600">
+                                Rechazado
                               </span>
                             )}
                           </div>

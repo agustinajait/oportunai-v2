@@ -561,18 +561,19 @@ export default function GobiernoClient() {
         </div>
 
         {/* ── Estado general del territorio ──────────────── */}
-        {totalConDiag > 0 && (
-          <div className="card p-6">
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div>
-                <h2 className="text-base font-bold text-ink-900 uppercase tracking-wide">
-                  Estado general del territorio
-                </h2>
-                <p className="text-xs text-ink-400 mt-0.5">
-                  Basado en {totalConDiag} diagnósticos
-                  {porBarrio.length > 0 && ` — ${porBarrio.length} barrios`}
-                </p>
-              </div>
+        <div className="card p-6">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <h2 className="text-base font-bold text-ink-900 uppercase tracking-wide">
+                Estado general del territorio
+              </h2>
+              <p className="text-xs text-ink-400 mt-0.5">
+                {totalConDiag > 0
+                  ? `Basado en ${totalConDiag} diagnósticos${porBarrio.length > 0 ? ` — ${porBarrio.length} barrios` : ''}`
+                  : 'Esperando diagnósticos Korai de candidatos'}
+              </p>
+            </div>
+            {totalConDiag > 0 && (
               <div className="flex items-center gap-4 text-sm flex-shrink-0">
                 <div className="text-center">
                   <p className="text-2xl font-extrabold text-red-500">{estadoGeneral.pct_critico}%</p>
@@ -587,78 +588,93 @@ export default function GobiernoClient() {
                   <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wide">Estable</p>
                 </div>
               </div>
-            </div>
-            {/* Barra general */}
-            <div className="h-6 rounded-xl overflow-hidden flex bg-gray-100">
-              {estadoGeneral.pct_estable > 0 && (
-                <div className="h-full bg-emerald-500" style={{ width: `${estadoGeneral.pct_estable}%` }} />
-              )}
-              {estadoGeneral.pct_alerta > 0 && (
-                <div className="h-full bg-amber-400" style={{ width: `${estadoGeneral.pct_alerta}%` }} />
-              )}
-              {estadoGeneral.pct_critico > 0 && (
-                <div className="h-full bg-red-500" style={{ width: `${estadoGeneral.pct_critico}%` }} />
-              )}
-            </div>
-            <div className="flex items-center gap-4 mt-2 text-[11px] text-ink-400">
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" /> Estable: {estadoGeneral.estable}</span>
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block" /> Alerta: {estadoGeneral.alerta}</span>
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-red-500 inline-block" /> Crítico: {estadoGeneral.critico}</span>
-            </div>
+            )}
           </div>
-        )}
+          <div className="h-6 rounded-xl overflow-hidden flex bg-gray-100">
+            {totalConDiag === 0 ? (
+              <div className="h-full w-full bg-gray-100 animate-pulse rounded-xl" />
+            ) : (
+              <>
+                {estadoGeneral.pct_estable > 0 && <div className="h-full bg-emerald-500" style={{ width: `${estadoGeneral.pct_estable}%` }} />}
+                {estadoGeneral.pct_alerta > 0  && <div className="h-full bg-amber-400"  style={{ width: `${estadoGeneral.pct_alerta}%` }} />}
+                {estadoGeneral.pct_critico > 0 && <div className="h-full bg-red-500"    style={{ width: `${estadoGeneral.pct_critico}%` }} />}
+              </>
+            )}
+          </div>
+          <div className="flex items-center gap-4 mt-2 text-[11px] text-ink-400">
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" /> Estable: {estadoGeneral.estable}</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block" /> Alerta: {estadoGeneral.alerta}</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-red-500 inline-block" /> Crítico: {estadoGeneral.critico}</span>
+          </div>
+        </div>
 
         {/* ── Semáforo por dimensión ──────────────────────── */}
-        {totalConDiag > 0 && (
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h2 className="text-sm font-semibold text-ink-800 flex items-center gap-2">
-                  🚦 Diagnóstico por dimensión
-                </h2>
-                <p className="text-[11px] text-ink-400 mt-0.5">Hacé clic en una barra para ver los candidatos</p>
-              </div>
-              <div className="flex items-center gap-3 text-[11px] text-ink-500">
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-emerald-500 inline-block" /> Bien</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-amber-400 inline-block" /> Atención</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-red-500 inline-block" /> Prioritario</span>
-              </div>
+        <div className="card p-6">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-sm font-semibold text-ink-800 flex items-center gap-2">
+                🚦 Diagnóstico por dimensión
+              </h2>
+              <p className="text-[11px] text-ink-400 mt-0.5">
+                {totalConDiag > 0 ? 'Hacé clic en una barra para ver los candidatos' : 'Se completará con los diagnósticos Korai'}
+              </p>
             </div>
+            <div className="flex items-center gap-3 text-[11px] text-ink-500">
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-emerald-500 inline-block" /> Bien</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-amber-400 inline-block" /> Atención</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-red-500 inline-block" /> Prioritario</span>
+            </div>
+          </div>
+          {totalConDiag === 0 ? (
             <div className="space-y-3">
-              {rankingCriticidad.map(d => (
-                <StackedBar
-                  key={d.dim}
-                  dim={d.dim}
-                  data={d}
-                  onDrillDown={(dim, color) => setDrillDown({ dim, color })}
-                />
+              {Object.entries(DIMS_META).map(([dim, meta]) => (
+                <div key={dim} className="flex items-center gap-3">
+                  <span className="text-sm w-5">{meta.icon}</span>
+                  <span className="text-xs text-ink-500 w-20 flex-shrink-0">{meta.label}</span>
+                  <div className="flex-1 h-5 bg-gray-100 rounded-full" />
+                  <span className="text-xs text-ink-300 w-8 text-right">—</span>
+                </div>
               ))}
             </div>
-            <p className="text-[10px] text-ink-300 mt-4 text-right">Ordenado por % de situación prioritaria</p>
-          </div>
-        )}
+          ) : (
+            <div className="space-y-3">
+              {rankingCriticidad.map(d => (
+                <StackedBar key={d.dim} dim={d.dim} data={d} onDrillDown={(dim, color) => setDrillDown({ dim, color })} />
+              ))}
+            </div>
+          )}
+          <p className="text-[10px] text-ink-300 mt-4 text-right">Ordenado por % de situación prioritaria</p>
+        </div>
 
         {/* ── Barreras prioritarias ───────────────────────── */}
-        {areasCriticas.length > 0 && (
-          <div className="card p-6">
-            <h2 className="text-sm font-semibold text-ink-800 mb-4 flex items-center gap-2">
-              <AlertTriangle size={14} className="text-red-500" /> Barreras prioritarias
-            </h2>
+        <div className="card p-6">
+          <h2 className="text-sm font-semibold text-ink-800 mb-4 flex items-center gap-2">
+            <AlertTriangle size={14} className="text-red-500" /> Barreras prioritarias
+          </h2>
+          {areasCriticas.length === 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {Object.entries(DIMS_META).slice(0, 3).map(([dim, meta]) => (
+                <div key={dim} className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg opacity-40">{meta.icon}</span>
+                    <span className="font-semibold text-ink-400 text-sm">{meta.label}</span>
+                    <span className="ml-auto text-xs text-ink-300 bg-gray-100 px-2 py-0.5 rounded-full">—%</span>
+                  </div>
+                  <div className="h-3 bg-gray-100 rounded-full w-3/4" />
+                </div>
+              ))}
+            </div>
+          ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {areasCriticas.map(d => {
                 const meta = DIMS_META[d.dim];
                 return (
-                  <button
-                    key={d.dim}
-                    onClick={() => setDrillDown({ dim: d.dim, color: 'rojo' })}
-                    className="bg-red-50 border border-red-100 rounded-xl p-4 text-left hover:bg-red-100 transition-colors group"
-                  >
+                  <button key={d.dim} onClick={() => setDrillDown({ dim: d.dim, color: 'rojo' })}
+                    className="bg-red-50 border border-red-100 rounded-xl p-4 text-left hover:bg-red-100 transition-colors group">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-lg">{meta.icon}</span>
                       <span className="font-semibold text-ink-800 text-sm">{meta.label}</span>
-                      <span className="ml-auto text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">
-                        {d.pct_rojo}%
-                      </span>
+                      <span className="ml-auto text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">{d.pct_rojo}%</span>
                     </div>
                     <p className="text-xs text-ink-600 leading-relaxed">
                       <span className="font-semibold text-red-700">{d.rojo} personas</span> en situación crítica
@@ -671,188 +687,89 @@ export default function GobiernoClient() {
                 );
               })}
             </div>
-          </div>
-        )}
-
-        {/* ── Estadísticas sociales ───────────────────────── */}
-        {haySocial && (
-          <div className="card p-6">
-            <h2 className="text-sm font-semibold text-ink-800 mb-5 flex items-center gap-2">
-              <Users size={14} className="text-brand-600" /> Estadísticas sociales
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-
-              {/* Situación laboral */}
-              {totalSL > 0 && (
-                <div>
-                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3 flex items-center gap-1">
-                    💼 Situación laboral
-                  </p>
-                  <div className="space-y-3">
-                    {Object.entries(estadisticasSociales.situacion_laboral)
-                      .sort((a, b) => b[1] - a[1])
-                      .map(([key, val]) => (
-                        <SocialStatRow
-                          key={key}
-                          label={SIT_LABORAL_LABEL[key] ?? key}
-                          value={val}
-                          total={totalSL}
-                          color={SIT_LABORAL_COLOR[key] ?? 'gray'}
-                        />
-                      ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Ingreso del hogar */}
-              {totalIH > 0 && (
-                <div>
-                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3 flex items-center gap-1">
-                    💰 Ingreso del hogar
-                  </p>
-                  <div className="space-y-3">
-                    {['<700k', '700k-1.3m', '1.3m-2m', '>2m', 'prefiere_no_decir']
-                      .filter(k => estadisticasSociales.ingreso_hogar[k] > 0)
-                      .map(key => (
-                        <SocialStatRow
-                          key={key}
-                          label={INGRESO_LABEL[key] ?? key}
-                          value={estadisticasSociales.ingreso_hogar[key]}
-                          total={totalIH}
-                          color={INGRESO_COLOR[key] ?? 'gray'}
-                        />
-                      ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Tipo de vivienda */}
-              {totalTV > 0 && (
-                <div>
-                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3 flex items-center gap-1">
-                    🏠 Tipo de vivienda
-                  </p>
-                  <div className="space-y-3">
-                    {['propia', 'alquilada', 'prestada', 'inestable']
-                      .filter(k => estadisticasSociales.tipo_vivienda[k] > 0)
-                      .map(key => (
-                        <SocialStatRow
-                          key={key}
-                          label={VIVIENDA_LABEL[key] ?? key}
-                          value={estadisticasSociales.tipo_vivienda[key]}
-                          total={totalTV}
-                          color={VIVIENDA_COLOR[key] ?? 'gray'}
-                        />
-                      ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {!haySocial && (
-              <p className="text-xs text-ink-400 text-center py-4">
-                Los datos sociales aparecerán cuando Korai los envíe junto al diagnóstico
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* ── Dimensiones con más personas en riesgo ─────── */}
-        {totalConDiag > 0 && (
-          <div className="card p-6">
-            <h2 className="text-sm font-semibold text-ink-800 mb-4 flex items-center gap-2">
-              <TrendingUp size={14} className="text-brand-600" /> Dimensiones con más personas en riesgo
-            </h2>
-            <div className="space-y-3">
-              {[...rankingCriticidad].sort((a, b) => b.rojo - a.rojo).slice(0, 3).map((d, i) => {
-                const meta = DIMS_META[d.dim];
-                const maxRojo = [...rankingCriticidad].sort((a, b) => b.rojo - a.rojo)[0]?.rojo ?? 1;
-                const barW = maxRojo > 0 ? (d.rojo / maxRojo) * 100 : 0;
-                return (
-                  <button
-                    key={d.dim}
-                    onClick={() => setDrillDown({ dim: d.dim, color: 'rojo' })}
-                    className="w-full flex items-center gap-3 hover:bg-ink-50 px-2 py-1.5 rounded-lg transition-colors group"
-                  >
-                    <span className="text-xs font-bold text-ink-300 w-4">#{i + 1}</span>
-                    <span className="text-sm w-5">{meta.icon}</span>
-                    <span className="text-sm text-ink-700 w-20 flex-shrink-0 text-left">{meta.label}</span>
-                    <div className="flex-1 h-4 bg-red-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-red-500 rounded-full transition-all duration-500" style={{ width: `${barW}%` }} />
-                    </div>
-                    <span className="text-sm font-semibold text-red-600 w-10 text-right">{d.rojo}</span>
-                    <ChevronRight size={13} className="text-ink-200 group-hover:text-ink-400 flex-shrink-0 transition-colors" />
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
+          )}
+          {areasCriticas.length === 0 && (
+            <p className="text-xs text-ink-300 mt-3 text-center">
+              {totalConDiag > 0 ? '✅ Sin dimensiones críticas por ahora' : 'Aparecerán las áreas que requieren atención urgente'}
+            </p>
+          )}
+        </div>
 
         {/* ── Actividad en plataforma ────────────────────── */}
-        {hayActividad && (
-          <div className="card p-6">
-            <h2 className="text-sm font-semibold text-ink-800 mb-5 flex items-center gap-2">
-              <TrendingUp size={14} className="text-brand-600" /> Actividad en plataforma
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {/* Video CV */}
-              <div className="bg-brand-50 rounded-xl p-4 text-center">
-                <p className="text-2xl font-extrabold text-brand-700">{actividadPlataforma.conVideoCV}</p>
-                <p className="text-[11px] font-semibold text-brand-500 uppercase tracking-wide mt-0.5">Con Video CV</p>
-                <MiniBar value={actividadPlataforma.conVideoCV} total={kpis.total_usuarios} />
-              </div>
-              {/* Capacitaciones */}
-              <div className="bg-emerald-50 rounded-xl p-4 text-center">
-                <p className="text-2xl font-extrabold text-emerald-700">{actividadPlataforma.conCapacitacion}</p>
-                <p className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wide mt-0.5">Con capacitación</p>
-                <MiniBar value={actividadPlataforma.conCapacitacion} total={kpis.total_usuarios} color="emerald" />
-              </div>
-              {/* Módulos */}
-              <div className="bg-amber-50 rounded-xl p-4 text-center">
-                <p className="text-2xl font-extrabold text-amber-700">{actividadPlataforma.conModulo}</p>
-                <p className="text-[11px] font-semibold text-amber-500 uppercase tracking-wide mt-0.5">En módulos</p>
-                <MiniBar value={actividadPlataforma.conModulo} total={kpis.total_usuarios} color="amber" />
-              </div>
-              {/* Postulaciones */}
-              <div className="bg-purple-50 rounded-xl p-4 text-center">
-                <p className="text-2xl font-extrabold text-purple-700">{actividadPlataforma.conPostulacion}</p>
-                <p className="text-[11px] font-semibold text-purple-500 uppercase tracking-wide mt-0.5">Con postulaciones</p>
-                <MiniBar value={actividadPlataforma.conPostulacion} total={kpis.total_usuarios} color="brand" />
-              </div>
+        <div className="card p-6">
+          <h2 className="text-sm font-semibold text-ink-800 mb-5 flex items-center gap-2">
+            <TrendingUp size={14} className="text-brand-600" /> Actividad en plataforma
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="bg-brand-50 rounded-xl p-4 text-center">
+              <p className="text-2xl font-extrabold text-brand-700">{actividadPlataforma?.conVideoCV ?? 0}</p>
+              <p className="text-[11px] font-semibold text-brand-500 uppercase tracking-wide mt-0.5">Con Video CV</p>
+              <MiniBar value={actividadPlataforma?.conVideoCV ?? 0} total={kpis.total_usuarios} />
             </div>
-            {/* Totales acumulados */}
-            <div className="mt-4 flex flex-wrap gap-4 pt-4 border-t border-ink-100">
-              <div className="text-xs text-ink-500">
-                <span className="font-semibold text-ink-800">{actividadPlataforma.totalCapacitaciones}</span> capacitaciones completadas en total
-              </div>
-              <div className="text-xs text-ink-500">
-                <span className="font-semibold text-ink-800">{actividadPlataforma.totalPostulaciones}</span> postulaciones enviadas en total
-              </div>
-              <div className="text-xs text-ink-500">
-                <span className="font-semibold text-ink-800">{actividadPlataforma.totalModulos}</span> módulos de trabajo asignados
-              </div>
-              <div className="text-xs text-ink-500">
-                <span className="font-semibold text-ink-800">{actividadPlataforma.conReferencia}</span> personas con referencias laborales
-              </div>
+            <div className="bg-emerald-50 rounded-xl p-4 text-center">
+              <p className="text-2xl font-extrabold text-emerald-700">{actividadPlataforma?.conCapacitacion ?? 0}</p>
+              <p className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wide mt-0.5">Con capacitación</p>
+              <MiniBar value={actividadPlataforma?.conCapacitacion ?? 0} total={kpis.total_usuarios} color="emerald" />
+            </div>
+            <div className="bg-amber-50 rounded-xl p-4 text-center">
+              <p className="text-2xl font-extrabold text-amber-700">{actividadPlataforma?.conModulo ?? 0}</p>
+              <p className="text-[11px] font-semibold text-amber-500 uppercase tracking-wide mt-0.5">En módulos</p>
+              <MiniBar value={actividadPlataforma?.conModulo ?? 0} total={kpis.total_usuarios} color="amber" />
+            </div>
+            <div className="bg-purple-50 rounded-xl p-4 text-center">
+              <p className="text-2xl font-extrabold text-purple-700">{actividadPlataforma?.conPostulacion ?? 0}</p>
+              <p className="text-[11px] font-semibold text-purple-500 uppercase tracking-wide mt-0.5">Con postulaciones</p>
+              <MiniBar value={actividadPlataforma?.conPostulacion ?? 0} total={kpis.total_usuarios} color="brand" />
             </div>
           </div>
-        )}
+          <div className="mt-4 flex flex-wrap gap-4 pt-4 border-t border-ink-100">
+            <div className="text-xs text-ink-500">
+              <span className="font-semibold text-ink-800">{actividadPlataforma?.totalCapacitaciones ?? 0}</span> capacitaciones completadas en total
+            </div>
+            <div className="text-xs text-ink-500">
+              <span className="font-semibold text-ink-800">{actividadPlataforma?.totalPostulaciones ?? 0}</span> postulaciones enviadas en total
+            </div>
+            <div className="text-xs text-ink-500">
+              <span className="font-semibold text-ink-800">{actividadPlataforma?.totalModulos ?? 0}</span> módulos de trabajo asignados
+            </div>
+            <div className="text-xs text-ink-500">
+              <span className="font-semibold text-ink-800">{actividadPlataforma?.conReferencia ?? 0}</span> personas con referencias laborales
+            </div>
+          </div>
+        </div>
 
-        {/* ── Inteligencia del mercado laboral ───────────── */}
-        {hayFormativo && (
-          <div className="card p-6">
-            <h2 className="text-sm font-semibold text-ink-800 mb-5 flex items-center gap-2">
-              🏭 Talento disponible en el territorio
-            </h2>
+        {/* ── Talento disponible ──────────────────────────── */}
+        <div className="card p-6">
+          <h2 className="text-sm font-semibold text-ink-800 mb-5 flex items-center gap-2">
+            🏭 Talento disponible en el territorio
+          </h2>
+          {!hayFormativo ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-
-              {/* Oficios / Rubros de experiencia */}
+              <div>
+                <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">Oficios y rubros de experiencia</p>
+                {['—', '—', '—', '—'].map((_, i) => (
+                  <div key={i} className="flex items-center gap-2 mb-2">
+                    <div className="w-36 h-4 bg-gray-100 rounded flex-shrink-0" />
+                    <div className="flex-1 h-5 bg-gray-100 rounded-full" />
+                    <div className="w-6 h-4 bg-gray-100 rounded flex-shrink-0" />
+                  </div>
+                ))}
+                <p className="text-xs text-ink-300 mt-3">Se completará cuando los candidatos suban sus CVs</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">Habilidades y competencias</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {['Habilidad 1', 'Habilidad 2', 'Habilidad 3', 'Habilidad 4', 'Habilidad 5'].map(h => (
+                    <span key={h} className="text-[11px] bg-gray-100 text-ink-300 border border-gray-100 rounded-full px-2.5 py-0.5">{h}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               {perfilFormativo.topRubros.length > 0 && (
                 <div>
-                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">
-                    Oficios y rubros de experiencia
-                  </p>
+                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">Oficios y rubros de experiencia</p>
                   {perfilFormativo.topRubros.slice(0, 10).map(r => {
                     const maxR = perfilFormativo.topRubros[0]?.total ?? 1;
                     const w = Math.round((r.total / maxR) * 100);
@@ -868,27 +785,18 @@ export default function GobiernoClient() {
                   })}
                   {perfilFormativo.experienciaPromedio > 0 && (
                     <p className="text-xs text-ink-400 mt-3">
-                      Promedio de experiencia laboral: <span className="font-semibold text-ink-700">{perfilFormativo.experienciaPromedio} años</span>
+                      Promedio experiencia: <span className="font-semibold text-ink-700">{perfilFormativo.experienciaPromedio} años</span>
                     </p>
                   )}
                 </div>
               )}
-
-              {/* Habilidades / Competencias */}
               {perfilFormativo.topHabilidades.length > 0 && (
                 <div>
-                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">
-                    Habilidades y competencias
-                  </p>
+                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">Habilidades y competencias</p>
                   <div className="flex flex-wrap gap-1.5">
                     {perfilFormativo.topHabilidades.slice(0, 20).map(h => (
-                      <span
-                        key={h.nombre}
-                        className="inline-flex items-center gap-1 text-[11px] bg-brand-50 text-brand-700 border border-brand-100 rounded-full px-2.5 py-0.5"
-                        title={`${h.total} personas`}
-                      >
-                        {h.nombre}
-                        <span className="text-brand-400 font-semibold">{h.total}</span>
+                      <span key={h.nombre} className="inline-flex items-center gap-1 text-[11px] bg-brand-50 text-brand-700 border border-brand-100 rounded-full px-2.5 py-0.5" title={`${h.total} personas`}>
+                        {h.nombre} <span className="text-brand-400 font-semibold">{h.total}</span>
                       </span>
                     ))}
                   </div>
@@ -897,9 +805,7 @@ export default function GobiernoClient() {
                       <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-2">Idiomas</p>
                       <div className="flex flex-wrap gap-1.5">
                         {perfilFormativo.topIdiomas.map(i => (
-                          <span key={i.idioma} className="text-[11px] bg-ink-100 text-ink-600 rounded-full px-2.5 py-0.5">
-                            {i.idioma} ({i.total})
-                          </span>
+                          <span key={i.idioma} className="text-[11px] bg-ink-100 text-ink-600 rounded-full px-2.5 py-0.5">{i.idioma} ({i.total})</span>
                         ))}
                       </div>
                     </div>
@@ -907,21 +813,31 @@ export default function GobiernoClient() {
                 </div>
               )}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* ── Nivel de estudios + Alfabetización digital ──── */}
-        {(Object.keys(perfilFormativo?.nivelesEstudios ?? {}).length > 0 || alfabetizacionDigital?.conDato > 0) && (
-          <div className="card p-6">
-            <h2 className="text-sm font-semibold text-ink-800 mb-5 flex items-center gap-2">
-              📚 Perfil formativo y digital
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-
-              {/* Nivel de estudios */}
-              {Object.keys(perfilFormativo?.nivelesEstudios ?? {}).length > 0 && (
-                <div>
-                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">Nivel de estudios</p>
+        {/* ── Perfil formativo y digital ──────────────────── */}
+        <div className="card p-6">
+          <h2 className="text-sm font-semibold text-ink-800 mb-5 flex items-center gap-2">
+            📚 Perfil formativo y digital
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            {/* Nivel de estudios */}
+            <div>
+              <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">Nivel de estudios</p>
+              {Object.keys(perfilFormativo?.nivelesEstudios ?? {}).length === 0 ? (
+                <div className="space-y-2">
+                  {['Universitario', 'Secundario', 'Primario', 'Terciario / Técnico'].map(n => (
+                    <div key={n} className="flex items-center gap-2">
+                      <span className="text-xs text-ink-300 w-36 flex-shrink-0">{n}</span>
+                      <div className="flex-1 h-4 bg-gray-100 rounded-full" />
+                      <span className="text-xs text-ink-200 w-8 text-right">—</span>
+                    </div>
+                  ))}
+                  <p className="text-xs text-ink-300 mt-2">Datos disponibles cuando los candidatos carguen sus CVs</p>
+                </div>
+              ) : (
+                <>
                   {['Universitario', 'Terciario / Técnico', 'Maestría', 'Doctorado', 'Secundario', 'Primario', 'Cursos / Capacitaciones', 'Otro']
                     .filter(n => (perfilFormativo.nivelesEstudios[n] ?? 0) > 0)
                     .map(nivel => {
@@ -940,16 +856,28 @@ export default function GobiernoClient() {
                   {perfilFormativo.conCvCargado > 0 && (
                     <p className="text-[11px] text-ink-400 mt-3">{perfilFormativo.conCvCargado} CVs procesados por IA</p>
                   )}
-                </div>
+                </>
               )}
-
-              {/* Alfabetización digital */}
-              {alfabetizacionDigital?.conDato > 0 && (
-                <div>
-                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">Alfabetización digital</p>
-                  {[['Básico','bg-red-400'], ['Intermedio','bg-amber-400'], ['Avanzado','bg-emerald-500'], ['Sin dato','bg-gray-300']].map(([nivel, bg]) => {
-                    const val = alfabetizacionDigital.porNivel[nivel] ?? 0;
-                    const totalA = Object.values(alfabetizacionDigital.porNivel).reduce((a, b) => a + b, 0);
+            </div>
+            {/* Alfabetización digital */}
+            <div>
+              <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">Alfabetización digital</p>
+              {alfabetizacionDigital?.conDato === 0 ? (
+                <div className="space-y-2">
+                  {['Básico', 'Intermedio', 'Avanzado'].map(n => (
+                    <div key={n} className="flex items-center gap-2">
+                      <span className="text-xs text-ink-300 w-24 flex-shrink-0">{n}</span>
+                      <div className="flex-1 h-4 bg-gray-100 rounded-full" />
+                      <span className="text-xs text-ink-200 w-8 text-right">—</span>
+                    </div>
+                  ))}
+                  <p className="text-xs text-ink-300 mt-2">Disponible cuando los candidatos completan el test de alfa digital</p>
+                </div>
+              ) : (
+                <>
+                  {[['Básico','bg-red-400'], ['Intermedio','bg-amber-400'], ['Avanzado','bg-emerald-500']].map(([nivel, bg]) => {
+                    const val = alfabetizacionDigital?.porNivel[nivel] ?? 0;
+                    const totalA = Object.values(alfabetizacionDigital?.porNivel ?? {}).reduce((a, b) => a + b, 0);
                     if (val === 0) return null;
                     return (
                       <div key={nivel} className="flex items-center gap-2 mb-2">
@@ -961,23 +889,109 @@ export default function GobiernoClient() {
                       </div>
                     );
                   })}
-                  {alfabetizacionDigital.scorePromedio !== null && (
+                  {alfabetizacionDigital?.scorePromedio !== null && (
                     <p className="text-xs text-ink-500 mt-3">
-                      Score promedio digital: <span className="font-semibold text-ink-800">{alfabetizacionDigital.scorePromedio} / 100</span>
+                      Score promedio digital: <span className="font-semibold text-ink-800">{alfabetizacionDigital?.scorePromedio} / 100</span>
                     </p>
                   )}
-                </div>
+                </>
               )}
             </div>
           </div>
-        )}
+        </div>
+
+        {/* ── Estadísticas sociales ───────────────────────── */}
+        <div className="card p-6">
+          <h2 className="text-sm font-semibold text-ink-800 mb-5 flex items-center gap-2">
+            <Users size={14} className="text-brand-600" /> Estadísticas sociales
+          </h2>
+          {!haySocial ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {['💼 Situación laboral', '💰 Ingreso del hogar', '🏠 Tipo de vivienda'].map(label => (
+                <div key={label}>
+                  <p className="text-[11px] font-bold text-ink-300 uppercase tracking-wide mb-3">{label}</p>
+                  {[75, 55, 40].map(w => (
+                    <div key={w} className="flex items-center gap-2 mb-2">
+                      <div className={`w-28 h-3 bg-gray-100 rounded flex-shrink-0`} />
+                      <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-gray-200 rounded-full" style={{ width: `${w}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+              <p className="col-span-full text-xs text-ink-300 text-center mt-2">
+                Los datos sociales se completan con el diagnóstico Korai
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {totalSL > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">💼 Situación laboral</p>
+                  <div className="space-y-3">
+                    {Object.entries(estadisticasSociales.situacion_laboral).sort((a, b) => b[1] - a[1]).map(([key, val]) => (
+                      <SocialStatRow key={key} label={SIT_LABORAL_LABEL[key] ?? key} value={val} total={totalSL} color={SIT_LABORAL_COLOR[key] ?? 'gray'} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {totalIH > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">💰 Ingreso del hogar</p>
+                  <div className="space-y-3">
+                    {['<700k', '700k-1.3m', '1.3m-2m', '>2m', 'prefiere_no_decir'].filter(k => estadisticasSociales.ingreso_hogar[k] > 0).map(key => (
+                      <SocialStatRow key={key} label={INGRESO_LABEL[key] ?? key} value={estadisticasSociales.ingreso_hogar[key]} total={totalIH} color={INGRESO_COLOR[key] ?? 'gray'} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {totalTV > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">🏠 Tipo de vivienda</p>
+                  <div className="space-y-3">
+                    {['propia', 'alquilada', 'prestada', 'inestable'].filter(k => estadisticasSociales.tipo_vivienda[k] > 0).map(key => (
+                      <SocialStatRow key={key} label={VIVIENDA_LABEL[key] ?? key} value={estadisticasSociales.tipo_vivienda[key]} total={totalTV} color={VIVIENDA_COLOR[key] ?? 'gray'} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* ── Empleabilidad por zona ──────────────────────── */}
-        {porBarrio.length > 0 && (
-          <div className="card p-6">
-            <h2 className="text-sm font-semibold text-ink-800 mb-4 flex items-center gap-2">
-              <MapPin size={14} className="text-brand-600" /> Empleabilidad por barrio
-            </h2>
+        <div className="card p-6">
+          <h2 className="text-sm font-semibold text-ink-800 mb-4 flex items-center gap-2">
+            <MapPin size={14} className="text-brand-600" /> Empleabilidad por barrio
+          </h2>
+          {porBarrio.length === 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-[10px] text-ink-400 uppercase tracking-wide border-b border-ink-100">
+                    <th className="text-left pb-2 pr-4">Barrio</th>
+                    <th className="text-right pb-2 pr-4 w-16">Personas</th>
+                    <th className="text-right pb-2 pr-4 w-16">Crítico</th>
+                    <th className="text-left pb-2">Oficios frecuentes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[1, 2, 3].map(i => (
+                    <tr key={i} className="border-b border-ink-50">
+                      <td className="py-2 pr-4"><div className="h-3 w-24 bg-gray-100 rounded" /></td>
+                      <td className="py-2 pr-4 text-right"><div className="h-3 w-6 bg-gray-100 rounded ml-auto" /></td>
+                      <td className="py-2 pr-4 text-right"><div className="h-3 w-8 bg-gray-100 rounded ml-auto" /></td>
+                      <td className="py-2"><div className="h-3 w-40 bg-gray-100 rounded" /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="text-xs text-ink-300 mt-3 text-center">
+                Aparecerá cuando los candidatos tengan barrio en su diagnóstico
+              </p>
+            </div>
+          ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
@@ -994,34 +1008,86 @@ export default function GobiernoClient() {
                       <td className="py-2 pr-4 font-medium text-ink-800">{b.barrio}</td>
                       <td className="py-2 pr-4 text-right text-ink-600">{b.total}</td>
                       <td className="py-2 pr-4 text-right">
-                        {b.pct_rojo > 0 ? (
-                          <span className="text-red-600 font-semibold">{b.pct_rojo}%</span>
-                        ) : (
-                          <span className="text-emerald-500">—</span>
-                        )}
+                        {b.pct_rojo > 0 ? <span className="text-red-600 font-semibold">{b.pct_rojo}%</span> : <span className="text-emerald-500">—</span>}
                       </td>
-                      <td className="py-2 text-ink-500">
-                        {(b.topRubros ?? []).join(' · ') || '—'}
-                      </td>
+                      <td className="py-2 text-ink-500">{(b.topRubros ?? []).join(' · ') || '—'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              {porBarrio.length > 15 && (
+                <p className="text-[11px] text-ink-300 mt-3 text-right">Mostrando 15 de {porBarrio.length} barrios</p>
+              )}
             </div>
-            {porBarrio.length > 15 && (
-              <p className="text-[11px] text-ink-300 mt-3 text-right">
-                Mostrando 15 de {porBarrio.length} barrios
-              </p>
-            )}
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* ── Dimensiones con más personas en riesgo ─────── */}
+        <div className="card p-6">
+          <h2 className="text-sm font-semibold text-ink-800 mb-4 flex items-center gap-2">
+            <TrendingUp size={14} className="text-brand-600" /> Dimensiones con más personas en riesgo
+          </h2>
+          {totalConDiag === 0 ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="flex items-center gap-3 px-2 py-1.5">
+                  <span className="text-xs font-bold text-ink-200 w-4">#{i}</span>
+                  <div className="w-5 h-5 bg-gray-100 rounded" />
+                  <div className="w-20 h-4 bg-gray-100 rounded flex-shrink-0" />
+                  <div className="flex-1 h-4 bg-gray-100 rounded-full" />
+                  <div className="w-10 h-4 bg-gray-100 rounded" />
+                </div>
+              ))}
+              <p className="text-xs text-ink-300 text-center mt-1">Aparecerá con los diagnósticos Korai</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {[...rankingCriticidad].sort((a, b) => b.rojo - a.rojo).slice(0, 3).map((d, i) => {
+                const meta = DIMS_META[d.dim];
+                const maxRojo = [...rankingCriticidad].sort((a, b) => b.rojo - a.rojo)[0]?.rojo ?? 1;
+                const barW = maxRojo > 0 ? (d.rojo / maxRojo) * 100 : 0;
+                return (
+                  <button key={d.dim} onClick={() => setDrillDown({ dim: d.dim, color: 'rojo' })}
+                    className="w-full flex items-center gap-3 hover:bg-ink-50 px-2 py-1.5 rounded-lg transition-colors group">
+                    <span className="text-xs font-bold text-ink-300 w-4">#{i + 1}</span>
+                    <span className="text-sm w-5">{meta.icon}</span>
+                    <span className="text-sm text-ink-700 w-20 flex-shrink-0 text-left">{meta.label}</span>
+                    <div className="flex-1 h-4 bg-red-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-red-500 rounded-full transition-all duration-500" style={{ width: `${barW}%` }} />
+                    </div>
+                    <span className="text-sm font-semibold text-red-600 w-10 text-right">{d.rojo}</span>
+                    <ChevronRight size={13} className="text-ink-200 group-hover:text-ink-400 flex-shrink-0 transition-colors" />
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* ── Voces del territorio ────────────────────────── */}
-        {voces.length > 0 && (
-          <div className="card p-6">
-            <h2 className="text-sm font-semibold text-ink-800 mb-4 flex items-center gap-2">
-              <Quote size={14} className="text-brand-600" /> Voces del territorio
-            </h2>
+        <div className="card p-6">
+          <h2 className="text-sm font-semibold text-ink-800 mb-4 flex items-center gap-2">
+            <Quote size={14} className="text-brand-600" /> Voces del territorio
+          </h2>
+          {voces.length === 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[1, 2].map(i => (
+                <div key={i} className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <div className="h-3 w-20 bg-gray-100 rounded" />
+                    <div className="h-3 w-16 bg-gray-100 rounded" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-3 w-full bg-gray-100 rounded" />
+                    <div className="h-3 w-4/5 bg-gray-100 rounded" />
+                  </div>
+                </div>
+              ))}
+              <p className="col-span-full text-xs text-ink-300 text-center mt-1">
+                Aparecerán los testimonios de los candidatos sobre sus situaciones
+              </p>
+            </div>
+          ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {voces.map((v, i) => (
                 <div key={i} className="bg-ink-50 border border-ink-100 rounded-xl p-4">
@@ -1037,17 +1103,8 @@ export default function GobiernoClient() {
                 </div>
               ))}
             </div>
-          </div>
-        )}
-
-        {/* ── Sin datos ───────────────────────────────────── */}
-        {totalConDiag === 0 && (
-          <div className="card p-12 text-center text-ink-400">
-            <BarChart2 size={40} className="mx-auto mb-3 opacity-30" />
-            <p className="font-medium">Todavía no hay diagnósticos de Korai registrados</p>
-            <p className="text-sm mt-1">Los datos aparecerán aquí cuando los candidatos completen el test</p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </>
   );

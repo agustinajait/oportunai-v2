@@ -59,6 +59,12 @@ interface GobData {
     conTaller: number; conModulo: number; conPostulacion: number; conReferencia: number;
     totalCapacitaciones: number; totalPostulaciones: number; totalModulos: number;
   };
+  detallePorDimension: Record<string, {
+    verde: number; amarillo: number; rojo: number; sin_dato: number; total: number;
+    pct_verde: number; pct_amarillo: number; pct_rojo: number;
+    barriosRojo: { barrio: string; rojo: number; amarillo: number; verde: number; total: number }[];
+    situacionEnRojo: { sit: string; n: number }[];
+  }>;
   porBarrio: { barrio: string; total: number; rojo: number; amarillo: number; pct_rojo: number; topRubros?: string[] }[];
   voces: { barrio: string; texto: string; fecha: string }[];
 }
@@ -500,6 +506,7 @@ export default function GobiernoClient() {
 
   const {
     kpis, estadoGeneral, rankingCriticidad, estadisticasSociales,
+    detallePorDimension,
     perfilFormativo, alfabetizacionDigital, actividadPlataforma,
     porBarrio, voces,
   } = data;
@@ -644,6 +651,111 @@ export default function GobiernoClient() {
             </div>
           )}
           <p className="text-[10px] text-ink-300 mt-4 text-right">Ordenado por % de situación prioritaria</p>
+        </div>
+
+        {/* ── Detalle por dimensión (réplica panel Korai) ─── */}
+        <div>
+          <h2 className="text-sm font-semibold text-ink-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+            🚦 Detalle por dimensión
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Object.entries(DIMS_META).map(([dim, meta]) => {
+              const d = detallePorDimension?.[dim];
+              const total = d?.total ?? 0;
+              return (
+                <div key={dim} className="card p-5">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{meta.icon}</span>
+                      <h3 className="font-semibold text-ink-800 text-sm">{meta.label}</h3>
+                    </div>
+                    {total > 0 && (
+                      <button
+                        onClick={() => setDrillDown({ dim, color: 'rojo' })}
+                        className="text-[10px] text-brand-500 hover:text-brand-700 hover:underline"
+                      >
+                        Ver candidatos →
+                      </button>
+                    )}
+                  </div>
+
+                  {total === 0 ? (
+                    /* Estado vacío */
+                    <div className="space-y-2">
+                      {['Bien', 'Mejorable', 'Prioritario'].map(l => (
+                        <div key={l} className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-gray-100 flex-shrink-0" />
+                          <span className="text-xs text-ink-300">{l}</span>
+                          <div className="flex-1 h-2 bg-gray-100 rounded-full ml-auto" />
+                          <span className="text-xs text-ink-200 w-6 text-right">—</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      {/* Números grandes */}
+                      <div className="grid grid-cols-3 gap-2 mb-3">
+                        <div className="text-center bg-emerald-50 rounded-xl py-2.5 cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => setDrillDown({ dim, color: 'verde' })}>
+                          <p className="text-xl font-extrabold text-emerald-700">{d!.verde}</p>
+                          <p className="text-[10px] font-semibold text-emerald-500 uppercase">Bien</p>
+                          <p className="text-[10px] text-emerald-400">{d!.pct_verde}%</p>
+                        </div>
+                        <div className="text-center bg-amber-50 rounded-xl py-2.5 cursor-pointer hover:bg-amber-100 transition-colors" onClick={() => setDrillDown({ dim, color: 'amarillo' })}>
+                          <p className="text-xl font-extrabold text-amber-600">{d!.amarillo}</p>
+                          <p className="text-[10px] font-semibold text-amber-500 uppercase">Atención</p>
+                          <p className="text-[10px] text-amber-400">{d!.pct_amarillo}%</p>
+                        </div>
+                        <div className="text-center bg-red-50 rounded-xl py-2.5 cursor-pointer hover:bg-red-100 transition-colors" onClick={() => setDrillDown({ dim, color: 'rojo' })}>
+                          <p className="text-xl font-extrabold text-red-600">{d!.rojo}</p>
+                          <p className="text-[10px] font-semibold text-red-500 uppercase">Prioritario</p>
+                          <p className="text-[10px] text-red-400">{d!.pct_rojo}%</p>
+                        </div>
+                      </div>
+
+                      {/* Barra apilada */}
+                      <div className="h-2.5 rounded-full overflow-hidden flex bg-gray-100 mb-3">
+                        {d!.pct_verde > 0 && <div className="h-full bg-emerald-500" style={{ width: `${d!.pct_verde}%` }} />}
+                        {d!.pct_amarillo > 0 && <div className="h-full bg-amber-400" style={{ width: `${d!.pct_amarillo}%` }} />}
+                        {d!.pct_rojo > 0 && <div className="h-full bg-red-500" style={{ width: `${d!.pct_rojo}%` }} />}
+                      </div>
+
+                      {/* Sin dato */}
+                      {d!.sin_dato > 0 && (
+                        <p className="text-[10px] text-ink-300 mb-2">{d!.sin_dato} sin diagnóstico en esta dimensión</p>
+                      )}
+
+                      {/* Top barrios con rojo */}
+                      {d!.barriosRojo.length > 0 && (
+                        <div className="mt-2 pt-2 border-t border-ink-50">
+                          <p className="text-[10px] font-semibold text-ink-400 uppercase tracking-wide mb-1.5">Barrios prioritarios</p>
+                          {d!.barriosRojo.slice(0, 3).map(b => (
+                            <div key={b.barrio} className="flex items-center gap-2 mb-1">
+                              <span className="text-[10px] text-ink-600 truncate flex-1">{b.barrio}</span>
+                              <span className="text-[10px] font-semibold text-red-500">{b.rojo} 🔴</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Situación laboral en rojo */}
+                      {d!.situacionEnRojo.length > 0 && (
+                        <div className="mt-2 pt-2 border-t border-ink-50">
+                          <p className="text-[10px] font-semibold text-ink-400 uppercase tracking-wide mb-1.5">Sit. laboral (críticos)</p>
+                          {d!.situacionEnRojo.map(s => (
+                            <div key={s.sit} className="flex items-center justify-between mb-1">
+                              <span className="text-[10px] text-ink-600">{SIT_LABORAL_LABEL[s.sit] ?? s.sit}</span>
+                              <span className="text-[10px] font-semibold text-red-500">{s.n}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* ── Barreras prioritarias ───────────────────────── */}

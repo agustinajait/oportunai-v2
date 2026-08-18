@@ -94,6 +94,13 @@ export async function GET(req: NextRequest) {
     vivienda:  { verde: 0, amarillo: 0, rojo: 0, sin_dato: 0 },
     red:       { verde: 0, amarillo: 0, rojo: 0, sin_dato: 0 },
   };
+  // Cruce dimensión × barrio y dimensión × situación_laboral
+  const dimXBarrio: Record<Dim, Record<string, { rojo: number; amarillo: number; verde: number }>> = {
+    empleo: {}, educacion: {}, ingresos: {}, salud: {}, vivienda: {}, red: {},
+  };
+  const dimXSituacion: Record<Dim, Record<string, number>> = {
+    empleo: {}, educacion: {}, ingresos: {}, salud: {}, vivienda: {}, red: {},
+  };
   let estadoCritico = 0, estadoAlerta = 0, estadoEstable = 0;
   const situacionLaboral: Record<string, number> = {};
   const ingresoHogar:     Record<string, number> = {};
@@ -138,12 +145,26 @@ export async function GET(req: NextRequest) {
 
     if (sem) {
       let tieneRojo = false, tieneAmarillo = false;
+      const sl = sem.situacion_laboral as string | undefined;
+      const ih = sem.ingreso_hogar as string | undefined;
+      const tv = sem.tipo_vivienda as string | undefined;
+
       for (const dim of DIMS) {
         const color = sem[dim] as Color | undefined;
         if (color === 'verde' || color === 'amarillo' || color === 'rojo') {
           porDimension[dim][color]++;
           if (color === 'rojo') tieneRojo = true;
           if (color === 'amarillo') tieneAmarillo = true;
+
+          // Cruce dim × barrio
+          if (barrio) {
+            if (!dimXBarrio[dim][barrio]) dimXBarrio[dim][barrio] = { rojo: 0, amarillo: 0, verde: 0 };
+            dimXBarrio[dim][barrio][color]++;
+          }
+          // Cruce dim × situación laboral
+          if (sl && color === 'rojo') {
+            dimXSituacion[dim][sl] = (dimXSituacion[dim][sl] ?? 0) + 1;
+          }
         } else {
           porDimension[dim].sin_dato++;
         }
@@ -152,11 +173,8 @@ export async function GET(req: NextRequest) {
       else if (tieneAmarillo) estadoAlerta++;
       else estadoEstable++;
 
-      const sl = sem.situacion_laboral as string | undefined;
       if (sl) situacionLaboral[sl] = (situacionLaboral[sl] ?? 0) + 1;
-      const ih = sem.ingreso_hogar as string | undefined;
       if (ih) ingresoHogar[ih] = (ingresoHogar[ih] ?? 0) + 1;
-      const tv = sem.tipo_vivienda as string | undefined;
       if (tv) tipoVivienda[tv] = (tipoVivienda[tv] ?? 0) + 1;
 
       const motivo = sem.motivo as string | undefined;
@@ -272,6 +290,40 @@ export async function GET(req: NextRequest) {
       pct_rojo: pct(d.rojo, total), pct_amarillo: pct(d.amarillo, total), pct_verde: pct(d.verde, total) };
   }).sort((a, b) => b.pct_rojo - a.pct_rojo);
 
+  // ── Detalle por dimensión (para replicar panel Korai) ─
+  const detallePorDimension = DIMS.reduce((acc, dim) => {
+    const d = porDimension[dim];
+    const total = d.verde + d.amarillo + d.rojo;
+
+    // Top 5 barrios con más rojos en esta dimensión
+    const barriosRojo = Object.entries(dimXBarrio[dim])
+      .map(([barrio, c]) => ({ barrio, rojo: c.rojo, amarillo: c.amarillo, verde: c.verde, total: c.rojo + c.amarillo + c.verde }))
+      .filter(b => b.total > 0)
+      .sort((a, b) => b.rojo - a.rojo)
+      .slice(0, 5);
+
+    // Situación laboral de personas en rojo para esta dimensión
+    const situacionEnRojo = Object.entries(dimXSituacion[dim])
+      .map(([sit, n]) => ({ sit, n }))
+      .sort((a, b) => b.n - a.n);
+
+    acc[dim] = {
+      verde: d.verde, amarillo: d.amarillo, rojo: d.rojo, sin_dato: d.sin_dato,
+      total,
+      pct_verde:    pct(d.verde,    total),
+      pct_amarillo: pct(d.amarillo, total),
+      pct_rojo:     pct(d.rojo,     total),
+      barriosRojo,
+      situacionEnRojo,
+    };
+    return acc;
+  }, {} as Record<Dim, {
+    verde: number; amarillo: number; rojo: number; sin_dato: number; total: number;
+    pct_verde: number; pct_amarillo: number; pct_rojo: number;
+    barriosRojo: { barrio: string; rojo: number; amarillo: number; verde: number; total: number }[];
+    situacionEnRojo: { sit: string; n: number }[];
+  }>);
+
   const topHabilidades = Object.entries(habilidadesMap)
     .sort((a, b) => b[1] - a[1]).slice(0, 20)
     .map(([nombre, total]) => ({ nombre, total }));
@@ -329,6 +381,7 @@ export async function GET(req: NextRequest) {
     },
     porDimension,
     rankingCriticidad,
+    detallePorDimension,
     estadisticasSociales: {
       situacion_laboral: situacionLaboral,
       ingreso_hogar:     ingresoHogar,

@@ -15,6 +15,7 @@ import AlfaExpandable from './AlfaExpandable';
 import BuscadorNL from '@/components/ui/BuscadorNL';
 import HeroVideo from '@/components/ui/HeroVideo';
 import ScrollReveal from '@/components/ui/ScrollReveal';
+import ScrollArrow from '@/components/ui/ScrollArrow';
 
 interface Sector {
   label: string;
@@ -158,6 +159,14 @@ export default async function LandingPage() {
             <CircleCheck size={14} strokeWidth={2}/>
             Sin costos. Sin complicaciones.
           </p>
+
+          {/* Scroll down arrow — desktop only */}
+          <div style={{ marginTop: 40, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <ScrollArrow targetId="steps" dark />
+            <span style={{ fontSize: 12, color: '#b0b0c4', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              Cómo funciona
+            </span>
+          </div>
         </div>
 
         {/* ── Derecha: video o foto + cards flotantes ── */}
@@ -206,11 +215,14 @@ export default async function LandingPage() {
       </section>
 
       {/* ── STEPS — Tu camino en 5 pasos ── */}
-      <section className={s.secSteps}>
+      <section id="steps" className={s.secSteps}>
         <div className={`${s.secStepsHead} sr-up`}>
           <h2 className={s.secStepsH}>
             Tu camino en <span className={s.secStepsAccent}>5 pasos</span>
           </h2>
+          <p style={{ fontSize: 15, color: '#64748b', marginTop: 8 }}>
+            Desde cero hasta conseguir tu trabajo — así es el proceso.
+          </p>
         </div>
 
         <div className={s.stepsNew}>

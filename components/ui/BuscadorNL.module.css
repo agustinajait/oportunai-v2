@@ -477,7 +477,129 @@
 .emptySub {
   font-size: 14px;
   color: #9ca3af;
+  margin-bottom: 20px !important;
 }
+
+.emptyRegisterBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #6d28d9;
+  color: #fff;
+  border-radius: 10px;
+  padding: 12px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 4px;
+  box-shadow: 0 4px 16px rgba(109,40,217,0.28);
+  transition: background .2s, transform .1s;
+}
+.emptyRegisterBtn:hover { background: #5b21b6; transform: translateY(-1px); }
+
+/* ─── Chips de categoría ─────────────────────────────────────────────────────── */
+
+.categorias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.catChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255,255,255,0.75);
+  border: 1.5px solid rgba(109,40,217,0.15);
+  border-radius: 99px;
+  padding: 8px 16px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #4c1d95;
+  cursor: pointer;
+  transition: all .18s ease;
+  font-family: inherit;
+  backdrop-filter: blur(8px);
+}
+.catChip:hover {
+  background: #ede9fe;
+  border-color: rgba(109,40,217,0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(109,40,217,0.15);
+}
+.catChipActive {
+  background: #6d28d9;
+  color: #fff;
+  border-color: #6d28d9;
+  box-shadow: 0 4px 16px rgba(109,40,217,0.30);
+}
+.catChipActive:hover {
+  background: #5b21b6;
+  border-color: #5b21b6;
+}
+.catEmoji {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* ─── CTA registro al pie de resultados ─────────────────────────────────────── */
+
+.resultsRegisterCta {
+  margin-top: 28px;
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+  border: 1.5px solid rgba(109,40,217,0.18);
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.resultsRegisterCtaText {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+
+.resultsRegisterCtaIcon {
+  color: #6d28d9;
+  flex-shrink: 0;
+}
+
+.resultsRegisterCtaText strong {
+  font-size: 15px;
+  color: #1a1a2e;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.resultsRegisterCtaText p {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.resultsRegisterCtaBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #6d28d9;
+  color: #fff;
+  border-radius: 10px;
+  padding: 11px 20px;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(109,40,217,0.28);
+  transition: background .2s, transform .1s;
+}
+.resultsRegisterCtaBtn:hover { background: #5b21b6; transform: translateY(-1px); }
 
 /* ─── Responsive ─────────────────────────────────────────────────────────────── */
 
@@ -485,6 +607,24 @@
   .wrapHome {
     padding: 60px 16px 80px;
   }
+
+  .categorias {
+    gap: 6px;
+    margin-top: 18px;
+  }
+  .catChip {
+    font-size: 12.5px;
+    padding: 7px 13px;
+  }
+  .catEmoji { font-size: 14px; }
+
+  .resultsRegisterCta {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px 18px;
+    gap: 14px;
+  }
+  .resultsRegisterCtaBtn { width: 100%; justify-content: center; }
 
   .form {
     flex-direction: column;

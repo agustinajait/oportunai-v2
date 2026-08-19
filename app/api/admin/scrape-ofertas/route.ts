@@ -7,17 +7,8 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // Vercel Pro: hasta 300s; en free plan usa el máximo disponible
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { scrapeComputrabajo } from '@/lib/scrapers/computrabajo';
-import { scrapeZonaJobs } from '@/lib/scrapers/zonajobs';
-import { scrapeBumeran } from '@/lib/scrapers/bumeran';
-import {
-  scrapeMercadoLibre,
-  scrapeYPF,
-  scrapeMcDonalds,
-  scrapeMostaza,
-  scrapeStarbucks,
-  scrapeSanIsidro,
-} from '@/lib/scrapers/empresas';
+import { scrapeAdzuna } from '@/lib/scrapers/adzuna';
+import { scrapeMercadoLibre, scrapeYPF, scrapeMcDonalds, scrapeMostaza, scrapeStarbucks, scrapeSanIsidro } from '@/lib/scrapers/empresas';
 import type { JobListing } from '@/lib/scrapers/computrabajo';
 
 const SCRAPE_KEY = process.env.SCRAPE_API_KEY;
@@ -112,39 +103,14 @@ export async function POST(req: NextRequest) {
   const errors: Record<string, string> = {};
   const debugItems: Record<string, unknown[]> = {};
 
-  // Pocas keywords para no superar el timeout de Vercel (10-30s free, 300s Pro)
-  const KEYWORDS = ['cajero', 'operario', 'atencion al cliente', 'mozo', 'repositor'];
-
-  // ── Computrabajo ──────────────────────────────────────────────────────────
-  if (runAll || fuentes.includes('computrabajo')) {
+  // ── Adzuna (fuente principal — agrega Computrabajo, ZonaJobs, Bumeran, etc.) ──
+  if (runAll || fuentes.includes('adzuna')) {
     try {
-      const items = await scrapeComputrabajo(KEYWORDS, 1);
-      if (debug) { debugItems.computrabajo = items; stats.computrabajo = items.length; }
-      else stats.computrabajo = await saveListings('computrabajo', items);
+      const items = await scrapeAdzuna();
+      if (debug) { debugItems.adzuna = items; stats.adzuna = items.length; }
+      else stats.adzuna = await saveListings('adzuna', items);
     } catch (err) {
-      errors.computrabajo = String(err);
-    }
-  }
-
-  // ── ZonaJobs ─────────────────────────────────────────────────────────────
-  if (runAll || fuentes.includes('zonajobs')) {
-    try {
-      const items = await scrapeZonaJobs(KEYWORDS, 10);
-      if (debug) { debugItems.zonajobs = items; stats.zonajobs = items.length; }
-      else stats.zonajobs = await saveListings('zonajobs', items);
-    } catch (err) {
-      errors.zonajobs = String(err);
-    }
-  }
-
-  // ── Bumeran ───────────────────────────────────────────────────────────────
-  if (runAll || fuentes.includes('bumeran')) {
-    try {
-      const items = await scrapeBumeran(KEYWORDS, 10);
-      if (debug) { debugItems.bumeran = items; stats.bumeran = items.length; }
-      else stats.bumeran = await saveListings('bumeran', items);
-    } catch (err) {
-      errors.bumeran = String(err);
+      errors.adzuna = String(err);
     }
   }
 

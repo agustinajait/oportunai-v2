@@ -27,7 +27,7 @@ export default function HeroVideo() {
         objectPosition: 'center 15%',
       }}
     >
-      <source src="/hero-video.mp4" type="video/mp4" />
+      <source src="/hero-video.mp4.mp4" type="video/mp4" />
       <source src="/hero-video.webm" type="video/webm" />
     </video>
   );

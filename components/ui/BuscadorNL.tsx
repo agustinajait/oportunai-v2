@@ -236,13 +236,7 @@ export default function BuscadorNL({ variant = 'home', className = '' }: Props) 
           ) : (
             <div className={styles.grid}>
               {resultados.map((r) => (
-                <a
-                  key={r.id}
-                  href={r.url}
-                  target={r.tipo === 'externa' ? '_blank' : '_self'}
-                  rel={r.tipo === 'externa' ? 'noopener noreferrer' : undefined}
-                  className={styles.card}
-                >
+                <div key={r.id} className={styles.card}>
                   {/* Logo / Avatar */}
                   <div className={styles.cardLogo}>
                     {r.logo_url ? (
@@ -260,7 +254,6 @@ export default function BuscadorNL({ variant = 'home', className = '' }: Props) 
                       <span className={`${styles.cardFuente} ${styles[`fuente_${r.fuente.replace(/[^a-z]/g, '')}`] || ''}`}>
                         {fuente_label[r.fuente] || r.fuente}
                       </span>
-                      {r.tipo === 'externa' && <ExternalLink size={12} className={styles.extIco} />}
                     </div>
                     <h3 className={styles.cardTitle}>{r.titulo}</h3>
                     <p className={styles.cardEmpresa}>{r.empresa_nombre}</p>
@@ -286,8 +279,22 @@ export default function BuscadorNL({ variant = 'home', className = '' }: Props) 
                     )}
                   </div>
 
-                  <ArrowRight size={16} className={styles.cardArrow} />
-                </a>
+                  {/* CTA — distinto para interna vs externa */}
+                  {r.tipo === 'interna' ? (
+                    <a href={r.url} className={styles.cardBtnPrimary}>
+                      Postularme <ArrowRight size={14} />
+                    </a>
+                  ) : (
+                    <a
+                      href={r.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.cardBtnSecondary}
+                    >
+                      Ver oferta <ExternalLink size={13} />
+                    </a>
+                  )}
+                </div>
               ))}
             </div>
           )}

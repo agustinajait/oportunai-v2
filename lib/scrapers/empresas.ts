@@ -1,46 +1,32 @@
 /**
  * Scrapers para empresas específicas:
- * McDonald's, Mostaza, YPF, Mercado Libre, Starbucks, y otros
+ * McDonald's, Mostaza, YPF, Mercado Libre, Starbucks, San Isidro
  */
 
 import type { JobListing } from './computrabajo';
-
-const HEADERS = {
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
-  Accept: 'application/json, text/html',
-  'Accept-Language': 'es-AR,es;q=0.9',
-};
-
-function clean(s: string): string {
-  return s.replace(/\s+/g, ' ').trim();
-}
+import { scrapeFetch, cleanText } from './utils';
 
 // ─── Mercado Libre ────────────────────────────────────────────────────────────
 // Usa Greenhouse como ATS → tiene API JSON pública
 export async function scrapeMercadoLibre(): Promise<JobListing[]> {
   const results: JobListing[] = [];
   try {
-    const res = await fetch(
+    const res = await scrapeFetch(
       'https://boards-api.greenhouse.io/v1/boards/mercadolibre/jobs?content=true',
-      { headers: HEADERS, signal: AbortSignal.timeout(15000) },
     );
     if (!res.ok) return results;
     const data = await res.json();
     const jobs = data.jobs || [];
 
     for (const job of jobs) {
-      // Filtrar solo trabajos de Argentina
       const location = (job.location?.name || '').toLowerCase();
-      if (!location.includes('argentin') && !location.includes('ar') && !location.includes('buenos')) continue;
+      if (!location.includes('argentin') && !location.includes('buenos')) continue;
 
       results.push({
         fuente_id: String(job.id),
-        titulo: clean(job.title || ''),
+        titulo: cleanText(job.title || ''),
         empresa_nombre: 'Mercado Libre',
-        descripcion: job.content
-          ? clean(job.content.replace(/<[^>]+>/g, '').slice(0, 500))
-          : undefined,
+        descripcion: job.content ? cleanText(job.content).slice(0, 500) : undefined,
         area: job.departments?.[0]?.name || undefined,
         ciudad: job.location?.name || 'Argentina',
         modalidad: 'presencial',
@@ -56,17 +42,14 @@ export async function scrapeMercadoLibre(): Promise<JobListing[]> {
 }
 
 // ─── YPF ─────────────────────────────────────────────────────────────────────
-// YPF usa SAP SuccessFactors → scraping HTML
 export async function scrapeYPF(): Promise<JobListing[]> {
   const results: JobListing[] = [];
   try {
-    const url =
-      'https://www.ypf.com/personas/trabaja-con-nosotros/';
-    const res = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(15000) });
+    const url = 'https://www.ypf.com/personas/trabaja-con-nosotros/';
+    const res = await scrapeFetch(url);
     if (!res.ok) return results;
     const html = await res.text();
 
-    // YPF lista posiciones en tabla HTML
     const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
     let m;
     let idx = 0;
@@ -74,14 +57,14 @@ export async function scrapeYPF(): Promise<JobListing[]> {
       const cells = m[1].match(/<td[^>]*>([\s\S]*?)<\/td>/gi);
       if (!cells || cells.length < 2) continue;
 
-      const titulo = clean(cells[0].replace(/<[^>]+>/g, ''));
+      const titulo = cleanText(cells[0]);
       if (!titulo || titulo.toLowerCase() === 'posición') continue;
 
-      const ciudad = cells[1] ? clean(cells[1].replace(/<[^>]+>/g, '')) : 'Argentina';
+      const ciudad = cells[1] ? cleanText(cells[1]) : 'Argentina';
       const linkMatch = m[1].match(/href="([^"]+)"/i);
       const url_original = linkMatch?.length
         ? (linkMatch[1].startsWith('http') ? linkMatch[1] : `https://www.ypf.com${linkMatch[1]}`)
-        : 'https://www.ypf.com/personas/trabaja-con-nosotros/';
+        : url;
 
       idx++;
       results.push({
@@ -101,19 +84,18 @@ export async function scrapeYPF(): Promise<JobListing[]> {
 }
 
 // ─── McDonald's Argentina ─────────────────────────────────────────────────────
-// Scraping del portal de carreras
 export async function scrapeMcDonalds(): Promise<JobListing[]> {
   const results: JobListing[] = [];
   try {
-    // McDonald's Argentina usa Snaphunt o portal propio
-    const url = 'https://careers.mcdonalds.com/global/en/search-results?keywords=&location=Argentina&latitude=&longitude=&country=AR&radius=&location_distance_km=';
-    const res = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(15000) });
+    const url =
+      'https://careers.mcdonalds.com/global/en/search-results?keywords=&location=Argentina&country=AR';
+    const res = await scrapeFetch(url, { renderJs: true });
     if (!res.ok) return results;
     const html = await res.text();
 
-    // Extraer datos del JSON embebido (típico en portales de empleo modernos)
-    const jsonMatch = html.match(/window\.__STATE__\s*=\s*({[\s\S]*?});\s*<\/script>/i)
-      || html.match(/jobData\s*=\s*(\[[\s\S]*?\]);\s*<\/script>/i);
+    const jsonMatch =
+      html.match(/window\.__STATE__\s*=\s*({[\s\S]*?});\s*<\/script>/i) ||
+      html.match(/jobData\s*=\s*(\[[\s\S]*?\]);\s*<\/script>/i);
 
     if (jsonMatch) {
       try {
@@ -122,10 +104,10 @@ export async function scrapeMcDonalds(): Promise<JobListing[]> {
         if (Array.isArray(jobs)) {
           for (const job of jobs.slice(0, 30)) {
             results.push({
-              fuente_id: String(job.id || job.jobId || Math.random()),
-              titulo: clean(job.title || job.name || ''),
+              fuente_id: String(job.id || job.jobId || `mcdonalds-${results.length}`),
+              titulo: cleanText(job.title || job.name || ''),
               empresa_nombre: "McDonald's Argentina",
-              descripcion: job.description ? clean(job.description.replace(/<[^>]+>/g, '').slice(0, 500)) : undefined,
+              descripcion: job.description ? cleanText(job.description).slice(0, 500) : undefined,
               ciudad: job.location || job.city || 'Argentina',
               modalidad: 'presencial',
               url_original: job.url || job.applyUrl || url,
@@ -136,7 +118,6 @@ export async function scrapeMcDonalds(): Promise<JobListing[]> {
       } catch {}
     }
 
-    // Fallback: parser HTML básico
     if (results.length === 0) {
       const cardRegex = /<[^>]*class="[^"]*job-card[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div)>/gi;
       let m;
@@ -145,9 +126,11 @@ export async function scrapeMcDonalds(): Promise<JobListing[]> {
         idx++;
         const cardHtml = m[1];
         const titleMatch = cardHtml.match(/<h[23][^>]*>([\s\S]*?)<\/h[23]>/i);
-        const titulo = titleMatch ? clean(titleMatch[1].replace(/<[^>]+>/g, '')) : 'Posición en McDonald\'s';
+        const titulo = titleMatch ? cleanText(titleMatch[1]) : "Posición en McDonald's";
         const linkMatch = cardHtml.match(/href="([^"]+)"/i);
-        const jobUrl = linkMatch ? (linkMatch[1].startsWith('http') ? linkMatch[1] : `https://careers.mcdonalds.com${linkMatch[1]}`) : url;
+        const jobUrl = linkMatch
+          ? linkMatch[1].startsWith('http') ? linkMatch[1] : `https://careers.mcdonalds.com${linkMatch[1]}`
+          : url;
 
         results.push({
           fuente_id: `mcdonalds-${idx}`,
@@ -161,7 +144,7 @@ export async function scrapeMcDonalds(): Promise<JobListing[]> {
       }
     }
   } catch (err) {
-    console.error("[mcdonalds] Error:", err);
+    console.error('[mcdonalds] Error:', err);
   }
   return results;
 }
@@ -171,26 +154,26 @@ export async function scrapeMostaza(): Promise<JobListing[]> {
   const results: JobListing[] = [];
   try {
     const url = 'https://www.mostaza.com.ar/trabaja-con-nosotros';
-    const res = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(15000) });
+    const res = await scrapeFetch(url);
     if (!res.ok) return results;
     const html = await res.text();
 
-    const cardRegex = /<[^>]*class="[^"]*(?:job|position|vacancy|puesto)[^"]*"[^>]*>([\s\S]*?)<\/(?:div|article)>/gi;
+    const cardRegex =
+      /<[^>]*class="[^"]*(?:job|position|vacancy|puesto)[^"]*"[^>]*>([\s\S]*?)<\/(?:div|article)>/gi;
     let m;
     let idx = 0;
     while ((m = cardRegex.exec(html)) !== null) {
       idx++;
       const cardHtml = m[1];
-      const titleMatch = cardHtml.match(/<h[23][^>]*>([\s\S]*?)<\/h[23]>/i)
-        || cardHtml.match(/<strong[^>]*>([\s\S]*?)<\/strong>/i);
-      const titulo = titleMatch
-        ? clean(titleMatch[1].replace(/<[^>]+>/g, ''))
-        : 'Posición en Mostaza';
+      const titleMatch =
+        cardHtml.match(/<h[23][^>]*>([\s\S]*?)<\/h[23]>/i) ||
+        cardHtml.match(/<strong[^>]*>([\s\S]*?)<\/strong>/i);
+      const titulo = titleMatch ? cleanText(titleMatch[1]) : 'Posición en Mostaza';
       if (!titulo) continue;
 
       const linkMatch = cardHtml.match(/href="([^"]+)"/i);
       const jobUrl = linkMatch
-        ? (linkMatch[1].startsWith('http') ? linkMatch[1] : `https://www.mostaza.com.ar${linkMatch[1]}`)
+        ? linkMatch[1].startsWith('http') ? linkMatch[1] : `https://www.mostaza.com.ar${linkMatch[1]}`
         : url;
 
       results.push({
@@ -213,11 +196,9 @@ export async function scrapeMostaza(): Promise<JobListing[]> {
 export async function scrapeStarbucks(): Promise<JobListing[]> {
   const results: JobListing[] = [];
   try {
-    // Starbucks Argentina es operado por Alsea → portal de carreras de Alsea
     const url = 'https://alsea.net/trabaja-con-nosotros/';
-    const res = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(15000) });
+    const res = await scrapeFetch(url);
     if (!res.ok) {
-      // Fallback: buscar en LinkedIn Starbucks Argentina
       results.push({
         fuente_id: 'starbucks-ar-barista',
         titulo: 'Barista / Atención al cliente',
@@ -232,7 +213,6 @@ export async function scrapeStarbucks(): Promise<JobListing[]> {
     }
     const html = await res.text();
 
-    // Buscar posiciones Starbucks en el portal de Alsea
     const starbucksSection = html.match(/starbucks[\s\S]{0,5000}/i)?.[0] || '';
     if (starbucksSection) {
       const linkRegex = /<a[^>]*href="([^"]*starbucks[^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
@@ -240,7 +220,7 @@ export async function scrapeStarbucks(): Promise<JobListing[]> {
       let idx = 0;
       while ((m = linkRegex.exec(starbucksSection)) !== null) {
         idx++;
-        const titulo = clean(m[2].replace(/<[^>]+>/g, ''));
+        const titulo = cleanText(m[2]);
         if (!titulo || titulo.length < 5) continue;
         results.push({
           fuente_id: `starbucks-${idx}`,
@@ -276,9 +256,8 @@ export async function scrapeStarbucks(): Promise<JobListing[]> {
 export async function scrapeSanIsidro(): Promise<JobListing[]> {
   const results: JobListing[] = [];
   try {
-    // Portal oficial de empleo del Municipio de San Isidro
     const url = 'https://sanisidro.gob.ar/empleo';
-    const res = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(15000) });
+    const res = await scrapeFetch(url);
     if (!res.ok) return results;
     const html = await res.text();
 
@@ -293,20 +272,18 @@ export async function scrapeSanIsidro(): Promise<JobListing[]> {
         cardHtml.match(/<h[2-4][^>]*>([\s\S]*?)<\/h[2-4]>/i) ||
         cardHtml.match(/<strong[^>]*>([\s\S]*?)<\/strong>/i);
       if (!titleMatch) continue;
-      const titulo = clean(titleMatch[1].replace(/<[^>]+>/g, ''));
+      const titulo = cleanText(titleMatch[1]);
       if (!titulo || titulo.length < 5) continue;
 
       const linkMatch = cardHtml.match(/href="([^"]+)"/i);
       const jobUrl = linkMatch
-        ? linkMatch[1].startsWith('http')
-          ? linkMatch[1]
-          : `https://sanisidro.gob.ar${linkMatch[1]}`
+        ? linkMatch[1].startsWith('http') ? linkMatch[1] : `https://sanisidro.gob.ar${linkMatch[1]}`
         : url;
 
-      const empresaMatch = cardHtml.match(/<(?:p|span)[^>]*class="[^"]*empresa[^"]*"[^>]*>([\s\S]*?)<\/(?:p|span)>/i);
-      const empresa_nombre = empresaMatch
-        ? clean(empresaMatch[1].replace(/<[^>]+>/g, ''))
-        : 'Municipio de San Isidro';
+      const empresaMatch = cardHtml.match(
+        /<(?:p|span)[^>]*class="[^"]*empresa[^"]*"[^>]*>([\s\S]*?)<\/(?:p|span)>/i,
+      );
+      const empresa_nombre = empresaMatch ? cleanText(empresaMatch[1]) : 'Municipio de San Isidro';
 
       results.push({
         fuente_id: `sanisidro-${idx}-${titulo.toLowerCase().replace(/\s+/g, '-').slice(0, 20)}`,

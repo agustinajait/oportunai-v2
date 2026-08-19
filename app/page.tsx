@@ -3,11 +3,11 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import {
   Fuel, Headphones, UtensilsCrossed,
-  Video,
+  Video, FileText, User,
   GraduationCap, ClipboardList, RefreshCw,
   HardHat, Handshake, Building2, ChevronRight,
   Target, Smartphone, Smile, Play, Send, CircleCheck,
-  Heart, Camera,
+  Heart, Camera, ArrowRight, Download,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import s from './landing.module.css';
@@ -105,88 +105,102 @@ export default async function LandingPage() {
           <div className={s.logoMark}>
             <img src="/logo.png" alt="Oportunai" className={s.logoImg} />
           </div>
-          <span className={s.logoText}>OPORTUNAI</span>
+          <div className={s.logoTexts}>
+            <span className={s.logoText}>OportunAI</span>
+            <span className={s.logoTagline}>Tu perfil. Tu oportunidad.</span>
+          </div>
         </Link>
+
+        <div className={s.navCenter}>
+          <Link href="/"               className={`${s.navLink} ${s.navLinkActive}`}>Para vos</Link>
+          <Link href="/register-empresa" className={s.navLink}>Para empresas</Link>
+          <Link href="/register"        className={s.navLink}>Capacitaciones</Link>
+          <Link href="#"               className={s.navLink}>Sobre OportunAI</Link>
+        </div>
+
         <div className={s.navLinks}>
-          <Link href="/login" className={s.btnGhost}>Iniciar sesión</Link>
-          <Link href="/register" className={s.btnFill}>Empezar gratis</Link>
+          <Link href="/login"    className={s.btnGhost}>Iniciar sesión</Link>
+          <Link href="/register" className={s.btnFill}>Crear mi perfil gratis</Link>
         </div>
       </nav>
 
-      {/* ── HERO CANDIDATO ── */}
-      <div className={s.heroOuter}>
-        <div className={s.heroFull}>
-          <div className={s.heroMain}>
+      {/* ── HERO ── */}
+      <section className={s.heroNew}>
 
-            {/* Izquierda: copy principal */}
-            <div className={s.heroLeft}>
-              <p className={s.heroTag}>
-                <span className={s.heroTagDot} />
-                100% Gratis · Desde el celular
-              </p>
-              <h1 className={s.heroH}>
-                Encontrá<br/>
-                <span className={s.heroHAccent}>trabajo.</span>
-              </h1>
-              <p className={s.heroSub}>
-                Hacé tu diagnóstico gratuito, grabá tu Video CV y recibí
-                oportunidades y recursos adaptados a tu situación.
-                Te acompañamos en cada paso.
-              </p>
-              <div className={s.heroCtas}>
-                <Link href="/register" className={s.heroCtaPrimary}>
-                  <Video size={16} strokeWidth={2} />
-                  Empezar gratis →
-                </Link>
-                <Link href="/register-empresa" className={s.heroCtaSecondary}>
-                  Soy empresa →
-                </Link>
+        {/* ── Izquierda: copy ── */}
+        <div className={s.heroNewLeft}>
+          <span className={s.heroNewBadge}>100% GRATIS</span>
+
+          <h1 className={s.heroNewH}>
+            Creá tu perfil<br/>laboral digital<br/>con <span className={s.heroNewAccent}>VideoCV.</span>
+          </h1>
+
+          <p className={s.heroNewSub}>
+            Mostrá quién sos, destacá lo que sabés hacer y recibí herramientas,
+            oportunidades y acompañamiento para encontrar trabajo.
+          </p>
+
+          <div className={s.heroNewPills}>
+            <span className={s.heroNewPill}><Video size={13} strokeWidth={2}/> VideoCV</span>
+            <span className={s.heroNewPill}><FileText size={13} strokeWidth={2}/> CV optimizado</span>
+            <span className={s.heroNewPill}><Target size={13} strokeWidth={2}/> Diagnóstico</span>
+            <span className={`${s.heroNewPill} ${s.heroNewPillActive}`}><Heart size={13} strokeWidth={2}/> Acompañamiento</span>
+          </div>
+
+          <Link href="/register" className={s.heroNewCtaBtn}>
+            Crear mi perfil gratis <ArrowRight size={16} strokeWidth={2.5}/>
+          </Link>
+
+          <p className={s.heroNewHint}>
+            <CircleCheck size={14} strokeWidth={2}/>
+            Sin costos. Sin complicaciones.
+          </p>
+        </div>
+
+        {/* ── Derecha: foto + cards flotantes ── */}
+        <div className={s.heroNewRight}>
+          <div className={s.heroNewPhotoWrap}>
+            <img src="/candidato.png" alt="Candidata con celular buscando trabajo" />
+          </div>
+
+          {/* Card 1 — VideoCV */}
+          <div className={`${s.heroCard} ${s.heroCard1}`}>
+            <div className={s.heroCardInner}>
+              <div className={s.heroCardIco} style={{ background: 'rgba(91,63,224,0.12)' }}>
+                <Video size={16} strokeWidth={1.75} color="#5B3FE0"/>
               </div>
+              <div className={s.heroCardTitle}>VideoCV</div>
             </div>
+            <div className={s.heroCardSub}>Presentate en 60 segundos</div>
+            <div className={s.heroCardBar}><div className={`${s.heroCardBarFill} ${s.heroCardBarPurple}`}/></div>
+          </div>
 
-            {/* Derecha: chips de features */}
-            <div className={s.heroRight}>
-              {[
-                {
-                  bg: 'rgba(20,199,168,0.20)', color: '#1DD9BA',
-                  Icon: Target,
-                  t: 'Diagnóstico Korai',
-                  d: 'Conocemos tu situación y te acompañamos desde donde estás',
-                },
-                {
-                  bg: 'rgba(255,255,255,0.15)', color: '#fff',
-                  Icon: Video,
-                  t: 'Video CV en 60 segundos',
-                  d: 'Las empresas te ven antes de llamarte. Sin papeles, desde el celular',
-                },
-                {
-                  bg: 'rgba(109,72,240,0.25)', color: '#B99FFF',
-                  Icon: GraduationCap,
-                  t: 'Capacitaciones gratuitas',
-                  d: 'Aprendé lo que necesitás para destacarte en tu rubro',
-                },
-                {
-                  bg: 'rgba(255,255,255,0.10)', color: '#A0C4FF',
-                  Icon: Handshake,
-                  t: 'Recursos municipales',
-                  d: 'Programas de empleo, salud y vivienda de San Isidro',
-                },
-              ].map(f => (
-                <div key={f.t} className={s.heroChip}>
-                  <div className={s.heroChipIco} style={{ background: f.bg }}>
-                    <f.Icon size={18} strokeWidth={1.75} color={f.color} />
-                  </div>
-                  <div>
-                    <div className={s.heroChipT}>{f.t}</div>
-                    <div className={s.heroChipD}>{f.d}</div>
-                  </div>
-                </div>
-              ))}
+          {/* Card 2 — CV optimizado */}
+          <div className={`${s.heroCard} ${s.heroCard2}`}>
+            <div className={s.heroCardInner}>
+              <div className={s.heroCardIco} style={{ background: 'rgba(20,199,168,0.12)' }}>
+                <FileText size={16} strokeWidth={1.75} color="#14C7A8"/>
+              </div>
+              <div className={s.heroCardTitle}>CV optimizado</div>
+              <Download size={14} strokeWidth={1.75} color="#14C7A8" style={{ marginLeft: 'auto' }}/>
             </div>
+            <div className={s.heroCardSub}>Listo para postularte</div>
+          </div>
 
+          {/* Card 3 — Diagnóstico Korai */}
+          <div className={`${s.heroCard} ${s.heroCard3}`}>
+            <div className={s.heroCardInner}>
+              <div className={s.heroCardIco} style={{ background: 'rgba(59,130,246,0.12)' }}>
+                <Target size={16} strokeWidth={1.75} color="#3B82F6"/>
+              </div>
+              <div className={s.heroCardTitle}>Diagnóstico Korai</div>
+            </div>
+            <div className={s.heroCardSub}>Conocé tus fortalezas y qué podés mejorar</div>
+            <div className={s.heroCardBar}><div className={`${s.heroCardBarFill} ${s.heroCardBarTeal}`}/></div>
           </div>
         </div>
-      </div>
+
+      </section>
 
       {/* ── NICHOS ── */}
       <div className={s.nichosOuter}>
@@ -204,53 +218,34 @@ export default async function LandingPage() {
       </div>
       </div>
 
-      {/* ── STEPS ── */}
-      <section className={`${s.sec} ${s.secDark}`}>
-
-        {/* Intro: texto izquierda + foto derecha */}
-        <div className={s.secDarkIntro}>
-          <div className={s.secDarkIntroText}>
-            <p className={s.eyebrow}>Es simple,</p>
-            <h2 className={s.secH}>Oportunai te guía<br/><span className={s.secHPill}>paso a paso</span></h2>
-            <p className={s.secDarkSub}>para que te presentes mejor que con un CV escrito.</p>
-          </div>
-          <div className={s.secDarkIntroVisual}>
-            <div className={s.secPhotoCircle}>
-              <img src="/candidato.png" alt="Candidato grabando Video CV" className={s.secPhoto} />
-            </div>
-            <div className={s.recCard}>
-              <div className={s.recHeader}><span className={s.recDot}/> REC</div>
-              <div className={s.recTimer}>00:60</div>
-              <p className={s.recText}>Contanos quién sos y qué buscás.</p>
-              <div className={s.recBtn}/>
-            </div>
-          </div>
+      {/* ── STEPS — Tu camino en 5 pasos ── */}
+      <section className={s.secSteps}>
+        <div className={s.secStepsHead}>
+          <h2 className={s.secStepsH}>
+            Tu camino en <span className={s.secStepsAccent}>5 pasos</span>
+          </h2>
         </div>
 
-        <div className={s.steps}>
-          {[
-            { n: '1', Icon: Target,     t: 'Preparáte',       d: 'Pensá qué querés contar y qué te hace único/a.' },
-            { n: '2', Icon: Smartphone, t: 'Grabá',            d: 'Usá tu celular. 60 segundos son suficientes.' },
-            { n: '3', Icon: Smile,      t: 'Mostrate',         d: 'Sé claro/a, auténtico/a y hablá de tu experiencia.' },
-            { n: '4', Icon: Play,       t: 'Revisá',           d: 'Mirá tu video, asegurate que se escuche y entienda.' },
-            { n: '5', Icon: Send,       t: 'Enviá y conectá',  d: 'Las empresas te ven y te llaman. Sin CV. Sin papeles.' },
-          ].flatMap((step, i, arr) => [
-            <div key={step.n} className={s.step}>
-              <div className={s.stepBadge}>{step.n}</div>
-              <div className={s.stepIco}>
-                <step.Icon size={28} strokeWidth={1.75} />
+        <div className={s.stepsNew}>
+          {([
+            { n: '1', numBg: '#5B3FE0', icoBg: 'rgba(91,63,224,0.10)',  icoColor: '#5B3FE0', Icon: User,     t: 'Armá tu perfil',         d: 'Contá tu experiencia, habilidades y lo que buscás.' },
+            { n: '2', numBg: '#EF4444', icoBg: 'rgba(239,68,68,0.10)',  icoColor: '#EF4444', Icon: Video,    t: 'Grabá tu VideoCV',        d: 'Presentate en video y mostrá quién sos en 60 segundos.' },
+            { n: '3', numBg: '#22C55E', icoBg: 'rgba(34,197,94,0.10)',  icoColor: '#22C55E', Icon: FileText, t: 'Obtené tu CV',            d: 'Generamos tu CV optimizado listo para postularte.' },
+            { n: '4', numBg: '#3B82F6', icoBg: 'rgba(59,130,246,0.10)', icoColor: '#3B82F6', Icon: Target,   t: 'Hacé tu diagnóstico',     d: 'Identificá tus fortalezas y qué podés mejorar.' },
+            { n: '5', numBg: '#F97316', icoBg: 'rgba(249,115,22,0.10)', icoColor: '#F97316', Icon: Heart,    t: 'Recibí acompañamiento',   d: 'Te acercamos oportunidades, recursos y herramientas.' },
+          ] as const).flatMap((step, i, arr) => [
+            <div key={step.n} className={s.stepNew}>
+              <div className={s.stepNewNum} style={{ background: step.numBg }}>{step.n}</div>
+              <div className={s.stepNewIco} style={{ background: step.icoBg }}>
+                <step.Icon size={26} strokeWidth={1.75} color={step.icoColor}/>
               </div>
-              <div className={s.stepT}>{step.t}</div>
-              <div className={s.stepD}>{step.d}</div>
+              <div className={s.stepNewT}>{step.t}</div>
+              <div className={s.stepNewD}>{step.d}</div>
             </div>,
             i < arr.length - 1
-              ? <div key={`c${i}`} className={s.stepConnect}><div className={s.stepConnectLine}/></div>
+              ? <div key={`a${i}`} className={s.stepNewArrow}><ChevronRight size={18} strokeWidth={2} color="#CBD5E1"/></div>
               : null,
           ])}
-        </div>
-        <div className={s.stepsTagline}>
-          <CircleCheck size={20} strokeWidth={2} />
-          Más auténtico. Más rápido. Más vos. <strong>Mejores oportunidades.</strong>
         </div>
       </section>
 

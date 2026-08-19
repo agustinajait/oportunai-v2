@@ -77,10 +77,8 @@
 /* ── HERO OUTER ── */
 .heroOuter { padding: 36px 32px 0; }
 
-/* ── HERO SPLIT ── */
-.heroSplit {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+/* ── HERO FULL (candidato-focused) ── */
+.heroFull {
   border-radius: 22px;
   overflow: hidden;
   box-shadow:
@@ -90,22 +88,150 @@
     0 48px 96px rgba(0,0,0,0.06);
 }
 
+.heroMain {
+  padding: 3.5rem 3.5rem 3rem;
+  min-height: 440px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 2rem;
+  position: relative; overflow: hidden;
+  background:
+    radial-gradient(ellipse 65% 80% at 105% -5%,  rgba(140,100,255,0.70) 0%, transparent 52%),
+    radial-gradient(ellipse 40% 55% at -10% 110%, rgba(20,199,168,0.22) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 60% at 50% 120%,  rgba(109,72,240,0.12) 0%, transparent 50%),
+    linear-gradient(145deg, #3A28B8 0%, #5237D8 35%, #5B3FE0 65%, #6A4BF5 100%);
+}
+
+.heroMain::before {
+  content: '';
+  position: absolute; top: -80px; right: -80px;
+  width: 280px; height: 280px; border-radius: 50%;
+  background: rgba(255,255,255,0.07); pointer-events: none;
+}
+.heroMain::after {
+  content: '';
+  position: absolute; bottom: -60px; left: 40%;
+  width: 220px; height: 220px; border-radius: 50%;
+  background: rgba(255,255,255,0.04); pointer-events: none;
+}
+
+.heroLeft { position: relative; z-index: 1; }
+.heroRight { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+
+.heroTag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 20px;
+  padding: 5px 13px 5px 9px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: rgba(255,255,255,0.85); margin-bottom: 1.4rem;
+}
+.heroTagDot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #14C7A8;
+  box-shadow: 0 0 8px rgba(20,199,168,0.8);
+  flex-shrink: 0;
+}
+
+.heroH {
+  font-family: 'Poppins', sans-serif;
+  font-size: 52px; font-weight: 800;
+  line-height: 1.0; letter-spacing: -0.035em;
+  color: #fff; margin-bottom: 1.1rem;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.15);
+}
+
+.heroHAccent {
+  display: inline-block;
+  background: rgba(255,255,255,0.95);
+  border-radius: 10px;
+  padding: 0 18px 6px;
+  margin-top: 3px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.22);
+  line-height: 1.05;
+  color: #4B33CC;
+}
+
+.heroSub {
+  font-size: 15.5px; line-height: 1.65;
+  color: rgba(255,255,255,0.72);
+  max-width: 400px;
+  margin-bottom: 2rem;
+}
+
+.heroCtas {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  position: relative; z-index: 1;
+}
+
+.heroCtaPrimary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 24px; border-radius: 12px;
+  font-size: 14.5px; font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  text-decoration: none;
+  background: linear-gradient(160deg, #ffffff 0%, #f5f3ff 100%);
+  color: #4B33CC;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.6) inset, 0 2px 8px rgba(0,0,0,0.15);
+  transition: all .22s cubic-bezier(.4,0,.2,1);
+}
+.heroCtaPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.9) inset, 0 8px 24px rgba(0,0,0,0.2);
+  background: #ffffff;
+}
+
+.heroCtaSecondary {
+  font-size: 13px; font-weight: 500;
+  color: rgba(255,255,255,0.55);
+  text-decoration: none;
+  transition: color .15s;
+}
+.heroCtaSecondary:hover { color: rgba(255,255,255,0.85); }
+
+/* Feature chips — derecha del hero */
+.heroChip {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 14px;
+  padding: 12px 16px;
+  width: 100%;
+  transition: background .2s;
+}
+.heroChip:hover { background: rgba(255,255,255,0.13); }
+
+.heroChipIco {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.heroChipT {
+  font-size: 13.5px; font-weight: 600; color: #fff;
+  line-height: 1.2;
+}
+.heroChipD {
+  font-size: 12px; color: rgba(255,255,255,0.55);
+  line-height: 1.3; margin-top: 1px;
+}
+
+/* legacy panel classes kept for other uses */
 .panel {
   padding: 3.5rem 3rem 3rem;
   min-height: 420px;
   display: flex; flex-direction: column; justify-content: space-between;
   position: relative; overflow: hidden;
 }
-
-/* Violeta — candidato */
 .panelCandidato {
   background:
     radial-gradient(ellipse 65% 65% at 110% -10%, rgba(140,100,255,0.65) 0%, transparent 52%),
     radial-gradient(ellipse 55% 45% at -15% 110%, rgba(20,199,168,0.18) 0%, transparent 55%),
     linear-gradient(145deg, #3A28B8 0%, #5237D8 35%, #5B3FE0 65%, #6A4BF5 100%);
 }
-
-/* Teal — empresa */
 .panelEmpresa {
   background:
     radial-gradient(ellipse 65% 65% at 110% -10%, rgba(50,230,200,0.55) 0%, transparent 52%),
@@ -113,27 +239,12 @@
     linear-gradient(145deg, #089180 0%, #0FB89E 35%, #14C7A8 65%, #1DD9BA 100%);
   border-left: 1px solid rgba(255,255,255,0.12);
 }
-
-.panel::before {
-  content: '';
-  position: absolute; top: -60px; right: -60px;
-  width: 220px; height: 220px; border-radius: 50%;
-  background: rgba(255,255,255,0.08); pointer-events: none;
-}
-.panel::after {
-  content: '';
-  position: absolute; bottom: -55px; left: -55px;
-  width: 200px; height: 200px; border-radius: 50%;
-  background: rgba(255,255,255,0.05); pointer-events: none;
-}
-
 .panelTag {
   display: flex; align-items: center; gap: 6px;
   font-size: 11px; font-weight: 700;
   letter-spacing: 0.1em; text-transform: uppercase;
   color: rgba(255,255,255,0.5); margin-bottom: 1.25rem;
 }
-
 .panelH {
   font-family: 'Poppins', sans-serif;
   font-size: 54px; font-weight: 800;
@@ -142,14 +253,12 @@
   position: relative; z-index: 1;
   text-shadow: 0 2px 20px rgba(0,0,0,0.15);
 }
-
 .panelSub {
   font-size: 14.5px; line-height: 1.65;
   color: rgba(255,255,255,0.68);
   max-width: 295px; position: relative; z-index: 1;
   margin-bottom: 2.25rem;
 }
-
 .panelCta {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 13px 22px; border-radius: 12px;
@@ -168,13 +277,10 @@
 }
 .candidatoCta { color: #4B33CC; }
 .empresaCta   { color: #0CA898; }
-
 .panelDecor {
   position: absolute; bottom: 14px; right: 18px;
   opacity: 0.08; z-index: 0; pointer-events: none; color: #fff;
 }
-
-/* Pill highlight en el headline del panel */
 .panelHPill {
   display: inline-block;
   background: rgba(255,255,255,0.95);
@@ -186,6 +292,17 @@
 }
 .panelCandidato .panelHPill { color: #4B33CC; }
 .panelEmpresa   .panelHPill { color: #0A9485; }
+
+/* ── HERO RESPONSIVE ── */
+@media (max-width: 720px) {
+  .heroMain {
+    grid-template-columns: 1fr;
+    padding: 2.5rem 1.75rem 2rem;
+    min-height: unset;
+  }
+  .heroH { font-size: 38px; }
+  .heroRight { display: none; }
+}
 
 /* ── STATS OUTER ── */
 .statsOuter { padding: 0 32px; }

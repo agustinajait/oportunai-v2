@@ -113,44 +113,79 @@ export default async function LandingPage() {
         </div>
       </nav>
 
-      {/* ── HERO SPLIT ── */}
+      {/* ── HERO CANDIDATO ── */}
       <div className={s.heroOuter}>
-      <section className={s.heroSplit}>
-        <div className={`${s.panel} ${s.panelCandidato}`}>
-          <div>
-            <p className={s.panelTag}>
-              <HardHat size={13} strokeWidth={2} />
-              Para candidatos
-            </p>
-            <h1 className={s.panelH}>Buscás<br/><span className={s.panelHPill}>trabajo.</span></h1>
-            <p className={s.panelSub}>Grabás 60 segundos desde el celular. Las empresas te ven y te llaman. Sin CV, sin papeles.</p>
-          </div>
-          <Link href="/register" className={`${s.panelCta} ${s.candidatoCta}`}>
-            <Video size={16} strokeWidth={2} />
-            Crear mi Video CV
-          </Link>
-          <div className={s.panelDecor}>
-            <HardHat size={140} strokeWidth={0.75} />
+        <div className={s.heroFull}>
+          <div className={s.heroMain}>
+
+            {/* Izquierda: copy principal */}
+            <div className={s.heroLeft}>
+              <p className={s.heroTag}>
+                <span className={s.heroTagDot} />
+                100% Gratis · Desde el celular
+              </p>
+              <h1 className={s.heroH}>
+                Encontrá<br/>
+                <span className={s.heroHAccent}>trabajo.</span>
+              </h1>
+              <p className={s.heroSub}>
+                Hacé tu diagnóstico gratuito, grabá tu Video CV y recibí
+                oportunidades y recursos adaptados a tu situación.
+                Te acompañamos en cada paso.
+              </p>
+              <div className={s.heroCtas}>
+                <Link href="/register" className={s.heroCtaPrimary}>
+                  <Video size={16} strokeWidth={2} />
+                  Empezar gratis →
+                </Link>
+                <Link href="/register-empresa" className={s.heroCtaSecondary}>
+                  Soy empresa →
+                </Link>
+              </div>
+            </div>
+
+            {/* Derecha: chips de features */}
+            <div className={s.heroRight}>
+              {[
+                {
+                  bg: 'rgba(20,199,168,0.20)', color: '#1DD9BA',
+                  Icon: Target,
+                  t: 'Diagnóstico Korai',
+                  d: 'Conocemos tu situación y te acompañamos desde donde estás',
+                },
+                {
+                  bg: 'rgba(255,255,255,0.15)', color: '#fff',
+                  Icon: Video,
+                  t: 'Video CV en 60 segundos',
+                  d: 'Las empresas te ven antes de llamarte. Sin papeles, desde el celular',
+                },
+                {
+                  bg: 'rgba(109,72,240,0.25)', color: '#B99FFF',
+                  Icon: GraduationCap,
+                  t: 'Capacitaciones gratuitas',
+                  d: 'Aprendé lo que necesitás para destacarte en tu rubro',
+                },
+                {
+                  bg: 'rgba(255,255,255,0.10)', color: '#A0C4FF',
+                  Icon: Handshake,
+                  t: 'Recursos municipales',
+                  d: 'Programas de empleo, salud y vivienda de San Isidro',
+                },
+              ].map(f => (
+                <div key={f.t} className={s.heroChip}>
+                  <div className={s.heroChipIco} style={{ background: f.bg }}>
+                    <f.Icon size={18} strokeWidth={1.75} color={f.color} />
+                  </div>
+                  <div>
+                    <div className={s.heroChipT}>{f.t}</div>
+                    <div className={s.heroChipD}>{f.d}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
           </div>
         </div>
-        <div className={`${s.panel} ${s.panelEmpresa}`}>
-          <div>
-            <p className={s.panelTag}>
-              <Building2 size={13} strokeWidth={2} />
-              Para empresas
-            </p>
-            <h1 className={s.panelH}>Buscás<br/><span className={s.panelHPill}>personal.</span></h1>
-            <p className={s.panelSub}>Publicás la oferta, recibís videos y elegís. Más rápido, menos entrevistas perdidas.</p>
-          </div>
-          <Link href="/register-empresa" className={`${s.panelCta} ${s.empresaCta}`}>
-            <Building2 size={16} strokeWidth={2} />
-            Registrar mi empresa
-          </Link>
-          <div className={s.panelDecor}>
-            <Handshake size={140} strokeWidth={0.75} />
-          </div>
-        </div>
-      </section>
       </div>
 
       {/* ── NICHOS ── */}

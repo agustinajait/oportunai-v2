@@ -27,9 +27,28 @@ function isAuthorized(req: NextRequest): boolean {
   return key === SCRAPE_KEY;
 }
 
-/** Guarda un lote de JobListings en DB con createMany + skipDuplicates */
-async function saveListings(fuente: string, items: JobListing[]): Promise<number> {
-  if (items.length === 0) return 0;
+/** Guarda un lote de JobListings en DB con createMany + skipDuplicates.
+ *  Retorna { saved, error? } — el error se incluye en la respuesta HTTP para
+ *  facilitar el diagnóstico sin necesidad de acceder a logs de Vercel.
+ */
+async function saveListings(
+  fuente: string,
+  items: JobListing[],
+): Promise<{ saved: number; error?: string }> {
+  if (items.length === 0) return { saved: 0 };
+
+  // ── Pre-flight: verificar que la tabla es accesible ────────────────────────
+  try {
+    await prisma.ofertaExterna.count();
+  } catch (e: unknown) {
+    const msg = (e as Error).message || String(e);
+    console.error('[apify-webhook] Tabla OfertaExterna inaccesible:', msg);
+    return { saved: 0, error: `tabla_inaccesible: ${msg.slice(0, 300)}` };
+  }
+
+  const now = new Date();
+
+  // ── Intento 1: createMany bulk ─────────────────────────────────────────────
   try {
     const result = await prisma.ofertaExterna.createMany({
       data: items.map(item => ({
@@ -45,14 +64,20 @@ async function saveListings(fuente: string, items: JobListing[]): Promise<number
         url_original: item.url_original,
         logo_url: item.logo_url ?? null,
         fecha_publicacion: item.fecha_publicacion ?? null,
+        activa: true,
+        updated_at: now,
       })),
       skipDuplicates: true,
     });
-    return result.count;
+    return { saved: result.count };
   } catch (err: unknown) {
-    console.error('[apify-webhook] Error en createMany:', err);
-    // Fallback: insertar de a uno para identificar el item problemático
+    const bulkMsg = (err as Error).message || String(err);
+    console.error('[apify-webhook] createMany falló:', bulkMsg);
+
+    // ── Intento 2: insertar de a uno ─────────────────────────────────────────
     let saved = 0;
+    let firstNonDupError = '';
+
     for (const item of items) {
       try {
         await prisma.ofertaExterna.create({
@@ -69,16 +94,27 @@ async function saveListings(fuente: string, items: JobListing[]): Promise<number
             url_original: item.url_original,
             logo_url: item.logo_url ?? null,
             fecha_publicacion: item.fecha_publicacion ?? null,
+            activa: true,
+            updated_at: now,
           },
         });
         saved++;
       } catch (e: unknown) {
-        if ((e as { code?: string }).code !== 'P2002') {
-          console.error('[apify-webhook] Error item individual:', (e as Error).message, item.titulo);
+        const code = (e as { code?: string }).code;
+        const emsg = (e as Error).message || String(e);
+        if (code !== 'P2002') {
+          if (!firstNonDupError) firstNonDupError = emsg;
+          console.error('[apify-webhook] create individual falló:', emsg, item.titulo);
         }
       }
     }
-    return saved;
+
+    const error =
+      saved === 0
+        ? `bulk: ${bulkMsg.slice(0, 200)} | individual: ${firstNonDupError.slice(0, 200)}`
+        : undefined;
+
+    return { saved, error };
   }
 }
 
@@ -310,9 +346,10 @@ export async function POST(req: NextRequest) {
     if (mapped) listings.push(mapped);
   }
 
-  const saved = await saveListings(fuente, listings);
+  const saveResult = await saveListings(fuente, listings);
+  const { saved, error: saveError } = saveResult;
 
-  console.log(`[apify-webhook] Guardados ${saved}/${listings.length} items de ${fuente}`);
+  console.log(`[apify-webhook] Guardados ${saved}/${listings.length} items de ${fuente}${saveError ? ' | ERROR: ' + saveError : ''}`);
 
   // Incluir las keys del primer item para diagnóstico cuando no se mapea nada
   const sampleKeys = rawItems.length > 0 ? Object.keys(rawItems[0]) : [];
@@ -326,6 +363,8 @@ export async function POST(req: NextRequest) {
     itemsMapped: listings.length,
     saved,
     ...(listings.length === 0 && { sampleKeys, sampleItem }),
+    // Siempre mostrar el error si hubo uno, para poder diagnosticar sin logs de Vercel
+    ...(saveError && { saveError }),
     timestamp: new Date().toISOString(),
   });
 }

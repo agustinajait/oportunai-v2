@@ -11,8 +11,10 @@ import { scrapeFetch, cleanText } from './utils';
 export async function scrapeMercadoLibre(): Promise<JobListing[]> {
   const results: JobListing[] = [];
   try {
+    // Greenhouse es una API JSON pública — no necesita proxy
     const res = await scrapeFetch(
       'https://boards-api.greenhouse.io/v1/boards/mercadolibre/jobs?content=true',
+      { skipProxy: true },
     );
     if (!res.ok) return results;
     const data = await res.json();

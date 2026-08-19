@@ -18,8 +18,10 @@ export async function scrapeZonaJobs(
     try {
       // ZonaJobs usa una API interna JSON
       const apiUrl = `https://api.zonajobs.com.ar/api/postulations/search?q=${encodeURIComponent(kw)}&page=1&perPage=${maxPerKw}&order=date&country=AR`;
+      // API JSON de ZonaJobs — fetch directo, sin proxy
       const res = await scrapeFetch(apiUrl, {
         headers: { 'x-zonajobs-source': 'web', Accept: 'application/json' },
+        skipProxy: true,
       });
 
       if (res.ok) {

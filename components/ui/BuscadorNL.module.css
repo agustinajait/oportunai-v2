@@ -514,4 +514,27 @@
   .cardTitle {
     font-size: 14px;
   }
+
+  .cardMeta {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .cardBtnPrimary,
+  .cardBtnSecondary {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  .heading {
+    font-size: 24px;
+  }
+
+  .sub {
+    font-size: 14px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }

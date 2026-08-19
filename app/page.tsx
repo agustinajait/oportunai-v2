@@ -500,6 +500,42 @@ export default async function LandingPage() {
             <p className={s.whyBlockP}>Desde 2015 desarrollamos tecnología utilizada por grandes empresas. Hoy esa experiencia se pone al servicio de una plataforma con impacto social.</p>
           </div>
         </div>
+
+        {/* Galería */}
+        <div className={s.whyGallery}>
+          {(galeriaDB.length > 0 ? galeriaDB : GALLERY_SLOTS).map((slot, i) => {
+            const isReal = galeriaDB.length > 0;
+            const big = slot.big;
+            if (isReal) {
+              const item = slot as typeof galeriaDB[0];
+              return (
+                <div key={item.id} className={`${s.whyGalleryItem}${big ? ` ${s.whyGalleryBig}` : ''}`}>
+                  <img src={item.src} alt={item.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              );
+            }
+            const placeholder = slot as typeof GALLERY_SLOTS[0];
+            return (
+              <div key={i} className={`${s.whyGalleryItem}${big ? ` ${s.whyGalleryBig}` : ''}`} style={{ background: placeholder.bg }}>
+                <div className={s.whyGalleryPh}>
+                  <Camera size={big ? 34 : 22} style={{ color: placeholder.color, opacity: 0.45 }} strokeWidth={1.5} />
+                  <span style={{ color: placeholder.color, opacity: 0.55, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 6 }}>{placeholder.label}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Cierre */}
+        <div className={s.whyClose}>
+          <p className={s.whyCloseQ}>
+            La tecnología cambia la forma de contratar.<br/>
+            <span className={s.whyCloseQAccent}>La misión cambia la vida de las personas.</span>
+          </p>
+          <p className={s.whyCloseBody}>Cada empresa que utiliza OportunAI mejora sus procesos de selección y, al mismo tiempo, acompaña una iniciativa que amplía el acceso a la capacitación y al empleo.</p>
+          <a href="#" className={s.whyCloseBtn}>Conocé nuestra historia →</a>
+        </div>
+
       </section>
 
       {/* ── CTA FINAL ── */}

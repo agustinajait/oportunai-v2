@@ -27,47 +27,38 @@ function isAuthorized(req: NextRequest): boolean {
   return key === SCRAPE_KEY;
 }
 
-/** Guarda un lote de JobListings en DB con upsert */
+/** Guarda un lote de JobListings en DB con createMany + skipDuplicates */
 async function saveListings(fuente: string, items: JobListing[]): Promise<number> {
-  let saved = 0;
-  for (const item of items) {
-    try {
-      if (item.fuente_id) {
-        await prisma.ofertaExterna.upsert({
-          where: { fuente_fuente_id: { fuente, fuente_id: item.fuente_id } },
-          update: {
-            titulo: item.titulo,
-            empresa_nombre: item.empresa_nombre,
-            descripcion: item.descripcion ?? null,
-            area: item.area ?? null,
-            ciudad: item.ciudad ?? null,
-            modalidad: item.modalidad ?? 'presencial',
-            salario: item.salario ?? null,
-            url_original: item.url_original,
-            logo_url: item.logo_url ?? null,
-            fecha_publicacion: item.fecha_publicacion ?? null,
-            activa: true,
-            updated_at: new Date(),
-          },
-          create: {
-            fuente,
-            fuente_id: item.fuente_id,
-            titulo: item.titulo,
-            empresa_nombre: item.empresa_nombre,
-            descripcion: item.descripcion ?? null,
-            area: item.area ?? null,
-            ciudad: item.ciudad ?? null,
-            modalidad: item.modalidad ?? 'presencial',
-            salario: item.salario ?? null,
-            url_original: item.url_original,
-            logo_url: item.logo_url ?? null,
-            fecha_publicacion: item.fecha_publicacion ?? null,
-          },
-        });
-      } else {
+  if (items.length === 0) return 0;
+  try {
+    const result = await prisma.ofertaExterna.createMany({
+      data: items.map(item => ({
+        fuente,
+        fuente_id: item.fuente_id ?? null,
+        titulo: item.titulo,
+        empresa_nombre: item.empresa_nombre,
+        descripcion: item.descripcion ?? null,
+        area: item.area ?? null,
+        ciudad: item.ciudad ?? null,
+        modalidad: item.modalidad ?? 'presencial',
+        salario: item.salario ?? null,
+        url_original: item.url_original,
+        logo_url: item.logo_url ?? null,
+        fecha_publicacion: item.fecha_publicacion ?? null,
+      })),
+      skipDuplicates: true,
+    });
+    return result.count;
+  } catch (err: unknown) {
+    console.error('[apify-webhook] Error en createMany:', err);
+    // Fallback: insertar de a uno para identificar el item problemático
+    let saved = 0;
+    for (const item of items) {
+      try {
         await prisma.ofertaExterna.create({
           data: {
             fuente,
+            fuente_id: item.fuente_id ?? null,
             titulo: item.titulo,
             empresa_nombre: item.empresa_nombre,
             descripcion: item.descripcion ?? null,
@@ -80,15 +71,15 @@ async function saveListings(fuente: string, items: JobListing[]): Promise<number
             fecha_publicacion: item.fecha_publicacion ?? null,
           },
         });
-      }
-      saved++;
-    } catch (err: unknown) {
-      if ((err as { code?: string }).code !== 'P2002') {
-        console.error(`[apify-webhook] Error saving item:`, err);
+        saved++;
+      } catch (e: unknown) {
+        if ((e as { code?: string }).code !== 'P2002') {
+          console.error('[apify-webhook] Error item individual:', (e as Error).message, item.titulo);
+        }
       }
     }
+    return saved;
   }
-  return saved;
 }
 
 /**

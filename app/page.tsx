@@ -135,8 +135,8 @@ export default async function LandingPage() {
           </h1>
 
           <p className={s.heroNewSub}>
-            Creá tu VideoCV, generá tu CV optimizado para ATS y construí un único link que resume todo tu Perfil Laboral Digital.
-            Compartilo con empresas o en plataformas de búsqueda de empleo, y recibí herramientas, oportunidades y acompañamiento para potenciar tu búsqueda laboral.
+            VideoCV + CV optimizado para ATS + un link único para compartir con empresas.
+            Todo en un solo perfil, con acompañamiento para potenciar tu búsqueda laboral.
           </p>
 
           <div className={s.heroNewPills}>

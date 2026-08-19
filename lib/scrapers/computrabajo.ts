@@ -3,6 +3,8 @@
  * Documentación: ar.computrabajo.com
  */
 
+import { scrapeFetch, cleanText } from './utils';
+
 export interface JobListing {
   fuente_id: string;
   titulo: string;
@@ -15,20 +17,6 @@ export interface JobListing {
   url_original: string;
   logo_url?: string;
   fecha_publicacion?: Date;
-}
-
-const HEADERS = {
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-  'Accept-Language': 'es-AR,es;q=0.9',
-  'Accept-Encoding': 'gzip, deflate, br',
-  'Cache-Control': 'no-cache',
-};
-
-/** Normaliza texto limpiando espacios extra */
-function clean(s: string): string {
-  return s.replace(/\s+/g, ' ').trim();
 }
 
 /** Extrae el fuente_id desde una URL de Computrabajo */
@@ -53,7 +41,7 @@ export async function scrapeComputrabajo(
             ? `https://ar.computrabajo.com/trabajo-de-${encodeURIComponent(kw.replace(/ /g, '-'))}`
             : `https://ar.computrabajo.com/trabajo-de-${encodeURIComponent(kw.replace(/ /g, '-'))}-p${page}`;
 
-        const res = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(15000) });
+        const res = await scrapeFetch(url);
         if (!res.ok) break;
         const html = await res.text();
 
@@ -67,7 +55,7 @@ export async function scrapeComputrabajo(
           const titleMatch = articleHtml.match(/<h2[^>]*>[\s\S]*?<a[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i);
           if (!titleMatch) continue;
           const jobPath = titleMatch[1];
-          const titulo = clean(titleMatch[2].replace(/<[^>]+>/g, ''));
+          const titulo = cleanText(titleMatch[2]);
 
           const fullUrl = jobPath.startsWith('http') ? jobPath : `https://ar.computrabajo.com${jobPath}`;
           const fuente_id = extractId(fullUrl);
@@ -80,18 +68,18 @@ export async function scrapeComputrabajo(
             /<p[^>]*class="[^"]*comp[^"]*"[^>]*>([\s\S]*?)<\/p>/i,
           );
           const empresa_nombre = empresaMatch
-            ? clean(empresaMatch[1].replace(/<[^>]+>/g, ''))
+            ? cleanText(empresaMatch[1])
             : 'Empresa no indicada';
 
           // Ciudad/ubicación
           const cityMatch = articleHtml.match(
             /<p[^>]*class="[^"]*location[^"]*"[^>]*>([\s\S]*?)<\/p>/i,
           );
-          const ciudad = cityMatch ? clean(cityMatch[1].replace(/<[^>]+>/g, '')) : undefined;
+          const ciudad = cityMatch ? cleanText(cityMatch[1]) : undefined;
 
           // Descripción snippet
           const descMatch = articleHtml.match(/<p[^>]*class="[^"]*fs16[^"]*"[^>]*>([\s\S]*?)<\/p>/i);
-          const descripcion = descMatch ? clean(descMatch[1].replace(/<[^>]+>/g, '')) : undefined;
+          const descripcion = descMatch ? cleanText(descMatch[1]) : undefined;
 
           results.push({
             fuente_id,

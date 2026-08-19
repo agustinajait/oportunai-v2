@@ -4,17 +4,7 @@
  */
 
 import type { JobListing } from './computrabajo';
-
-const HEADERS = {
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  Accept: 'application/json, text/html',
-  'Accept-Language': 'es-AR,es;q=0.9',
-};
-
-function clean(s: string): string {
-  return s.replace(/\s+/g, ' ').trim();
-}
+import { scrapeFetch, cleanText } from './utils';
 
 /** Scrape ZonaJobs via su API interna de búsqueda */
 export async function scrapeZonaJobs(
@@ -28,9 +18,8 @@ export async function scrapeZonaJobs(
     try {
       // ZonaJobs usa una API interna JSON
       const apiUrl = `https://api.zonajobs.com.ar/api/postulations/search?q=${encodeURIComponent(kw)}&page=1&perPage=${maxPerKw}&order=date&country=AR`;
-      const res = await fetch(apiUrl, {
-        headers: { ...HEADERS, 'x-zonajobs-source': 'web' },
-        signal: AbortSignal.timeout(15000),
+      const res = await scrapeFetch(apiUrl, {
+        headers: { 'x-zonajobs-source': 'web', Accept: 'application/json' },
       });
 
       if (res.ok) {
@@ -43,9 +32,9 @@ export async function scrapeZonaJobs(
 
           results.push({
             fuente_id,
-            titulo: clean(item.title || item.name || 'Oferta de trabajo'),
-            empresa_nombre: clean(item.company?.name || item.company_name || 'Empresa no indicada'),
-            descripcion: item.description ? clean(item.description.slice(0, 500)) : undefined,
+            titulo: cleanText(item.title || item.name || 'Oferta de trabajo'),
+            empresa_nombre: cleanText(item.company?.name || item.company_name || 'Empresa no indicada'),
+            descripcion: item.description ? cleanText(item.description.slice(0, 500)) : undefined,
             area: item.category?.name || kw,
             ciudad: item.location?.name || item.city || undefined,
             modalidad: item.modality || 'presencial',
@@ -76,7 +65,7 @@ async function scrapeZonaJobsHtml(
   seen: Set<string>,
 ): Promise<void> {
   const url = `https://www.zonajobs.com.ar/empleos?q=${encodeURIComponent(kw)}`;
-  const res = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(15000) });
+  const res = await scrapeFetch(url);
   if (!res.ok) return;
   const html = await res.text();
 
@@ -91,11 +80,11 @@ async function scrapeZonaJobsHtml(
     seen.add(fuente_id);
 
     const titleMatch = cardHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
-    const titulo = titleMatch ? clean(titleMatch[1].replace(/<[^>]+>/g, '')) : 'Oferta de trabajo';
+    const titulo = titleMatch ? cleanText(titleMatch[1].replace(/<[^>]+>/g, '')) : 'Oferta de trabajo';
 
     const empresaMatch = cardHtml.match(/<p[^>]*class="[^"]*company[^"]*"[^>]*>([\s\S]*?)<\/p>/i);
     const empresa_nombre = empresaMatch
-      ? clean(empresaMatch[1].replace(/<[^>]+>/g, ''))
+      ? cleanText(empresaMatch[1].replace(/<[^>]+>/g, ''))
       : 'Empresa no indicada';
 
     results.push({

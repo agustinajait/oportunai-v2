@@ -160,17 +160,7 @@ export default async function LandingPage() {
         {/* ── Derecha: video o foto + cards flotantes ── */}
         <div className={s.heroNewRight}>
           <div className={s.heroNewPhotoWrap}>
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              poster="/candidato.png"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%' }}
-            >
-              <source src="/hero-video.mp4" type="video/mp4" />
-              <source src="/hero-video.webm" type="video/webm" />
-            </video>
+            <img src="/candidato.png" alt="Candidata con celular buscando trabajo" />
           </div>
 
           {/* Card 1 — VideoCV */}

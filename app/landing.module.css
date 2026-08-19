@@ -1719,3 +1719,19 @@
   flex-shrink: 0; color: rgba(255,255,255,0.90);
 }
 .statsBarT { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.85); line-height: 1.4; white-space: pre-line; }
+
+/* Korai illustration */
+.koraiIllustrationWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+}
+.koraiIllustrationImg {
+  width: 240px;
+  max-width: 100%;
+  height: auto;
+  /* Si la imagen no existe aún, muestra un placeholder */
+  min-height: 200px;
+  object-fit: contain;
+}

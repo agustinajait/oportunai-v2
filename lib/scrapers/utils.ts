@@ -8,22 +8,35 @@ const SCRAPER_API_KEY = process.env.SCRAPER_API_KEY;
 
 /**
  * Wrapper de fetch que pasa automáticamente por ScraperAPI si hay clave configurada.
- * Sin clave: fetch directo (puede ser bloqueado por portales con anti-bot).
+ * Usá skipProxy: true para APIs JSON que no necesitan proxy (Greenhouse, etc.)
  * Con clave: usa ScraperAPI como proxy con render JS opcional.
  */
 export async function scrapeFetch(
   url: string,
   options: {
     headers?: Record<string, string>;
-    renderJs?: boolean;         // activar si el sitio usa React/Vue (más lento)
-    countryCode?: string;       // forzar IP de un país, ej: 'ar'
+    renderJs?: boolean;     // activar si el sitio usa React/Vue (más lento, consume más créditos)
+    countryCode?: string;   // forzar IP de un país, ej: 'ar'
     timeoutMs?: number;
+    skipProxy?: boolean;    // true = fetch directo aunque haya SCRAPER_API_KEY (para JSON APIs)
   } = {},
 ): Promise<Response> {
-  const { headers = {}, renderJs = false, countryCode = 'ar', timeoutMs = 20000 } = options;
+  const {
+    headers = {},
+    renderJs = false,
+    countryCode = 'ar',
+    timeoutMs = 25000,
+    skipProxy = false,
+  } = options;
 
-  if (SCRAPER_API_KEY) {
-    // Construir URL de ScraperAPI
+  const defaultHeaders = {
+    'User-Agent':
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
+    Accept: 'text/html,application/xhtml+xml,application/json,*/*',
+    'Accept-Language': 'es-AR,es;q=0.9',
+  };
+
+  if (SCRAPER_API_KEY && !skipProxy) {
     const params = new URLSearchParams({
       api_key: SCRAPER_API_KEY,
       url,
@@ -32,20 +45,14 @@ export async function scrapeFetch(
     });
     const proxyUrl = `http://api.scraperapi.com?${params.toString()}`;
     return fetch(proxyUrl, {
-      headers,
+      headers: { ...defaultHeaders, ...headers },
       signal: AbortSignal.timeout(timeoutMs),
     });
   }
 
-  // Sin ScraperAPI — fetch directo
+  // Fetch directo (sin proxy)
   return fetch(url, {
-    headers: {
-      'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
-      Accept: 'text/html,application/xhtml+xml,*/*',
-      'Accept-Language': 'es-AR,es;q=0.9',
-      ...headers,
-    },
+    headers: { ...defaultHeaders, ...headers },
     signal: AbortSignal.timeout(timeoutMs),
   });
 }

@@ -19,8 +19,10 @@ export async function scrapeBumeran(
       // Bumeran tiene una API pública que devuelve JSON
       const apiUrl = `https://www.bumeran.com.ar/candidatos/postulaciones/buscar-empleos.json?filters%5Bkeyword%5D=${encodeURIComponent(kw)}&filters%5Bcountry%5D=ar&pageNumber=1&pageSize=${maxPerKw}`;
 
+      // API JSON de Bumeran — fetch directo, sin proxy
       const res = await scrapeFetch(apiUrl, {
         headers: { Referer: 'https://www.bumeran.com.ar/', Accept: 'application/json' },
+        skipProxy: true,
       });
 
       if (res.ok) {

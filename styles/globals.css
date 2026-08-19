@@ -71,3 +71,20 @@
 .animate-fade-in {
   animation: fadeIn 0.2s ease both;
 }
+
+/* ── Scroll reveal (sr-*) ── */
+.sr-up, .sr-left, .sr-right, .sr-scale {
+  opacity: 0;
+  transition: opacity 0.65s cubic-bezier(.4,0,.2,1), transform 0.65s cubic-bezier(.4,0,.2,1);
+  will-change: opacity, transform;
+}
+.sr-up    { transform: translateY(32px); }
+.sr-left  { transform: translateX(-28px); }
+.sr-right { transform: translateX(28px); }
+.sr-scale { transform: scale(0.95); }
+.sr-visible { opacity: 1 !important; transform: none !important; }
+.sr-d1 { transition-delay: 0.08s; }
+.sr-d2 { transition-delay: 0.16s; }
+.sr-d3 { transition-delay: 0.24s; }
+.sr-d4 { transition-delay: 0.32s; }
+.sr-d5 { transition-delay: 0.40s; }

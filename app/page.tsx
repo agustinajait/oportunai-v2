@@ -131,12 +131,12 @@ export default async function LandingPage() {
           <span className={s.heroNewBadge}>100% GRATIS</span>
 
           <h1 className={s.heroNewH}>
-            Creá tu perfil<br/>laboral digital<br/>con <span className={s.heroNewAccent}>VideoCV.</span>
+            El primer creador de<br/><span className={s.heroNewAccent}>Perfil Laboral Digital</span>
           </h1>
 
           <p className={s.heroNewSub}>
-            Mostrá quién sos, destacá lo que sabés hacer y recibí herramientas,
-            oportunidades y acompañamiento para encontrar trabajo.
+            Creá tu VideoCV, generá tu CV optimizado para ATS y construí un único link que resume todo tu Perfil Laboral Digital.
+            Compartilo con empresas o en plataformas de búsqueda de empleo, y recibí herramientas, oportunidades y acompañamiento para potenciar tu búsqueda laboral.
           </p>
 
           <div className={s.heroNewPills}>

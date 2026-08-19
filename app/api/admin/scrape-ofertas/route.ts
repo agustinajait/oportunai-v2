@@ -8,6 +8,7 @@ export const maxDuration = 300; // Vercel Pro: hasta 300s; en free plan usa el m
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { scrapeAdzuna } from '@/lib/scrapers/adzuna';
+import { scrapeIndeed } from '@/lib/scrapers/indeed';
 import { scrapeMercadoLibre, scrapeYPF, scrapeMcDonalds, scrapeMostaza, scrapeStarbucks, scrapeSanIsidro } from '@/lib/scrapers/empresas';
 import type { JobListing } from '@/lib/scrapers/computrabajo';
 
@@ -103,16 +104,19 @@ export async function POST(req: NextRequest) {
   const errors: Record<string, string> = {};
   const debugItems: Record<string, unknown[]> = {};
 
-  // ── Adzuna (fuente principal — agrega Computrabajo, ZonaJobs, Bumeran, etc.) ──
-  if (runAll || fuentes.includes('adzuna')) {
+  // ── Indeed RSS (fuente principal — agrega Computrabajo, ZonaJobs, Bumeran, etc.) ──
+  if (runAll || fuentes.includes('indeed')) {
     try {
-      const items = await scrapeAdzuna();
-      if (debug) { debugItems.adzuna = items; stats.adzuna = items.length; }
-      else stats.adzuna = await saveListings('adzuna', items);
+      const items = await scrapeIndeed();
+      if (debug) { debugItems.indeed = items; stats.indeed = items.length; }
+      else stats.indeed = await saveListings('indeed', items);
     } catch (err) {
-      errors.adzuna = String(err);
+      errors.indeed = String(err);
     }
   }
+
+  // ── Adzuna (desactivado — no cubre Argentina) ─────────────────────────────
+  // if (runAll || fuentes.includes('adzuna')) { ... }
 
   // ── Mercado Libre ─────────────────────────────────────────────────────────
   if (runAll || fuentes.includes('mercadolibre')) {

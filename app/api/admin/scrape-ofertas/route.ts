@@ -10,6 +10,7 @@ import { prisma } from '@/lib/prisma';
 import { scrapeAdzuna } from '@/lib/scrapers/adzuna';
 import { scrapeIndeed } from '@/lib/scrapers/indeed';
 import { scrapeMercadoLibre, scrapeYPF, scrapeMcDonalds, scrapeMostaza, scrapeStarbucks, scrapeSanIsidro } from '@/lib/scrapers/empresas';
+import { scrapeVicenteLopez, scrapeSanFernando, scrapeGCBA, scrapeEmpleoGobAr } from '@/lib/scrapers/municipios';
 import type { JobListing } from '@/lib/scrapers/computrabajo';
 
 const SCRAPE_KEY = process.env.SCRAPE_API_KEY;
@@ -181,6 +182,50 @@ export async function POST(req: NextRequest) {
       else stats.sanisidro = await saveListings('sanisidro', items);
     } catch (err) {
       errors.sanisidro = String(err);
+    }
+  }
+
+  // ── Vicente López ─────────────────────────────────────────────────────────
+  if (runAll || fuentes.includes('vicentelopez')) {
+    try {
+      const items = await scrapeVicenteLopez();
+      if (debug) { debugItems.vicentelopez = items; stats.vicentelopez = items.length; }
+      else stats.vicentelopez = await saveListings('vicentelopez', items);
+    } catch (err) {
+      errors.vicentelopez = String(err);
+    }
+  }
+
+  // ── San Fernando ──────────────────────────────────────────────────────────
+  if (runAll || fuentes.includes('sanfernando')) {
+    try {
+      const items = await scrapeSanFernando();
+      if (debug) { debugItems.sanfernando = items; stats.sanfernando = items.length; }
+      else stats.sanfernando = await saveListings('sanfernando', items);
+    } catch (err) {
+      errors.sanfernando = String(err);
+    }
+  }
+
+  // ── GCBA (Gobierno Ciudad de Buenos Aires) ────────────────────────────────
+  if (runAll || fuentes.includes('gcba')) {
+    try {
+      const items = await scrapeGCBA();
+      if (debug) { debugItems.gcba = items; stats.gcba = items.length; }
+      else stats.gcba = await saveListings('gcba', items);
+    } catch (err) {
+      errors.gcba = String(err);
+    }
+  }
+
+  // ── empleo.gob.ar (Ministerio de Trabajo Nacional) ────────────────────────
+  if (runAll || fuentes.includes('empleogob')) {
+    try {
+      const items = await scrapeEmpleoGobAr();
+      if (debug) { debugItems.empleogob = items; stats.empleogob = items.length; }
+      else stats.empleogob = await saveListings('empleogob', items);
+    } catch (err) {
+      errors.empleogob = String(err);
     }
   }
 

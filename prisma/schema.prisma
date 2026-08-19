@@ -29,6 +29,11 @@ fecha_nacimiento DateTime?
   created_at      DateTime @default(now())
   ultimo_ingreso  DateTime?
 
+  // Redes sociales / presencia online
+  linkedin_url    String?
+  instagram_url   String?
+  sitio_web       String?
+
   // Acompañamiento WhatsApp (Korai integration)
   whatsapp_activo Boolean  @default(false)  // bot activo para este usuario
   korai_opt_in    Boolean  @default(false)  // aceptó recibir acompañamiento

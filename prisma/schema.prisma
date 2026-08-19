@@ -248,6 +248,32 @@ model Oferta {
   citas              Cita[]
 }
 
+// ─── Ofertas externas (scraping) ─────────────────────────────────────────────
+
+model OfertaExterna {
+  id                String       @id @default(cuid())
+  fuente            String       // "computrabajo" | "zonajobs" | "bumeran" | "sanisidro" | empresa directa
+  fuente_id         String?      // ID único en la fuente (para deduplicar)
+  titulo            String
+  empresa_nombre    String
+  descripcion       String?
+  area              String?
+  modalidad         String       @default("presencial")
+  ciudad            String?
+  salario           String?
+  url_original      String
+  logo_url          String?
+  activa            Boolean      @default(true)
+  fecha_publicacion DateTime?
+  created_at        DateTime     @default(now())
+  updated_at        DateTime     @updatedAt
+
+  @@unique([fuente, fuente_id])
+  @@index([fuente])
+  @@index([area])
+  @@index([ciudad])
+}
+
 enum Modalidad {
   presencial
   remoto

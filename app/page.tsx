@@ -12,6 +12,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import s from './landing.module.css';
 import AlfaExpandable from './AlfaExpandable';
+import BuscadorNL from '@/components/ui/BuscadorNL';
 
 interface Sector {
   label: string;
@@ -474,6 +475,9 @@ export default async function LandingPage() {
           </div>
         ))}
       </div>
+
+      {/* ── BUSCADOR LENGUAJE NATURAL ── */}
+      <BuscadorNL variant="home" />
 
       {/* ── POR QUÉ OPORTUNAI ── */}
       <section className={s.whySec}>

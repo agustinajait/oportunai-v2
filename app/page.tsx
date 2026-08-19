@@ -212,7 +212,7 @@ export default async function LandingPage() {
         <div className={s.stepsNew}>
           {([
             { n: '1', numBg: '#5B3FE0', icoBg: 'rgba(91,63,224,0.10)',  icoColor: '#5B3FE0', Icon: User,     t: 'Armá tu perfil',         d: 'Contá tu experiencia, habilidades y lo que buscás.' },
-            { n: '2', numBg: '#EF4444', icoBg: 'rgba(239,68,68,0.10)',  icoColor: '#EF4444', Icon: Video,    t: 'Grabá tu VideoCV',        d: 'Presentate en video y mostrá quién sos en 60 segundos.' },
+            { n: '2', numBg: '#EF4444', icoBg: 'rgba(239,68,68,0.10)',  icoColor: '#EF4444', Icon: Video,    t: 'Grabá tu VideoCV',        d: 'Presentate en video, mostrá quién sos y obtené tu link para compartir tu perfil.' },
             { n: '3', numBg: '#22C55E', icoBg: 'rgba(34,197,94,0.10)',  icoColor: '#22C55E', Icon: FileText, t: 'Obtené tu CV',            d: 'Generamos tu CV optimizado listo para postularte.' },
             { n: '4', numBg: '#3B82F6', icoBg: 'rgba(59,130,246,0.10)', icoColor: '#3B82F6', Icon: Target,   t: 'Hacé tu diagnóstico',     d: 'Identificá tus fortalezas y qué podés mejorar.' },
             { n: '5', numBg: '#F97316', icoBg: 'rgba(249,115,22,0.10)', icoColor: '#F97316', Icon: Heart,    t: 'Recibí acompañamiento',   d: 'Te acercamos oportunidades, recursos y herramientas.' },
@@ -280,8 +280,8 @@ export default async function LandingPage() {
               <User size={26} strokeWidth={1.5} color="#fff"/>
             </div>
             <div>
-              <div className={s.profileCardName}>Santiago Figueroa</div>
-              <div className={s.profileCardRole}>Emprendedor | Creador de soluciones digitales</div>
+              <div className={s.profileCardName}>Federico Martinez</div>
+              <div className={s.profileCardRole}>Operario | Técnico en mantenimiento industrial</div>
               <div className={s.profileCardLoc}><MapPin size={9} strokeWidth={2}/> Buenos Aires, Argentina</div>
             </div>
           </div>
@@ -322,26 +322,13 @@ export default async function LandingPage() {
           </Link>
         </div>
 
-        {/* Centro: phone mockup */}
-        <div className={s.koraiPhone}>
-          <div className={s.koraiPhoneNotch}/>
-          <div className={s.koraiPhoneScreen}>
-            <div className={s.koraiPhoneQ}>¿Cómo estás hoy en cada área?</div>
-            <div className={s.koraiPhoneQSub}>Respondé algunas preguntas para conocerte mejor.</div>
-            {[
-              { label: 'Empleo',    color: '#22C55E' },
-              { label: 'Educación', color: '#22C55E' },
-              { label: 'Salud',     color: '#F97316' },
-              { label: 'Bienestar', color: '#EF4444' },
-              { label: 'Entorno',   color: '#F97316' },
-              { label: 'Finanzas',  color: '#3B82F6' },
-            ].map(row => (
-              <div key={row.label} className={s.koraiPhoneRow}>
-                <span className={s.koraiPhoneRowLabel}>{row.label}</span>
-                <span className={s.koraiPhoneDot} style={{ background: row.color }}/>
-              </div>
-            ))}
-          </div>
+        {/* Centro: ilustración */}
+        <div className={s.koraiIllustrationWrap}>
+          <img
+            src="/korai-illustration.png"
+            alt="Diagnóstico de acompañamiento Korai"
+            className={s.koraiIllustrationImg}
+          />
         </div>
 
         {/* Derecha: result box */}
@@ -488,11 +475,37 @@ export default async function LandingPage() {
         ))}
       </div>
 
+      {/* ── POR QUÉ OPORTUNAI ── */}
+      <section className={s.whySec}>
+        <div className={s.whyHead}>
+          <p className={s.eyebrow}>Confianza · Trayectoria · Propósito</p>
+          <h2 className={s.secH}>¿Por qué OportunAI?</h2>
+          <p className={s.whySub}>Tecnología con experiencia.<br/>Selección con propósito.</p>
+        </div>
+        <div className={s.whyBlocks}>
+          <div className={s.whyBlock}>
+            <div className={s.whyBlockIco} style={{ background: 'linear-gradient(135deg,#0A9485,#14C7A8)', boxShadow: '0 4px 16px rgba(20,199,168,0.35)' }}>
+              <Heart size={20} color="#fff" strokeWidth={2} />
+            </div>
+            <h3 className={s.whyBlockH}>Impulsada por la ONG CAII</h3>
+            <p className={s.whyBlockP}>OportunAI es una iniciativa desarrollada por la ONG CAII para generar más oportunidades de capacitación y empleo mediante tecnología.</p>
+            <p className={s.whyBlockP}>Ayudamos a empresas, comercios y organizaciones a seleccionar mejor a sus candidatos mediante VideoCV y capacitación, mientras impulsamos más oportunidades laborales para quienes buscan trabajo.</p>
+          </div>
+          <div className={s.whyBlock}>
+            <div className={s.whyBlockIco} style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 16px rgba(91,63,224,0.35)' }}>
+              <Video size={20} color="#fff" strokeWidth={2} />
+            </div>
+            <h3 className={s.whyBlockH}>+10 años transformando la selección</h3>
+            <p className={s.whyBlockP}>OportunAI cuenta con el respaldo de Tu VideoCV, la startup argentina pionera en la incorporación del VideoCV en procesos de selección.</p>
+            <p className={s.whyBlockP}>Desde 2015 desarrollamos tecnología utilizada por grandes empresas. Hoy esa experiencia se pone al servicio de una plataforma con impacto social.</p>
+          </div>
+        </div>
+      </section>
+
       {/* ── CTA FINAL ── */}
       <section className={s.ctaFinal}>
         <p className={s.ctaTag}>Gratis · Desde el celular · 2 minutos</p>
         <h2 className={s.ctaH}>Empezá hoy.<br/>Tu oportunidad te espera.</h2>
-        <p className={s.ctaSub}>Miles de personas en estaciones, atención al cliente y comidas rápidas<br/>ya encontraron trabajo con Oportunai.</p>
         <div className={s.ctaBtns}>
           <Link href="/register" className={s.ctaBtnP}>
             <Video size={16} strokeWidth={2} />

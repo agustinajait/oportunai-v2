@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, FormEvent } from 'react';
-import { Search, Loader2, MapPin, Building2, ExternalLink, ArrowRight, X, Sparkles } from 'lucide-react';
+import { Search, Loader2, MapPin, Building2, ExternalLink, ArrowRight, X, Sparkles, UserCheck } from 'lucide-react';
 import styles from './BuscadorNL.module.css';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
@@ -43,6 +43,19 @@ const SUGERENCIAS = [
   'Limpieza o mantenimiento industrial',
 ];
 
+// ─── Chips de categoría ───────────────────────────────────────────────────────
+
+const CATEGORIAS = [
+  { emoji: '⛽', label: 'Estación de servicio', query: 'Trabajo en estación de servicio o playa de combustible' },
+  { emoji: '🍔', label: 'Gastronomía', query: 'Trabajo en gastronomía, cocina o atención en restaurante' },
+  { emoji: '🛒', label: 'Supermercado', query: 'Trabajo en supermercado, repositor o cajero' },
+  { emoji: '🎧', label: 'Atención al cliente', query: 'Trabajo de atención al cliente o call center' },
+  { emoji: '🏗️', label: 'Operario / Industria', query: 'Trabajo de operario o producción industrial' },
+  { emoji: '🚚', label: 'Logística', query: 'Trabajo en logística, depósito o reparto' },
+  { emoji: '🧹', label: 'Limpieza', query: 'Trabajo de limpieza o maestranza' },
+  { emoji: '🏪', label: 'Comercio / Ventas', query: 'Trabajo de vendedor o en local comercial' },
+];
+
 // ─── Componente ───────────────────────────────────────────────────────────────
 
 interface Props {
@@ -59,6 +72,7 @@ export default function BuscadorNL({ variant = 'home', className = '' }: Props) 
   const [error, setError] = useState<string | null>(null);
   const [sugerenciaIdx, setSugerenciaIdx] = useState(0);
   const [showSugerencias, setShowSugerencias] = useState(false);
+  const [activeCategoria, setActiveCategoria] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -102,10 +116,36 @@ export default function BuscadorNL({ variant = 'home', className = '' }: Props) 
     inputRef.current?.focus();
   }
 
+  async function handleCategoria(cat: typeof CATEGORIAS[0]) {
+    setActiveCategoria(cat.label);
+    setQuery(cat.query);
+    setShowSugerencias(false);
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/buscar', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ query: cat.query, limit: 20 }),
+      });
+      const data: BuscarResponse = await res.json();
+      if (!data.ok) throw new Error('Error en la búsqueda');
+      setResultados(data.resultados);
+      setResumen(cat.label);
+      setTotal(data.total);
+      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    } catch {
+      setError('No pudimos completar la búsqueda. Intentá de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function clearResults() {
     setResultados(null);
     setQuery('');
     setError(null);
+    setActiveCategoria(null);
     inputRef.current?.focus();
   }
 
@@ -133,12 +173,29 @@ export default function BuscadorNL({ variant = 'home', className = '' }: Props) 
             <Sparkles size={13} /> Buscador inteligente
           </span>
           <h2 className={styles.heading}>
-            Encontrá tu próximo trabajo<br />
+            Encontrá tu próximo trabajo
+            <br />
             <span className={styles.headingAccent}>como si le hablaras a alguien</span>
           </h2>
           <p className={styles.sub}>
-            Escribí lo que buscás con tus palabras. Nuestro buscador entiende y filtra por vos.
+            Elegí una categoría o escribí lo que buscás con tus palabras. Nuestro buscador entiende y filtra por vos.
           </p>
+
+          {/* Chips de categoría */}
+          <div className={styles.categorias}>
+            {CATEGORIAS.map((cat) => (
+              <button
+                key={cat.label}
+                type="button"
+                className={`${styles.catChip} ${activeCategoria === cat.label ? styles.catChipActive : ''}`}
+                onClick={() => handleCategoria(cat)}
+                disabled={loading}
+              >
+                <span className={styles.catEmoji}>{cat.emoji}</span>
+                {cat.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -230,10 +287,14 @@ export default function BuscadorNL({ variant = 'home', className = '' }: Props) 
           {total === 0 ? (
             <div className={styles.empty}>
               <div className={styles.emptyIco}>🔍</div>
-              <p>No encontramos ofertas para esa búsqueda.</p>
-              <p className={styles.emptySub}>Probá con otras palabras o revisá las ofertas disponibles abajo.</p>
+              <p>No encontramos ofertas exactas para esa búsqueda.</p>
+              <p className={styles.emptySub}>Probá con otras palabras o creá tu perfil para recibir alertas cuando haya nuevas oportunidades.</p>
+              <a href="/register" className={styles.emptyRegisterBtn}>
+                <UserCheck size={15} /> Crear mi perfil gratis
+              </a>
             </div>
           ) : (
+            <>
             <div className={styles.grid}>
               {resultados.map((r) => (
                 <div key={r.id} className={styles.card}>
@@ -297,6 +358,23 @@ export default function BuscadorNL({ variant = 'home', className = '' }: Props) 
                 </div>
               ))}
             </div>
+
+            {/* CTA crear perfil al pie de resultados */}
+            {isHome && (
+              <div className={styles.resultsRegisterCta}>
+                <div className={styles.resultsRegisterCtaText}>
+                  <UserCheck size={18} className={styles.resultsRegisterCtaIcon} />
+                  <div>
+                    <strong>¿Querés que te avisen cuando haya más?</strong>
+                    <p>Creá tu perfil gratis y recibí oportunidades personalizadas.</p>
+                  </div>
+                </div>
+                <a href="/register" className={styles.resultsRegisterCtaBtn}>
+                  Crear mi perfil <ArrowRight size={14} />
+                </a>
+              </div>
+            )}
+            </>
           )}
         </div>
       )}

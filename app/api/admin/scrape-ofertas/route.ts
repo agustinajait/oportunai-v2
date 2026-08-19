@@ -4,6 +4,7 @@
  * Se puede llamar manualmente o automatizar con cron (cron-job.org, Railway cron, etc.)
  */
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300; // Vercel Pro: hasta 300s; en free plan usa el máximo disponible
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { scrapeComputrabajo } from '@/lib/scrapers/computrabajo';
@@ -102,31 +103,24 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  // Permite seleccionar qué fuentes correr (por defecto todas)
   const fuentes: string[] = body.fuentes || ['all'];
   const runAll = fuentes.includes('all');
+  // debug=true devuelve los items crudos sin guardar (para diagnosticar)
+  const debug = body.debug === true;
 
   const stats: Record<string, number> = {};
   const errors: Record<string, string> = {};
+  const debugItems: Record<string, unknown[]> = {};
 
-  const KEYWORDS = [
-    'atencion al cliente',
-    'cajero',
-    'repositor',
-    'operario',
-    'mozo',
-    'limpieza',
-    'administrativo',
-    'cocina',
-    'seguridad',
-    'almacen',
-  ];
+  // Pocas keywords para no superar el timeout de Vercel (10-30s free, 300s Pro)
+  const KEYWORDS = ['cajero', 'operario', 'atencion al cliente', 'mozo', 'repositor'];
 
   // ── Computrabajo ──────────────────────────────────────────────────────────
   if (runAll || fuentes.includes('computrabajo')) {
     try {
       const items = await scrapeComputrabajo(KEYWORDS, 1);
-      stats.computrabajo = await saveListings('computrabajo', items);
+      if (debug) { debugItems.computrabajo = items; stats.computrabajo = items.length; }
+      else stats.computrabajo = await saveListings('computrabajo', items);
     } catch (err) {
       errors.computrabajo = String(err);
     }
@@ -135,8 +129,9 @@ export async function POST(req: NextRequest) {
   // ── ZonaJobs ─────────────────────────────────────────────────────────────
   if (runAll || fuentes.includes('zonajobs')) {
     try {
-      const items = await scrapeZonaJobs(KEYWORDS, 15);
-      stats.zonajobs = await saveListings('zonajobs', items);
+      const items = await scrapeZonaJobs(KEYWORDS, 10);
+      if (debug) { debugItems.zonajobs = items; stats.zonajobs = items.length; }
+      else stats.zonajobs = await saveListings('zonajobs', items);
     } catch (err) {
       errors.zonajobs = String(err);
     }
@@ -145,8 +140,9 @@ export async function POST(req: NextRequest) {
   // ── Bumeran ───────────────────────────────────────────────────────────────
   if (runAll || fuentes.includes('bumeran')) {
     try {
-      const items = await scrapeBumeran(KEYWORDS, 15);
-      stats.bumeran = await saveListings('bumeran', items);
+      const items = await scrapeBumeran(KEYWORDS, 10);
+      if (debug) { debugItems.bumeran = items; stats.bumeran = items.length; }
+      else stats.bumeran = await saveListings('bumeran', items);
     } catch (err) {
       errors.bumeran = String(err);
     }
@@ -156,7 +152,8 @@ export async function POST(req: NextRequest) {
   if (runAll || fuentes.includes('mercadolibre')) {
     try {
       const items = await scrapeMercadoLibre();
-      stats.mercadolibre = await saveListings('mercadolibre', items);
+      if (debug) { debugItems.mercadolibre = items; stats.mercadolibre = items.length; }
+      else stats.mercadolibre = await saveListings('mercadolibre', items);
     } catch (err) {
       errors.mercadolibre = String(err);
     }
@@ -166,7 +163,8 @@ export async function POST(req: NextRequest) {
   if (runAll || fuentes.includes('ypf')) {
     try {
       const items = await scrapeYPF();
-      stats.ypf = await saveListings('ypf', items);
+      if (debug) { debugItems.ypf = items; stats.ypf = items.length; }
+      else stats.ypf = await saveListings('ypf', items);
     } catch (err) {
       errors.ypf = String(err);
     }
@@ -176,7 +174,8 @@ export async function POST(req: NextRequest) {
   if (runAll || fuentes.includes('mcdonalds')) {
     try {
       const items = await scrapeMcDonalds();
-      stats.mcdonalds = await saveListings('mcdonalds', items);
+      if (debug) { debugItems.mcdonalds = items; stats.mcdonalds = items.length; }
+      else stats.mcdonalds = await saveListings('mcdonalds', items);
     } catch (err) {
       errors.mcdonalds = String(err);
     }
@@ -186,7 +185,8 @@ export async function POST(req: NextRequest) {
   if (runAll || fuentes.includes('mostaza')) {
     try {
       const items = await scrapeMostaza();
-      stats.mostaza = await saveListings('mostaza', items);
+      if (debug) { debugItems.mostaza = items; stats.mostaza = items.length; }
+      else stats.mostaza = await saveListings('mostaza', items);
     } catch (err) {
       errors.mostaza = String(err);
     }
@@ -196,7 +196,8 @@ export async function POST(req: NextRequest) {
   if (runAll || fuentes.includes('starbucks')) {
     try {
       const items = await scrapeStarbucks();
-      stats.starbucks = await saveListings('starbucks', items);
+      if (debug) { debugItems.starbucks = items; stats.starbucks = items.length; }
+      else stats.starbucks = await saveListings('starbucks', items);
     } catch (err) {
       errors.starbucks = String(err);
     }
@@ -206,7 +207,8 @@ export async function POST(req: NextRequest) {
   if (runAll || fuentes.includes('sanisidro')) {
     try {
       const items = await scrapeSanIsidro();
-      stats.sanisidro = await saveListings('sanisidro', items);
+      if (debug) { debugItems.sanisidro = items; stats.sanisidro = items.length; }
+      else stats.sanisidro = await saveListings('sanisidro', items);
     } catch (err) {
       errors.sanisidro = String(err);
     }
@@ -219,6 +221,7 @@ export async function POST(req: NextRequest) {
     totalSaved,
     stats,
     errors: Object.keys(errors).length > 0 ? errors : undefined,
+    ...(debug && { debugItems }),
     timestamp: new Date().toISOString(),
   });
 }

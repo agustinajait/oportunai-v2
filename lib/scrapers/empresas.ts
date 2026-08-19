@@ -7,35 +7,72 @@ import type { JobListing } from './computrabajo';
 import { scrapeFetch, cleanText } from './utils';
 
 // ─── Mercado Libre ────────────────────────────────────────────────────────────
-// Usa Greenhouse como ATS → tiene API JSON pública
+// Scraping de su portal de carreras (careers.mercadolibre.com)
 export async function scrapeMercadoLibre(): Promise<JobListing[]> {
   const results: JobListing[] = [];
   try {
-    // Greenhouse es una API JSON pública — no necesita proxy
-    const res = await scrapeFetch(
-      'https://boards-api.greenhouse.io/v1/boards/mercadolibre/jobs?content=true',
-      { skipProxy: true },
-    );
-    if (!res.ok) return results;
-    const data = await res.json();
-    const jobs = data.jobs || [];
+    // Intentar API interna que usa su SPA
+    const apiUrl = 'https://careers.mercadolibre.com/api/jobs?country=AR&limit=30&offset=0';
+    const res = await scrapeFetch(apiUrl, { skipProxy: true });
 
-    for (const job of jobs) {
-      const location = (job.location?.name || '').toLowerCase();
-      if (!location.includes('argentin') && !location.includes('buenos')) continue;
+    if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('json')) {
+        const data = await res.json();
+        const jobs = data.jobs || data.results || data.data || data || [];
+        if (Array.isArray(jobs) && jobs.length > 0) {
+          for (const job of jobs.slice(0, 30)) {
+            results.push({
+              fuente_id: String(job.id || job.jobId || `ml-${results.length}`),
+              titulo: cleanText(job.title || job.name || ''),
+              empresa_nombre: 'Mercado Libre',
+              descripcion: job.description ? cleanText(job.description).slice(0, 500) : undefined,
+              area: job.area || job.department || undefined,
+              ciudad: job.location || job.city || 'Argentina',
+              modalidad: 'presencial',
+              url_original: job.url || job.applyUrl || `https://careers.mercadolibre.com/jobs/${job.id}`,
+              logo_url: 'https://http2.mlstatic.com/frontend-assets/ml-web-navigation/ui-navigation/5.21.22/mercadolibre/logo__large_plus.png',
+            });
+          }
+          return results;
+        }
+      }
+    }
 
-      results.push({
-        fuente_id: String(job.id),
-        titulo: cleanText(job.title || ''),
-        empresa_nombre: 'Mercado Libre',
-        descripcion: job.content ? cleanText(job.content).slice(0, 500) : undefined,
-        area: job.departments?.[0]?.name || undefined,
-        ciudad: job.location?.name || 'Argentina',
-        modalidad: 'presencial',
-        url_original: job.absolute_url || `https://careers.mercadolibre.com/jobs/${job.id}`,
-        logo_url: 'https://www.mercadolibre.com.ar/favicon.ico',
-        fecha_publicacion: job.updated_at ? new Date(job.updated_at) : undefined,
-      });
+    // Fallback: scraping HTML del portal
+    const htmlRes = await scrapeFetch('https://careers.mercadolibre.com/jobs?country=Argentina', {
+      skipProxy: false, // usar ScraperAPI para el HTML
+    });
+    if (!htmlRes.ok) return results;
+    const html = await htmlRes.text();
+
+    // Buscar jobs embebidos en JSON dentro del HTML (Next.js / Nuxt pattern)
+    const jsonMatches = [
+      html.match(/"jobs"\s*:\s*(\[[\s\S]{10,5000}?\])/),
+      html.match(/window\.__INITIAL_STATE__\s*=\s*({[\s\S]{10,10000}?});/),
+      html.match(/"results"\s*:\s*(\[[\s\S]{10,5000}?\])/),
+    ];
+
+    for (const match of jsonMatches) {
+      if (!match) continue;
+      try {
+        const parsed = JSON.parse(match[1]);
+        const items = Array.isArray(parsed) ? parsed : (parsed.jobs || parsed.results || []);
+        for (const job of items.slice(0, 20)) {
+          const titulo = cleanText(job.title || job.name || '');
+          if (!titulo) continue;
+          results.push({
+            fuente_id: String(job.id || `ml-${results.length}`),
+            titulo,
+            empresa_nombre: 'Mercado Libre',
+            ciudad: job.location || job.city || 'Argentina',
+            modalidad: 'presencial',
+            url_original: job.url || job.absoluteUrl || 'https://careers.mercadolibre.com/',
+            logo_url: 'https://http2.mlstatic.com/frontend-assets/ml-web-navigation/ui-navigation/5.21.22/mercadolibre/logo__large_plus.png',
+          });
+        }
+        if (results.length > 0) break;
+      } catch {}
     }
   } catch (err) {
     console.error('[mercadolibre] Error:', err);

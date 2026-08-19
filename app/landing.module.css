@@ -249,7 +249,8 @@
   position: absolute;
   inset: 0;
 }
-.heroNewPhotoWrap img {
+.heroNewPhotoWrap img,
+.heroNewPhotoWrap video {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1761,11 +1762,19 @@
     min-height: unset;
   }
   .heroNewLeft {
-    padding: 2.5rem 1.5rem 2rem;
+    padding: 2rem 1.25rem 1.5rem;
+    order: 2;
   }
-  .heroNewRight { display: none; }
-  .heroNewH { font-size: 30px; }
-  .heroNewSub { font-size: 14px; }
+  .heroNewRight {
+    display: block;
+    order: 1;
+    min-height: 240px;
+    max-height: 300px;
+  }
+  /* Las tarjetas flotantes se ocultan en mobile */
+  .heroCard { display: none; }
+  .heroNewH { font-size: 28px; }
+  .heroNewSub { font-size: 13.5px; }
   .heroNewCtaBtn {
     width: 100%;
     justify-content: center;
@@ -1774,39 +1783,40 @@
   }
   .heroNewPills { gap: 6px; }
   .heroNewPill { font-size: 12px; padding: 5px 10px; }
+  .heroNewBadge { font-size: 10px; }
 }
 
-/* ── Steps mobile ── */
+/* ── Steps mobile — scroll lateral con snap ── */
 @media (max-width: 768px) {
-  .secSteps { padding: 48px 16px 52px; }
+  .secSteps { padding: 48px 0 52px; }
+  .secStepsHead { padding: 0 16px; }
+
   .stepsNew {
-    flex-direction: column;
-    align-items: center;
-    gap: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 20px 20px;
+    gap: 12px;
+    /* ocultar scrollbar visualmente */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
+  .stepsNew::-webkit-scrollbar { display: none; }
+
   .stepNew {
-    width: 100%;
-    max-width: 300px;
-    flex-direction: row;
-    text-align: left;
-    align-items: flex-start;
-    padding: 12px 0;
-    gap: 14px;
-  }
-  .stepNewNum {
-    margin-bottom: 0;
+    scroll-snap-align: center;
     flex-shrink: 0;
+    width: 180px;
+    padding: 20px 14px;
+    background: #f8f8fc;
+    border: 1px solid rgba(0,0,0,0.07);
+    border-radius: 18px;
   }
-  .stepNewIco {
-    margin-bottom: 0;
-    flex-shrink: 0;
-  }
+
   .stepNewArrow {
     padding-top: 0;
-    transform: rotate(90deg);
-    height: 24px;
-    justify-content: center;
-    align-items: center;
+    align-self: center;
+    flex-shrink: 0;
   }
 }
 

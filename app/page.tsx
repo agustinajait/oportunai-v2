@@ -160,8 +160,6 @@ export default async function LandingPage() {
         {/* ── Derecha: video o foto + cards flotantes ── */}
         <div className={s.heroNewRight}>
           <div className={s.heroNewPhotoWrap}>
-            {/* Reemplazá /hero-video.mp4 con tu video real.
-                Si no existe, muestra la imagen de fallback. */}
             <video
               autoPlay
               loop
@@ -169,18 +167,9 @@ export default async function LandingPage() {
               playsInline
               poster="/candidato.png"
               style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%' }}
-              onError={(e) => {
-                const v = e.currentTarget;
-                const img = document.createElement('img');
-                img.src = '/candidato.png';
-                img.style.cssText = 'width:100%;height:100%;object-fit:cover;object-position:center 15%';
-                v.parentNode?.replaceChild(img, v);
-              }}
             >
               <source src="/hero-video.mp4" type="video/mp4" />
               <source src="/hero-video.webm" type="video/webm" />
-              {/* fallback imagen si el browser no soporta video */}
-              <img src="/candidato.png" alt="Candidata con celular buscando trabajo" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%' }} />
             </video>
           </div>
 

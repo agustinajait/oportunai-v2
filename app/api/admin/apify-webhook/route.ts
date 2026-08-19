@@ -92,53 +92,101 @@ async function saveListings(fuente: string, items: JobListing[]): Promise<number
 }
 
 /**
+ * Extrae el primer valor no-vacío de una lista de posibles campos.
+ */
+function pick(item: Record<string, unknown>, ...keys: string[]): string {
+  for (const k of keys) {
+    const v = String(item[k] ?? '').trim();
+    if (v && v !== 'null' && v !== 'undefined') return v;
+  }
+  return '';
+}
+
+/**
  * Mapea un item de Computrabajo (salida de Apify) a JobListing.
- * Los campos varían según el actor; cubrimos los nombres más comunes.
+ * Cubre todos los nombres de campo conocidos de actores populares de Computrabajo.
  */
 function mapComputrabajo(item: Record<string, unknown>): JobListing | null {
-  // Título — obligatorio
-  const titulo = String(
-    item.title || item.titulo || item.posicion || item.jobTitle || '',
-  ).trim();
+  // Título — obligatorio (probamos todos los campos conocidos + fallback inteligente)
+  let titulo = pick(item,
+    'title', 'titulo', 'posicion', 'jobTitle', 'position',
+    'name', 'cargo', 'puesto', 'vacante', 'oferta',
+    'job_title', 'jobtitle', 'Titulo', 'Title',
+  );
+
+  // Fallback: buscar cualquier campo string corto que no sea URL ni fecha
+  if (!titulo) {
+    for (const [k, v] of Object.entries(item)) {
+      if (
+        typeof v === 'string' &&
+        v.length > 3 && v.length < 200 &&
+        !v.startsWith('http') &&
+        !k.toLowerCase().includes('url') &&
+        !k.toLowerCase().includes('date') &&
+        !k.toLowerCase().includes('at') &&
+        !k.toLowerCase().includes('id') &&
+        !k.toLowerCase().includes('company') &&
+        !k.toLowerCase().includes('empresa')
+      ) {
+        titulo = v.trim();
+        break;
+      }
+    }
+  }
+
   if (!titulo) return null;
 
   // URL — obligatorio
-  const url_original = String(
-    item.url || item.jobUrl || item.link || item.href || '',
-  ).trim();
+  let url_original = pick(item,
+    'url', 'jobUrl', 'link', 'href',
+    'pageUrl', 'loadedUrl', 'ofertaUrl', 'detailUrl',
+    'sourceUrl', 'canonicalUrl', 'jobLink', 'applyUrl',
+  );
+
+  // Fallback: primer valor string que empiece con http
+  if (!url_original) {
+    for (const v of Object.values(item)) {
+      if (typeof v === 'string' && v.startsWith('http')) {
+        url_original = v;
+        break;
+      }
+    }
+  }
+
   if (!url_original) return null;
 
   // ID único
-  const rawId = String(item.id || item.jobId || item.fuente_id || '').trim();
-  const urlId = url_original.match(/\/(\d+)(?:\?|$)/)?.[1] || '';
-  const fuente_id = rawId || urlId || url_original.slice(-20);
+  const rawId = pick(item, 'id', 'jobId', 'fuente_id', 'offerId', 'vacancyId', 'postingId');
+  const urlId = url_original.match(/\/(\d+)(?:[/?#]|$)/)?.[1] || '';
+  const fuente_id = rawId || urlId || url_original.slice(-24);
 
   // Empresa
-  const empresa_nombre = String(
-    item.company || item.empresa || item.companyName || 'Empresa no indicada',
-  ).trim();
+  const empresa_nombre = pick(item,
+    'company', 'empresa', 'companyName', 'employer',
+    'organizacion', 'organization', 'recruiter',
+  ) || 'Empresa no indicada';
 
   // Descripción
-  const rawDesc = String(
-    item.description || item.descripcion || item.snippet || '',
-  ).trim();
+  const rawDesc = pick(item, 'description', 'descripcion', 'snippet', 'summary', 'details', 'jobDescription');
   const descripcion = rawDesc ? rawDesc.replace(/<[^>]+>/g, '').slice(0, 500) : undefined;
 
   // Ciudad
-  const ciudad = String(
-    item.location || item.ciudad || item.city || item.place || '',
-  ).trim() || undefined;
+  const ciudad = pick(item,
+    'location', 'ciudad', 'city', 'place', 'localidad',
+    'province', 'provincia', 'region', 'zona',
+  ) || undefined;
 
   // Área / categoría
-  const area = String(
-    item.category || item.area || item.sector || '',
-  ).trim() || undefined;
+  const area = pick(item,
+    'category', 'area', 'sector', 'rubro', 'industria',
+    'jobCategory', 'subcategory',
+  ) || undefined;
 
   // Salario
-  const salario = String(item.salary || item.salario || '').trim() || undefined;
+  const salario = pick(item, 'salary', 'salario', 'wage', 'remuneration', 'sueldo') || undefined;
 
   // Modalidad
-  const modalityRaw = String(item.modality || item.modalidad || item.workType || '').toLowerCase();
+  const modalityRaw = pick(item, 'modality', 'modalidad', 'workType', 'jobType', 'contractType').toLowerCase();
   const modalidad =
     modalityRaw.includes('remoto') || modalityRaw.includes('remote') || modalityRaw.includes('teletrabajo')
       ? 'remoto'
@@ -275,6 +323,10 @@ export async function POST(req: NextRequest) {
 
   console.log(`[apify-webhook] Guardados ${saved}/${listings.length} items de ${fuente}`);
 
+  // Incluir las keys del primer item para diagnóstico cuando no se mapea nada
+  const sampleKeys = rawItems.length > 0 ? Object.keys(rawItems[0]) : [];
+  const sampleItem = listings.length === 0 && rawItems.length > 0 ? rawItems[0] : undefined;
+
   return NextResponse.json({
     ok: true,
     fuente,
@@ -282,6 +334,7 @@ export async function POST(req: NextRequest) {
     itemsReceived: rawItems.length,
     itemsMapped: listings.length,
     saved,
+    ...(listings.length === 0 && { sampleKeys, sampleItem }),
     timestamp: new Date().toISOString(),
   });
 }

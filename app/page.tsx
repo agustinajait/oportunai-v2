@@ -13,6 +13,8 @@ import type { LucideIcon } from 'lucide-react';
 import s from './landing.module.css';
 import AlfaExpandable from './AlfaExpandable';
 import BuscadorNL from '@/components/ui/BuscadorNL';
+import HeroVideo from '@/components/ui/HeroVideo';
+import ScrollReveal from '@/components/ui/ScrollReveal';
 
 interface Sector {
   label: string;
@@ -99,6 +101,7 @@ export default async function LandingPage() {
 
   return (
     <div className={s.wrapper}>
+      <ScrollReveal />
 
       {/* ── NAV ── */}
       <nav className={s.nav}>
@@ -160,7 +163,7 @@ export default async function LandingPage() {
         {/* ── Derecha: video o foto + cards flotantes ── */}
         <div className={s.heroNewRight}>
           <div className={s.heroNewPhotoWrap}>
-            <img src="/candidato.png" alt="Candidata con celular buscando trabajo" />
+            <HeroVideo />
           </div>
 
           {/* Card 1 — VideoCV */}
@@ -204,7 +207,7 @@ export default async function LandingPage() {
 
       {/* ── STEPS — Tu camino en 5 pasos ── */}
       <section className={s.secSteps}>
-        <div className={s.secStepsHead}>
+        <div className={`${s.secStepsHead} sr-up`}>
           <h2 className={s.secStepsH}>
             Tu camino en <span className={s.secStepsAccent}>5 pasos</span>
           </h2>
@@ -218,7 +221,7 @@ export default async function LandingPage() {
             { n: '4', numBg: '#3B82F6', icoBg: 'rgba(59,130,246,0.10)', icoColor: '#3B82F6', Icon: Target,   t: 'Conocé tu situación',                   d: 'Realizá un diagnóstico en áreas clave para iniciar tu camino laboral.' },
             { n: '5', numBg: '#F97316', icoBg: 'rgba(249,115,22,0.10)', icoColor: '#F97316', Icon: Heart,    t: 'Recibí oportunidades y acompañamiento', d: 'Accedé a herramientas, recursos y oportunidades personalizadas para tu búsqueda laboral.' },
           ] as const).flatMap((step, i, arr) => [
-            <div key={step.n} className={s.stepNew}>
+            <div key={step.n} className={`${s.stepNew} sr-up sr-d${i + 1}`}>
               <div className={s.stepNewNum} style={{ background: step.numBg }}>{step.n}</div>
               <div className={s.stepNewIco} style={{ background: step.icoBg }}>
                 <step.Icon size={26} strokeWidth={1.75} color={step.icoColor}/>
@@ -357,7 +360,7 @@ export default async function LandingPage() {
       </section>
 
       {/* ── CAPACITACIONES ── */}
-      <section className={s.sec}>
+      <section className={`${s.sec} sr-up`}>
         <div className={s.secHead}>
           <div>
             <p className={s.eyebrow}>Exclusivo Oportunai · Gratis</p>
@@ -418,7 +421,7 @@ export default async function LandingPage() {
       </section>
 
       {/* ── EMPRESA ── */}
-      <section className={s.empNewSec}>
+      <section className={`${s.empNewSec} sr-up`}>
         <div className={s.empNewL}>
           <div className={s.empNewIcon}><Building2 size={26} strokeWidth={1.75}/></div>
           <h2 className={s.empNewH}>¿Sos una empresa y buscás<br/>personas para tu equipo?</h2>

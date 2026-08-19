@@ -14,6 +14,7 @@ import {
   User,
 } from 'lucide-react';
 import OfertasTab from '@/components/ui/OfertasTab';
+import BuscadorNL from '@/components/ui/BuscadorNL';
 import CapacitacionPlayer from '@/components/ui/CapacitacionPlayer';
 import VideoThumbnail from '@/components/ui/VideoThumbnail';
 
@@ -747,6 +748,7 @@ export default function DashboardClient({
         {/* Tab Ofertas */}
         {tab === 'ofertas' && (
           <div className="animate-fade-in">
+            <BuscadorNL variant="dashboard" className="mb-6" />
             <OfertasTab videos={usuario.videos} initialOfertaId={initialOfertaId} />
           </div>
         )}

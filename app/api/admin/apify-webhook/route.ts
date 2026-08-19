@@ -31,6 +31,7 @@ function isAuthorized(req: NextRequest): boolean {
 async function saveListings(fuente: string, items: JobListing[]): Promise<number> {
   if (items.length === 0) return 0;
   try {
+    const now = new Date();
     const result = await prisma.ofertaExterna.createMany({
       data: items.map(item => ({
         fuente,
@@ -45,12 +46,15 @@ async function saveListings(fuente: string, items: JobListing[]): Promise<number
         url_original: item.url_original,
         logo_url: item.logo_url ?? null,
         fecha_publicacion: item.fecha_publicacion ?? null,
+        activa: true,
+        updated_at: now,
       })),
       skipDuplicates: true,
     });
     return result.count;
   } catch (err: unknown) {
-    console.error('[apify-webhook] Error en createMany:', err);
+    const msg = (err as Error).message || String(err);
+    console.error('[apify-webhook] Error en createMany:', msg);
     // Fallback: insertar de a uno para identificar el item problemático
     let saved = 0;
     for (const item of items) {
@@ -326,6 +330,7 @@ export async function POST(req: NextRequest) {
     itemsMapped: listings.length,
     saved,
     ...(listings.length === 0 && { sampleKeys, sampleItem }),
+    ...(saved === 0 && listings.length > 0 && { debug: 'mapped_but_not_saved_check_vercel_logs' }),
     timestamp: new Date().toISOString(),
   });
 }

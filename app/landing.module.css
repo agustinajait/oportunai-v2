@@ -1735,3 +1735,177 @@
   min-height: 200px;
   object-fit: contain;
 }
+
+/* ════════════════════════════════════════════════
+   MOBILE COMPLETO — breakpoints faltantes
+   ════════════════════════════════════════════════ */
+
+/* ── Nav mobile ── */
+@media (max-width: 768px) {
+  .nav {
+    grid-template-columns: 1fr auto;
+    padding: 0 16px;
+  }
+  .navCenter { display: none; }
+  .navLinks .btnGhost { display: none; }
+  .btnFill {
+    padding: 7px 14px;
+    font-size: 12.5px;
+  }
+}
+
+/* ── Hero mobile ── */
+@media (max-width: 640px) {
+  .heroNew {
+    grid-template-columns: 1fr;
+    min-height: unset;
+  }
+  .heroNewLeft {
+    padding: 2.5rem 1.5rem 2rem;
+  }
+  .heroNewRight { display: none; }
+  .heroNewH { font-size: 30px; }
+  .heroNewSub { font-size: 14px; }
+  .heroNewCtaBtn {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 20px;
+    font-size: 14px;
+  }
+  .heroNewPills { gap: 6px; }
+  .heroNewPill { font-size: 12px; padding: 5px 10px; }
+}
+
+/* ── Steps mobile ── */
+@media (max-width: 768px) {
+  .secSteps { padding: 48px 16px 52px; }
+  .stepsNew {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .stepNew {
+    width: 100%;
+    max-width: 300px;
+    flex-direction: row;
+    text-align: left;
+    align-items: flex-start;
+    padding: 12px 0;
+    gap: 14px;
+  }
+  .stepNewNum {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+  .stepNewIco {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+  .stepNewArrow {
+    padding-top: 0;
+    transform: rotate(90deg);
+    height: 24px;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+/* ── Profile section mobile ── */
+@media (max-width: 900px) {
+  .profileSec {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 48px 20px;
+    text-align: center;
+  }
+  .profileChecks { align-items: center; }
+  .profileHandwriting { justify-content: center; }
+  .profileVideoThumb { margin: 0 auto; }
+  .profileCard { margin: 0 auto; }
+  .profileSub { max-width: 100%; }
+}
+
+/* ── Korai section mobile ── */
+@media (max-width: 900px) {
+  .koraiSec {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 48px 20px;
+    text-align: center;
+  }
+  .koraiLogo { justify-content: center; }
+  .koraiSub { max-width: 100%; margin: 0 auto 24px; }
+  .koraiCtaBtn { margin: 0 auto; }
+  .koraiIllustrationWrap { order: -1; }
+  .koraiIllustrationImg { width: 180px; min-height: unset; }
+  .koraiResultBox { max-width: 340px; margin: 0 auto; }
+  .koraiResultCta { justify-content: center; }
+}
+
+/* ── Empresa section mobile ── */
+@media (max-width: 768px) {
+  .empNewSec {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 48px 20px;
+  }
+  .empNewLaptop { max-width: 100%; }
+  .empNewBtns { align-items: stretch; }
+  .empNewBtnP { justify-content: center; }
+}
+
+/* ── Stats bar mobile ── */
+@media (max-width: 768px) {
+  .statsBarNew {
+    grid-template-columns: 1fr 1fr;
+    padding: 20px 16px;
+    gap: 12px;
+  }
+  .statsBarItem {
+    border-right: none;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 10px;
+  }
+  .statsBarT { font-size: 11px; }
+}
+
+/* ── Cap grid mobile ── */
+@media (max-width: 600px) {
+  .capGrid { grid-template-columns: 1fr; }
+  .sec { padding: 40px 16px; }
+  .secHead { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+
+/* ── Why section mobile ── */
+@media (max-width: 600px) {
+  .whySec { margin: 20px 12px; padding: 2rem 1rem; }
+  .whyCloseQ { font-size: 17px; }
+}
+
+/* ── CTA final mobile ── */
+@media (max-width: 480px) {
+  .ctaH { font-size: 26px; }
+  .ctaBtnP, .ctaBtnS {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 20px;
+  }
+}
+
+/* ── Footer mobile ── */
+@media (max-width: 480px) {
+  .foot {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+    padding: 14px 16px;
+    margin: 0 12px 16px;
+  }
+  .footLinks { flex-wrap: wrap; justify-content: center; gap: 14px; }
+}
+
+/* ── Wrapper padding mobile ── */
+@media (max-width: 480px) {
+  .wrapper { overflow-x: hidden; }
+}

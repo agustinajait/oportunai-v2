@@ -232,8 +232,8 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* ── NICHOS ── */}
-      <div className={s.nichosOuter}>
+      {/* ── NICHOS — oculto temporalmente, descomentar para activar ── */}
+      {false && <div className={s.nichosOuter}>
       <div className={s.nichos}>
         {[...sectores, ...sectores].map((sec, i) => (
           <Link key={i} href={sec.href} className={s.nicho} aria-hidden={i >= sectores.length ? 'true' : undefined}>
@@ -244,7 +244,7 @@ export default async function LandingPage() {
           </Link>
         ))}
       </div>
-      </div>
+      </div>}
 
       {/* ── PERFIL PREVIEW ── */}
       <section className={s.profileSec}>

@@ -171,6 +171,10 @@ export default function DashboardClient({
   }
   const initialOfertaId = searchParams.get('oferta_id') ?? undefined;
 
+  // Tip modal oferta externa — estado en el padre para evitar reset al re-render
+  const [tipOferta, setTipOferta] = useState<{ titulo: string; empresa: string; url: string } | null>(null);
+  const [tipCopiado, setTipCopiado] = useState(false);
+
   // WhatsApp opt-in
   const [waActivo, setWaActivo] = useState(usuario.whatsapp_activo ?? false);
   const [waLoading, setWaLoading] = useState(false);
@@ -619,6 +623,7 @@ export default function DashboardClient({
   const getDocumento = (tipo: string) => documentos.find(d => d.tipo === tipo);
 
   // ── Sub-componente: tab Ofertas con recomendadas ──────────────────────────
+  // tipOferta / setTipOferta viven en el padre para evitar reset al re-render
   function OfertasDashboard({ videos, initialOfertaId }: { videos: VideoItem[]; initialOfertaId?: string }) {
     const [recs, setRecs] = useState<{
       resultados: {
@@ -630,8 +635,6 @@ export default function DashboardClient({
       total: number; modo: 'perfil' | 'recientes'; query_usado: string | null;
     } | null>(null);
     const [loadingRecs, setLoadingRecs] = useState(true);
-    const [tipOferta, setTipOferta] = useState<{ titulo: string; empresa: string; url: string } | null>(null);
-    const [tipCopiado, setTipCopiado] = useState(false);
 
     useEffect(() => {
       setLoadingRecs(true);
@@ -758,92 +761,6 @@ export default function DashboardClient({
 
         {/* ── Mis postulaciones ───────────────────────────────── */}
         <OfertasTab videos={videos} initialOfertaId={initialOfertaId} />
-
-        {/* ── Tip modal oferta externa ─────────────────────────── */}
-        {tipOferta && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}
-            onClick={() => setTipOferta(null)}
-          >
-            <div
-              className="bg-white rounded-3xl p-8 max-w-md w-full relative shadow-2xl"
-              style={{ animation: 'slideUp .22s ease' }}
-              onClick={e => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setTipOferta(null)}
-                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
-                aria-label="Cerrar"
-              >
-                <X size={16} />
-              </button>
-
-              <div className="inline-block bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full mb-4">
-                💡 Tip antes de postularte
-              </div>
-
-              <h3 className="text-lg font-bold text-gray-900 mb-1 leading-snug">
-                Vas a ir al sitio de {tipOferta.empresa}
-              </h3>
-              <p className="text-sm text-gray-500 mb-5 bg-gray-50 rounded-xl px-3 py-2">
-                <strong className="text-gray-700">{tipOferta.titulo}</strong>
-              </p>
-
-              {/* Perfil digital */}
-              <div className="bg-purple-50 rounded-2xl p-4 mb-3">
-                <p className="text-xs font-bold text-purple-800 mb-1">📎 Adjuntá el link de tu perfil digital</p>
-                <p className="text-xs text-purple-700 mb-3 leading-relaxed">
-                  Pegalo en el formulario o en el mensaje a la empresa. Van a poder ver tu Video CV y tu perfil completo.
-                </p>
-                <div className="flex items-center gap-2">
-                  <span className="flex-1 text-[11px] bg-white border border-purple-200 rounded-lg px-2.5 py-1.5 text-gray-600 break-all">
-                    {typeof window !== 'undefined' ? window.location.origin : ''}/u/{usuario.slug}/cv
-                  </span>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(`${window.location.origin}/u/${usuario.slug}/cv`);
-                      setTipCopiado(true);
-                      setTimeout(() => setTipCopiado(false), 2000);
-                    }}
-                    className="flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-colors"
-                    style={{ background: tipCopiado ? '#059669' : '#6d28d9' }}
-                  >
-                    {tipCopiado ? '✓ Copiado' : 'Copiar'}
-                  </button>
-                </div>
-              </div>
-
-              {/* CV descargable */}
-              <div className="bg-gray-50 rounded-2xl p-4 mb-5">
-                <p className="text-xs font-bold text-gray-700 mb-1">📄 Si te piden el CV en PDF</p>
-                <p className="text-xs text-gray-500 mb-3 leading-relaxed">
-                  OportunAI genera tu CV con tus datos automáticamente. Descargalo antes de entrar para tenerlo listo.
-                </p>
-                <a
-                  href="/api/cv/download"
-                  download
-                  className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg text-white"
-                  style={{ background: '#374151', textDecoration: 'none' }}
-                >
-                  <Download size={13} /> Descargar mi CV
-                </a>
-              </div>
-
-              {/* CTA */}
-              <a
-                href={tipOferta.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setTipOferta(null)}
-                className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-sm font-bold text-white"
-                style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 16px rgba(109,40,217,.3)', textDecoration: 'none' }}
-              >
-                Ir a la oferta <ExternalLink size={15} />
-              </a>
-            </div>
-          </div>
-        )}
       </div>
     );
   }
@@ -2673,6 +2590,92 @@ export default function DashboardClient({
           </div>
         )}
       </main>
+
+      {/* ── Tip modal oferta externa — en el padre para preservar estado ── */}
+      {tipOferta && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
+          onClick={() => setTipOferta(null)}
+        >
+          <div
+            className="bg-white rounded-3xl max-w-md w-full relative shadow-2xl overflow-y-auto"
+            style={{ maxHeight: '90vh', padding: '32px 28px 24px' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setTipOferta(null)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
+              aria-label="Cerrar"
+            >
+              <X size={16} />
+            </button>
+
+            <div className="inline-block bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full mb-3">
+              💡 Tip antes de postularte
+            </div>
+
+            <h3 className="text-base font-bold text-gray-900 mb-1 leading-snug">
+              Vas a ir al sitio de {tipOferta.empresa}
+            </h3>
+            <p className="text-sm text-gray-500 mb-4 bg-gray-50 rounded-xl px-3 py-2">
+              <strong className="text-gray-700">{tipOferta.titulo}</strong>
+            </p>
+
+            {/* Perfil digital */}
+            <div className="bg-purple-50 rounded-2xl p-4 mb-3">
+              <p className="text-xs font-bold text-purple-800 mb-1">📎 Adjuntá el link de tu perfil digital</p>
+              <p className="text-xs text-purple-700 mb-3 leading-relaxed">
+                Pegalo en el formulario o mensaje a la empresa. Pueden ver tu Video CV y perfil completo.
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="flex-1 text-[11px] bg-white border border-purple-200 rounded-lg px-2.5 py-1.5 text-gray-600 break-all">
+                  {typeof window !== 'undefined' ? window.location.origin : ''}/u/{usuario.slug}/cv
+                </span>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/u/${usuario.slug}/cv`);
+                    setTipCopiado(true);
+                    setTimeout(() => setTipCopiado(false), 2000);
+                  }}
+                  className="flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-colors"
+                  style={{ background: tipCopiado ? '#059669' : '#6d28d9' }}
+                >
+                  {tipCopiado ? '✓ Copiado' : 'Copiar'}
+                </button>
+              </div>
+            </div>
+
+            {/* CV descargable */}
+            <div className="bg-gray-50 rounded-2xl p-4 mb-4">
+              <p className="text-xs font-bold text-gray-700 mb-1">📄 Si te piden el CV en PDF</p>
+              <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+                OportunAI genera tu CV con tus datos. Descargalo y tenelo listo para adjuntar.
+              </p>
+              <a
+                href="/api/cv/download"
+                download
+                className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg text-white"
+                style={{ background: '#374151', textDecoration: 'none' }}
+              >
+                <Download size={13} /> Descargar mi CV
+              </a>
+            </div>
+
+            {/* CTA */}
+            <a
+              href={tipOferta.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setTipOferta(null)}
+              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-sm font-bold text-white"
+              style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 16px rgba(109,40,217,.3)', textDecoration: 'none' }}
+            >
+              Ir a la oferta <ExternalLink size={15} />
+            </a>
+          </div>
+        </div>
+      )}
 
       {playerCap && (
         <CapacitacionPlayer

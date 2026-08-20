@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, FormEvent } from 'react';
-import { Search, Loader2, MapPin, Building2, ExternalLink, ArrowRight, X, Sparkles, UserCheck } from 'lucide-react';
+import { Search, Loader2, MapPin, ExternalLink, ArrowRight, X, Sparkles, UserCheck } from 'lucide-react';
 import styles from './BuscadorNL.module.css';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
@@ -147,6 +147,34 @@ export default function BuscadorNL({ variant = 'home', className = '' }: Props) 
     setError(null);
     setActiveCategoria(null);
     inputRef.current?.focus();
+  }
+
+  /** Avatar con inicial de la empresa cuando no hay logo */
+  function CompanyAvatar({ name, fuente }: { name: string; fuente: string }) {
+    const fuenteColors: Record<string, string> = {
+      computrabajo: '#1d4ed8',
+      zonajobs: '#059669',
+      bumeran: '#d97706',
+      oportunai: '#6d28d9',
+      linkedin: '#0a66c2',
+      mcdonalds: '#b45309',
+      mostaza: '#c2410c',
+      starbucks: '#065f46',
+      ypf: '#854d0e',
+      sanisidro: '#075985',
+    };
+    const bg = fuenteColors[fuente] ?? (() => {
+      const palette = ['#6d28d9','#1d4ed8','#059669','#d97706','#dc2626','#0891b2'];
+      let h = 0;
+      for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xfffffff;
+      return palette[Math.abs(h) % palette.length];
+    })();
+    const letter = (name || '?')[0].toUpperCase();
+    return (
+      <div className={styles.cardLogoInitial} style={{ background: bg }}>
+        {letter}
+      </div>
+    );
   }
 
   const fuente_label: Record<string, string> = {
@@ -303,9 +331,7 @@ export default function BuscadorNL({ variant = 'home', className = '' }: Props) 
                     {r.logo_url ? (
                       <img src={r.logo_url} alt={r.empresa_nombre} className={styles.cardLogoImg} />
                     ) : (
-                      <div className={styles.cardLogoFallback}>
-                        <Building2 size={20} />
-                      </div>
+                      <CompanyAvatar name={r.empresa_nombre} fuente={r.fuente} />
                     )}
                   </div>
 

@@ -333,6 +333,20 @@
   height: 100%;
 }
 
+.cardLogoInitial {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  user-select: none;
+}
+
 /* Info */
 .cardInfo {
   flex: 1;

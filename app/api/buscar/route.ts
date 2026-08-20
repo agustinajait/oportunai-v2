@@ -17,7 +17,7 @@ interface ParsedQuery {
   ciudad: string | null;      // ciudad o zona
   modalidad: 'presencial' | 'remoto' | 'hibrido' | null;
   empresa: string | null;     // empresa específica buscada
-  salario_min: number | null; // no siempre disponible
+  salario_min: number | null;
   jornada: 'full' | 'part' | null;
   resumen: string;            // resumen de lo que entiende el sistema
 }
@@ -30,27 +30,35 @@ async function parseQuery(query: string): Promise<ParsedQuery> {
     messages: [
       {
         role: 'user',
-        content: `Sos un asistente de búsqueda de empleo en Argentina.
+        content: `Sos un asistente de búsqueda de empleo en Argentina. Parseá la consulta del usuario en filtros estructurados.
+
 El usuario buscó: "${query}"
 
-Extraé los filtros de búsqueda y respondé SOLO con un JSON válido (sin markdown, sin texto extra):
+IMPORTANTE sobre ciudad/zona:
+- "San Isidro", "Tigre", "La Plata", "Rosario", "Córdoba", "Mendoza" → son ciudades concretas → van en "ciudad"
+- "zona norte", "GBA", "CABA", "Capital Federal", "conurbano" → van en "ciudad"
+- NO pongas la ciudad en keywords, solo en "ciudad"
+
+IMPORTANTE sobre keywords:
+- Solo palabras del PUESTO de trabajo (cargo/rol/actividad)
+- Expandí con sinónimos argentinos del rubro
+- "mozo" → ["mozo", "camarero", "mozos", "atención mesas"]
+- "cajero" → ["cajero", "caja", "cajera", "atención al cliente"]
+- "seguridad" → ["seguridad", "vigilador", "portero", "guardia"]
+- "operario" → ["operario", "producción", "manufactura", "operaria"]
+- "limpieza" → ["limpieza", "maestranza", "mucama", "ordenanza"]
+
+Respondé SOLO con un JSON válido (sin markdown, sin texto extra):
 {
   "keywords": ["palabra1", "palabra2"],
   "area": "área o rubro o null",
-  "ciudad": "ciudad o zona o null",
+  "ciudad": "ciudad o zona geográfica (solo si está en la consulta, sino null)",
   "modalidad": "presencial|remoto|hibrido|null",
   "empresa": "nombre de empresa específica o null",
   "salario_min": numero_o_null,
   "jornada": "full|part|null",
   "resumen": "Una frase corta en español de qué buscó el usuario"
-}
-
-Ejemplos de keywords según el rubro argentino:
-- "cajero" → ["cajero", "caja", "atención al cliente"]
-- "mozo" → ["mozo", "camarero", "atención gastronómica"]
-- "seguridad" → ["seguridad", "vigilador", "portero"]
-- "operario" → ["operario", "producción", "manufactura"]
-- Conservá términos en castellano argentino.`,
+}`,
       },
     ],
   });
@@ -59,7 +67,6 @@ Ejemplos de keywords según el rubro argentino:
   try {
     return JSON.parse(text);
   } catch {
-    // Fallback si Claude devuelve algo raro
     return {
       keywords: query.split(' ').filter(Boolean),
       area: null,
@@ -73,7 +80,16 @@ Ejemplos de keywords según el rubro argentino:
   }
 }
 
-/** Construye condición OR para múltiples keywords */
+/** Condición OR solo en título (para búsqueda de alta precisión en externas) */
+function buildTitleCondition(keywords: string[]) {
+  return {
+    OR: keywords.map((kw) => ({
+      titulo: { contains: kw, mode: 'insensitive' as const },
+    })),
+  };
+}
+
+/** Condición OR en múltiples campos (para internas con más datos estructurados) */
 function buildKeywordCondition(keywords: string[], extraFields: string[] = []) {
   const fields = ['titulo', 'descripcion', 'area', ...extraFields];
   return {
@@ -99,7 +115,7 @@ export async function POST(req: NextRequest) {
     const parsed = await parseQuery(query);
     const { keywords, area, ciudad, modalidad, empresa } = parsed;
 
-    // 2. Buscar en Ofertas internas
+    // 2. Buscar en Ofertas internas (multi-campo, tenemos datos limpios)
     const whereInternal: Record<string, unknown> = { estado: 'activa' };
     if (keywords.length > 0) {
       Object.assign(whereInternal, buildKeywordCondition(keywords, ['titulo_hero', 'nombre_marca']));
@@ -117,30 +133,67 @@ export async function POST(req: NextRequest) {
       take: limit,
     });
 
-    // 3. Buscar en Ofertas externas
-    const whereExternal: Record<string, unknown> = { activa: true };
-    if (keywords.length > 0) {
-      Object.assign(whereExternal, buildKeywordCondition(keywords, ['empresa_nombre']));
-    }
-    if (area) {
-      // area puede estar en el campo area o en la descripción
-      whereExternal.OR = [
-        ...(keywords.length > 0
-          ? buildKeywordCondition(keywords, ['empresa_nombre']).OR
-          : []),
-        { area: { contains: area, mode: 'insensitive' } },
-      ];
-    }
-    if (ciudad) whereExternal.ciudad = { contains: ciudad, mode: 'insensitive' };
-    if (empresa) {
-      whereExternal.empresa_nombre = { contains: empresa, mode: 'insensitive' };
-    }
+    // 3. Buscar en Ofertas externas — estrategia en dos capas para relevancia + cobertura geográfica
+    //    Capa A: título match + ciudad match (más relevantes, van primero)
+    //    Capa B: título match sin filtro de ciudad (para cuando ciudad no hay datos exactos)
+    const titleCond =
+      keywords.length > 0
+        ? buildTitleCondition(keywords).OR
+        : undefined;
 
-    const ofertasExternas = await prisma.ofertaExterna.findMany({
-      where: whereExternal as Parameters<typeof prisma.ofertaExterna.findMany>[0]['where'],
-      orderBy: { created_at: 'desc' },
-      take: limit,
-    });
+    // También intentamos con área si no hay keywords o para mayor cobertura
+    const companyNameCond =
+      empresa
+        ? [{ empresa_nombre: { contains: empresa, mode: 'insensitive' as const } }]
+        : [];
+
+    const baseOrConditions = [
+      ...(titleCond ?? []),
+      ...companyNameCond,
+    ];
+
+    let ofertasExternas: Awaited<ReturnType<typeof prisma.ofertaExterna.findMany>> = [];
+
+    if (baseOrConditions.length > 0) {
+      // Capa A: con ciudad (si fue especificada)
+      const whereA: Record<string, unknown> = { activa: true, OR: baseOrConditions };
+      if (ciudad) whereA.ciudad = { contains: ciudad, mode: 'insensitive' };
+      if (modalidad) whereA.modalidad = modalidad;
+
+      const capA = await prisma.ofertaExterna.findMany({
+        where: whereA as Parameters<typeof prisma.ofertaExterna.findMany>[0]['where'],
+        orderBy: { created_at: 'desc' },
+        take: limit,
+      });
+
+      // Capa B: sin filtro de ciudad, para completar si no alcanzamos el límite
+      const hayQueCompletar = ciudad && capA.length < limit;
+      let capB: typeof capA = [];
+
+      if (hayQueCompletar) {
+        const whereB: Record<string, unknown> = { activa: true, OR: baseOrConditions };
+        if (modalidad) whereB.modalidad = modalidad;
+        capB = await prisma.ofertaExterna.findMany({
+          where: whereB as Parameters<typeof prisma.ofertaExterna.findMany>[0]['where'],
+          orderBy: { created_at: 'desc' },
+          take: limit,
+        });
+      }
+
+      // Merge: primero los de la ciudad, luego el resto sin repetir
+      const capAIds = new Set(capA.map((o) => o.id));
+      ofertasExternas = [...capA, ...capB.filter((o) => !capAIds.has(o.id))].slice(0, limit);
+    } else {
+      // Sin keywords ni empresa: mostrar más recientes filtradas por ciudad/modalidad
+      const whereSimple: Record<string, unknown> = { activa: true };
+      if (ciudad) whereSimple.ciudad = { contains: ciudad, mode: 'insensitive' };
+      if (modalidad) whereSimple.modalidad = modalidad;
+      ofertasExternas = await prisma.ofertaExterna.findMany({
+        where: whereSimple as Parameters<typeof prisma.ofertaExterna.findMany>[0]['where'],
+        orderBy: { created_at: 'desc' },
+        take: limit,
+      });
+    }
 
     // 4. Normalizar resultados a formato unificado
     const resultadosInternos = ofertasInternas.map((o) => ({
@@ -196,7 +249,6 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const q = new URL(req.url).searchParams.get('q') || '';
   if (!q) return NextResponse.json({ resultados: [], total: 0 });
-  // Reutilizar lógica POST
   const fakeReq = new Request(req.url, {
     method: 'POST',
     body: JSON.stringify({ query: q }),

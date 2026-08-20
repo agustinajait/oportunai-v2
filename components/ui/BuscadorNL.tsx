@@ -412,25 +412,25 @@ export default function BuscadorNL({ variant = 'home', className = '' }: Props) 
             <button className={styles.gateClose} onClick={() => setGateOferta(null)} aria-label="Cerrar">
               <X size={18} />
             </button>
-            <div className={styles.gateBadge}>✨ Gratis</div>
-            <h3 className={styles.gateTitle}>Accedé a esta oferta y a cientos más</h3>
+            <div className={styles.gateBadge}>✨ 100% gratis</div>
+            <h3 className={styles.gateTitle}>Creá tu perfil laboral y postulate</h3>
             <p className={styles.gateSub}>
               <strong>{gateOferta.titulo}</strong> · {gateOferta.empresa}
             </p>
             <p className={styles.gateDesc}>
-              Creá tu perfil gratuito en OportunAI, aplicá con tu video CV y recibí notificaciones de nuevas oportunidades.
+              Con tu perfil en OportunAI podés postularte con video CV, recibir alertas de nuevas ofertas y que las empresas te encuentren a vos.
             </p>
             <a
-              href={`/register`}
+              href="/register"
               className={styles.gateBtnPrimary}
             >
-              Crear mi cuenta gratis <ArrowRight size={15} />
+              Crear mi perfil laboral <ArrowRight size={15} />
             </a>
             <a
               href="/login"
               className={styles.gateBtnSecondary}
             >
-              Ya tengo cuenta → Ingresar
+              Ya tengo perfil → Ingresar
             </a>
             <button
               type="button"

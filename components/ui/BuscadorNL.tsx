@@ -73,6 +73,8 @@ export default function BuscadorNL({ variant = 'home', className = '' }: Props) 
   const [sugerenciaIdx, setSugerenciaIdx] = useState(0);
   const [showSugerencias, setShowSugerencias] = useState(false);
   const [activeCategoria, setActiveCategoria] = useState<string | null>(null);
+  // Gate de registro para ofertas externas
+  const [gateOferta, setGateOferta] = useState<{ titulo: string; empresa: string; url: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -372,14 +374,13 @@ export default function BuscadorNL({ variant = 'home', className = '' }: Props) 
                       Postularme <ArrowRight size={14} />
                     </a>
                   ) : (
-                    <a
-                      href={r.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      type="button"
                       className={styles.cardBtnSecondary}
+                      onClick={() => setGateOferta({ titulo: r.titulo, empresa: r.empresa_nombre, url: r.url })}
                     >
                       Ver oferta <ExternalLink size={13} />
-                    </a>
+                    </button>
                   )}
                 </div>
               ))}
@@ -402,6 +403,43 @@ export default function BuscadorNL({ variant = 'home', className = '' }: Props) 
             )}
             </>
           )}
+        </div>
+      )}
+      {/* ── Gate de registro para ofertas externas ──── */}
+      {gateOferta && (
+        <div className={styles.gateOverlay} onClick={() => setGateOferta(null)}>
+          <div className={styles.gateModal} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.gateClose} onClick={() => setGateOferta(null)} aria-label="Cerrar">
+              <X size={18} />
+            </button>
+            <div className={styles.gateBadge}>✨ Gratis</div>
+            <h3 className={styles.gateTitle}>Accedé a esta oferta y a cientos más</h3>
+            <p className={styles.gateSub}>
+              <strong>{gateOferta.titulo}</strong> · {gateOferta.empresa}
+            </p>
+            <p className={styles.gateDesc}>
+              Creá tu perfil gratuito en OportunAI, aplicá con tu video CV y recibí notificaciones de nuevas oportunidades.
+            </p>
+            <a
+              href={`/register`}
+              className={styles.gateBtnPrimary}
+            >
+              Crear mi cuenta gratis <ArrowRight size={15} />
+            </a>
+            <a
+              href="/login"
+              className={styles.gateBtnSecondary}
+            >
+              Ya tengo cuenta → Ingresar
+            </a>
+            <button
+              type="button"
+              className={styles.gateSkip}
+              onClick={() => { window.open(gateOferta.url, '_blank', 'noopener'); setGateOferta(null); }}
+            >
+              Ver oferta sin registrarme ↗
+            </button>
+          </div>
         </div>
       )}
     </div>

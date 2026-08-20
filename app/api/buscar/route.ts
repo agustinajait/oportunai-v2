@@ -155,34 +155,17 @@ export async function POST(req: NextRequest) {
     let ofertasExternas: Awaited<ReturnType<typeof prisma.ofertaExterna.findMany>> = [];
 
     if (baseOrConditions.length > 0) {
-      // Capa A: con ciudad (si fue especificada)
+      // Búsqueda estricta: solo título match + filtros exactos
+      // No hacemos fallback a otras ciudades para no mostrar resultados irrelevantes
       const whereA: Record<string, unknown> = { activa: true, OR: baseOrConditions };
       if (ciudad) whereA.ciudad = { contains: ciudad, mode: 'insensitive' };
       if (modalidad) whereA.modalidad = modalidad;
 
-      const capA = await prisma.ofertaExterna.findMany({
+      ofertasExternas = await prisma.ofertaExterna.findMany({
         where: whereA as Parameters<typeof prisma.ofertaExterna.findMany>[0]['where'],
         orderBy: { created_at: 'desc' },
         take: limit,
       });
-
-      // Capa B: sin filtro de ciudad, para completar si no alcanzamos el límite
-      const hayQueCompletar = ciudad && capA.length < limit;
-      let capB: typeof capA = [];
-
-      if (hayQueCompletar) {
-        const whereB: Record<string, unknown> = { activa: true, OR: baseOrConditions };
-        if (modalidad) whereB.modalidad = modalidad;
-        capB = await prisma.ofertaExterna.findMany({
-          where: whereB as Parameters<typeof prisma.ofertaExterna.findMany>[0]['where'],
-          orderBy: { created_at: 'desc' },
-          take: limit,
-        });
-      }
-
-      // Merge: primero los de la ciudad, luego el resto sin repetir
-      const capAIds = new Set(capA.map((o) => o.id));
-      ofertasExternas = [...capA, ...capB.filter((o) => !capAIds.has(o.id))].slice(0, limit);
     } else {
       // Sin keywords ni empresa: mostrar más recientes filtradas por ciudad/modalidad
       const whereSimple: Record<string, unknown> = { activa: true };

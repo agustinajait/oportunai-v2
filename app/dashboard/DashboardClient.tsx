@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase';
@@ -177,6 +177,8 @@ export default function DashboardClient({
 
   // WhatsApp opt-in
   const [waActivo, setWaActivo] = useState(usuario.whatsapp_activo ?? false);
+  // Recordar si ya estaba activo al cargar la página (usuario que ya habló con Corey)
+  const initialWaActivo = useRef(usuario.whatsapp_activo ?? false);
   const [waLoading, setWaLoading] = useState(false);
   const [waModalOpen, setWaModalOpen] = useState(false);
 
@@ -222,6 +224,8 @@ export default function DashboardClient({
   // Link de WhatsApp a OportunAI
   const WA_OPORTUNAI = process.env.NEXT_PUBLIC_WA_SOPORTE ?? '5491161210313';
   const waHref = `https://wa.me/${WA_OPORTUNAI}?text=Hola%20OportunAI%2C%20quiero%20activar%20el%20acompa%C3%B1amiento`;
+  // Mensaje para usuarios que ya hablaron con Corey antes
+  const waHrefContinuar = `https://wa.me/${WA_OPORTUNAI}?text=Hola%20Corey%2C%20quiero%20continuar%20mi%20acompa%C3%B1amiento`;
 
   const [bio, setBio] = useState(usuario.bio ?? '');
   const [editingBio, setEditingBio] = useState(false);
@@ -1668,7 +1672,30 @@ export default function DashboardClient({
                           <span className="text-base">💬</span> Activar acompañamiento
                         </button>
                       </div>
+                    ) : initialWaActivo.current ? (
+                      /* Usuario que ya hizo el opt-in antes — ya habló con Corey */
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2.5 bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
+                          <span className="text-lg flex-shrink-0">✅</span>
+                          <div>
+                            <p className="text-sm text-green-800 font-semibold leading-tight">Acompañamiento activo</p>
+                            <p className="text-xs text-green-700 mt-0.5">Número: <span className="font-semibold break-all">{usuario.telefono}</span></p>
+                          </div>
+                        </div>
+                        <a
+                          href={waHrefContinuar}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b958] active:bg-[#1da851] text-white text-sm font-bold px-4 py-3.5 rounded-xl transition-colors shadow-sm active:scale-[0.98]"
+                        >
+                          <span className="text-base">💬</span> Hablar con Corey
+                        </a>
+                        <p className="text-xs text-ink-400 text-center leading-relaxed">
+                          Para desactivar, tocá el botón verde de arriba a la derecha.
+                        </p>
+                      </div>
                     ) : (
+                      /* Usuario que acaba de activar por primera vez — flujo de 2 pasos */
                       <div className="space-y-3">
                         {/* Paso 1: listo */}
                         <div className="flex items-center gap-2.5 bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">

@@ -341,7 +341,7 @@ export default async function LandingPage() {
         {/* Centro: ilustración */}
         <div className={s.koraiIllustrationWrap}>
           <img
-            src="/korai-illustration.png"
+            src="/orai-mujer.png"
             alt="Diagnóstico de acompañamiento Korai"
             className={s.koraiIllustrationImg}
           />

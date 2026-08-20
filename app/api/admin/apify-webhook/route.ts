@@ -221,6 +221,13 @@ function mapComputrabajo(item: Record<string, unknown>): JobListing | null {
       ? 'hibrido'
       : 'presencial';
 
+  // Logo de empresa
+  const logo_url = pick(item,
+    'logo', 'logoUrl', 'logo_url', 'companyLogo', 'companyImage',
+    'imageUrl', 'image', 'photoUrl', 'company_logo', 'brandLogo',
+    'empresaLogo', 'companyLogoUrl', 'logoSrc',
+  ) || undefined;
+
   // Fecha
   let fecha_publicacion: Date | undefined;
   const rawDate = item.date || item.fecha || item.publishedAt || item.postedAt;
@@ -239,6 +246,7 @@ function mapComputrabajo(item: Record<string, unknown>): JobListing | null {
     modalidad,
     salario,
     url_original,
+    logo_url,
     fecha_publicacion,
   };
 }

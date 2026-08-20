@@ -466,36 +466,15 @@ export default async function LandingPage() {
             <Link href="/register-empresa" className={s.empNewBtnS}>Más información para empresas →</Link>
           </div>
         </div>
-        <div className={s.empNewLaptop}>
-          <div className={s.empNewLaptopBody}>
-            <div className={s.empNewLaptopScreen}>
-              <div className={s.empScreenTopBar}>
-                <div className={s.empScreenDot} style={{ background: '#EF4444' }}/>
-                <div className={s.empScreenDot} style={{ background: '#F59E0B' }}/>
-                <div className={s.empScreenDot} style={{ background: '#22C55E' }}/>
-              </div>
-              <div className={s.empScreenGrid}>
-                {([
-                  { w: 80, c: 'linear-gradient(90deg,#5B3FE0,#8B6CF6)' },
-                  { w: 60, c: 'linear-gradient(90deg,#14C7A8,#0A9485)' },
-                  { w: 90, c: 'linear-gradient(90deg,#5B3FE0,#8B6CF6)' },
-                  { w: 70, c: 'linear-gradient(90deg,#14C7A8,#0A9485)' },
-                  { w: 85, c: 'linear-gradient(90deg,#5B3FE0,#8B6CF6)' },
-                  { w: 55, c: 'linear-gradient(90deg,#14C7A8,#0A9485)' },
-                ] as const).map((bar, i) => (
-                  <div key={i} className={s.empScreenCard}>
-                    <div className={s.empScreenBar} style={{ background: '#e2e8f0' }}>
-                      <div style={{ width: `${bar.w}%`, height: '100%', borderRadius: 3, background: bar.c }}/>
-                    </div>
-                    <div className={s.empScreenBarLine}/>
-                    <div className={s.empScreenBarLine} style={{ width: '65%' }}/>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className={s.empNewLaptopBase}/>
-          </div>
-          <div className={s.empNewLaptopFoot}/>
+        <div className={s.empNewVideoWrap}>
+          <video
+            src="/lv_0_20260820064441.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            className={s.empNewVideo}
+          />
         </div>
       </section>
 

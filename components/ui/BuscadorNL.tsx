@@ -63,9 +63,11 @@ interface Props {
   className?: string;
   /** Si se pasa, dispara la búsqueda automáticamente al montar el componente */
   initialQuery?: string;
+  /** Slug del usuario logueado — activa el modal de tip antes de abrir la oferta */
+  profileSlug?: string;
 }
 
-export default function BuscadorNL({ variant = 'home', className = '', initialQuery }: Props) {
+export default function BuscadorNL({ variant = 'home', className = '', initialQuery, profileSlug }: Props) {
   const [query, setQuery] = useState(initialQuery ?? '');
   const [loading, setLoading] = useState(false);
   const [resultados, setResultados] = useState<Resultado[] | null>(null);
@@ -75,8 +77,11 @@ export default function BuscadorNL({ variant = 'home', className = '', initialQu
   const [sugerenciaIdx, setSugerenciaIdx] = useState(0);
   const [showSugerencias, setShowSugerencias] = useState(false);
   const [activeCategoria, setActiveCategoria] = useState<string | null>(null);
-  // Gate de registro para ofertas externas
+  // Gate de registro para ofertas externas (visitantes)
   const [gateOferta, setGateOferta] = useState<{ titulo: string; empresa: string; url: string } | null>(null);
+  // Tip modal para usuarios logueados antes de ir a oferta externa
+  const [tipOferta, setTipOferta] = useState<{ titulo: string; empresa: string; url: string } | null>(null);
+  const [tipCopiado, setTipCopiado] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -404,10 +409,10 @@ export default function BuscadorNL({ variant = 'home', className = '', initialQu
                       className={styles.cardBtnSecondary}
                       onClick={() => {
                         if (variant === 'dashboard') {
-                          // Usuario ya logueado → ir directo
-                          window.open(r.url, '_blank', 'noopener noreferrer');
+                          // Usuario logueado → tip antes de ir
+                          setTipOferta({ titulo: r.titulo, empresa: r.empresa_nombre, url: r.url });
                         } else {
-                          // Landing → mostrar gate de registro
+                          // Landing → gate de registro
                           setGateOferta({ titulo: r.titulo, empresa: r.empresa_nombre, url: r.url });
                         }
                       }}
@@ -438,6 +443,85 @@ export default function BuscadorNL({ variant = 'home', className = '', initialQu
           )}
         </div>
       )}
+      {/* ── Tip modal para usuarios logueados ──── */}
+      {tipOferta && (
+        <div className={styles.gateOverlay} onClick={() => setTipOferta(null)}>
+          <div className={styles.gateModal} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.gateClose} onClick={() => setTipOferta(null)} aria-label="Cerrar">
+              <X size={18} />
+            </button>
+            <div className={styles.gateBadge}>💡 Tip antes de postularte</div>
+            <h3 className={styles.gateTitle} style={{ fontSize: 18 }}>
+              Vas a ir al sitio de {tipOferta.empresa}
+            </h3>
+            <p className={styles.gateSub}>
+              <strong>{tipOferta.titulo}</strong>
+            </p>
+
+            {/* Perfil digital */}
+            <div style={{ background: '#f5f3ff', borderRadius: 12, padding: '14px 16px', marginBottom: 12, textAlign: 'left' }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: '#6d28d9', marginBottom: 6 }}>
+                📎 Adjuntá el link de tu perfil digital
+              </p>
+              <p style={{ fontSize: 12, color: '#4b5563', marginBottom: 10, lineHeight: 1.5 }}>
+                Copiá tu link y pegalo en el formulario o en el mensaje a la empresa. Así pueden ver tu Video CV y tu perfil completo.
+              </p>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <span style={{ flex: 1, fontSize: 11, background: '#fff', border: '1px solid #ddd6fe', borderRadius: 8, padding: '6px 10px', color: '#374151', wordBreak: 'break-all' }}>
+                  {typeof window !== 'undefined' ? window.location.origin : ''}/u/{profileSlug}/cv
+                </span>
+                <button
+                  onClick={() => {
+                    const url = `${window.location.origin}/u/${profileSlug}/cv`;
+                    navigator.clipboard.writeText(url);
+                    setTipCopiado(true);
+                    setTimeout(() => setTipCopiado(false), 2000);
+                  }}
+                  style={{ flexShrink: 0, background: tipCopiado ? '#059669' : '#6d28d9', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'background .2s' }}
+                >
+                  {tipCopiado ? '✓ Copiado' : 'Copiar'}
+                </button>
+              </div>
+            </div>
+
+            {/* CV descargable */}
+            <div style={{ background: '#f9fafb', borderRadius: 12, padding: '14px 16px', marginBottom: 20, textAlign: 'left' }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 6 }}>
+                📄 Si te piden el CV en PDF
+              </p>
+              <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 10, lineHeight: 1.5 }}>
+                OportunAI genera tu CV automáticamente con tus datos. Descargalo y tenelo listo para adjuntar.
+              </p>
+              <a
+                href="/api/cv/download"
+                download
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#374151', color: '#fff', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, textDecoration: 'none' }}
+              >
+                ⬇ Descargar mi CV
+              </a>
+            </div>
+
+            {/* CTA ir a la oferta */}
+            <a
+              href={tipOferta.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.gateBtnPrimary}
+              onClick={() => setTipOferta(null)}
+            >
+              Ir a la oferta <ExternalLink size={14} />
+            </a>
+            <button
+              type="button"
+              className={styles.gateSkip}
+              onClick={() => setTipOferta(null)}
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Gate de registro para ofertas externas ──── */}
       {gateOferta && (
         <div className={styles.gateOverlay} onClick={() => setGateOferta(null)}>

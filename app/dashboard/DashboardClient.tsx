@@ -1930,6 +1930,175 @@ export default function DashboardClient({
             {/* ── Columna derecha (2 cols) ───────────────────────── */}
             <div className="lg:col-span-2 space-y-5 order-2 lg:order-2">
 
+              {/* ── Mi camino al empleo (plan personalizado) ──────── */}
+              {(() => {
+                const tieneVideo   = !!videoCV;
+                const tieneFoto    = !!fotoUrl;
+                const tieneSummary = !!(cvDatos?.resumen);
+                const tieneExp     = (cvDatos?.experiencia?.length ?? 0) > 0;
+                const tieneHabs    = (cvDatos?.habilidades?.length ?? 0) > 0;
+                const tieneLocalidad = !!(cvDatos?.localidad || localidad);
+                const sem = usuario.korai_semaforo;
+
+                type PlanStep = {
+                  id: string; icon: string; title: string; desc: string; done: boolean;
+                  cta?: { label: string; href?: string; click?: () => void };
+                };
+
+                const steps: PlanStep[] = [
+                  {
+                    id: 'video', icon: '🎬',
+                    title: 'Grabá tu Video CV',
+                    desc: 'Presentate en 60 segundos — las empresas lo ven antes de leer nada',
+                    done: tieneVideo,
+                    cta: { label: 'Grabar ahora', href: '/dashboard/grabar' },
+                  },
+                  {
+                    id: 'datos', icon: '📝',
+                    title: 'Completá tu perfil',
+                    desc: 'Resumen, experiencia y habilidades — el motor de tu CV',
+                    done: tieneSummary || tieneExp || tieneHabs,
+                    cta: { label: 'Editar perfil', click: () => setEditandoDatos(true) },
+                  },
+                  {
+                    id: 'zona', icon: '📍',
+                    title: 'Indicá tu zona',
+                    desc: 'Para ver ofertas cerca de donde querés trabajar',
+                    done: tieneLocalidad,
+                    cta: { label: 'Agregar zona', click: () => setEditandoDatos(true) },
+                  },
+                  {
+                    id: 'foto', icon: '📷',
+                    title: 'Foto de perfil',
+                    desc: 'Las postulaciones con foto tienen más respuesta',
+                    done: tieneFoto,
+                  },
+                ];
+
+                const pendientes  = steps.filter(s => !s.done);
+                const completadas = steps.filter(s =>  s.done);
+                const pct = Math.round((completadas.length / steps.length) * 100);
+                const perfilListo = pendientes.length === 0 || (tieneVideo && (tieneSummary || tieneExp));
+
+                // Zona o cargo para sugerir búsqueda
+                const zonaLabel = cvDatos?.localidad || localidad || '';
+                const cargoLabel = cvDatos?.experiencia?.[0]?.cargo ?? '';
+
+                return (
+                  <div className="card p-5" style={{ borderLeft: '4px solid #6d28d9', background: 'linear-gradient(135deg,#f9f7ff,#ffffff)' }}>
+                    {/* Header */}
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-xl flex-shrink-0">🗺️</span>
+                      <div className="flex-1 min-w-0">
+                        <h2 className="font-semibold text-ink-800 text-sm leading-tight">Mi camino al empleo</h2>
+                        <p className="text-[10px] text-ink-400">Plan personalizado según tu perfil y diagnóstico</p>
+                      </div>
+                      {/* Progress pill */}
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="w-14 h-1.5 bg-ink-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${pct}%`, background: pct === 100 ? '#10b981' : '#6d28d9' }}
+                          />
+                        </div>
+                        <span className="text-xs font-bold" style={{ color: pct === 100 ? '#059669' : '#6d28d9' }}>{pct}%</span>
+                      </div>
+                    </div>
+
+                    {/* Estado del perfil */}
+                    {perfilListo ? (
+                      <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-3 mb-4">
+                        <span className="text-2xl flex-shrink-0">✅</span>
+                        <div>
+                          <p className="text-sm font-semibold text-emerald-800">¡Perfil listo para postularte!</p>
+                          <p className="text-xs text-emerald-700 mt-0.5">Tus datos están completos. Buscá ofertas y aplicá con tu Video CV.</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 mb-4">
+                        <p className="text-[10px] font-semibold text-ink-400 uppercase tracking-wider">Próximos pasos</p>
+                        {pendientes.slice(0, 3).map(step => (
+                          <div key={step.id} className="flex items-center gap-3 bg-white border border-ink-100 rounded-xl px-3 py-2.5 shadow-sm">
+                            <span className="text-base flex-shrink-0">{step.icon}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold text-ink-800 leading-tight">{step.title}</p>
+                              <p className="text-[11px] text-ink-400 leading-relaxed mt-0.5">{step.desc}</p>
+                            </div>
+                            {step.cta && (
+                              step.cta.href ? (
+                                <Link
+                                  href={step.cta.href}
+                                  className="flex-shrink-0 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg whitespace-nowrap transition-colors"
+                                  style={{ background: '#ede9fe', color: '#6d28d9', textDecoration: 'none' }}
+                                >
+                                  {step.cta.label} →
+                                </Link>
+                              ) : (
+                                <button
+                                  onClick={step.cta.click}
+                                  className="flex-shrink-0 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg whitespace-nowrap transition-colors"
+                                  style={{ background: '#ede9fe', color: '#6d28d9' }}
+                                >
+                                  {step.cta.label} →
+                                </button>
+                              )
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Alerta de diagnóstico Korai — si dimensión empleo roja/amarilla */}
+                    {sem && (sem.empleo === 'rojo' || sem.empleo === 'amarillo') && (
+                      <div
+                        className="rounded-xl px-3 py-2.5 mb-3"
+                        style={{
+                          background: sem.empleo === 'rojo' ? '#fef2f2' : '#fffbeb',
+                          border: sem.empleo === 'rojo' ? '1px solid #fecaca' : '1px solid #fde68a',
+                        }}
+                      >
+                        <div className="flex items-start gap-2">
+                          <span className="text-sm flex-shrink-0">{sem.empleo === 'rojo' ? '🔴' : '🟡'}</span>
+                          <div className="flex-1">
+                            <p className="text-[11px] font-semibold" style={{ color: sem.empleo === 'rojo' ? '#991b1b' : '#92400e' }}>
+                              {sem.empleo === 'rojo'
+                                ? 'Tu situación laboral es prioritaria — actuá hoy'
+                                : 'Tu situación laboral puede mejorar'}
+                            </p>
+                            <p className="text-[10px] mt-0.5 leading-relaxed" style={{ color: sem.empleo === 'rojo' ? '#b91c1c' : '#b45309' }}>
+                              {sem.empleo === 'rojo'
+                                ? 'Considerá módulos de trabajo cortos mientras avanzás en tu búsqueda principal.'
+                                : 'Seguí activo en la búsqueda. Hay módulos cortos que pueden sumar ingresos.'}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setTab('servicios')}
+                          className="mt-1.5 text-[10px] font-semibold hover:underline"
+                          style={{ color: sem.empleo === 'rojo' ? '#b91c1c' : '#b45309' }}
+                        >
+                          Ver módulos de trabajo →
+                        </button>
+                      </div>
+                    )}
+
+                    {/* CTA buscar ofertas (siempre visible, mensaje adaptado) */}
+                    <button
+                      onClick={() => setTab('ofertas')}
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-all active:scale-[0.98]"
+                      style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 14px rgba(109,40,217,0.25)' }}
+                    >
+                      🔍 {zonaLabel
+                        ? `Buscar ofertas en ${zonaLabel}`
+                        : cargoLabel
+                        ? `Buscar ofertas de ${cargoLabel}`
+                        : 'Buscar ofertas ahora'}
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                );
+              })()}
+
               {/* ── Mis datos ──────────────────────────────────────── */}
               <div className="card p-6">
                 <div className="flex items-center justify-between mb-1">

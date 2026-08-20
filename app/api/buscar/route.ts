@@ -98,6 +98,43 @@ function parseQueryLocal(query: string): ParseResult {
   return { keywords, ciudad, modalidad, resumen: query };
 }
 
+const norm = (s: string) =>
+  s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+/**
+ * Elimina de las keywords cualquier palabra que forme parte del nombre de ciudad.
+ * Evita que "isidro" (parte de "San Isidro") aparezca como keyword de búsqueda
+ * y genere matches en títulos de ofertas de otras zonas.
+ */
+function stripCityFromKeywords(keywords: string[], ciudad: string | null): string[] {
+  if (!ciudad) return keywords;
+  const cityTokens = new Set(norm(ciudad).split(/\s+/).filter(t => t.length > 2));
+  return keywords.filter(kw => {
+    const kwn = norm(kw);
+    // Rechazar si la keyword ES una palabra de la ciudad o está CONTENIDA en el nombre de ciudad
+    return !cityTokens.has(kwn) && !norm(ciudad).includes(kwn);
+  });
+}
+
+/**
+ * Construye un filtro de ciudad con word-boundary para Prisma.
+ * Usa equals + startsWith + endsWith para evitar que "San Isidro" coincida
+ * con "Isidro Casanova" u otras ciudades que compartan palabras.
+ *
+ * "contains: ciudad" matchearía incorrectamente si ciudad = "isidro" (substring).
+ * Esta función asegura que la coincidencia sea a nivel de nombre completo.
+ */
+function buildCiudadFilter(ciudad: string) {
+  return [
+    { ciudad: { equals:     ciudad,           mode: 'insensitive' as const } },
+    { ciudad: { startsWith: `${ciudad} `,     mode: 'insensitive' as const } },
+    { ciudad: { startsWith: `${ciudad},`,     mode: 'insensitive' as const } },
+    { ciudad: { endsWith:   ` ${ciudad}`,     mode: 'insensitive' as const } },
+    { ciudad: { endsWith:   `, ${ciudad}`,    mode: 'insensitive' as const } },
+    { ciudad: { contains:   `(${ciudad})`,    mode: 'insensitive' as const } },
+  ];
+}
+
 /** Enriquece con Claude (sinónimos, área, etc.) — opcional, falla con gracia */
 async function enrichWithClaude(query: string, local: ParseResult): Promise<ParseResult> {
   try {
@@ -110,9 +147,9 @@ async function enrichWithClaude(query: string, local: ParseResult): Promise<Pars
 
 Query: "${query}"
 
-IMPORTANTE:
-- "keywords": solo sinónimos del PUESTO (cargo/actividad). Máximo 6 palabras.
-- "ciudad": nombre exacto de ciudad/zona si está en la query, sino null. No pongas la ciudad en keywords.
+REGLAS ESTRICTAS:
+- "keywords": SOLO sinónimos del PUESTO o actividad laboral (ej: mozo→camarero,mesero). Máximo 6 palabras. NUNCA incluyas nombres de ciudades, barrios o zonas.
+- "ciudad": nombre exacto de ciudad/zona geográfica si aparece en la query, sino null.
 - "modalidad": "presencial"|"remoto"|"hibrido"|null
 
 {"keywords":["..."],"ciudad":"..."|null,"modalidad":"presencial"|"remoto"|"hibrido"|null}`,
@@ -122,12 +159,12 @@ IMPORTANTE:
     const text = (msg.content[0] as { text: string }).text.trim();
     const parsed = JSON.parse(text);
 
-    // Usar ciudad de Claude si no la detectamos localmente, o si es más específica
+    // Usar ciudad de Claude solo si no la detectamos localmente
     const ciudad = local.ciudad ?? (typeof parsed.ciudad === 'string' ? parsed.ciudad : null);
 
-    // Merge keywords: los nuestros + los de Claude, dedup
+    // Merge keywords: los nuestros + los de Claude, dedup, luego quitar palabras de ciudad
     const allKw = new Set([...local.keywords, ...(Array.isArray(parsed.keywords) ? parsed.keywords : [])]);
-    const keywords = Array.from(allKw).slice(0, 10);
+    const keywords = stripCityFromKeywords(Array.from(allKw).slice(0, 10), ciudad);
 
     return { ...local, keywords, ciudad, modalidad: parsed.modalidad ?? local.modalidad };
   } catch {
@@ -159,40 +196,50 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 2. Buscar en Ofertas internas (más datos → búsqueda amplia)
-    const whereInternal: Record<string, unknown> = { estado: 'activa' };
+    // 2. Buscar en Ofertas internas
+    // Usamos AND array para combinar condiciones sin mezclar OR y campos al mismo nivel,
+    // lo que podría generar comportamiento ambiguo en Prisma.
+    const internalAnd: object[] = [{ estado: 'activa' }];
+
     if (keywords.length > 0) {
-      whereInternal.OR = keywords.flatMap(kw => [
-        { titulo:      { contains: kw, mode: 'insensitive' as const } },
-        { descripcion: { contains: kw, mode: 'insensitive' as const } },
-        { area:        { contains: kw, mode: 'insensitive' as const } },
-      ]);
+      internalAnd.push({
+        OR: keywords.flatMap(kw => [
+          { titulo:      { contains: kw, mode: 'insensitive' as const } },
+          { descripcion: { contains: kw, mode: 'insensitive' as const } },
+          { area:        { contains: kw, mode: 'insensitive' as const } },
+        ]),
+      });
     }
-    if (ciudad) whereInternal.ciudad = { contains: ciudad, mode: 'insensitive' };
-    if (modalidad) whereInternal.modalidad = modalidad;
+
+    // Filtro de ciudad con word-boundary: evita que "San Isidro" matchee "Isidro Casanova"
+    if (ciudad) internalAnd.push({ OR: buildCiudadFilter(ciudad) });
+    if (modalidad) internalAnd.push({ modalidad });
 
     const ofertasInternas = await prisma.oferta.findMany({
-      where: whereInternal as Parameters<typeof prisma.oferta.findMany>[0]['where'],
+      where: { AND: internalAnd } as Parameters<typeof prisma.oferta.findMany>[0]['where'],
       include: { empresa: { select: { nombre: true, logo_url: true, slug: true } } },
       orderBy: { created_at: 'desc' },
       take: limit,
     });
 
-    // 3. Buscar en Ofertas externas — SOLO en título, sin fallback de ciudad
-    //    Estrategia: título match + ciudad exacta. Sin resultados de otras zonas.
-    const titleOr = keywords.map(kw => ({
-      titulo: { contains: kw, mode: 'insensitive' as const },
-    }));
-
+    // 3. Buscar en Ofertas externas — SOLO en título + ciudad estricta
     let ofertasExternas: Awaited<ReturnType<typeof prisma.ofertaExterna.findMany>> = [];
 
-    if (titleOr.length > 0) {
-      const whereExt: Record<string, unknown> = { activa: true, OR: titleOr };
-      if (ciudad) whereExt.ciudad = { contains: ciudad, mode: 'insensitive' };
-      if (modalidad) whereExt.modalidad = modalidad;
+    if (keywords.length > 0) {
+      const externalAnd: object[] = [
+        { activa: true },
+        {
+          OR: keywords.map(kw => ({
+            titulo: { contains: kw, mode: 'insensitive' as const },
+          })),
+        },
+      ];
+
+      if (ciudad) externalAnd.push({ OR: buildCiudadFilter(ciudad) });
+      if (modalidad) externalAnd.push({ modalidad });
 
       ofertasExternas = await prisma.ofertaExterna.findMany({
-        where: whereExt as Parameters<typeof prisma.ofertaExterna.findMany>[0]['where'],
+        where: { AND: externalAnd } as Parameters<typeof prisma.ofertaExterna.findMany>[0]['where'],
         orderBy: { created_at: 'desc' },
         take: limit,
       });

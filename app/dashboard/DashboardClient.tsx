@@ -11,7 +11,7 @@ import {
   BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck,
   CalendarDays, MapPin, Loader2, Plus, GraduationCap, Briefcase as BriefcaseIcon, Wrench,
   Star, Building2, Link2, Trash2, PlayCircle, Download, Layers, AlertTriangle, CheckCircle2, XCircle, ChevronRight,
-  User,
+  User, Search,
 } from 'lucide-react';
 import OfertasTab from '@/components/ui/OfertasTab';
 import BuscadorNL from '@/components/ui/BuscadorNL';
@@ -618,6 +618,145 @@ export default function DashboardClient({
   const tieneDocumento = (tipo: string) => documentos.some(d => d.tipo === tipo);
   const getDocumento = (tipo: string) => documentos.find(d => d.tipo === tipo);
 
+  // ── Sub-componente: tab Ofertas con recomendadas ──────────────────────────
+  function OfertasDashboard({ videos, initialOfertaId }: { videos: VideoItem[]; initialOfertaId?: string }) {
+    const [recs, setRecs] = useState<{
+      resultados: {
+        id: string; tipo: 'interna' | 'externa'; titulo: string; empresa_nombre: string;
+        logo_url?: string | null; ciudad?: string | null; area?: string | null;
+        modalidad?: string | null; descripcion?: string | null;
+        url: string; fuente: string; salario?: string | null;
+      }[];
+      total: number; modo: 'perfil' | 'recientes'; query_usado: string | null;
+    } | null>(null);
+    const [loadingRecs, setLoadingRecs] = useState(true);
+
+    useEffect(() => {
+      setLoadingRecs(true);
+      fetch('/api/ofertas/recomendadas')
+        .then(r => r.json())
+        .then(data => { if (data.ok) setRecs(data); })
+        .catch(() => {})
+        .finally(() => setLoadingRecs(false));
+    }, []);
+
+    const fuenteLabel: Record<string, string> = {
+      oportunai: 'OportunAI', computrabajo: 'Computrabajo',
+      zonajobs: 'ZonaJobs', bumeran: 'Bumeran',
+      sanisidro: 'San Isidro', mercadolibre: 'Mercado Libre',
+      mcdonalds: "McDonald's", mostaza: 'Mostaza', starbucks: 'Starbucks', ypf: 'YPF',
+    };
+    const fuenteColor: Record<string, { bg: string; color: string }> = {
+      oportunai:    { bg: '#ede9fe', color: '#6d28d9' },
+      computrabajo: { bg: '#dbeafe', color: '#1d4ed8' },
+      zonajobs:     { bg: '#d1fae5', color: '#065f46' },
+      bumeran:      { bg: '#fef3c7', color: '#92400e' },
+      mcdonalds:    { bg: '#fef3c7', color: '#b45309' },
+      mostaza:      { bg: '#ffedd5', color: '#9a3412' },
+      starbucks:    { bg: '#d1fae5', color: '#065f46' },
+      ypf:          { bg: '#fef9c3', color: '#713f12' },
+      sanisidro:    { bg: '#e0f2fe', color: '#075985' },
+    };
+
+    return (
+      <div className="animate-fade-in space-y-8">
+        {/* ── Ofertas recomendadas ────────────────────────────── */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Briefcase size={16} className="text-brand-600" />
+              <h2 className="font-semibold text-ink-800 text-sm">
+                {loadingRecs ? 'Cargando ofertas…' :
+                  recs?.modo === 'perfil' ? 'Ofertas para tu perfil' : 'Últimas ofertas disponibles'}
+              </h2>
+            </div>
+            {recs?.query_usado && (
+              <span className="text-[10px] text-ink-400 italic">basado en: {recs.query_usado}</span>
+            )}
+          </div>
+
+          {loadingRecs && (
+            <div className="flex items-center justify-center py-10 text-ink-400">
+              <Loader2 size={20} className="animate-spin mr-2" /> Buscando ofertas…
+            </div>
+          )}
+
+          {!loadingRecs && recs && recs.resultados.length === 0 && (
+            <div className="card p-8 text-center text-ink-400">
+              <Briefcase size={32} className="mx-auto mb-2 opacity-30" />
+              <p className="text-sm">No encontramos ofertas en este momento.</p>
+              <p className="text-xs text-ink-300 mt-1">Usá el buscador de abajo para explorar manualmente.</p>
+            </div>
+          )}
+
+          {!loadingRecs && recs && recs.resultados.length > 0 && (
+            <div className="space-y-2">
+              {recs.resultados.map(r => {
+                const fc = fuenteColor[r.fuente] ?? { bg: '#ede9fe', color: '#6d28d9' };
+                const letra = (r.empresa_nombre || '?')[0].toUpperCase();
+                return (
+                  <div key={r.id} className="card flex items-center gap-4 p-4 hover:border-brand-200 transition-all">
+                    {/* Logo / Avatar */}
+                    <div className="w-11 h-11 rounded-xl flex-shrink-0 overflow-hidden bg-gray-100 flex items-center justify-center">
+                      {r.logo_url ? (
+                        <img src={r.logo_url} alt={r.empresa_nombre} className="w-full h-full object-contain" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center rounded-xl font-bold text-base text-white"
+                          style={{ background: fc.color }}>
+                          {letra}
+                        </div>
+                      )}
+                    </div>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide"
+                          style={{ background: fc.bg, color: fc.color }}>
+                          {fuenteLabel[r.fuente] || r.fuente}
+                        </span>
+                      </div>
+                      <p className="text-sm font-semibold text-ink-800 truncate">{r.titulo}</p>
+                      <p className="text-xs text-ink-400">{r.empresa_nombre}
+                        {r.ciudad && <span className="ml-1">· {r.ciudad}</span>}
+                        {r.salario && <span className="ml-1">· 💰 {r.salario}</span>}
+                      </p>
+                    </div>
+                    {/* CTA */}
+                    {r.tipo === 'interna' ? (
+                      <a href={r.url}
+                        className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-lg text-white flex items-center gap-1"
+                        style={{ background: '#6d28d9', textDecoration: 'none' }}>
+                        Postularme <ArrowRight size={12} />
+                      </a>
+                    ) : (
+                      <a href={r.url} target="_blank" rel="noopener noreferrer"
+                        className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1"
+                        style={{ background: '#f3f4f6', color: '#374151', textDecoration: 'none' }}>
+                        Ver oferta <ExternalLink size={12} />
+                      </a>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* ── Buscador manual ─────────────────────────────────── */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Search size={15} className="text-ink-400" />
+            <h2 className="font-semibold text-ink-800 text-sm">Buscar más ofertas</h2>
+          </div>
+          <BuscadorNL variant="dashboard" />
+        </div>
+
+        {/* ── Mis postulaciones ───────────────────────────────── */}
+        <OfertasTab videos={videos} initialOfertaId={initialOfertaId} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-ink-50">
       <Navbar session={{ nombre: usuario.nombre_completo, role: usuario.role, slug: usuario.slug }} />
@@ -747,23 +886,10 @@ export default function DashboardClient({
 
         {/* Tab Ofertas */}
         {tab === 'ofertas' && (
-          <div className="animate-fade-in">
-            {(() => {
-              // Armar la búsqueda inicial desde los datos del perfil
-              const cargo = usuario.cv_datos?.experiencia?.[0]?.cargo ?? '';
-              const zona  = usuario.cv_datos?.localidad ?? '';
-              const habs  = usuario.cv_datos?.habilidades ?? [];
-              // Preferencia: cargo + zona → solo cargo → habilidad principal → genérico
-              const initialQ =
-                cargo && zona ? `${cargo} en ${zona}` :
-                cargo          ? cargo :
-                habs.length    ? `${habs[0]}${zona ? ' en ' + zona : ''}` :
-                zona           ? `trabajo en ${zona}` :
-                undefined;
-              return <BuscadorNL variant="dashboard" className="mb-6" initialQuery={initialQ} />;
-            })()}
-            <OfertasTab videos={usuario.videos} initialOfertaId={initialOfertaId} />
-          </div>
+          <OfertasDashboard
+            videos={usuario.videos}
+            initialOfertaId={initialOfertaId}
+          />
         )}
 
         {/* Tab Servicios */}

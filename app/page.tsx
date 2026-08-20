@@ -354,13 +354,18 @@ export default async function LandingPage() {
             </Link>
           </div>
 
-          {/* Centro: ilustración */}
-          <div className={s.koraiIllustrationWrap}>
-            <img
-              src="/orai-mujer.png"
-              alt="Diagnóstico de acompañamiento Korai"
-              className={s.koraiIllustrationImg}
+          {/* Centro: video demo */}
+          <div className={s.koraiVideoWrap}>
+            <div className={s.koraiVideoBadge}>▶ Demo</div>
+            <video
+              src="/videodemokorai.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              className={s.koraiVideo}
             />
+            <div className={s.koraiVideoGlow} />
           </div>
 
           {/* Derecha: result box */}

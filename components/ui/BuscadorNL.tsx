@@ -377,7 +377,15 @@ export default function BuscadorNL({ variant = 'home', className = '' }: Props) 
                     <button
                       type="button"
                       className={styles.cardBtnSecondary}
-                      onClick={() => setGateOferta({ titulo: r.titulo, empresa: r.empresa_nombre, url: r.url })}
+                      onClick={() => {
+                        if (variant === 'dashboard') {
+                          // Usuario ya logueado → ir directo
+                          window.open(r.url, '_blank', 'noopener noreferrer');
+                        } else {
+                          // Landing → mostrar gate de registro
+                          setGateOferta({ titulo: r.titulo, empresa: r.empresa_nombre, url: r.url });
+                        }
+                      }}
                     >
                       Ver oferta <ExternalLink size={13} />
                     </button>

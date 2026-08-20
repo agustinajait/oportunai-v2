@@ -321,55 +321,78 @@ export default async function LandingPage() {
       </section>
 
       {/* ── KORAI ── */}
-      <section className={s.koraiSec}>
-        {/* Left: texto */}
-        <div>
-          <div className={s.koraiLogo}>
-            <span style={{ fontSize: 26 }}>🚦</span>
-            <div>
-              <div className={s.koraiLogoText}>KORAI</div>
-              <div className={s.koraiLogoSub}>por OportunAI</div>
+      <div className={s.koraiWrap}>
+        <section className={s.koraiSec}>
+          {/* Left: texto */}
+          <div>
+            <div className={s.koraiLogo}>
+              <div className={s.koraiLogoIcon}>🚦</div>
+              <div>
+                <div className={s.koraiLogoText}>KORAI</div>
+                <div className={s.koraiLogoSub}>por OportunAI</div>
+              </div>
             </div>
+            <h2 className={s.koraiH}>Conocé tu punto de partida<br/>para llegar más lejos</h2>
+            <p className={s.koraiSub}>El diagnóstico de Korai te ayuda a identificar tus fortalezas, detectar qué necesitás y armar un plan de acción personalizado.</p>
+            {/* Áreas evaluadas */}
+            <div className={s.koraiAreas}>
+              {[
+                { emoji: '💼', label: 'Empleo' },
+                { emoji: '📚', label: 'Educación' },
+                { emoji: '💰', label: 'Ingresos' },
+                { emoji: '❤️', label: 'Salud' },
+                { emoji: '🏠', label: 'Vivienda' },
+                { emoji: '🤝', label: 'Red social' },
+              ].map(a => (
+                <span key={a.label} className={s.koraiAreaChip}>
+                  {a.emoji} {a.label}
+                </span>
+              ))}
+            </div>
+            <Link href="/api/korai/redirect" className={s.koraiCtaBtn}>
+              Hacer diagnóstico gratis <ArrowRight size={14}/>
+            </Link>
           </div>
-          <h2 className={s.koraiH}>Conocé tu punto de partida<br/>para llegar más lejos</h2>
-          <p className={s.koraiSub}>El diagnóstico de Korai te ayuda a identificar tus fortalezas, detectar qué necesitás y armar un plan de acción personalizado.</p>
-          <Link href="https://app.korai.lat" target="_blank" className={s.koraiCtaBtn}>
-            Hacer diagnóstico gratis <ArrowRight size={14}/>
-          </Link>
-        </div>
 
-        {/* Centro: ilustración */}
-        <div className={s.koraiIllustrationWrap}>
-          <img
-            src="/orai-mujer.png"
-            alt="Diagnóstico de acompañamiento Korai"
-            className={s.koraiIllustrationImg}
-          />
-        </div>
-
-        {/* Derecha: result box */}
-        <div className={s.koraiResultBox}>
-          <div className={s.koraiResultH}>Tu resultado</div>
-          <div className={s.koraiResultGrid}>
-            <div className={s.koraiResult} style={{ background: 'rgba(34,197,94,0.10)' }}>
-              <div className={s.koraiResultN} style={{ color: '#16A34A' }}>3</div>
-              <div className={s.koraiResultL} style={{ color: '#16A34A' }}>Fortalezas</div>
-            </div>
-            <div className={s.koraiResult} style={{ background: 'rgba(249,115,22,0.10)' }}>
-              <div className={s.koraiResultN} style={{ color: '#EA580C' }}>2</div>
-              <div className={s.koraiResultL} style={{ color: '#EA580C' }}>A mejorar</div>
-            </div>
-            <div className={s.koraiResult} style={{ background: 'rgba(239,68,68,0.10)' }}>
-              <div className={s.koraiResultN} style={{ color: '#DC2626' }}>1</div>
-              <div className={s.koraiResultL} style={{ color: '#DC2626' }}>Prioridad</div>
-            </div>
+          {/* Centro: ilustración */}
+          <div className={s.koraiIllustrationWrap}>
+            <img
+              src="/orai-mujer.png"
+              alt="Diagnóstico de acompañamiento Korai"
+              className={s.koraiIllustrationImg}
+            />
           </div>
-          <div className={s.koraiResultSub}>Recibí recomendaciones y recursos para avanzar en cada área.</div>
-          <Link href="https://app.korai.lat" target="_blank" className={s.koraiResultCta}>
-            Ver mi plan de acción <ArrowRight size={14}/>
-          </Link>
-        </div>
-      </section>
+
+          {/* Derecha: result box */}
+          <div className={s.koraiResultBox}>
+            <div className={s.koraiResultBadge}>Tu resultado</div>
+            <div className={s.koraiResultGrid}>
+              <div className={s.koraiResult} style={{ background: 'rgba(74,222,128,0.15)' }}>
+                <div className={s.koraiResultN} style={{ color: '#4ADE80' }}>3</div>
+                <div className={s.koraiResultL} style={{ color: '#4ADE80' }}>Fortalezas</div>
+              </div>
+              <div className={s.koraiResult} style={{ background: 'rgba(251,146,60,0.15)' }}>
+                <div className={s.koraiResultN} style={{ color: '#FB923C' }}>2</div>
+                <div className={s.koraiResultL} style={{ color: '#FB923C' }}>A mejorar</div>
+              </div>
+              <div className={s.koraiResult} style={{ background: 'rgba(248,113,113,0.15)' }}>
+                <div className={s.koraiResultN} style={{ color: '#F87171' }}>1</div>
+                <div className={s.koraiResultL} style={{ color: '#F87171' }}>Prioridad</div>
+              </div>
+            </div>
+            {/* Bar visual */}
+            <div className={s.koraiResultBar}>
+              <div className={s.koraiResultBarFill} style={{ width: '50%', background: '#4ADE80' }} />
+              <div className={s.koraiResultBarFill} style={{ width: '33%', background: '#FB923C' }} />
+              <div className={s.koraiResultBarFill} style={{ width: '17%', background: '#F87171' }} />
+            </div>
+            <div className={s.koraiResultSub}>Recibí recomendaciones y recursos para avanzar en cada área.</div>
+            <Link href="/api/korai/redirect" className={s.koraiResultCta}>
+              Ver mi plan de acción <ArrowRight size={14}/>
+            </Link>
+          </div>
+        </section>
+      </div>
 
       {/* ── CAPACITACIONES ── */}
       <section className={`${s.sec} sr-up`}>

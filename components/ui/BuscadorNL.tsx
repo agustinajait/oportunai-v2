@@ -61,10 +61,12 @@ const CATEGORIAS = [
 interface Props {
   variant?: 'home' | 'dashboard';
   className?: string;
+  /** Si se pasa, dispara la búsqueda automáticamente al montar el componente */
+  initialQuery?: string;
 }
 
-export default function BuscadorNL({ variant = 'home', className = '' }: Props) {
-  const [query, setQuery] = useState('');
+export default function BuscadorNL({ variant = 'home', className = '', initialQuery }: Props) {
+  const [query, setQuery] = useState(initialQuery ?? '');
   const [loading, setLoading] = useState(false);
   const [resultados, setResultados] = useState<Resultado[] | null>(null);
   const [resumen, setResumen] = useState<string>('');
@@ -84,6 +86,29 @@ export default function BuscadorNL({ variant = 'home', className = '' }: Props) 
       setSugerenciaIdx((i) => (i + 1) % SUGERENCIAS.length);
     }, 3500);
     return () => clearInterval(t);
+  }, []);
+
+  // Búsqueda automática al montar si se recibe initialQuery
+  useEffect(() => {
+    if (!initialQuery?.trim()) return;
+    setLoading(true);
+    setError(null);
+    fetch('/api/buscar', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ query: initialQuery.trim(), limit: 20 }),
+    })
+      .then(r => r.json())
+      .then((data: BuscarResponse) => {
+        if (!data.ok) throw new Error('Error');
+        setResultados(data.resultados);
+        setResumen(data.parsed?.resumen || initialQuery);
+        setTotal(data.total);
+      })
+      .catch(() => setError('No pudimos completar la búsqueda. Intentá de nuevo.'))
+      .finally(() => setLoading(false));
+  // Solo al montar — sin re-runs
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleSearch(e?: FormEvent) {

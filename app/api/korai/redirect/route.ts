@@ -51,6 +51,8 @@ export async function GET(req: NextRequest) {
     email:            usuario.email,
     telefono:         usuario.telefono,
     oportunai_user_id: usuario.id,
+    // URL de retorno: Korai redirige aquí al terminar el diagnóstico
+    return_url: `${APP_URL}/dashboard?bienvenida=korai`,
     // Si ya tiene semáforo parcial lo mandamos para que Korai lo precargue
     semaforo_previo:  usuario.korai_semaforo ?? {},
   })

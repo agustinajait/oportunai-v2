@@ -748,7 +748,20 @@ export default function DashboardClient({
         {/* Tab Ofertas */}
         {tab === 'ofertas' && (
           <div className="animate-fade-in">
-            <BuscadorNL variant="dashboard" className="mb-6" />
+            {(() => {
+              // Armar la búsqueda inicial desde los datos del perfil
+              const cargo = usuario.cv_datos?.experiencia?.[0]?.cargo ?? '';
+              const zona  = usuario.cv_datos?.localidad ?? '';
+              const habs  = usuario.cv_datos?.habilidades ?? [];
+              // Preferencia: cargo + zona → solo cargo → habilidad principal → genérico
+              const initialQ =
+                cargo && zona ? `${cargo} en ${zona}` :
+                cargo          ? cargo :
+                habs.length    ? `${habs[0]}${zona ? ' en ' + zona : ''}` :
+                zona           ? `trabajo en ${zona}` :
+                undefined;
+              return <BuscadorNL variant="dashboard" className="mb-6" initialQuery={initialQ} />;
+            })()}
             <OfertasTab videos={usuario.videos} initialOfertaId={initialOfertaId} />
           </div>
         )}

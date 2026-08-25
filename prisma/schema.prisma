@@ -50,6 +50,8 @@ fecha_nacimiento DateTime?
   postulaciones_servicio PostulacionServicio[]
   modulos_asignados     ModuloAsignado[]
   bot_mensajes          BotMensaje[]
+  korai_acompanamiento  KoraiAcompanamiento?
+  push_suscripciones    PushSuscripcion[]
 }
 
 enum Role {
@@ -547,4 +549,49 @@ model BotMensaje {
 enum BotMensajeTipo {
   usuario
   bot
+}
+
+// ─── Korai — Estado de acompañamiento ────────────────────────────────────────
+
+model KoraiAcompanamiento {
+  id                   String    @id @default(cuid())
+  usuario_id           String    @unique
+  usuario              Usuario   @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+
+  // Estado narrativo
+  situacion_actual     String?   // resumen de la situación actual de la persona
+  prioridades          Json?     // string[] — dimensiones/temas más urgentes
+  objetivos            Json?     // string[] — lo que la persona quiere lograr
+
+  // Acciones
+  acciones_pendientes  Json?     // { descripcion: string, contexto?: string, fecha_propuesta?: string }[]
+  acciones_realizadas  Json?     // { descripcion: string, fecha: string, resultado?: string }[]
+
+  // Continuidad
+  proximo_paso         String?   // frase corta: qué debe hacer la persona a continuación
+  ultima_interaccion   DateTime? // última vez que la persona escribió
+  proximo_seguimiento  DateTime? // cuándo Korai debería volver a contactarla
+
+  // Historial de diagnósticos
+  ultimo_diagnostico   Json?     // snapshot del korai_semaforo al momento del último diagnóstico
+  diagnostico_anterior Json?     // snapshot previo para comparar evolución
+
+  // Notas del equipo humano
+  notas_equipo         String?
+
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+}
+
+// ─── Push Notifications (Web Push / PWA) ─────────────────────────────────────
+
+model PushSuscripcion {
+  id          String   @id @default(cuid())
+  usuario_id  String
+  usuario     Usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  endpoint    String   @unique
+  p256dh      String
+  auth        String
+  user_agent  String?
+  created_at  DateTime @default(now())
 }

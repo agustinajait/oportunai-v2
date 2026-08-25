@@ -17,6 +17,7 @@ import OfertasTab from '@/components/ui/OfertasTab';
 import BuscadorNL from '@/components/ui/BuscadorNL';
 import CapacitacionPlayer from '@/components/ui/CapacitacionPlayer';
 import VideoThumbnail from '@/components/ui/VideoThumbnail';
+import { PushRegistrar } from '@/components/ui/PushRegistrar';
 
 interface VideoItem {
   id: string; tipo: string; video_url: string; created_at: string;
@@ -771,6 +772,8 @@ export default function DashboardClient({
 
   return (
     <div className="min-h-screen bg-ink-50">
+      {/* Registra push silenciosamente si el usuario tiene opt-in */}
+      {usuario.korai_opt_in && <PushRegistrar />}
       <Navbar session={{ nombre: usuario.nombre_completo, role: usuario.role, slug: usuario.slug }} />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-32 sm:pb-10">

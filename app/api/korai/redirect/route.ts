@@ -23,6 +23,8 @@ const APP_URL       = process.env.NEXT_PUBLIC_APP_URL ?? 'https://oportunai.kora
 export async function GET(req: NextRequest) {
   // 1. Validar sesión
   const session = await getSessionFromRequest(req);
+  const fromOnboarding = new URL(req.url).searchParams.get('from') === 'onboarding';
+
   if (!session) {
     // Sin sesión → llevar al login primero
     return NextResponse.redirect(`${APP_URL}/login?next=/api/korai/redirect`);
@@ -52,7 +54,9 @@ export async function GET(req: NextRequest) {
     telefono:         usuario.telefono,
     oportunai_user_id: usuario.id,
     // URL de retorno: Korai redirige aquí al terminar el diagnóstico
-    return_url: `${APP_URL}/dashboard?bienvenida=korai`,
+    return_url: fromOnboarding
+      ? `${APP_URL}/onboarding?step=4`
+      : `${APP_URL}/dashboard?bienvenida=korai`,
     // Si ya tiene semáforo parcial lo mandamos para que Korai lo precargue
     semaforo_previo:  usuario.korai_semaforo ?? {},
   })

@@ -35,9 +35,12 @@ fecha_nacimiento DateTime?
   sitio_web       String?
 
   // Acompañamiento WhatsApp (Korai integration)
-  whatsapp_activo Boolean  @default(false)  // bot activo para este usuario
-  korai_opt_in    Boolean  @default(false)  // aceptó recibir acompañamiento
-  korai_semaforo  Json?                     // último semáforo derivado desde Korai
+  whatsapp_activo       Boolean  @default(false)  // bot activo para este usuario
+  korai_opt_in          Boolean  @default(false)  // aceptó recibir acompañamiento
+  korai_semaforo        Json?                     // último semáforo derivado desde Korai
+
+  // Onboarding
+  onboarding_completado Boolean  @default(false)  // completó el wizard de onboarding
 
   videos                Video[]
   archivos              Archivo[]

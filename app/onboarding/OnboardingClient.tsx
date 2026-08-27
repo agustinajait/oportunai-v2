@@ -27,6 +27,11 @@ function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVi
   const stepParam = parseInt(searchParams.get('step') ?? '0');
   const [step, setStep] = useState(() => {
     if (stepParam >= 1 && stepParam <= 4) return stepParam;
+    // Recuperar paso guardado en localStorage (por si volvieron de grabar-cv)
+    try {
+      const saved = parseInt(localStorage.getItem('onboarding_step') ?? '1');
+      if (saved >= 1 && saved <= 4) return saved;
+    } catch { /* localStorage no disponible */ }
     return 1;
   });
 
@@ -36,6 +41,11 @@ function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVi
   const [videoOk,   setVideoOk]   = useState(tieneVideo);
   const [diagOk,    setDiagOk]    = useState(tieneDiagnostico);
   const [error,     setError]     = useState('');
+
+  // Persistir paso actual en localStorage
+  useEffect(() => {
+    try { localStorage.setItem('onboarding_step', String(step)); } catch { /* noop */ }
+  }, [step]);
 
   const primer = nombre.split(' ')[0];
   const TOTAL  = 4;
@@ -73,6 +83,7 @@ function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVi
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ completar: true }),
       });
+      try { localStorage.removeItem('onboarding_step'); } catch { /* noop */ }
       router.push('/dashboard?bienvenida=onboarding');
     } catch {
       setError('Error al finalizar. Intentá de nuevo.');

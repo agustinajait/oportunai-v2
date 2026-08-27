@@ -134,6 +134,10 @@ export default function VideoRecorder({
   const router = useRouter();
   const tituloVideo = tipo === 'video_cv' ? 'Video CV' : 'Video Pitch';
 
+  // Detectar si viene del onboarding para redirigir de vuelta
+  const desdeOnboarding = typeof window !== 'undefined' &&
+    new URL(window.location.href).searchParams.get('from') === 'onboarding';
+
   const [stage, setStage] = useState<Stage>('preview');
   const [moduloIdx, setModuloIdx] = useState(0);
   const [countdown, setCountdown] = useState(3);
@@ -631,13 +635,17 @@ export default function VideoRecorder({
               <div className="space-y-3 w-full max-w-xs">
                 <button
                   onClick={() => {
-                    const dest = ofertaId ? `/dashboard?tab=ofertas&oferta_id=${ofertaId}` : '/dashboard?tab=perfil';
-                    router.push(dest);
-                    router.refresh();
+                    if (desdeOnboarding) {
+                      router.push('/onboarding?step=3');
+                    } else {
+                      const dest = ofertaId ? `/dashboard?tab=ofertas&oferta_id=${ofertaId}` : '/dashboard?tab=perfil';
+                      router.push(dest);
+                      router.refresh();
+                    }
                   }}
                   className="btn-primary w-full justify-center py-3.5 rounded-2xl"
                 >
-                  {ofertaId ? 'Volver y postularme' : 'Ir a mi perfil'}
+                  {desdeOnboarding ? 'Continuar con el diagnóstico →' : ofertaId ? 'Volver y postularme' : 'Ir a mi perfil'}
                 </button>
                 <button onClick={restart} className="w-full text-white/50 hover:text-white text-sm py-2.5 transition-colors">
                   Volver a grabar

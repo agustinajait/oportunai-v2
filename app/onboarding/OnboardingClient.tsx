@@ -73,9 +73,9 @@ function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVi
     try {
       // Activar WhatsApp opt-in
       await fetch('/api/whatsapp/opt-in', {
-        method:  'POST',
+        method:  'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ opt_in: true }),
+        body:    JSON.stringify({ activo: true }),
       });
       // Marcar onboarding completo
       await fetch('/api/user/onboarding', {

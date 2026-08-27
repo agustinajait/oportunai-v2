@@ -1820,18 +1820,24 @@
 .empNewBtnP:hover { background: #4B33CC; transform: translateY(-1px); }
 .empNewBtnS { font-size: 13.5px; font-weight: 500; color: #5B3FE0; text-decoration: none; display: flex; align-items: center; gap: 4px; }
 .empNewBtnS:hover { text-decoration: underline; }
-/* Laptop mockup */
-.empNewLaptop { width: 100%; max-width: 420px; justify-self: center; }
-.empNewLaptopBody { background: #1e293b; border-radius: 14px 14px 0 0; padding: 10px 10px 0; box-shadow: 0 4px 32px rgba(0,0,0,0.16); }
-.empNewLaptopScreen { background: #f8fafc; border-radius: 8px 8px 0 0; min-height: 190px; overflow: hidden; padding: 10px; }
-.empNewLaptopBase { background: #2d3748; height: 10px; border-radius: 0 0 4px 4px; margin: 0 -5px; }
-.empNewLaptopFoot { background: #334155; height: 8px; border-radius: 0 0 8px 8px; margin: 0 -16px; }
-.empScreenTopBar { display: flex; gap: 4px; margin-bottom: 8px; }
-.empScreenDot { width: 7px; height: 7px; border-radius: 50%; }
-.empScreenGrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-.empScreenCard { border-radius: 6px; padding: 8px; background: #fff; border: 1px solid #e2e8f0; }
-.empScreenBar { height: 6px; border-radius: 3px; margin-bottom: 4px; }
-.empScreenBarLine { height: 5px; background: #f1f5f9; border-radius: 3px; margin-top: 4px; }
+/* Video empresa */
+.empNewVideoWrap {
+  width: 100%; max-width: 480px; justify-self: center;
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.07);
+  background: #000;
+}
+.empNewVideo {
+  width: 100%; height: auto;
+  display: block;
+  border-radius: 18px;
+}
+/* Legacy laptop mockup — oculto */
+.empNewLaptop { display: none; }
+.empNewLaptopBody, .empNewLaptopScreen, .empNewLaptopBase, .empNewLaptopFoot,
+.empScreenTopBar, .empScreenDot, .empScreenGrid, .empScreenCard,
+.empScreenBar, .empScreenBarLine { display: none; }
 
 /* ════════════════════════════════════════════════
    STATS BAR — barra morada inferior
@@ -1855,22 +1861,60 @@
 }
 .statsBarT { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.85); line-height: 1.4; white-space: pre-line; }
 
-/* Korai illustration */
-.koraiIllustrationWrap {
+/* Korai video box */
+.koraiVideoWrap {
+  position: relative;
   display: flex;
   align-items: center;
   position: relative;
   justify-content: center;
-  padding: 0 8px;
+  flex-shrink: 0;
 }
-.koraiIllustrationImg {
-  width: 270px;
+/* Glow blob detrás del video */
+.koraiVideoGlow {
+  position: absolute;
+  inset: -24px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(20,199,168,0.30) 0%, rgba(91,63,224,0.18) 55%, transparent 80%);
+  pointer-events: none;
+  z-index: 0;
+}
+/* Badge "▶ Demo" */
+.koraiVideoBadge {
+  position: absolute;
+  top: -14px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  background: rgba(20,199,168,0.90);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 4px 14px;
+  border-radius: 20px;
+  box-shadow: 0 2px 12px rgba(20,199,168,0.45);
+  white-space: nowrap;
+}
+/* El video */
+.koraiVideo {
+  position: relative;
+  z-index: 10;
+  width: 260px;
   max-width: 100%;
   height: auto;
-  min-height: 200px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 48px rgba(20,199,168,0.35)) drop-shadow(0 0 20px rgba(91,63,224,0.25));
+  border-radius: 20px;
+  object-fit: cover;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.12),
+    0 4px 32px rgba(0,0,0,0.45),
+    0 0 60px rgba(20,199,168,0.20);
+  border: 2px solid rgba(255,255,255,0.10);
 }
+/* Legacy illustration — oculto */
+.koraiIllustrationWrap { display: none; }
+.koraiIllustrationImg  { display: none; }
 
 /* ════════════════════════════════════════════════
    MOBILE COMPLETO — breakpoints faltantes
@@ -2000,8 +2044,8 @@
   .koraiSub { max-width: 100%; margin: 0 auto 20px; }
   .koraiAreas { justify-content: center; }
   .koraiCtaBtn { margin: 0 auto; }
-  .koraiIllustrationWrap { order: -1; }
-  .koraiIllustrationImg { width: 200px; min-height: unset; }
+  .koraiVideoWrap { order: -1; }
+  .koraiVideo { width: 200px; }
   .koraiResultBox { max-width: 360px; margin: 0 auto; }
   .koraiResultBadge { margin-left: auto; margin-right: auto; }
   .koraiResultCta { justify-content: center; }
@@ -2014,7 +2058,7 @@
     gap: 32px;
     padding: 48px 20px;
   }
-  .empNewLaptop { max-width: 100%; }
+  .empNewVideoWrap { max-width: 100%; }
   .empNewBtns { align-items: stretch; }
   .empNewBtnP { justify-content: center; }
 }

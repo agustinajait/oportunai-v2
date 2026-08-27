@@ -19,10 +19,10 @@ export async function middleware(req: NextRequest) {
 
   // Redirigir al onboarding si el usuario no lo completó
   // (solo para rutas de dashboard de usuarios normales)
-  if (pathname.startsWith('/dashboard') && session && session.role === 'user') {
+  // Excepción: grabar-cv y grabar-taller pueden visitarse desde el onboarding
+  const esRutaDeGrabacion = pathname.startsWith('/dashboard/grabar-');
+  if (pathname.startsWith('/dashboard') && !esRutaDeGrabacion && session && session.role === 'user') {
     const onboardingCookie = req.cookies.get('onboarding_completado');
-    // Si la cookie dice que está incompleto, redirigir
-    // (la cookie se setea en el register; la ausencia no garantiza nada — lo verifica la página)
     if (onboardingCookie?.value === 'false') {
       return NextResponse.redirect(new URL('/onboarding', req.url));
     }

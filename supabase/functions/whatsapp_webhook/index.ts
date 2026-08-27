@@ -2,8 +2,15 @@
  * whatsapp_webhook — Oportunai Edge Function
  *
  * Recibe mensajes de WhatsApp (reenviados por Korai), genera respuesta
- * con Claude. El semáforo de 6 dimensiones lo completa Korai (app.korai.lat);
- * este bot lo usa para personalizar el acompañamiento en empleabilidad.
+ * con Claude adoptando la personalidad de Korai.
+ *
+ * Flujo por conversación:
+ *   1. Buscar usuario por teléfono
+ *   2. Cargar estado de acompañamiento (KoraiAcompanamiento)
+ *   3. Generar respuesta con Claude (prompt Korai + estado inyectado)
+ *   4. Enviar respuesta por WhatsApp
+ *   5. Extraer estado actualizado de la conversación (2do call Claude, estructurado)
+ *   6. Persistir estado actualizado vía /api/korai/acompanamiento
  */
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
@@ -19,10 +26,13 @@ const ANTHROPIC_API_KEY    = (Deno.env.get("ANTHROPIC_API_KEY") ?? "").replace(/
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const KORAI_FORWARD_KEY    = Deno.env.get("KORAI_FORWARD_KEY") ?? "";
+const BOT_INTERNAL_KEY     = Deno.env.get("BOT_INTERNAL_KEY") ?? "";
+const APP_URL              = Deno.env.get("NEXT_PUBLIC_APP_URL") ?? "https://oportunai.com.ar";
 
-const ANTHROPIC_MODEL = "claude-haiku-4-5-20251001";
+const MODEL_CHAT  = "claude-haiku-4-5-20251001";
+const MODEL_EXTRA = "claude-haiku-4-5-20251001"; // para extracción de estado
 
-// ─── Semáforo ────────────────────────────────────────────────────────────────
+// ── Tipos ─────────────────────────────────────────────────────────────────────
 
 type SemaforoColor = "verde" | "amarillo" | "rojo";
 interface Semaforo {
@@ -35,77 +45,72 @@ interface Semaforo {
   motivo?:    string;
 }
 
-const DIMS_SEMAFORO = ["empleo", "educacion", "ingresos", "salud", "vivienda", "red"] as const;
-
-/** ¿El usuario tiene el diagnóstico de Korai completo? */
-function tieneDiagnostico(semaforo: Semaforo | null): boolean {
-  if (!semaforo) return false;
-  return DIMS_SEMAFORO.some(d => semaforo[d]);
+interface AccionPendiente {
+  descripcion:      string;
+  contexto?:        string;
+  fecha_propuesta?: string;
 }
 
-/** Texto legible del semáforo para el contexto del bot */
-function semaforoResumen(semaforo: Semaforo): string {
-  const LABEL: Record<string, string> = {
-    empleo: "Empleo", educacion: "Educación", ingresos: "Ingresos",
-    salud: "Salud", vivienda: "Vivienda", red: "Red social",
-  };
-  return DIMS_SEMAFORO
-    .filter(d => semaforo[d])
-    .map(d => {
-      const emoji = semaforo[d] === "verde" ? "🟢" : semaforo[d] === "amarillo" ? "🟡" : "🔴";
-      return `${emoji} ${LABEL[d]}: ${semaforo[d]}`;
-    })
-    .join(" | ");
+interface EstadoAcompanamiento {
+  situacion_actual?:    string;
+  prioridades?:         string[];
+  objetivos?:           string[];
+  acciones_pendientes?: AccionPendiente[];
+  acciones_realizadas?: Array<{ descripcion: string; fecha: string; resultado?: string }>;
+  proximo_paso?:        string;
+  ultima_interaccion?:  string;
+  proximo_seguimiento?: string;
 }
 
-/** Dimensiones prioritarias (rojo o amarillo) para enfocar el acompañamiento */
-function dimensionesPrioritarias(semaforo: Semaforo): string[] {
-  return DIMS_SEMAFORO.filter(d => semaforo[d] === "rojo" || semaforo[d] === "amarillo");
+interface EstadoExtraido {
+  situacion_actual?:         string;
+  prioridades?:              string[];
+  acciones_pendientes?:      AccionPendiente[];
+  proximo_paso?:             string;
+  proximo_seguimiento_dias?: number;
 }
 
-// ─── Helpers Supabase ─────────────────────────────────────────────────────────
+// ── Supabase helpers ──────────────────────────────────────────────────────────
 
 async function sbGet(path: string) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     headers: {
-      "apikey": SUPABASE_SERVICE_KEY,
-      "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}`,
+      "apikey":         SUPABASE_SERVICE_KEY,
+      "Authorization":  `Bearer ${SUPABASE_SERVICE_KEY}`,
     },
   });
   return res.json();
 }
 
 async function sbPost(path: string, data: unknown) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+  return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     method: "POST",
     headers: {
-      "apikey": SUPABASE_SERVICE_KEY,
-      "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}`,
-      "Content-Type": "application/json",
-      "Prefer": "return=minimal",
+      "apikey":         SUPABASE_SERVICE_KEY,
+      "Authorization":  `Bearer ${SUPABASE_SERVICE_KEY}`,
+      "Content-Type":   "application/json",
+      "Prefer":         "return=minimal",
     },
     body: JSON.stringify(data),
   });
-  return res;
 }
 
-/** Busca usuario por teléfono. Prioriza whatsapp_activo=true */
 async function buscarUsuario(telefono: string) {
-  const digits = telefono.replace(/\D/g, "");
-  const variantes = new Set<string>();
-  variantes.add(digits);
+  const digits   = telefono.replace(/\D/g, "");
+  const variantes = new Set<string>([digits]);
   if (digits.startsWith("549")) variantes.add(digits.slice(3));
   if (digits.startsWith("549")) variantes.add("0" + digits.slice(3));
   if (digits.startsWith("549")) variantes.add("15" + digits.slice(5));
 
   for (const v of variantes) {
-    const rows = await sbGet(`Usuario?telefono=ilike.%25${v}%25&order=whatsapp_activo.desc&limit=1`);
+    const rows = await sbGet(
+      `Usuario?telefono=ilike.%25${v}%25&order=whatsapp_activo.desc&limit=1`
+    );
     if (Array.isArray(rows) && rows.length > 0) return rows[0];
   }
   return null;
 }
 
-/** Carga últimos 20 mensajes del historial */
 async function cargarHistorial(usuario_id: string) {
   const rows = await sbGet(
     `BotMensaje?usuario_id=eq.${usuario_id}&order=created_at.asc&limit=20`
@@ -113,270 +118,328 @@ async function cargarHistorial(usuario_id: string) {
   return Array.isArray(rows) ? rows : [];
 }
 
-/** Carga módulos de trabajo activos */
-async function cargarModulos() {
-  try {
-    const rows = await sbGet(
-      `Servicio?estado=eq.activo&select=titulo,descripcion,duracion_jornada,frecuencia,precio_hora,horas_modulo&order=created_at.desc&limit=10`
-    );
-    return Array.isArray(rows) ? rows : [];
-  } catch { return []; }
-}
-
-/** Carga ofertas de empleo activas */
-async function cargarOfertas() {
-  try {
-    const rows = await sbGet(
-      `Oferta?estado=eq.activa&select=titulo,descripcion,area,ciudad,modalidad&order=created_at.desc&limit=10`
-    );
-    return Array.isArray(rows) ? rows : [];
-  } catch { return []; }
-}
-
-/** Guarda un mensaje en BotMensaje */
 async function guardarMensaje(usuario_id: string, tipo: "usuario" | "bot", texto: string) {
   await sbPost("BotMensaje", { usuario_id, tipo, texto });
 }
 
-// ─── Prompt del sistema ───────────────────────────────────────────────────────
+async function cargarModulos() {
+  try {
+    const rows = await sbGet(
+      `Servicio?estado=eq.activo&select=titulo,descripcion,duracion_jornada,frecuencia,precio_hora,horas_modulo&order=created_at.desc&limit=8`
+    );
+    return Array.isArray(rows) ? rows : [];
+  } catch { return []; }
+}
 
-const SYSTEM_PROMPT = `Sos el asistente de acompañamiento de OportunAI.
+async function cargarOfertas() {
+  try {
+    const rows = await sbGet(
+      `Oferta?estado=eq.activa&select=titulo,descripcion,area,ciudad,modalidad&order=created_at.desc&limit=8`
+    );
+    return Array.isArray(rows) ? rows : [];
+  } catch { return []; }
+}
 
-OportunAI es una plataforma que combina diagnóstico social y acompañamiento para la empleabilidad.
-Tenemos un sistema de diagnóstico semaforizado (inspirado en el Semáforo de la Pobreza) que permite conocer
-la situación de cada persona en 6 dimensiones: empleo, educación, ingresos, salud, vivienda y red social.
-A partir de ese diagnóstico, acompañamos a cada persona en el armado de su perfil, CV y VideoCV,
-y luego en su recorrido hacia distintas oportunidades laborales.
+// ── Estado de acompañamiento ──────────────────────────────────────────────────
 
-Representás al equipo de OportunAI. Siempre hablás en plural ("Te ayudamos", "Estamos para acompañarte").
-Nunca decís que sos una inteligencia artificial. La persona siente que conversa con un equipo humano.
+async function cargarEstado(usuario_id: string): Promise<EstadoAcompanamiento | null> {
+  try {
+    const rows = await sbGet(
+      `KoraiAcompanamiento?usuario_id=eq.${usuario_id}&limit=1`
+    );
+    return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+  } catch { return null; }
+}
 
-────────────────────────────────────────────
-PLATAFORMA OPORTUNAI
-────────────────────────────────────────────
-- Perfil laboral y Video CV:  https://oportunai.korai.lat/dashboard/flyer
-- Dashboard (módulos y ofertas): https://oportunai.korai.lat/dashboard
-- Diagnóstico de situación (Korai): https://app.korai.lat
+async function actualizarEstado(usuario_id: string, data: EstadoExtraido) {
+  if (!BOT_INTERNAL_KEY) return;
+  try {
+    await fetch(`${APP_URL}/api/korai/acompanamiento`, {
+      method:  "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "x-bot-key":    BOT_INTERNAL_KEY,
+      },
+      body: JSON.stringify({ usuario_id, ...data }),
+    });
+  } catch (e) {
+    console.warn("No se pudo actualizar estado:", e);
+  }
+}
 
-────────────────────────────────────────────
-CONTEXTO QUE RECIBÍS ANTES DE CADA RESPUESTA
-────────────────────────────────────────────
-- Nombre y perfil del usuario
-- Estado del diagnóstico Korai (semáforo de 6 dimensiones) — puede estar completo, parcial o ausente
-- Historial de conversación
-- Módulos de trabajo activos y ofertas de empleo activas
+// ── Helpers semáforo ──────────────────────────────────────────────────────────
 
-────────────────────────────────────────────
-CUANDO EL DIAGNÓSTICO KORAI ESTÁ AUSENTE O INCOMPLETO
-────────────────────────────────────────────
-El diagnóstico de Korai es el punto de partida de todo el acompañamiento.
-Si el usuario NO tiene diagnóstico todavía:
-→ Explicale brevemente qué es (conocer su situación para acompañarlo mejor)
-→ Invitalo a hacerlo gratis en: https://app.korai.lat — solo toma 3 minutos
-→ Aclará que es rápido y que después volvemos con recomendaciones personalizadas
-→ No hagas muchas preguntas antes de eso; el diagnóstico nos da toda la info que necesitamos
+const DIMS_SEMAFORO = ["empleo", "educacion", "ingresos", "salud", "vivienda", "red"] as const;
 
-Si ya tiene diagnóstico parcial: usá lo que hay y acompañá según esas dimensiones.
+function semaforoResumen(s: Semaforo): string {
+  const LABEL: Record<string, string> = {
+    empleo: "Empleo", educacion: "Educación", ingresos: "Ingresos",
+    salud: "Salud", vivienda: "Vivienda", red: "Red social",
+  };
+  return DIMS_SEMAFORO
+    .filter(d => s[d])
+    .map(d => {
+      const e = s[d] === "verde" ? "🟢" : s[d] === "amarillo" ? "🟡" : "🔴";
+      return `${e} ${LABEL[d]}: ${s[d]}`;
+    }).join(" | ");
+}
 
-────────────────────────────────────────────
-CUANDO EL DIAGNÓSTICO KORAI ESTÁ COMPLETO
-────────────────────────────────────────────
-Usá el semáforo para personalizar el acompañamiento:
-- 🔴 Rojo en empleo → prioridad máxima, mencioná módulos y ofertas disponibles
-- 🟡 Amarillo en empleo → ya tiene algo pero puede mejorar, orientá hacia módulos y capacitaciones
-- 🟢 Verde en empleo → celebrá y ayudalo a mantener/crecer
-- 🔴/🟡 en educación → recomendá las capacitaciones disponibles en la plataforma
-- 🔴/🟡 en ingresos → módulos de trabajo son una opción de ingresos rápida
-- 🔴/🟡 en red → sugerí agregar referencias laborales al perfil
+function dimensionesPrioritarias(s: Semaforo): string[] {
+  return DIMS_SEMAFORO.filter(d => s[d] === "rojo" || s[d] === "amarillo");
+}
 
-────────────────────────────────────────────
-OPORTUNIDADES DISPONIBLES
-────────────────────────────────────────────
-- Mencioná módulos y ofertas por nombre si aplican al perfil del usuario
-- Siempre mandá el link al dashboard: https://oportunai.korai.lat/dashboard
-- No inventés oportunidades que no están en la lista que recibís
-- Si no hay oportunidades activas, acompañá con consejos de perfil y preparación
+// ── Prompt Korai ──────────────────────────────────────────────────────────────
 
-────────────────────────────────────────────
-CÓMO CONVERSAR
-────────────────────────────────────────────
-- Español rioplatense simple, sin tecnicismos
-- Una sola pregunta por vez
-- Escuchar antes de recomendar
-- Emojis con moderación: máximo 2 por mensaje
-- Sin frases vacías tipo "Gracias por contarnos" si no tienen sentido
-- Nunca ignorés el contexto ni volvás a preguntar algo que ya sabemos
+const SYSTEM_PROMPT_KORAI = `IDENTIDAD
+Sos Korai, el asistente de acompañamiento de las personas que participan de los programas y servicios de OportunAI y los centros que trabajan junto a nosotros.
+Tu función no es simplemente contestar preguntas. Tu función es acompañar a cada persona a partir de lo que está viviendo, ayudarla a avanzar y mantener continuidad en el proceso.
+La persona debe sentir que hay un equipo detrás de Korai que conoce su situación, la escucha y está pendiente de cómo evoluciona.
+No afirmés falsamente que una persona humana está escribiendo. Pero tampoco centres la conversación en que sos una IA. Korai debe sentirse como la puerta de entrada a un equipo de acompañamiento.
 
-────────────────────────────────────────────
+FORMA DE COMUNICAR
+Usá naturalmente el "nosotros":
+"Vimos tu diagnóstico." / "Estuvimos revisando lo que nos contaste." / "Podemos ayudarte con esto."
+"Veamos juntos cómo avanzar." / "Queremos saber cómo siguió." / "Estamos para acompañarte."
+La comunicación debe ser: argentina · cálida · humana · sencilla · cercana · respetuosa · fraterna · concreta.
+No usar lenguaje burocrático ni institucional.
+NO decir: "El algoritmo detectó..." / "Tu puntuación indica..." / "La dimensión presenta..."
+DECIR: "Vimos que hoy esto te está costando." / "Esto aparece como una de las cosas que podríamos trabajar."
+
+LÓGICA DE CADA CONVERSACIÓN
+escuchar → comprender → priorizar → proponer → acompañar → definir próximo paso
+No intentar resolver todo en un solo mensaje. Si hay varios problemas, identificar cuál es más importante para la persona en ese momento.
+"Podemos trabajar varias cosas, pero si te parece empecemos por la que hoy más te preocupa."
+Cada interacción debe dejar un próximo paso claro. Nunca terminar sin que la persona sepa qué puede hacer después y por qué volver a escribir.
+
+ACOMPAÑAMIENTO EMOCIONAL
+Atendé no solo qué necesita la persona, sino cómo se siente frente a lo que está viviendo.
+Si expresa frustración: "Entiendo. Venís intentando resolver esto y es lógico que te frustre."
+Después de validar, orientar hacia una acción posible.
+NO: "Todo va a estar bien." / No minimizar ni dramatizar / No prometer resultados.
+Primero acompañar emocionalmente; después orientar hacia una acción posible.
+
+HISTORIAL Y CONTINUIDAD
+Antes de responder, usá toda la información disponible del estado de acompañamiento que recibís.
+NUNCA hagas que la persona empiece desde cero si ya la conocemos.
+Ejemplo: "La última vez habíamos quedado en que ibas a avanzar con el trámite. ¿Cómo siguió?"
+
+OPORTUNAI — HERRAMIENTA DE EMPLEABILIDAD
+OportunAI es una herramienta dentro del recorrido de acompañamiento, no el fin.
+Cuando empleo sea una prioridad:
+→ Diagnóstico → OportunAI → perfil laboral → Video CV → postulaciones → seguimiento
+NO: "Entrá a OportunAI." y fin.
+SÍ: "Podemos empezar por tu perfil laboral. Cuando lo tengas listo, volvemos a hablar y seguimos con la búsqueda."
+Perfil OportunAI: ${APP_URL}/dashboard
+Diagnóstico Korai: https://app.korai.lat
+
 RECURSOS MUNICIPALES — SAN ISIDRO
-────────────────────────────────────────────
-Cuando una dimensión esté en rojo o amarillo, mencioná el recurso local más pertinente.
-No los enumerés todos — elegí uno o dos que apliquen a la situación concreta de la persona.
+Cuando una dimensión esté en rojo/amarillo, mencioná el recurso más pertinente (no todos):
+EMPLEO: Portal de Empleo Municipal → empleoycomercio.sanisidro.gob.ar | WA: (11) 3585-0997
+Programa Joven (18-25): sanisidro.gob.ar/empleo/programa-joven
+Mi Primer Empleo (jóvenes sin experiencia): sanisidro.gob.ar/trabajo-y-produccion/miprimerempleo
+EDUCACIÓN: Punto Digital Bajo Boulogne (inclusión digital) | Jardines municipales: WA 11-5486-2159
+INGRESOS: Acción Social: 4512-3174/75 | Subsidios: Integración Comunitaria (Ituzaingo 415) 4512-3120
+SALUD: 3 hospitales municipales gratuitos. Turnos: 4707-1900 | 17 CAPS en el partido
+VIVIENDA: Corporación San Isidro → corporacionsanisidro.com/requisitos | Urgencias: 4512-3120
+RED: Integración Comunitaria → sic@sanisidro.gov.ar | 4512-3120/22/23/24
 
-EMPLEO:
-• Portal de Empleo Municipal → empleoycomercio.sanisidro.gob.ar | WA: (11) 3585-0997 | empleo@sanisidro.gov.ar
-• Programa Joven (18-25 años): talleres de empleabilidad → sanisidro.gob.ar/empleo/programa-joven
-• Mi Primer Empleo: pasantías para jóvenes sin experiencia → sanisidro.gob.ar/trabajo-y-produccion/miprimerempleo
-• PROMOVER (personas con discapacidad, 18-60 años con CUD): cursos y prácticas → sanisidro.gob.ar/empleo/promover
-• Inserción Laboral: orientación, CV y conexión con empresas locales | Tel: 4512-3176/78 | L-V 8-14h
-• Capacitaciones gratuitas (finanzas, redes, fotografía, datos) → sanisidro.gob.ar/municipio/trabajo-y-produccion/capacitaciones
-
-EDUCACIÓN:
-• Jardines municipales (niños 2-5 años, jornada completa) | WA: 11-5486-2159 | escuelasmunicipales@sanisidro.gob.ar
-• Escuela Municipal Malvinas Argentinas
-• Punto Digital Bajo Boulogne: inclusión digital para vecinos
-
-INGRESOS / SUBSIDIOS:
-• Asistencia alimentaria y comedores comunitarios → Acción Social: 4512-3174/75 | acsoadmin@sanisidro.gov.ar
-• Subsidios para necesidades básicas → Integración Comunitaria (Ituzaingo 415, 1° piso) | 4512-3120/22/23/24
-• Subsidio nacional de luz y gas (RASE) → sanisidro.gob.ar/subsidio-nacional-luz-y-gas
-
-SALUD:
-• 3 hospitales municipales gratuitos: Hospital Central (Av. Santa Fe 431), Materno Infantil, Boulogne (Av. Avelino Rolón 1200) | Turnos: 4707-1900
-• 17 CAPS en todo el partido: consultas, vacunación, odontología, salud sexual, trabajo social | atencionprimaria@sanisidro.gob.ar
-• Tests de VIH y VDRL gratuitos y confidenciales en cualquier CAPS
-• Salud Mental: sala especializada en Hospital Central
-
-VIVIENDA:
-• Corporación San Isidro: subsidio "Mi Casa Ya" y créditos → corporacionsanisidro.com/requisitos
-• Urgencias habitacionales → Integración Comunitaria: 4512-3120/22/23/24
-
-RED SOCIAL / COMUNIDAD:
-• Integración Comunitaria: articula recursos públicos, privados y OSC → sic@sanisidro.gov.ar | 4512-3120/22/23/24
-• Acción Social: promotores para situaciones de vulnerabilidad → acsoadmin@sanisidro.gov.ar
-• Centro Ramón Carrillo: apoyo integral a niños, adolescentes y familias
-• Centro UMD (discapacidad, 27 organizaciones) | 25 de Mayo 574 | 4512-3313
-• CUD (Certificado Único de Discapacidad) gratuito → Hospital Central o sanisidro.gob.ar/salud-discapacidad/certificado-de-discapacidad
-• Puerto Libre (adultos mayores): transporte y comidas gratis | 11-7872-2000
-
-────────────────────────────────────────────
 CASOS SENSIBLES
-Si detectás violencia, desempleo crítico, salud mental o emergencia social:
-respondé con contención, recomendá recursos (Línea 144, 147, ANSES) y marcá [ALERTA_HUMANA] al inicio.
+Si detectás violencia, emergencia social, salud mental o desempleo crítico:
+respondé con contención, recomendá recursos (Línea 144, 147, ANSES) y colocá [ALERTA_HUMANA] al inicio.
 
-PRIMERA RESPUESTA
-Si es el primer mensaje del usuario, presentate brevemente y preguntá en qué podés ayudarlo.
-Si no tiene diagnóstico, rápidamente guialo a app.korai.lat.
+EQUIPO HUMANO
+Cuando la situación requiera intervención humana:
+"Esto sería bueno que lo revise también el equipo que te acompaña. Puedo dejar registrada la situación."
+Nunca inventés que una persona específica revisó el caso.
 
-REGLA PRINCIPAL
-Devolvé únicamente el texto del mensaje de WhatsApp, sin explicaciones ni comillas.
-Máximo 2 emojis en todo el mensaje.`;
+FORMATO WHATSAPP
+Texto plano solamente. Máximo 2 emojis por mensaje. Respuestas de hasta 3-4 párrafos cortos.
+Devolvé únicamente el texto del mensaje, sin comillas ni explicaciones.`;
 
-// ─── Generación de respuesta ──────────────────────────────────────────────────
+// ── Generar respuesta principal ───────────────────────────────────────────────
 
 async function generarRespuesta(
-  usuario: Record<string, unknown>,
-  historial: Array<{ tipo: string; texto: string }>,
-  mensajeUsuario: string,
-  modulos: Array<Record<string, unknown>>,
-  ofertas: Array<Record<string, unknown>>,
-  semaforo: Semaforo | null,
+  usuario:          Record<string, unknown>,
+  historial:        Array<{ tipo: string; texto: string }>,
+  mensajeUsuario:   string,
+  modulos:          Array<Record<string, unknown>>,
+  ofertas:          Array<Record<string, unknown>>,
+  semaforo:         Semaforo | null,
+  estado:           EstadoAcompanamiento | null,
 ): Promise<string> {
-  const nombre = (usuario.nombre_completo as string) ?? "candidato";
-  const cvDatos = (usuario.cv_datos as Record<string, unknown>) ?? {};
-  const bio = (usuario.bio as string) ?? "";
+  const nombre   = (usuario.nombre_completo as string) ?? "vecino/a";
+  const cvDatos  = (usuario.cv_datos as Record<string, unknown>) ?? {};
+  const bio      = (usuario.bio as string) ?? "";
 
-  // Perfil del usuario
-  const perfilTexto = [
+  // Perfil
+  const perfilLines = [
     `Nombre: ${nombre}`,
     bio ? `Bio: ${bio}` : "",
-    cvDatos.resumen ? `Resumen: ${cvDatos.resumen}` : "",
+    cvDatos.resumen       ? `Resumen: ${cvDatos.resumen}` : "",
     cvDatos.nivel_estudios ? `Estudios: ${cvDatos.nivel_estudios}` : "",
     cvDatos.disponibilidad ? `Disponibilidad: ${cvDatos.disponibilidad}` : "",
-    cvDatos.localidad ? `Localidad: ${cvDatos.localidad}` : "",
+    cvDatos.localidad      ? `Localidad: ${cvDatos.localidad}` : "",
     Array.isArray(cvDatos.habilidades) && cvDatos.habilidades.length > 0
-      ? `Habilidades: ${(cvDatos.habilidades as string[]).join(", ")}`
-      : "",
+      ? `Habilidades: ${(cvDatos.habilidades as string[]).join(", ")}` : "",
     Array.isArray(cvDatos.experiencia) && cvDatos.experiencia.length > 0
       ? `Experiencia: ${(cvDatos.experiencia as Array<{ cargo: string; empresa: string }>)
-          .map(e => `${e.cargo} en ${e.empresa}`).join(", ")}`
-      : "",
+          .map(e => `${e.cargo} en ${e.empresa}`).join(", ")}` : "",
   ].filter(Boolean).join("\n");
 
-  // Estado del diagnóstico Korai
-  const tieneDiag = tieneDiagnostico(semaforo);
-  const diagnosticoTexto = tieneDiag && semaforo
-    ? `DIAGNÓSTICO KORAI COMPLETO:\n${semaforoResumen(semaforo)}` +
+  // Semáforo
+  const tieneDiag = semaforo && DIMS_SEMAFORO.some(d => semaforo[d]);
+  const diagTexto = tieneDiag && semaforo
+    ? `DIAGNÓSTICO KORAI:\n${semaforoResumen(semaforo)}` +
       (dimensionesPrioritarias(semaforo).length > 0
-        ? `\nDIMENSIONES PRIORITARIAS (rojo/amarillo): ${dimensionesPrioritarias(semaforo).join(", ")}`
-        : "\nTodas las dimensiones en verde ✓")
-    : "DIAGNÓSTICO KORAI: NO REALIZADO — invitarlo a hacerlo en https://app.korai.lat";
+        ? `\nDIMENSIONES PRIORITARIAS: ${dimensionesPrioritarias(semaforo).join(", ")}`
+        : "")
+    : "DIAGNÓSTICO KORAI: NO REALIZADO — invitarla a hacerlo en https://app.korai.lat (3 minutos)";
+
+  // Estado de acompañamiento
+  const estadoTexto = estado ? `
+ESTADO DE ACOMPAÑAMIENTO:
+${estado.situacion_actual ? `Situación actual: ${estado.situacion_actual}` : ""}
+${Array.isArray(estado.prioridades) && estado.prioridades.length > 0 ? `Prioridades: ${estado.prioridades.join(", ")}` : ""}
+${Array.isArray(estado.acciones_pendientes) && estado.acciones_pendientes.length > 0
+  ? `Acciones pendientes:\n${(estado.acciones_pendientes as AccionPendiente[]).map(a => `  - ${a.descripcion}${a.contexto ? ` (${a.contexto})` : ""}`).join("\n")}` : ""}
+${estado.proximo_paso ? `Próximo paso acordado: ${estado.proximo_paso}` : ""}
+`.trim() : "ESTADO: Sin historial de acompañamiento previo — primer contacto.";
 
   // Oportunidades
   const modulosTexto = modulos.length > 0
-    ? `MÓDULOS DE TRABAJO ACTIVOS:\n` + modulos.map(m =>
-        `- ${m.titulo}${m.duracion_jornada ? ` (${m.duracion_jornada})` : ""}${m.precio_hora ? ` · $${m.precio_hora}/hs` : ""}${m.horas_modulo ? ` · ${m.horas_modulo} hs` : ""}${m.descripcion ? `: ${String(m.descripcion).slice(0, 100)}` : ""}`
+    ? "MÓDULOS DE TRABAJO ACTIVOS:\n" + modulos.map(m =>
+        `- ${m.titulo}${m.duracion_jornada ? ` (${m.duracion_jornada})` : ""}${m.precio_hora ? ` · $${m.precio_hora}/hs` : ""}${m.descripcion ? `: ${String(m.descripcion).slice(0, 80)}` : ""}`
       ).join("\n")
-    : "No hay módulos de trabajo activos en este momento.";
+    : "";
 
   const ofertasTexto = ofertas.length > 0
-    ? `OFERTAS DE EMPLEO ACTIVAS:\n` + ofertas.map(o =>
-        `- ${o.titulo}${o.area ? ` [${o.area}]` : ""}${o.ciudad ? ` en ${o.ciudad}` : ""}${o.descripcion ? `: ${String(o.descripcion).slice(0, 100)}` : ""}`
+    ? "OFERTAS ACTIVAS:\n" + ofertas.map(o =>
+        `- ${o.titulo}${o.area ? ` [${o.area}]` : ""}${o.ciudad ? ` en ${o.ciudad}` : ""}`
       ).join("\n")
-    : "No hay ofertas de empleo activas en este momento.";
+    : "";
 
-  // Construir mensajes para Claude
+  // Construir mensajes
   const messages: Array<{ role: string; content: string }> = [];
-  for (const msg of historial.slice(-18)) {
+  for (const msg of historial.slice(-16)) {
     messages.push({
-      role: msg.tipo === "usuario" ? "user" : "assistant",
+      role:    msg.tipo === "usuario" ? "user" : "assistant",
       content: msg.texto,
     });
   }
-  messages.push({ role: "user", content: mensajeUsuario });
 
-  // Contexto completo en el primer mensaje o inyectado en el último
-  const userContext = `
-[PERFIL DEL USUARIO]
-${perfilTexto || "Sin perfil completo todavía."}
+  const contextoBloque = `
+[PERFIL]
+${perfilLines || "Sin perfil completo."}
 
-[ESTADO DEL DIAGNÓSTICO]
-${diagnosticoTexto}
+[${diagTexto}]
 
-[OPORTUNIDADES DISPONIBLES]
-${modulosTexto}
-
-${ofertasTexto}
-
-[MENSAJE DEL USUARIO]
-${mensajeUsuario}
+[${estadoTexto}]
+${modulosTexto ? `\n[${modulosTexto}]` : ""}
+${ofertasTexto ? `\n[${ofertasTexto}]` : ""}
 `.trim();
 
-  messages[messages.length - 1].content = messages.length === 1
-    ? userContext
-    : `${mensajeUsuario}\n\n[CONTEXTO]\n${diagnosticoTexto}\n${modulosTexto}\n${ofertasTexto}`;
+  // Inyectar contexto en el último mensaje de usuario
+  const mensajeConContexto = messages.length === 0
+    ? `${contextoBloque}\n\n[MENSAJE]\n${mensajeUsuario}`
+    : `${mensajeUsuario}\n\n[CONTEXTO ACTUALIZADO]\n${diagTexto}\n${estadoTexto}`;
+
+  messages.push({ role: "user", content: mensajeConContexto });
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
-      "x-api-key": ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
+      "x-api-key":          ANTHROPIC_API_KEY,
+      "anthropic-version":  "2023-06-01",
+      "content-type":       "application/json",
     },
     body: JSON.stringify({
-      model: ANTHROPIC_MODEL,
+      model:      MODEL_CHAT,
       max_tokens: 450,
-      system: SYSTEM_PROMPT,
+      system:     SYSTEM_PROMPT_KORAI,
       messages,
     }),
   });
 
   const data = await res.json() as Record<string, unknown>;
   const content = data.content as Array<{ type: string; text: string }>;
-  return content?.[0]?.text ?? "Gracias por escribirnos. En un momento te atendemos 🙌";
+  return content?.[0]?.text ?? "Gracias por escribirnos. En un momento te atendemos.";
 }
 
-/** Envía mensaje por WhatsApp */
+// ── Extraer estado post-conversación ──────────────────────────────────────────
+
+async function extraerEstado(
+  nombre:          string,
+  historial:       Array<{ tipo: string; texto: string }>,
+  mensajeUsuario:  string,
+  respuestaBot:    string,
+  estadoPrevio:    EstadoAcompanamiento | null,
+): Promise<EstadoExtraido | null> {
+  // Solo extraer si hay suficiente contenido
+  if (!mensajeUsuario || mensajeUsuario.length < 10) return null;
+
+  const conversacionTexto = [
+    ...historial.slice(-8).map(m => `${m.tipo === "usuario" ? nombre : "Korai"}: ${m.texto}`),
+    `${nombre}: ${mensajeUsuario}`,
+    `Korai: ${respuestaBot}`,
+  ].join("\n");
+
+  const prompt = `Analizá esta conversación de acompañamiento y extraé el estado actualizado en JSON.
+
+CONVERSACIÓN:
+${conversacionTexto}
+
+${estadoPrevio?.acciones_pendientes ? `ACCIONES PENDIENTES PREVIAS:\n${JSON.stringify(estadoPrevio.acciones_pendientes)}` : ""}
+
+Extraé SOLO lo que se puede inferir de esta conversación. No inventes.
+Si algo no fue mencionado, no lo incluyas.
+Respondé SOLO con JSON válido, sin markdown:
+{
+  "situacion_actual": "resumen en 1-2 oraciones de la situación actual de la persona (null si no hay info)",
+  "prioridades": ["..."],
+  "acciones_pendientes": [{"descripcion": "...", "contexto": "..."}],
+  "proximo_paso": "qué debe hacer la persona concretamente (null si no quedó claro)",
+  "proximo_seguimiento_dias": 3
+}
+
+Para proximo_seguimiento_dias: 1 si es urgente, 3 si hay algo pendiente, 7 si es seguimiento normal, 14-30 si es solo mantenimiento.`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key":         ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "content-type":      "application/json",
+      },
+      body: JSON.stringify({
+        model:      MODEL_EXTRA,
+        max_tokens: 300,
+        messages:   [{ role: "user", content: prompt }],
+      }),
+    });
+
+    const data    = await res.json() as Record<string, unknown>;
+    const content = data.content as Array<{ type: string; text: string }>;
+    const text    = content?.[0]?.text?.trim() ?? "";
+    return JSON.parse(text.replace(/```json|```/g, "").trim()) as EstadoExtraido;
+  } catch (e) {
+    console.warn("extraerEstado falló:", e);
+    return null;
+  }
+}
+
+// ── WhatsApp send ─────────────────────────────────────────────────────────────
+
 async function enviarWhatsApp(numero: string, mensaje: string) {
   const res = await fetch(`https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${WHATSAPP_TOKEN}`,
-      "Content-Type": "application/json",
+      "Content-Type":  "application/json",
     },
     body: JSON.stringify({
       messaging_product: "whatsapp",
-      to: numero,
+      to:   numero,
       type: "text",
       text: { body: mensaje },
     }),
@@ -385,13 +448,13 @@ async function enviarWhatsApp(numero: string, mensaje: string) {
   console.log("WA API status:", res.status, JSON.stringify(data));
 }
 
-// ─── Handler principal ────────────────────────────────────────────────────────
+// ── Handler ───────────────────────────────────────────────────────────────────
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   if (req.method === "GET") {
-    const url = new URL(req.url);
+    const url       = new URL(req.url);
     const mode      = url.searchParams.get("hub.mode");
     const token     = url.searchParams.get("hub.verify_token");
     const challenge = url.searchParams.get("hub.challenge");
@@ -403,6 +466,7 @@ serve(async (req) => {
 
   if (req.method === "POST") {
     try {
+      // Autenticación del forward key
       if (KORAI_FORWARD_KEY) {
         const fwdKey = req.headers.get("x-forward-key") ?? "";
         if (fwdKey !== KORAI_FORWARD_KEY) {
@@ -411,66 +475,74 @@ serve(async (req) => {
         }
       }
 
-      const body = await req.json() as Record<string, unknown>;
-      console.log("WA webhook POST recibido");
+      const body   = await req.json() as Record<string, unknown>;
+      const entry  = (body?.entry as Array<Record<string, unknown>>)?.[0];
+      const change = (entry?.changes as Array<Record<string, unknown>>)?.[0];
+      const value  = change?.value as Record<string, unknown>;
+      const msgs   = value?.messages as Array<Record<string, unknown>>;
 
-      const entry    = (body?.entry as Array<Record<string, unknown>>)?.[0];
-      const changes  = (entry?.changes as Array<Record<string, unknown>>)?.[0];
-      const value    = changes?.value as Record<string, unknown>;
-      const messages = value?.messages as Array<Record<string, unknown>>;
+      if (!msgs || msgs.length === 0) return new Response("ok", { status: 200 });
 
-      if (!messages || messages.length === 0) {
-        return new Response("ok", { status: 200 });
-      }
-
-      const msg = messages[0];
+      const msg  = msgs[0];
       if (msg.type !== "text") return new Response("ok", { status: 200 });
 
       const from  = msg.from as string;
       const texto = (msg.text as Record<string, unknown>)?.body as string;
 
-      console.log("Mensaje de:", from, "| texto:", texto);
       if (!from || !texto) return new Response("ok", { status: 200 });
 
-      const usuario = await buscarUsuario(from);
-      console.log("Usuario:", usuario ? `${usuario.id} activo:${usuario.whatsapp_activo}` : "null");
+      console.log(`Mensaje de: ${from}`);
 
+      const usuario = await buscarUsuario(from);
       if (!usuario) {
         await enviarWhatsApp(from,
-          "¡Hola! 👋 No encontramos tu cuenta en OportunAI.\n\n" +
-          "Registrate gratis en oportunai.korai.lat para que podamos acompañarte en tu búsqueda de trabajo."
+          "Hola 👋 No encontramos tu cuenta en OportunAI.\n\n" +
+          `Registrate gratis en ${APP_URL} para que podamos acompañarte en tu búsqueda.`
         );
         return new Response("ok", { status: 200 });
       }
 
-      if (!usuario.whatsapp_activo) {
-        return new Response("ok", { status: 200 });
-      }
+      if (!usuario.whatsapp_activo) return new Response("ok", { status: 200 });
 
+      // Cargar todo en paralelo
       await guardarMensaje(usuario.id, "usuario", texto);
-
-      const [historial, modulos, ofertas] = await Promise.all([
+      const [historial, modulos, ofertas, estado] = await Promise.all([
         cargarHistorial(usuario.id),
         cargarModulos(),
         cargarOfertas(),
+        cargarEstado(usuario.id),
       ]);
 
       const semaforo = (usuario.korai_semaforo ?? null) as Semaforo | null;
 
-      console.log(
-        `Historial: ${historial.length} | Módulos: ${modulos.length} | Ofertas: ${ofertas.length}`,
-        `| Semáforo: ${tieneDiagnostico(semaforo) ? semaforoResumen(semaforo!) : "sin diagnóstico"}`
+      // Generar respuesta
+      const respuesta = await generarRespuesta(
+        usuario, historial, texto, modulos, ofertas, semaforo, estado
       );
 
-      const respuesta = await generarRespuesta(usuario, historial, texto, modulos, ofertas, semaforo);
+      // Enviar y guardar respuesta
+      await Promise.all([
+        enviarWhatsApp(from, respuesta),
+        guardarMensaje(usuario.id, "bot", respuesta),
+      ]);
 
-      await enviarWhatsApp(from, respuesta);
-      await guardarMensaje(usuario.id, "bot", respuesta);
+      // Extraer estado en background (no bloquea la respuesta al usuario)
+      extraerEstado(
+        (usuario.nombre_completo as string).split(" ")[0],
+        historial,
+        texto,
+        respuesta,
+        estado,
+      ).then(estadoExtraido => {
+        if (estadoExtraido) {
+          return actualizarEstado(usuario.id, estadoExtraido);
+        }
+      }).catch(e => console.warn("Error actualizando estado:", e));
 
       return new Response("ok", { status: 200 });
     } catch (err) {
       console.error("whatsapp_webhook error:", err);
-      return new Response("ok", { status: 200 });
+      return new Response("ok", { status: 200 }); // siempre 200 a Meta
     }
   }
 

@@ -50,7 +50,16 @@ export async function POST(req: NextRequest) {
       path: '/',
     });
 
-    return NextResponse.json({ ok: true, role: usuario.role }, { status: 201 });
+    // Cookie no-httpOnly para que el middleware pueda leerla
+    cookies().set('onboarding_completado', 'false', {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    });
+
+    return NextResponse.json({ ok: true, role: usuario.role, redirect: '/onboarding' }, { status: 201 });
   } catch (err) {
     console.error('[register]', err);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });

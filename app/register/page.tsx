@@ -25,9 +25,9 @@ function RegisterForm() {
     });
     const json = await res.json();
     if (!res.ok) { setServerError(json.error ?? 'Error al registrarse'); return; }
-    const redirectParam = searchParams.get('redirect');
-    const dest = redirectParam && redirectParam.startsWith('/') ? redirectParam : '/dashboard';
-    router.push(dest);
+    // El servidor indica si hay que ir al onboarding; sino al redirect param o dashboard
+    const dest = json.redirect ?? (searchParams.get('redirect')?.startsWith('/') ? searchParams.get('redirect') : '/dashboard');
+    router.push(dest as string);
     router.refresh();
   };
 

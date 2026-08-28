@@ -301,6 +301,8 @@ function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVi
                 ) : (
                   <a
                     href="/api/korai/redirect?from=onboarding"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="block w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3.5 rounded-xl transition-colors text-center mb-3"
                   >
                     🚦 Hacer el diagnóstico
@@ -312,7 +314,7 @@ function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVi
                     onClick={() => setDiagOk(true)}
                     className="w-full text-sm text-gray-400 hover:text-gray-600 py-2 transition-colors"
                   >
-                    Ya lo hice →
+                    Ya lo hice, volver acá →
                   </button>
                 )}
               </div>

@@ -55,6 +55,7 @@ fecha_nacimiento DateTime?
   bot_mensajes          BotMensaje[]
   korai_acompanamiento  KoraiAcompanamiento?
   push_suscripciones    PushSuscripcion[]
+  capacitate_progreso   CapacitateProgreso[]
 }
 
 enum Role {
@@ -597,4 +598,92 @@ model PushSuscripcion {
   auth        String
   user_agent  String?
   created_at  DateTime @default(now())
+}
+
+// ─── CAPACITATE ───────────────────────────────────────────────────────────────
+// Motor desacoplado del contenido: el código construye la experiencia,
+// los datos (CapacitateContenido + CapacitateModulo) contienen las capacitaciones.
+// Agregar una nueva capacitación = agregar filas en DB, sin tocar código.
+
+model CapacitateContenido {
+  id            String   @id @default(cuid())
+  slug          String   @unique          // "asistente-ecommerce", "casa-de-comidas"
+  titulo        String
+  categoria     String                    // "fisicos_oficios" | "digitales"
+  descripcion   String
+  nivel         String   @default("inicial")  // "inicial" | "intermedio"
+  duracion_min  Int                       // duración estimada en minutos
+  objetivo      String
+  competencias  Json                      // string[] — competencias que otorga
+  icono         String?                   // emoji o nombre de icono
+  orden         Int      @default(0)      // orden dentro de su categoría
+  activa        Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  modulos  CapacitateModulo[]
+  progreso CapacitateProgreso[]
+}
+
+model CapacitateModulo {
+  id               String               @id @default(cuid())
+  contenido_id     String
+  orden            Int                  // posición dentro de la capacitación (1-based)
+  titulo           String
+  tipo             CapacitateModuloTipo
+  contenido        Json                 // estructura flexible según tipo (ver docs)
+  es_desafio_final Boolean              @default(false)
+  created_at       DateTime             @default(now())
+
+  contenido_rel CapacitateContenido @relation(fields: [contenido_id], references: [id], onDelete: Cascade)
+
+  @@unique([contenido_id, orden])
+}
+
+// Tipos de módulo — el JSON en `contenido` varía según el tipo:
+//   lectura:      { texto, ejemplo?, imagen_url? }
+//   pregunta:     { texto_educativo?, pregunta, opciones[4], respuesta_correcta(0-3),
+//                   feedback_correcto, feedback_incorrecto, competencia? }
+//   situacion:    { escenario, opciones[2-4], respuesta_correcta, consecuencia_correcta,
+//                   consecuencia_incorrecta, competencia? }
+//   actividad:    { instruccion, tipo_actividad("redaccion"|"checklist"|"ordenar"),
+//                   items?, criterios?, feedback }
+//   desafio_final:{ escenario, tareas[{titulo,descripcion,tipo,opciones?,
+//                   respuesta_correcta?,competencia,peso}],
+//                   puntaje_aprobacion(0-100), competencias_criticas? }
+enum CapacitateModuloTipo {
+  lectura
+  pregunta
+  situacion
+  actividad
+  desafio_final
+}
+
+model CapacitateProgreso {
+  id              String           @id @default(cuid())
+  usuario_id      String
+  contenido_id    String
+  estado          CapacitateEstado @default(no_iniciada)
+  modulo_actual   Int              @default(0)   // índice del módulo en curso (0-based)
+  respuestas      Json?            // { [modulo_orden]: { respuesta, correcta, timestamp } }
+  puntaje_final   Int?             // 0-100
+  competencias_ok Json?            // string[] de competencias demostradas
+  intentos        Int              @default(0)
+  iniciada_en     DateTime?
+  completada_en   DateTime?
+  aprobada_en     DateTime?
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+
+  usuario   Usuario              @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  contenido CapacitateContenido  @relation(fields: [contenido_id], references: [id], onDelete: Cascade)
+
+  @@unique([usuario_id, contenido_id])
+}
+
+enum CapacitateEstado {
+  no_iniciada
+  en_progreso
+  completada
+  aprobada
 }

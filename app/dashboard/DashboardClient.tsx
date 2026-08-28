@@ -143,12 +143,13 @@ export default function DashboardClient({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [tab, setTab] = useState<'perfil' | 'ofertas' | 'documentos' | 'citas' | 'servicios'>(() => {
+  const [tab, setTab] = useState<'perfil' | 'ofertas' | 'documentos' | 'citas' | 'servicios' | 'capacitate'>(() => {
     const t = searchParams.get('tab');
-    if (t === 'ofertas') return 'ofertas';
+    if (t === 'ofertas')    return 'ofertas';
     if (t === 'documentos') return 'documentos';
-    if (t === 'citas') return 'citas';
-    if (t === 'servicios') return 'servicios';
+    if (t === 'citas')      return 'citas';
+    if (t === 'servicios')  return 'servicios';
+    if (t === 'capacitate') return 'capacitate';
     return 'perfil';
   });
   const [citasState, setCitasState] = useState<CitaInvitado[]>(citas);
@@ -811,28 +812,43 @@ export default function DashboardClient({
           <div className="hidden sm:block overflow-x-auto -mx-4 sm:mx-0 scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
             <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 mx-4 sm:mx-0 w-max sm:w-auto min-w-0">
               {[
-                { id: 'perfil',     Icon: Video,        label: 'Mi perfil',   badge: null },
-                { id: 'documentos', Icon: ShieldCheck,  label: 'Documentos',  badge: null },
-                { id: 'ofertas',    Icon: Briefcase,    label: 'Ofertas',     badge: null },
-                { id: 'citas',      Icon: CalendarDays, label: 'Citas',       badge: citasPendientes > 0 ? citasPendientes : null },
-                { id: 'servicios',  Icon: Layers,       label: 'Módulos',     badge: misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length || null },
-              ].map(({ id, Icon, label, badge }) => (
-                <button
-                  key={id}
-                  onClick={() => setTab(id as typeof tab)}
-                  className={`relative flex items-center gap-1.5 px-2.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
-                    tab === id ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
-                  }`}
-                >
-                  <Icon size={13} className="sm:hidden flex-shrink-0" />
-                  <Icon size={14} className="hidden sm:block flex-shrink-0" />
-                  {label}
-                  {badge !== null && (
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${tab === id ? 'bg-white/30 text-white' : 'bg-red-500 text-white'}`}>
-                      {badge}
-                    </span>
-                  )}
-                </button>
+                { id: 'perfil',      Icon: Video,          label: 'Mi perfil',   badge: null },
+                { id: 'documentos',  Icon: ShieldCheck,    label: 'Documentos',  badge: null },
+                { id: 'ofertas',     Icon: Briefcase,      label: 'Ofertas',     badge: null },
+                { id: 'citas',       Icon: CalendarDays,   label: 'Citas',       badge: citasPendientes > 0 ? citasPendientes : null },
+                { id: 'servicios',   Icon: Layers,         label: 'Módulos',     badge: misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length || null },
+                { id: 'capacitate',  Icon: GraduationCap,  label: 'Capacitate',  badge: null, href: '/dashboard/capacitate' },
+              ].map(({ id, Icon, label, badge, href }: { id: string; Icon: React.ElementType; label: string; badge: number | null; href?: string }) => (
+                href ? (
+                  <Link
+                    key={id}
+                    href={href}
+                    className={`relative flex items-center gap-1.5 px-2.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
+                      'text-ink-500 hover:text-ink-800'
+                    }`}
+                  >
+                    <Icon size={13} className="sm:hidden flex-shrink-0" />
+                    <Icon size={14} className="hidden sm:block flex-shrink-0" />
+                    {label}
+                  </Link>
+                ) : (
+                  <button
+                    key={id}
+                    onClick={() => setTab(id as typeof tab)}
+                    className={`relative flex items-center gap-1.5 px-2.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
+                      tab === id ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
+                    }`}
+                  >
+                    <Icon size={13} className="sm:hidden flex-shrink-0" />
+                    <Icon size={14} className="hidden sm:block flex-shrink-0" />
+                    {label}
+                    {badge !== null && (
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${tab === id ? 'bg-white/30 text-white' : 'bg-red-500 text-white'}`}>
+                        {badge}
+                      </span>
+                    )}
+                  </button>
+                )
               ))}
             </div>
           </div>

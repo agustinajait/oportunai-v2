@@ -1326,7 +1326,6 @@ export default function DashboardClient({
             <div className="lg:hidden order-1 flex gap-2">
               {[
                 { href: '/dashboard/flyer', label: 'Ver perfil', gradient: 'linear-gradient(135deg,#4B33CC,#7048F0)', Icon: () => <FileText size={18} color="#fff" strokeWidth={1.75} />, isLink: true },
-                { href: '/dashboard/card',  label: 'Mi tarjeta',  gradient: 'linear-gradient(135deg,#0A9485,#0FBFA8)', Icon: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>, isLink: true },
                 { href: '/api/cv/download', label: 'Descargar CV', gradient: 'linear-gradient(135deg,#4B33CC,#7048F0)', Icon: () => <Download size={18} color="#fff" strokeWidth={1.75} />, isLink: false },
               ].map(({ href, label, gradient, Icon, isLink }) => {
                 const inner = (
@@ -1377,23 +1376,6 @@ export default function DashboardClient({
                 </div>
                 <Link href="/dashboard/flyer" className="btn-primary w-full justify-center text-sm py-2.5" style={{ textDecoration:'none', display:'flex', alignItems:'center', gap:6 }}>
                   <FileText size={15} /> Ver mi perfil laboral
-                </Link>
-              </div>
-
-              {/* Tarjeta digital — oculto en mobile */}
-              <div className="hidden lg:block card p-5">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-11 h-11 rounded-xl flex-shrink-0" style={{ background: 'linear-gradient(135deg,#0A9485,#0FBFA8)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-ink-800 text-sm">Mi tarjeta digital</p>
-                    <p className="text-xs text-ink-400">Con QR y contacto guardable</p>
-                  </div>
-                </div>
-                <Link href="/dashboard/card" style={{ textDecoration:'none', display:'flex', alignItems:'center', justifyContent:'center', gap:6, background:'linear-gradient(135deg,#0A9485,#0FBFA8)', color:'#fff', borderRadius:10, padding:'10px', fontWeight:700, fontSize:13 }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                  Ver mi tarjeta
                 </Link>
               </div>
 

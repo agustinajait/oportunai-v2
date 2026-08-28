@@ -2135,14 +2135,14 @@ export default function DashboardClient({
                     title: 'Completá tu perfil',
                     desc: 'Resumen, experiencia y habilidades — el motor de tu CV',
                     done: tieneSummary || tieneExp || tieneHabs,
-                    cta: { label: 'Editar perfil', click: () => setEditandoDatos(true) },
+                    cta: { label: 'Editar perfil', click: () => { setEditandoDatos(true); setTimeout(() => document.getElementById('mis-datos-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); } },
                   },
                   {
                     id: 'zona', icon: '📍',
                     title: 'Indicá tu zona',
                     desc: 'Para ver ofertas cerca de donde querés trabajar',
                     done: tieneLocalidad,
-                    cta: { label: 'Agregar zona', click: () => setEditandoDatos(true) },
+                    cta: { label: 'Agregar zona', click: () => { setEditandoDatos(true); setTimeout(() => document.getElementById('mis-datos-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); } },
                   },
                   {
                     id: 'foto', icon: '📷',
@@ -2277,7 +2277,7 @@ export default function DashboardClient({
               })()}
 
               {/* ── Mis datos ──────────────────────────────────────── */}
-              <div className="card p-6">
+              <div className="card p-6" id="mis-datos-section">
                 <div className="flex items-center justify-between mb-1">
                   <h2 className="font-semibold text-ink-800">Mis datos</h2>
                   {datosMsgOk && <span className="text-xs text-emerald-600 font-medium">Guardado ✓</span>}

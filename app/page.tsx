@@ -479,42 +479,29 @@ export default async function LandingPage() {
           <Link href="/register" className={s.verMas} style={{ color: '#0A9485', borderColor: '#0A9485' }}>Ver todos →</Link>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
+        <div className={s.capacitateGrid}>
           {(capacitateContenidos.length > 0 ? capacitateContenidos : [
-            { slug: 'asistente-ia',     titulo: 'Asistente de IA',          icono: '🤖', categoria: 'Digital',       descripcion: 'Usá IA para resolver tareas laborales concretas.' },
-            { slug: 'excel-basico',     titulo: 'Excel Básico',             icono: '📊', categoria: 'Digital',       descripcion: 'Tablas, fórmulas y formatos para el trabajo cotidiano.' },
-            { slug: 'atencion-cliente', titulo: 'Atención al Cliente',      icono: '🤝', categoria: 'Soft skills',   descripcion: 'Comunicación efectiva y manejo de situaciones difíciles.' },
-            { slug: 'cv-digital',       titulo: 'CV y Perfil Digital',      icono: '📄', categoria: 'Empleabilidad', descripcion: 'Cómo armar un perfil que llame la atención de los empleadores.' },
-            { slug: 'entrevista',       titulo: 'Entrevista Laboral',       icono: '🎯', categoria: 'Empleabilidad', descripcion: 'Preparate para responder con confianza y claridad.' },
-            { slug: 'trabajo-equipo',   titulo: 'Trabajo en Equipo',        icono: '👥', categoria: 'Soft skills',   descripcion: 'Colaboración, comunicación y resolución de conflictos.' },
+            { slug: 'asistente-ia',     titulo: 'Asistente de IA',     icono: '🤖', categoria: 'Digital',       descripcion: 'Usá IA para resolver tareas laborales concretas.' },
+            { slug: 'excel-basico',     titulo: 'Excel Básico',        icono: '📊', categoria: 'Digital',       descripcion: 'Tablas, fórmulas y formatos para el trabajo cotidiano.' },
+            { slug: 'atencion-cliente', titulo: 'Atención al Cliente', icono: '🤝', categoria: 'Soft skills',   descripcion: 'Comunicación efectiva y manejo de situaciones difíciles.' },
+            { slug: 'cv-digital',       titulo: 'CV y Perfil Digital', icono: '📄', categoria: 'Empleabilidad', descripcion: 'Cómo armar un perfil que llame la atención de los empleadores.' },
+            { slug: 'entrevista',       titulo: 'Entrevista Laboral',  icono: '🎯', categoria: 'Empleabilidad', descripcion: 'Preparate para responder con confianza y claridad.' },
+            { slug: 'trabajo-equipo',   titulo: 'Trabajo en Equipo',   icono: '👥', categoria: 'Soft skills',   descripcion: 'Colaboración, comunicación y resolución de conflictos.' },
           ]).map((c) => (
-            <Link
-              key={c.slug}
-              href="/register"
-              style={{
-                display: 'flex', flexDirection: 'column', gap: 10,
-                background: '#fff', border: '1.5px solid #ccfbf1',
-                borderRadius: 16, padding: '18px 16px',
-                textDecoration: 'none', transition: 'box-shadow 0.15s, border-color 0.15s',
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(10,148,133,0.12)'; (e.currentTarget as HTMLElement).style.borderColor = '#5eead4'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = ''; (e.currentTarget as HTMLElement).style.borderColor = '#ccfbf1'; }}
-            >
-              <div style={{ fontSize: 32, lineHeight: 1 }}>{c.icono ?? '📚'}</div>
+            <Link key={c.slug} href="/register" className={s.capacitateCard}>
+              <div className={s.capacitateIcon}>{c.icono ?? '📚'}</div>
               <div>
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#0f172a', margin: 0, lineHeight: 1.3 }}>{c.titulo}</p>
-                <p style={{ fontSize: 11, color: '#0A9485', fontWeight: 600, margin: '4px 0 6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{c.categoria}</p>
+                <p className={s.capacitateTitle}>{c.titulo}</p>
+                <p className={s.capacitateCategoria}>{c.categoria}</p>
                 {c.descripcion && (
-                  <p style={{ fontSize: 12, color: '#64748b', margin: 0, lineHeight: 1.5 }}>
+                  <p className={s.capacitateDesc}>
                     {c.descripcion.length > 70 ? c.descripcion.slice(0, 70) + '…' : c.descripcion}
                   </p>
                 )}
               </div>
-              <div style={{ marginTop: 'auto', paddingTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 11, background: '#f0fdf9', color: '#0A9485', border: '1px solid #ccfbf1', borderRadius: 20, padding: '3px 10px', fontWeight: 600 }}>
-                  ✓ Certificado
-                </span>
-                <span style={{ fontSize: 11, color: '#94a3b8' }}>Gratis</span>
+              <div className={s.capacitateFoot}>
+                <span className={s.capacitateBadge}>✓ Certificado</span>
+                <span className={s.capacitateGratis}>Gratis</span>
               </div>
             </Link>
           ))}

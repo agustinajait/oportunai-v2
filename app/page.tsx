@@ -97,7 +97,7 @@ export default async function LandingPage() {
       orderBy: { orden: 'asc' },
       select: { slug: true, titulo: true, icono: true, categoria: true, descripcion: true },
       take: 6,
-    }),
+    }).catch(() => [] as { slug: string; titulo: string; icono: string | null; categoria: string; descripcion: string }[]),
   ]);
 
   const totalOfertas = ofertasActivas.length;

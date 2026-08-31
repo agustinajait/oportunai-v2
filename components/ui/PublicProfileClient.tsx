@@ -53,6 +53,12 @@ interface UsuarioPublico {
   linkedin_url?: string | null;
   instagram_url?: string | null;
   sitio_web?: string | null;
+  capacitate_progreso?: Array<{
+    puntaje_final: number | null;
+    aprobada_en: string | null;
+    competencias_ok: unknown;
+    contenido: { titulo: string; icono: string | null; categoria: string; slug: string };
+  }>;
 }
 
 const DOCS_LABELS: Record<string, string> = {
@@ -313,6 +319,40 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
             </div>
           );
         })()}
+
+        {/* ── CAPACITACIONES APROBADAS ──────────────────────────── */}
+        {usuario.capacitate_progreso && usuario.capacitate_progreso.length > 0 && (
+          <div className="card p-5 border border-teal-100 bg-gradient-to-br from-teal-50/40 to-white">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-lg">🎓</span>
+              <div>
+                <h2 className="font-semibold text-ink-800 text-sm leading-tight">Capacitaciones aprobadas</h2>
+                <p className="text-[10px] text-ink-400">{usuario.capacitate_progreso.length} {usuario.capacitate_progreso.length === 1 ? 'certificación obtenida' : 'certificaciones obtenidas'}</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {usuario.capacitate_progreso.map((p, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 bg-white border border-teal-100 rounded-xl px-3 py-2 shadow-sm"
+                >
+                  {p.contenido.icono && (
+                    <span className="text-base leading-none">{p.contenido.icono}</span>
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-ink-800 leading-tight truncate max-w-[140px]">
+                      {p.contenido.titulo}
+                    </p>
+                    {p.puntaje_final != null && (
+                      <p className="text-[10px] text-teal-600 font-medium">{p.puntaje_final}% · Aprobada</p>
+                    )}
+                  </div>
+                  <Star size={12} className="text-teal-500 fill-teal-500 flex-shrink-0 ml-1" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── VIDEO PLAYER ──────────────────────────────────────── */}
         <div className="card overflow-hidden">

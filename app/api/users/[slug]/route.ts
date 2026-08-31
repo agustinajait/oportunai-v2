@@ -34,6 +34,18 @@ export async function GET(
         orderBy: { fecha_validada: 'desc' },
         select: { id: true, empresa_nombre: true, referidor_nombre: true, referidor_cargo: true, referidor_email: true, mensaje: true, fecha_validada: true },
       },
+      capacitate_progreso: {
+        where: { estado: 'aprobada' },
+        orderBy: { aprobada_en: 'desc' },
+        select: {
+          puntaje_final: true,
+          aprobada_en: true,
+          competencias_ok: true,
+          contenido: {
+            select: { titulo: true, icono: true, categoria: true, slug: true },
+          },
+        },
+      },
     },
   });
 

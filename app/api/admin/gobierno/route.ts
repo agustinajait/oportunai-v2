@@ -54,6 +54,71 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
   }
 
+  // ── Capacitaciones: datos por curso y competencias ────────
+  const progresosAprobados = await prisma.capacitateProgreso.findMany({
+    where: { estado: 'aprobada' },
+    select: {
+      puntaje_final: true,
+      competencias_ok: true,
+      contenido: {
+        select: { titulo: true, icono: true, categoria: true, slug: true },
+      },
+    },
+  });
+
+  const cursoMap: Record<string, {
+    titulo: string; icono: string | null; categoria: string; slug: string;
+    total: number; puntajeSum: number; puntajeCount: number;
+  }> = {};
+  const competenciasMap: Record<string, number> = {};
+
+  for (const p of progresosAprobados) {
+    const slug = p.contenido.slug;
+    if (!cursoMap[slug]) {
+      cursoMap[slug] = {
+        titulo: p.contenido.titulo,
+        icono: p.contenido.icono,
+        categoria: p.contenido.categoria,
+        slug,
+        total: 0,
+        puntajeSum: 0,
+        puntajeCount: 0,
+      };
+    }
+    cursoMap[slug].total++;
+    if (p.puntaje_final != null) {
+      cursoMap[slug].puntajeSum += p.puntaje_final;
+      cursoMap[slug].puntajeCount++;
+    }
+    // competencias_ok es JSONB — puede ser string[] o Record<string, bool>
+    const comps = p.competencias_ok;
+    if (Array.isArray(comps)) {
+      for (const c of comps) {
+        if (typeof c === 'string' && c.trim())
+          competenciasMap[c.trim()] = (competenciasMap[c.trim()] ?? 0) + 1;
+      }
+    } else if (comps && typeof comps === 'object') {
+      for (const [k, v] of Object.entries(comps as Record<string, unknown>)) {
+        if (v && k.trim())
+          competenciasMap[k.trim()] = (competenciasMap[k.trim()] ?? 0) + 1;
+      }
+    }
+  }
+
+  const topCursos = Object.values(cursoMap)
+    .map(c => ({
+      slug: c.slug, titulo: c.titulo, icono: c.icono, categoria: c.categoria,
+      total: c.total,
+      puntaje_promedio: c.puntajeCount > 0 ? Math.round(c.puntajeSum / c.puntajeCount) : null,
+    }))
+    .sort((a, b) => b.total - a.total);
+
+  const topCompetencias = Object.entries(competenciasMap)
+    .sort((a, b) => b[1] - a[1]).slice(0, 20)
+    .map(([nombre, total]) => ({ nombre, total }));
+
+  const totalProgresosEnCurso = await prisma.capacitateProgreso.count({ where: { estado: 'en_progreso' } });
+
   // Traemos TODO de una vez para evitar el bug de Prisma con JSON nullable
   const todosLosUsuarios = await prisma.usuario.findMany({
     where: { role: 'user' },
@@ -416,5 +481,12 @@ export async function GET(req: NextRequest) {
     },
     porBarrio,
     voces: vocesOrdenadas,
+    capacitacionesData: {
+      totalAprobadas:    progresosAprobados.length,
+      enCurso:           totalProgresosEnCurso,
+      totalCursos:       topCursos.length,
+      topCursos,
+      topCompetencias,
+    },
   });
 }

@@ -23,6 +23,11 @@ interface DimStat {
   total: number; pct_rojo: number; pct_amarillo: number; pct_verde: number;
 }
 
+interface CursoStat {
+  slug: string; titulo: string; icono: string | null; categoria: string;
+  total: number; puntaje_promedio: number | null;
+}
+
 interface GobData {
   kpis: {
     total_usuarios: number; con_diagnostico: number; whatsapp_activo: number;
@@ -67,6 +72,11 @@ interface GobData {
   }>;
   porBarrio: { barrio: string; total: number; rojo: number; amarillo: number; pct_rojo: number; topRubros?: string[] }[];
   voces: { barrio: string; texto: string; fecha: string }[];
+  capacitacionesData: {
+    totalAprobadas: number; enCurso: number; totalCursos: number;
+    topCursos: CursoStat[];
+    topCompetencias: { nombre: string; total: number }[];
+  };
 }
 
 interface Candidato {
@@ -508,7 +518,7 @@ export default function GobiernoClient() {
     kpis, estadoGeneral, rankingCriticidad, estadisticasSociales,
     detallePorDimension,
     perfilFormativo, alfabetizacionDigital, actividadPlataforma,
-    porBarrio, voces,
+    porBarrio, voces, capacitacionesData,
   } = data;
   const totalConDiag = kpis.con_diagnostico;
   const areasCriticas = rankingCriticidad.filter(d => d.pct_rojo >= 20);
@@ -847,6 +857,92 @@ export default function GobiernoClient() {
             <div className="text-xs text-ink-500">
               <span className="font-semibold text-ink-800">{actividadPlataforma?.conReferencia ?? 0}</span> personas con referencias laborales
             </div>
+          </div>
+        </div>
+
+        {/* ── Capacitaciones realizadas ───────────────────── */}
+        <div className="card p-6">
+          <h2 className="text-sm font-semibold text-ink-800 mb-5 flex items-center gap-2">
+            🎓 Capacitaciones realizadas
+          </h2>
+
+          {/* KPIs rápidos */}
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="bg-teal-50 border border-teal-100 rounded-xl p-4 text-center">
+              <p className="text-2xl font-extrabold text-teal-700">{capacitacionesData?.totalAprobadas ?? 0}</p>
+              <p className="text-[11px] font-semibold text-teal-500 uppercase tracking-wide mt-0.5">Aprobadas</p>
+            </div>
+            <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-center">
+              <p className="text-2xl font-extrabold text-amber-700">{capacitacionesData?.enCurso ?? 0}</p>
+              <p className="text-[11px] font-semibold text-amber-500 uppercase tracking-wide mt-0.5">En curso</p>
+            </div>
+            <div className="bg-brand-50 border border-brand-100 rounded-xl p-4 text-center">
+              <p className="text-2xl font-extrabold text-brand-700">{capacitacionesData?.totalCursos ?? 0}</p>
+              <p className="text-[11px] font-semibold text-brand-500 uppercase tracking-wide mt-0.5">Cursos distintos</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+
+            {/* Top cursos */}
+            <div>
+              <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">Cursos más completados</p>
+              {(capacitacionesData?.topCursos.length ?? 0) === 0 ? (
+                <p className="text-xs text-ink-300 italic">Todavía no hay capacitaciones aprobadas</p>
+              ) : (
+                <div className="space-y-2.5">
+                  {capacitacionesData!.topCursos.slice(0, 8).map((c, i) => {
+                    const maxTotal = capacitacionesData!.topCursos[0]?.total ?? 1;
+                    const w = Math.round((c.total / maxTotal) * 100);
+                    return (
+                      <div key={c.slug} className="flex items-center gap-2.5">
+                        <span className="text-xs font-bold text-ink-200 w-4 flex-shrink-0">#{i + 1}</span>
+                        {c.icono && <span className="text-sm flex-shrink-0">{c.icono}</span>}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className="text-xs font-medium text-ink-800 truncate flex-1" title={c.titulo}>{c.titulo}</span>
+                            <span className="text-xs font-semibold text-teal-700 flex-shrink-0">{c.total}</span>
+                          </div>
+                          <div className="h-2 bg-teal-50 rounded-full overflow-hidden">
+                            <div className="h-full bg-teal-400 rounded-full transition-all duration-500" style={{ width: `${w}%` }} />
+                          </div>
+                          {c.puntaje_promedio !== null && (
+                            <p className="text-[10px] text-ink-400 mt-0.5">Puntaje promedio: <span className="font-semibold text-ink-600">{c.puntaje_promedio}%</span></p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Competencias más desarrolladas */}
+            <div>
+              <p className="text-[11px] font-bold text-ink-500 uppercase tracking-wide mb-3">Competencias más desarrolladas</p>
+              {(capacitacionesData?.topCompetencias.length ?? 0) === 0 ? (
+                <p className="text-xs text-ink-300 italic">Disponible cuando los candidatos completen capacitaciones</p>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">
+                  {capacitacionesData!.topCompetencias.map((comp) => {
+                    const max = capacitacionesData!.topCompetencias[0]?.total ?? 1;
+                    const opacity = 0.4 + (comp.total / max) * 0.6;
+                    return (
+                      <span
+                        key={comp.nombre}
+                        className="inline-flex items-center gap-1.5 text-[11px] bg-teal-50 text-teal-800 border border-teal-200 rounded-full px-2.5 py-1 font-medium"
+                        style={{ opacity }}
+                        title={`${comp.total} personas`}
+                      >
+                        {comp.nombre}
+                        <span className="text-[10px] text-teal-500 font-bold">{comp.total}</span>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
 

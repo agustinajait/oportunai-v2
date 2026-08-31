@@ -230,8 +230,8 @@ export default async function LandingPage() {
             { n: '1', numBg: '#5B3FE0', icoBg: 'rgba(91,63,224,0.10)',  icoColor: '#5B3FE0', Icon: User,     t: 'Creá tu perfil',                        d: 'Completá tus datos, experiencia y habilidades.' },
             { n: '2', numBg: '#EF4444', icoBg: 'rgba(239,68,68,0.10)',  icoColor: '#EF4444', Icon: Video,    t: 'Grabá tu VideoCV',                      d: 'Presentate con nuestra herramienta de VideoCV en 4 pasos.' },
             { n: '3', numBg: '#22C55E', icoBg: 'rgba(34,197,94,0.10)',  icoColor: '#22C55E', Icon: FileText, t: 'Generá tu CV para ATS',                 d: 'Obtené un CV optimizado para plataformas de búsqueda de empleo.' },
-            { n: '4', numBg: '#3B82F6', icoBg: 'rgba(59,130,246,0.10)', icoColor: '#3B82F6', Icon: Target,   t: 'Conocé tu situación',                   d: 'Realizá un diagnóstico en áreas clave para iniciar tu camino laboral.' },
-            { n: '5', numBg: '#F97316', icoBg: 'rgba(249,115,22,0.10)', icoColor: '#F97316', Icon: Heart,    t: 'Recibí oportunidades y acompañamiento', d: 'Accedé a herramientas, recursos y oportunidades personalizadas para tu búsqueda laboral.' },
+            { n: '4', numBg: '#3B82F6', icoBg: 'rgba(59,130,246,0.10)', icoColor: '#3B82F6', Icon: Target,   t: 'Conocé tu situación',                   d: 'Realizá un diagnóstico en áreas clave para iniciar tu camino a la inserción laboral.' },
+            { n: '5', numBg: '#F97316', icoBg: 'rgba(249,115,22,0.10)', icoColor: '#F97316', Icon: Heart,    t: 'Recibí oportunidades y acompañamiento', d: 'Accedé a herramientas, recursos y oportunidades personalizadas para tu búsqueda o tu reskilling.' },
           ] as const).flatMap((step, i, arr) => [
             <div key={step.n} className={`${s.stepNew} sr-up sr-d${i + 1}`}>
               <div className={s.stepNewNum} style={{ background: step.numBg }}>{step.n}</div>

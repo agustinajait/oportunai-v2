@@ -92,6 +92,7 @@ interface Props {
 
 export default function PublicProfileClient({ usuario, tipo }: Props) {
   const [showContact, setShowContact] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
   const [shareState, setShareState] = useState<'idle' | 'copied' | 'shared'>('idle');
   const [downloading, setDownloading] = useState(false);
 
@@ -237,22 +238,40 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                 {usuario.bio ?? <span className="text-ink-300 italic">Sin bio todavía.</span>}
               </p>
 
-              {/* Quick info: edad y ciudad si disponibles */}
+              {/* Quick info: edad, ciudad + botón contacto */}
               {(() => {
                 const edad = calcularEdad(usuario.fecha_nacimiento);
                 const ciudad = extraerCiudad(usuario.direccion);
-                if (!edad && !ciudad) return null;
                 return (
-                  <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-ink-100">
-                    {edad && (
-                      <span className="text-xs text-ink-500 flex items-center gap-1">
-                        <Calendar size={11} className="text-ink-300" /> {edad} años
-                      </span>
+                  <div className="mt-3 pt-3 border-t border-ink-100 space-y-2.5">
+                    {(edad || ciudad) && (
+                      <div className="flex flex-wrap gap-3">
+                        {edad && (
+                          <span className="text-xs text-ink-500 flex items-center gap-1">
+                            <Calendar size={11} className="text-ink-300" /> {edad} años
+                          </span>
+                        )}
+                        {ciudad && (
+                          <span className="text-xs text-ink-500 flex items-center gap-1">
+                            <MapPin size={11} className="text-ink-300" /> {ciudad}
+                          </span>
+                        )}
+                      </div>
                     )}
-                    {ciudad && (
-                      <span className="text-xs text-ink-500 flex items-center gap-1">
-                        <MapPin size={11} className="text-ink-300" /> {ciudad}
-                      </span>
+                    <button
+                      onClick={() => setShowContactModal(true)}
+                      className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold bg-brand-600 hover:bg-brand-700 text-white transition-colors active:scale-95"
+                    >
+                      <Phone size={13} /> Ver contacto
+                    </button>
+                    {archivo && (
+                      <a
+                        href={`/api/cv/public/${usuario.slug}`}
+                        download
+                        className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium bg-white border border-ink-200 hover:bg-ink-50 text-ink-700 transition-colors"
+                      >
+                        <Download size={13} /> Descargar CV
+                      </a>
                     )}
                   </div>
                 );
@@ -731,6 +750,126 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
           <Link href="/" className="text-brand-400 hover:text-brand-500 transition-colors">Oportunai</Link>
         </p>
       </main>
+
+      {/* ── MODAL DE CONTACTO ─────────────────────────────────── */}
+      {showContactModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}
+          onClick={() => setShowContactModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden animate-fade-in"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header del modal */}
+            <div className={`h-1.5 w-full ${isCv ? 'bg-brand-500' : 'bg-emerald-500'}`} />
+            <div className="px-5 py-4 flex items-center justify-between border-b border-ink-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center font-bold text-sm text-white flex-shrink-0"
+                  style={{ background: usuario.foto_url ? 'transparent' : 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
+                  {usuario.foto_url
+                    ? <img src={usuario.foto_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : usuario.nombre_completo.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
+                  }
+                </div>
+                <div>
+                  <p className="font-semibold text-ink-900 text-sm leading-tight">{usuario.nombre_completo}</p>
+                  <p className="text-[11px] text-ink-400">Datos de contacto</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowContactModal(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-ink-400 hover:text-ink-700 hover:bg-ink-100 transition-colors text-lg leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Datos */}
+            <div className="px-5 py-4 space-y-3">
+              {usuario.telefono && (
+                <a href={`tel:${usuario.telefono}`}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-ink-50 hover:bg-brand-50 hover:text-brand-700 text-ink-700 transition-colors group"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-brand-100 flex items-center justify-center flex-shrink-0">
+                    <Phone size={14} className="text-brand-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-ink-400 uppercase tracking-wide font-medium">Teléfono</p>
+                    <p className="text-sm font-semibold text-ink-800 group-hover:text-brand-700">{usuario.telefono}</p>
+                  </div>
+                </a>
+              )}
+              {usuario.email && (
+                <a href={`mailto:${usuario.email}`}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-ink-50 hover:bg-brand-50 hover:text-brand-700 text-ink-700 transition-colors group"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-brand-100 flex items-center justify-center flex-shrink-0">
+                    <Mail size={14} className="text-brand-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-ink-400 uppercase tracking-wide font-medium">Email</p>
+                    <p className="text-sm font-semibold text-ink-800 truncate group-hover:text-brand-700">{usuario.email}</p>
+                  </div>
+                </a>
+              )}
+              {usuario.direccion && (
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-ink-50">
+                  <div className="w-8 h-8 rounded-lg bg-ink-100 flex items-center justify-center flex-shrink-0">
+                    <MapPin size={14} className="text-ink-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-ink-400 uppercase tracking-wide font-medium">Ubicación</p>
+                    <p className="text-sm text-ink-700 leading-snug">{usuario.direccion}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Redes sociales */}
+              {(usuario.linkedin_url || usuario.instagram_url || usuario.sitio_web) && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {usuario.linkedin_url && (
+                    <a href={usuario.linkedin_url.startsWith('http') ? usuario.linkedin_url : `https://${usuario.linkedin_url}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-xs text-blue-600 bg-blue-50 border border-blue-100 hover:bg-blue-100 px-3 py-1.5 rounded-full transition-colors"
+                    >
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                      LinkedIn
+                    </a>
+                  )}
+                  {usuario.instagram_url && (
+                    <a href={usuario.instagram_url.startsWith('http') ? usuario.instagram_url : `https://instagram.com/${usuario.instagram_url.replace('@', '')}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-xs text-pink-600 bg-pink-50 border border-pink-100 hover:bg-pink-100 px-3 py-1.5 rounded-full transition-colors"
+                    >
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                      Instagram
+                    </a>
+                  )}
+                  {usuario.sitio_web && (
+                    <a href={usuario.sitio_web.startsWith('http') ? usuario.sitio_web : `https://${usuario.sitio_web}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-xs text-ink-600 bg-ink-50 border border-ink-200 hover:bg-ink-100 px-3 py-1.5 rounded-full transition-colors"
+                    >
+                      🌐 Sitio web
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="px-5 pb-5">
+              <button
+                onClick={() => setShowContactModal(false)}
+                className="w-full py-2.5 rounded-xl text-sm font-medium bg-ink-100 hover:bg-ink-200 text-ink-700 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

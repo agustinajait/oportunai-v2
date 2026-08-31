@@ -477,6 +477,7 @@ export default async function LandingPage() {
             </p>
           </div>
           <Link href="/register" className={s.verMas} style={{ color: '#0A9485', borderColor: '#0A9485' }}>Ver todos →</Link>
+          {/* "Ver todos" podría apuntar a /capacitate cuando haya listado público */}
         </div>
 
         <div className={s.capacitateGrid}>
@@ -488,7 +489,7 @@ export default async function LandingPage() {
             { slug: 'entrevista',       titulo: 'Entrevista Laboral',  icono: '🎯', categoria: 'Empleabilidad', descripcion: 'Preparate para responder con confianza y claridad.' },
             { slug: 'trabajo-equipo',   titulo: 'Trabajo en Equipo',   icono: '👥', categoria: 'Soft skills',   descripcion: 'Colaboración, comunicación y resolución de conflictos.' },
           ]).map((c) => (
-            <Link key={c.slug} href="/register" className={s.capacitateCard}>
+            <Link key={c.slug} href={`/capacitate/${c.slug}`} className={s.capacitateCard}>
               <div className={s.capacitateIcon}>{c.icono ?? '📚'}</div>
               <div>
                 <p className={s.capacitateTitle}>{c.titulo}</p>

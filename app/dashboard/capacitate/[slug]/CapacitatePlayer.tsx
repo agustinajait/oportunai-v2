@@ -409,6 +409,7 @@ function ResultadoFinal({
 export default function CapacitatePlayer({ contenido, modulos, progresoInicial }: Props) {
   const router = useRouter();
   const [moduloIdx, setModuloIdx]   = useState(progresoInicial.modulo_actual);
+  const [started, setStarted]       = useState(progresoInicial.estado !== 'no_iniciada');
   const [feedback, setFeedback]     = useState<{ correcta: boolean; texto: string } | null>(null);
   const [cargando, setCargando]     = useState(false);
   const [resultado, setResultado]   = useState<{
@@ -474,7 +475,7 @@ export default function CapacitatePlayer({ contenido, modulos, progresoInicial }
   }
 
   // ── Pantalla de intro (antes de empezar) ─────────────────────────────────
-  if (moduloIdx === 0 && progresoInicial.estado === 'no_iniciada' && !feedback) {
+  if (!started) {
     return (
       <div className="min-h-screen bg-ink-50 flex flex-col">
         <header className="bg-white border-b border-gray-100 px-4 py-4 flex items-center gap-3">
@@ -521,7 +522,7 @@ export default function CapacitatePlayer({ contenido, modulos, progresoInicial }
               </div>
             </div>
             <button
-              onClick={() => setModuloIdx(0)}
+              onClick={() => setStarted(true)}
               className="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3.5 rounded-xl transition-colors"
             >
               Comenzar capacitación →

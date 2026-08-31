@@ -190,11 +190,13 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-5">
 
-        {/* ── HEADER CARD ───────────────────────────────────────── */}
-        <div className="card p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl flex-shrink-0 overflow-hidden flex items-center justify-center font-bold text-xl text-white flex-shrink-0"
+        {/* ── HERO: HEADER + VIDEO (lado a lado en desktop) ─────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_260px] gap-4 items-start">
+
+          {/* Izquierda: foto + nombre + bio */}
+          <div className="card p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-14 h-14 rounded-2xl flex-shrink-0 overflow-hidden flex items-center justify-center font-bold text-lg text-white"
                 style={{ background: usuario.foto_url ? 'transparent' : 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
                 {usuario.foto_url
                   ? <img src={usuario.foto_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -202,12 +204,12 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                 }
               </div>
               <div className="min-w-0">
-                <h1 className="font-display text-2xl font-semibold text-ink-900 leading-tight truncate">
+                <h1 className="font-display text-xl font-semibold text-ink-900 leading-tight">
                   {usuario.nombre_completo}
                 </h1>
-                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                   <span className={`badge ${accentClass.badge} flex items-center gap-1`}>
-                    {isCv ? <Video size={11} /> : <Mic size={11} />}
+                    {isCv ? <Video size={10} /> : <Mic size={10} />}
                     {isCv ? 'Video CV' : 'Video Pitch'}
                   </span>
                   {usuario.alfa_digital && (
@@ -218,26 +220,101 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                   )}
                   {(usuario.referencias?.length ?? 0) > 0 && (
                     <span className="badge bg-amber-100 text-amber-700 flex items-center gap-1">
-                      <Star size={11} fill="currentColor" />
-                      {usuario.referencias!.length} {usuario.referencias!.length === 1 ? 'referencia' : 'referencias'} verificadas
+                      <Star size={10} fill="currentColor" />
+                      {usuario.referencias!.length} ref.
                     </span>
                   )}
                 </div>
               </div>
             </div>
+            <p className="text-ink-600 text-sm leading-relaxed border-t border-ink-100 pt-3">
+              {usuario.bio ?? <span className="text-ink-300 italic">Sin bio todavía.</span>}
+            </p>
           </div>
 
-          {/* Bio */}
-          {usuario.bio ? (
-            <p className="mt-4 text-ink-600 text-sm leading-relaxed border-t border-ink-100 pt-4">
-              {usuario.bio}
-            </p>
-          ) : (
-            <p className="mt-4 text-ink-300 text-sm italic border-t border-ink-100 pt-4">
-              Este usuario aún no agregó una bio.
-            </p>
-          )}
+          {/* Derecha: video compacto */}
+          <div className="card overflow-hidden">
+            <div className="px-4 pt-3 pb-2 flex items-center gap-1.5">
+              {isCv ? <Video size={14} className={accentClass.icon} /> : <Mic size={14} className={accentClass.icon} />}
+              <p className="text-xs font-semibold text-ink-700">
+                {isCv ? `Video CV` : `Video Pitch`}
+              </p>
+            </div>
+            {video ? (
+              <video
+                src={video.video_url}
+                controls
+                preload="metadata"
+                playsInline
+                className="w-full aspect-video bg-black"
+              />
+            ) : (
+              <div className="mx-3 mb-3 rounded-xl bg-ink-900 aspect-video flex flex-col items-center justify-center gap-2">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${accentClass.ring}`}>
+                  {isCv
+                    ? <Video size={20} className="text-brand-400 opacity-60" />
+                    : <Mic   size={20} className="text-emerald-400 opacity-60" />}
+                </div>
+                <p className="text-white/40 text-xs">Video no disponible</p>
+              </div>
+            )}
+            {video && (
+              <div className="px-3 py-2.5 flex gap-2 border-t border-ink-100">
+                <button
+                  onClick={handleShare}
+                  className={`flex-1 inline-flex items-center justify-center gap-1.5 py-2 rounded-lg font-medium text-xs transition-all active:scale-95 ${
+                    shareState !== 'idle' ? 'bg-emerald-600 text-white' : 'bg-ink-800 hover:bg-ink-700 text-white'
+                  }`}
+                >
+                  {shareState !== 'idle' ? <><Check size={12} /> ¡Listo!</> : <><Share2 size={12} /> Compartir</>}
+                </button>
+                <button
+                  onClick={handleDownloadVideo}
+                  disabled={downloading}
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 rounded-lg font-medium text-xs bg-white border border-ink-200 hover:bg-ink-50 text-ink-700 transition-all active:scale-95 disabled:opacity-60"
+                >
+                  {downloading
+                    ? <><span className="w-3 h-3 rounded-full border-2 border-ink-400 border-t-transparent animate-spin" /> Descargando</>
+                    : <><FileVideo size={12} /> Descargar</>}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* ── CAPACITACIONES APROBADAS ──────────────────────────── */}
+        {usuario.capacitate_progreso && usuario.capacitate_progreso.length > 0 && (
+          <div className="card p-5 border border-teal-100 bg-gradient-to-br from-teal-50/40 to-white">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-lg">🎓</span>
+              <div>
+                <h2 className="font-semibold text-ink-800 text-sm leading-tight">Capacitaciones aprobadas</h2>
+                <p className="text-[10px] text-ink-400">{usuario.capacitate_progreso.length} {usuario.capacitate_progreso.length === 1 ? 'certificación obtenida' : 'certificaciones obtenidas'}</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {usuario.capacitate_progreso.map((p, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 bg-white border border-teal-100 rounded-xl px-3 py-2 shadow-sm"
+                >
+                  {p.contenido.icono && (
+                    <span className="text-base leading-none">{p.contenido.icono}</span>
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-ink-800 leading-tight truncate max-w-[140px]">
+                      {p.contenido.titulo}
+                    </p>
+                    {p.puntaje_final != null && (
+                      <p className="text-[10px] text-teal-600 font-medium">{p.puntaje_final}% · Aprobada</p>
+                    )}
+                  </div>
+                  <Star size={12} className="text-teal-500 fill-teal-500 flex-shrink-0 ml-1" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── SEMÁFORO KORAI ────────────────────────────────────── */}
         {(() => {
@@ -319,121 +396,6 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
             </div>
           );
         })()}
-
-        {/* ── CAPACITACIONES APROBADAS ──────────────────────────── */}
-        {usuario.capacitate_progreso && usuario.capacitate_progreso.length > 0 && (
-          <div className="card p-5 border border-teal-100 bg-gradient-to-br from-teal-50/40 to-white">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-lg">🎓</span>
-              <div>
-                <h2 className="font-semibold text-ink-800 text-sm leading-tight">Capacitaciones aprobadas</h2>
-                <p className="text-[10px] text-ink-400">{usuario.capacitate_progreso.length} {usuario.capacitate_progreso.length === 1 ? 'certificación obtenida' : 'certificaciones obtenidas'}</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {usuario.capacitate_progreso.map((p, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-2 bg-white border border-teal-100 rounded-xl px-3 py-2 shadow-sm"
-                >
-                  {p.contenido.icono && (
-                    <span className="text-base leading-none">{p.contenido.icono}</span>
-                  )}
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-ink-800 leading-tight truncate max-w-[140px]">
-                      {p.contenido.titulo}
-                    </p>
-                    {p.puntaje_final != null && (
-                      <p className="text-[10px] text-teal-600 font-medium">{p.puntaje_final}% · Aprobada</p>
-                    )}
-                  </div>
-                  <Star size={12} className="text-teal-500 fill-teal-500 flex-shrink-0 ml-1" />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── VIDEO PLAYER ──────────────────────────────────────── */}
-        <div className="card overflow-hidden">
-          {/* Header */}
-          <div className="px-6 pt-5 pb-4 flex items-center gap-2">
-            {isCv
-              ? <Video size={18} className={accentClass.icon} />
-              : <Mic   size={18} className={accentClass.icon} />}
-            <h2 className="font-display text-lg font-semibold text-ink-800">
-              {isCv ? `Video CV de ${firstName}` : `Video Pitch de ${firstName}`}
-            </h2>
-          </div>
-
-          {/* Player */}
-          {video ? (
-            <video
-              src={video.video_url}
-              controls
-              preload="metadata"
-              playsInline
-              className="w-full aspect-video bg-black"
-            />
-          ) : (
-            <div className="mx-6 mb-6 rounded-xl bg-ink-900 aspect-video flex flex-col items-center justify-center gap-3">
-              <div className={`w-14 h-14 rounded-full flex items-center justify-center ${accentClass.ring}`}>
-                {isCv
-                  ? <Video size={28} className="text-brand-400 opacity-60" />
-                  : <Mic   size={28} className="text-emerald-400 opacity-60" />}
-              </div>
-              <p className="text-white/40 text-sm">El video aún no está disponible</p>
-            </div>
-          )}
-
-          {/* ── ACTION BAR below the video ──────────────────────── */}
-          {video && (
-            <div className="px-4 py-4 flex flex-wrap gap-3 border-t border-ink-100">
-
-              {/* Share — native on mobile, clipboard on desktop */}
-              <button
-                onClick={handleShare}
-                className={`flex-1 min-w-[120px] inline-flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm transition-all active:scale-95 ${
-                  shareState === 'idle'
-                    ? 'bg-ink-800 hover:bg-ink-700 text-white'
-                    : shareState === 'copied'
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-brand-600 text-white'
-                }`}
-              >
-                {shareState === 'copied' ? (
-                  <><Check size={16} /> Link copiado</>
-                ) : shareState === 'shared' ? (
-                  <><Check size={16} /> ¡Compartido!</>
-                ) : (
-                  <><Share2 size={16} /> Compartir perfil</>
-                )}
-              </button>
-
-              {/* Download video */}
-              <button
-                onClick={handleDownloadVideo}
-                disabled={downloading}
-                className="flex-1 min-w-[120px] inline-flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm bg-white border border-ink-200 hover:bg-ink-50 text-ink-700 transition-all active:scale-95 disabled:opacity-60"
-              >
-                {downloading ? (
-                  <><span className="w-4 h-4 rounded-full border-2 border-ink-400 border-t-transparent animate-spin" />Descargando...</>
-                ) : (
-                  <><FileVideo size={16} /> Descargar video</>
-                )}
-              </button>
-
-              {/* Copy link — always visible as a third option */}
-              <button
-                onClick={fallbackCopy}
-                title="Copiar link"
-                className="w-11 h-11 rounded-xl bg-white border border-ink-200 hover:bg-ink-50 text-ink-500 flex items-center justify-center transition-all active:scale-95 flex-shrink-0"
-              >
-                {shareState === 'copied' ? <Check size={16} className="text-emerald-600" /> : <Link2 size={16} />}
-              </button>
-            </div>
-          )}
-        </div>
 
         {/* ── CONTACT + CV FILE ─────────────────────────────────── */}
         <div className="grid sm:grid-cols-2 gap-4">

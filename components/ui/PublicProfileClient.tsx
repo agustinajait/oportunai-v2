@@ -190,14 +190,15 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-5">
 
-        {/* ── HERO: HEADER + VIDEO (lado a lado en desktop) ─────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-[1fr_256px] gap-4 items-stretch">
+        {/* ── HERO: una sola card con info + video integrado ──────── */}
+        <div className="card border border-ink-150 shadow-sm overflow-hidden">
+          {/* Franja de color */}
+          <div className={`h-1.5 w-full ${isCv ? 'bg-brand-500' : 'bg-emerald-500'}`} />
 
-          {/* Izquierda: foto + nombre + bio */}
-          <div className="card border border-ink-150 shadow-sm flex flex-col overflow-hidden">
-            {/* Franja de color superior */}
-            <div className={`h-1.5 w-full ${isCv ? 'bg-brand-500' : 'bg-emerald-500'}`} />
-            <div className="p-5 flex flex-col flex-1">
+          <div className="flex flex-col sm:flex-row">
+
+            {/* Izquierda: foto + nombre + bio */}
+            <div className="flex-1 min-w-0 p-5">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-14 h-14 rounded-2xl flex-shrink-0 overflow-hidden flex items-center justify-center font-bold text-lg text-white ring-2 ring-white shadow"
                   style={{ background: usuario.foto_url ? 'transparent' : 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
@@ -230,60 +231,87 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                   </div>
                 </div>
               </div>
-              <p className="text-ink-600 text-sm leading-relaxed border-t border-ink-100 pt-3 flex-1">
+
+              {/* Bio */}
+              <p className="text-ink-600 text-sm leading-relaxed">
                 {usuario.bio ?? <span className="text-ink-300 italic">Sin bio todavía.</span>}
               </p>
-            </div>
-          </div>
 
-          {/* Derecha: video compacto */}
-          <div className="card border border-ink-150 shadow-sm overflow-hidden flex flex-col">
-            <div className={`h-1.5 w-full ${isCv ? 'bg-brand-500' : 'bg-emerald-500'}`} />
-            <div className="px-4 pt-3 pb-2 flex items-center gap-1.5">
-              {isCv ? <Video size={13} className={accentClass.icon} /> : <Mic size={13} className={accentClass.icon} />}
-              <p className="text-xs font-semibold text-ink-700">
-                {isCv ? 'Video CV' : 'Video Pitch'}
-              </p>
+              {/* Quick info: edad y ciudad si disponibles */}
+              {(() => {
+                const edad = calcularEdad(usuario.fecha_nacimiento);
+                const ciudad = extraerCiudad(usuario.direccion);
+                if (!edad && !ciudad) return null;
+                return (
+                  <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-ink-100">
+                    {edad && (
+                      <span className="text-xs text-ink-500 flex items-center gap-1">
+                        <Calendar size={11} className="text-ink-300" /> {edad} años
+                      </span>
+                    )}
+                    {ciudad && (
+                      <span className="text-xs text-ink-500 flex items-center gap-1">
+                        <MapPin size={11} className="text-ink-300" /> {ciudad}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
-            {video ? (
-              <video
-                src={video.video_url}
-                controls
-                preload="metadata"
-                playsInline
-                className="w-full aspect-video bg-black"
-              />
-            ) : (
-              <div className="mx-3 mb-3 rounded-xl bg-ink-900 aspect-video flex flex-col items-center justify-center gap-2 flex-1">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${accentClass.ring}`}>
-                  {isCv
-                    ? <Video size={20} className="text-brand-400 opacity-60" />
-                    : <Mic   size={20} className="text-emerald-400 opacity-60" />}
+
+            {/* Divisor vertical (desktop) / horizontal (mobile) */}
+            <div className="hidden sm:block w-px bg-ink-100 my-4 flex-shrink-0" />
+            <div className="sm:hidden h-px bg-ink-100 mx-5" />
+
+            {/* Derecha: video compacto */}
+            <div className="sm:w-60 flex flex-col flex-shrink-0">
+              <div className="px-4 pt-3 pb-1.5 flex items-center gap-1.5">
+                {isCv ? <Video size={12} className={accentClass.icon} /> : <Mic size={12} className={accentClass.icon} />}
+                <p className="text-xs font-semibold text-ink-600">
+                  {isCv ? 'Video CV' : 'Video Pitch'}
+                </p>
+              </div>
+              {video ? (
+                <video
+                  src={video.video_url}
+                  controls
+                  preload="metadata"
+                  playsInline
+                  className="w-full aspect-video bg-black"
+                />
+              ) : (
+                <div className="mx-3 mb-3 rounded-xl bg-ink-900 aspect-video flex flex-col items-center justify-center gap-2">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${accentClass.ring}`}>
+                    {isCv
+                      ? <Video size={20} className="text-brand-400 opacity-60" />
+                      : <Mic   size={20} className="text-emerald-400 opacity-60" />}
+                  </div>
+                  <p className="text-white/40 text-xs">Sin video</p>
                 </div>
-                <p className="text-white/40 text-xs">Video no disponible</p>
-              </div>
-            )}
-            {video && (
-              <div className="px-3 py-2.5 flex gap-2 border-t border-ink-100 mt-auto">
-                <button
-                  onClick={handleShare}
-                  className={`flex-1 inline-flex items-center justify-center gap-1.5 py-2 rounded-lg font-medium text-xs transition-all active:scale-95 ${
-                    shareState !== 'idle' ? 'bg-emerald-600 text-white' : 'bg-ink-800 hover:bg-ink-700 text-white'
-                  }`}
-                >
-                  {shareState !== 'idle' ? <><Check size={12} /> ¡Listo!</> : <><Share2 size={12} /> Compartir</>}
-                </button>
-                <button
-                  onClick={handleDownloadVideo}
-                  disabled={downloading}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 rounded-lg font-medium text-xs bg-white border border-ink-200 hover:bg-ink-50 text-ink-700 transition-all active:scale-95 disabled:opacity-60"
-                >
-                  {downloading
-                    ? <><span className="w-3 h-3 rounded-full border-2 border-ink-400 border-t-transparent animate-spin" /> Descargando</>
-                    : <><FileVideo size={12} /> Descargar</>}
-                </button>
-              </div>
-            )}
+              )}
+              {video && (
+                <div className="px-3 py-2.5 flex gap-2 border-t border-ink-100 mt-auto">
+                  <button
+                    onClick={handleShare}
+                    className={`flex-1 inline-flex items-center justify-center gap-1.5 py-2 rounded-lg font-medium text-xs transition-all active:scale-95 ${
+                      shareState !== 'idle' ? 'bg-emerald-600 text-white' : 'bg-ink-800 hover:bg-ink-700 text-white'
+                    }`}
+                  >
+                    {shareState !== 'idle' ? <><Check size={12} /> ¡Listo!</> : <><Share2 size={12} /> Compartir</>}
+                  </button>
+                  <button
+                    onClick={handleDownloadVideo}
+                    disabled={downloading}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 rounded-lg font-medium text-xs bg-white border border-ink-200 hover:bg-ink-50 text-ink-700 transition-all active:scale-95 disabled:opacity-60"
+                  >
+                    {downloading
+                      ? <><span className="w-3 h-3 rounded-full border-2 border-ink-400 border-t-transparent animate-spin" /> ...</>
+                      : <><FileVideo size={12} /> Descargar</>}
+                  </button>
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
 

@@ -191,53 +191,58 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-5">
 
         {/* ── HERO: HEADER + VIDEO (lado a lado en desktop) ─────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-[1fr_260px] gap-4 items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_256px] gap-4 items-stretch">
 
           {/* Izquierda: foto + nombre + bio */}
-          <div className="card p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-14 h-14 rounded-2xl flex-shrink-0 overflow-hidden flex items-center justify-center font-bold text-lg text-white"
-                style={{ background: usuario.foto_url ? 'transparent' : 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
-                {usuario.foto_url
-                  ? <img src={usuario.foto_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : usuario.nombre_completo.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
-                }
-              </div>
-              <div className="min-w-0">
-                <h1 className="font-display text-xl font-semibold text-ink-900 leading-tight">
-                  {usuario.nombre_completo}
-                </h1>
-                <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                  <span className={`badge ${accentClass.badge} flex items-center gap-1`}>
-                    {isCv ? <Video size={10} /> : <Mic size={10} />}
-                    {isCv ? 'Video CV' : 'Video Pitch'}
-                  </span>
-                  {usuario.alfa_digital && (
-                    <span className="badge bg-purple-100 text-purple-700 flex items-center gap-1">
-                      {usuario.alfa_digital === 'Perfil nativo digital' ? '🚀' : usuario.alfa_digital === 'Usuario digital activo' ? '⚡' : '🌱'}
-                      {usuario.alfa_digital}
+          <div className="card border border-ink-150 shadow-sm flex flex-col overflow-hidden">
+            {/* Franja de color superior */}
+            <div className={`h-1.5 w-full ${isCv ? 'bg-brand-500' : 'bg-emerald-500'}`} />
+            <div className="p-5 flex flex-col flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-14 h-14 rounded-2xl flex-shrink-0 overflow-hidden flex items-center justify-center font-bold text-lg text-white ring-2 ring-white shadow"
+                  style={{ background: usuario.foto_url ? 'transparent' : 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
+                  {usuario.foto_url
+                    ? <img src={usuario.foto_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : usuario.nombre_completo.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
+                  }
+                </div>
+                <div className="min-w-0">
+                  <h1 className="font-display text-xl font-semibold text-ink-900 leading-tight">
+                    {usuario.nombre_completo}
+                  </h1>
+                  <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                    <span className={`badge ${accentClass.badge} flex items-center gap-1`}>
+                      {isCv ? <Video size={10} /> : <Mic size={10} />}
+                      {isCv ? 'Video CV' : 'Video Pitch'}
                     </span>
-                  )}
-                  {(usuario.referencias?.length ?? 0) > 0 && (
-                    <span className="badge bg-amber-100 text-amber-700 flex items-center gap-1">
-                      <Star size={10} fill="currentColor" />
-                      {usuario.referencias!.length} ref.
-                    </span>
-                  )}
+                    {usuario.alfa_digital && (
+                      <span className="badge bg-purple-100 text-purple-700 flex items-center gap-1">
+                        {usuario.alfa_digital === 'Perfil nativo digital' ? '🚀' : usuario.alfa_digital === 'Usuario digital activo' ? '⚡' : '🌱'}
+                        {usuario.alfa_digital}
+                      </span>
+                    )}
+                    {(usuario.referencias?.length ?? 0) > 0 && (
+                      <span className="badge bg-amber-100 text-amber-700 flex items-center gap-1">
+                        <Star size={10} fill="currentColor" />
+                        {usuario.referencias!.length} ref.
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
+              <p className="text-ink-600 text-sm leading-relaxed border-t border-ink-100 pt-3 flex-1">
+                {usuario.bio ?? <span className="text-ink-300 italic">Sin bio todavía.</span>}
+              </p>
             </div>
-            <p className="text-ink-600 text-sm leading-relaxed border-t border-ink-100 pt-3">
-              {usuario.bio ?? <span className="text-ink-300 italic">Sin bio todavía.</span>}
-            </p>
           </div>
 
           {/* Derecha: video compacto */}
-          <div className="card overflow-hidden">
+          <div className="card border border-ink-150 shadow-sm overflow-hidden flex flex-col">
+            <div className={`h-1.5 w-full ${isCv ? 'bg-brand-500' : 'bg-emerald-500'}`} />
             <div className="px-4 pt-3 pb-2 flex items-center gap-1.5">
-              {isCv ? <Video size={14} className={accentClass.icon} /> : <Mic size={14} className={accentClass.icon} />}
+              {isCv ? <Video size={13} className={accentClass.icon} /> : <Mic size={13} className={accentClass.icon} />}
               <p className="text-xs font-semibold text-ink-700">
-                {isCv ? `Video CV` : `Video Pitch`}
+                {isCv ? 'Video CV' : 'Video Pitch'}
               </p>
             </div>
             {video ? (
@@ -249,7 +254,7 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                 className="w-full aspect-video bg-black"
               />
             ) : (
-              <div className="mx-3 mb-3 rounded-xl bg-ink-900 aspect-video flex flex-col items-center justify-center gap-2">
+              <div className="mx-3 mb-3 rounded-xl bg-ink-900 aspect-video flex flex-col items-center justify-center gap-2 flex-1">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${accentClass.ring}`}>
                   {isCv
                     ? <Video size={20} className="text-brand-400 opacity-60" />
@@ -259,7 +264,7 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
               </div>
             )}
             {video && (
-              <div className="px-3 py-2.5 flex gap-2 border-t border-ink-100">
+              <div className="px-3 py-2.5 flex gap-2 border-t border-ink-100 mt-auto">
                 <button
                   onClick={handleShare}
                   className={`flex-1 inline-flex items-center justify-center gap-1.5 py-2 rounded-lg font-medium text-xs transition-all active:scale-95 ${
@@ -284,34 +289,37 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
 
         {/* ── CAPACITACIONES APROBADAS ──────────────────────────── */}
         {usuario.capacitate_progreso && usuario.capacitate_progreso.length > 0 && (
-          <div className="card p-5 border border-teal-100 bg-gradient-to-br from-teal-50/40 to-white">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-lg">🎓</span>
-              <div>
-                <h2 className="font-semibold text-ink-800 text-sm leading-tight">Capacitaciones aprobadas</h2>
-                <p className="text-[10px] text-ink-400">{usuario.capacitate_progreso.length} {usuario.capacitate_progreso.length === 1 ? 'certificación obtenida' : 'certificaciones obtenidas'}</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {usuario.capacitate_progreso.map((p, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-2 bg-white border border-teal-100 rounded-xl px-3 py-2 shadow-sm"
-                >
-                  {p.contenido.icono && (
-                    <span className="text-base leading-none">{p.contenido.icono}</span>
-                  )}
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-ink-800 leading-tight truncate max-w-[140px]">
-                      {p.contenido.titulo}
-                    </p>
-                    {p.puntaje_final != null && (
-                      <p className="text-[10px] text-teal-600 font-medium">{p.puntaje_final}% · Aprobada</p>
-                    )}
-                  </div>
-                  <Star size={12} className="text-teal-500 fill-teal-500 flex-shrink-0 ml-1" />
+          <div className="card border border-teal-200 shadow-sm overflow-hidden">
+            <div className="h-1.5 w-full bg-gradient-to-r from-teal-400 to-teal-600" />
+            <div className="p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">🎓</span>
+                <div>
+                  <h2 className="font-semibold text-ink-800 text-sm leading-tight">Capacitaciones aprobadas</h2>
+                  <p className="text-[10px] text-ink-400">{usuario.capacitate_progreso.length} {usuario.capacitate_progreso.length === 1 ? 'certificación obtenida' : 'certificaciones obtenidas'}</p>
                 </div>
-              ))}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {usuario.capacitate_progreso.map((p, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 bg-teal-50 border border-teal-200 rounded-xl px-3 py-2"
+                  >
+                    {p.contenido.icono && (
+                      <span className="text-base leading-none">{p.contenido.icono}</span>
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-teal-900 leading-tight truncate max-w-[140px]">
+                        {p.contenido.titulo}
+                      </p>
+                      {p.puntaje_final != null && (
+                        <p className="text-[10px] text-teal-600 font-medium">{p.puntaje_final}% · Aprobada</p>
+                      )}
+                    </div>
+                    <Star size={11} className="text-teal-500 fill-teal-500 flex-shrink-0 ml-0.5" />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -347,7 +355,9 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
           const amarillas = DIMS.filter(d => sem![d.key] === 'amarillo');
 
           return (
-            <div className="card p-5 border border-amber-100 bg-gradient-to-br from-amber-50/40 to-white">
+            <div className="card border border-amber-200 shadow-sm overflow-hidden">
+              <div className="h-1.5 w-full bg-gradient-to-r from-amber-400 to-orange-400" />
+              <div className="p-5">
               <div className="flex items-center justify-between gap-2 mb-4">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🚦</span>
@@ -393,6 +403,7 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                   🌟 <span className="font-semibold">Situación estable</span> en todas las dimensiones.
                 </p>
               )}
+              </div>
             </div>
           );
         })()}
@@ -401,7 +412,7 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
         <div className="grid sm:grid-cols-2 gap-4">
 
           {/* Contact */}
-          <div className="card p-5">
+          <div className="card border border-ink-150 shadow-sm p-5">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-medium text-ink-800 text-sm">Contacto</h3>
               <button
@@ -498,7 +509,7 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
             || (cv?.educacion?.length ?? 0) > 0 || (cv?.habilidades?.length ?? 0) > 0
             || (cv?.idiomas?.length ?? 0) > 0;
           return (
-            <div className="card p-5 space-y-4">
+            <div className="card border border-ink-150 shadow-sm p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-ink-800 flex items-center gap-2">
                   <Briefcase size={15} className="text-brand-500" />

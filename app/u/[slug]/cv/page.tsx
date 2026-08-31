@@ -65,6 +65,18 @@ export default async function VideoCVPage({ params }: Props) {
         select: { tipo: true, file_url: true },
       },
       korai_semaforo: true,
+      capacitate_progreso: {
+        where: { estado: 'aprobada' },
+        orderBy: { aprobada_en: 'desc' },
+        select: {
+          puntaje_final: true,
+          aprobada_en: true,
+          competencias_ok: true,
+          contenido: {
+            select: { titulo: true, icono: true, categoria: true, slug: true },
+          },
+        },
+      },
     },
   });
 

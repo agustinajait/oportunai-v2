@@ -53,6 +53,18 @@ export default async function VideoPitchPage({ params }: Props) {
         orderBy: { created_at: 'desc' },
         take: 1,
       },
+      capacitate_progreso: {
+        where: { estado: 'aprobada' },
+        orderBy: { aprobada_en: 'desc' },
+        select: {
+          puntaje_final: true,
+          aprobada_en: true,
+          competencias_ok: true,
+          contenido: {
+            select: { titulo: true, icono: true, categoria: true, slug: true },
+          },
+        },
+      },
     },
   });
 

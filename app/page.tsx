@@ -41,18 +41,18 @@ const SECTORES: Sector[] = [
     keys:  ['atencion', 'atención', 'call center', 'recepcion', 'recepción', 'vendedor', 'customer', 'telefonista', 'operador'],
   },
   {
-    label: 'Comidas rápidas',
-    desc:  'Cocina, atención, caja',
+    label: 'Gastronomía',
+    desc:  'Restaurantes, cafeterías, cocina, caja',
     Icon:  UtensilsCrossed,
     href:  '/ofertas',
-    keys:  ['gastronomia', 'gastronomía', 'comida', 'restaurant', 'cocina', 'food', 'hamburgue', 'pizza'],
+    keys:  ['gastronomia', 'gastronomía', 'comida', 'restaurant', 'cafeteria', 'cafetería', 'cocina', 'food', 'hamburgue', 'pizza', 'mozo', 'barman'],
   },
 ];
 
 const TALLER_ICONS = [
   { bg: '#ECE9FB', color: '#5B3FE0', rubro: 'Estación de servicio',  Icon: Fuel },
   { bg: '#E3FAF4', color: '#0E9C82', rubro: 'Atención al cliente',   Icon: Headphones },
-  { bg: '#FFF3E8', color: '#D97706', rubro: 'Comidas rápidas',        Icon: UtensilsCrossed },
+  { bg: '#FFF3E8', color: '#D97706', rubro: 'Gastronomía',            Icon: UtensilsCrossed },
 ];
 
 const GALLERY_SLOTS = [
@@ -68,7 +68,7 @@ const GALLERY_SLOTS = [
 const CAP_FALLBACK = [
   { bg: '#ECE9FB', color: '#5B3FE0', rubro: 'Estación de servicio',  titulo: 'Atención al cliente en la playa',   dur: '8 min',  emp: 'YPF',           Icon: Fuel },
   { bg: '#E3FAF4', color: '#0E9C82', rubro: 'Atención al cliente',   titulo: 'Cómo atender bien al cliente',     dur: '10 min', emp: 'Empresa local',  Icon: Headphones },
-  { bg: '#FFF3E8', color: '#D97706', rubro: 'Comidas rápidas',        titulo: 'Atención y manejo de caja',        dur: '10 min', emp: 'Empresa local',  Icon: UtensilsCrossed },
+  { bg: '#FFF3E8', color: '#D97706', rubro: 'Gastronomía',            titulo: 'Atención y manejo de caja',        dur: '10 min', emp: 'Empresa local',  Icon: UtensilsCrossed },
 ];
 
 function countSector(ofertas: { area: string | null; titulo: string }[], keys: string[]) {

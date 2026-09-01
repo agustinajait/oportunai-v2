@@ -186,6 +186,14 @@ export default function PreDiagnostico({ onContinuar }: Props) {
           {guardando ? 'Guardando...' : '🎥 Grabar mi Video CV →'}
         </button>
 
+        <button
+          type="button"
+          onClick={onContinuar}
+          className="w-full text-sm text-gray-400 hover:text-gray-600 py-2 transition-colors"
+        >
+          Hacerlo en otro momento →
+        </button>
+
         <p className="text-center text-xs text-gray-400">
           Esta info nos ayuda a personalizar tu acompañamiento
         </p>

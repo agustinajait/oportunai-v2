@@ -30,6 +30,11 @@ export default async function OnboardingPage() {
 
   const cvDatos = (usuario.cv_datos as Record<string, unknown>) ?? {};
 
+  // Solo marcar como "diagnóstico hecho" si Korai completó las 6 dimensiones.
+  // PreDiagnostico solo guarda empleo/educacion/ingresos — no alcanza para dar el check.
+  const semaforo = usuario.korai_semaforo as Record<string, unknown> | null;
+  const tieneDiagnostico = !!(semaforo?.salud || semaforo?.vivienda || semaforo?.red);
+
   return (
     <OnboardingClient
       nombre={usuario.nombre_completo}
@@ -37,7 +42,7 @@ export default async function OnboardingPage() {
       fotoInicial={usuario.foto_url ?? ''}
       areaLaboral={(cvDatos.area_laboral as string) ?? ''}
       tieneVideo={usuario.grabaciones_cv > 0}
-      tieneDiagnostico={!!usuario.korai_semaforo}
+      tieneDiagnostico={tieneDiagnostico}
       tieneWhatsapp={usuario.korai_opt_in}
     />
   );

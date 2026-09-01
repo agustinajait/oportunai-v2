@@ -1419,7 +1419,10 @@ export default function DashboardClient({
               {(() => {
                 const sem = usuario.korai_semaforo ?? null;
                 const DIMS_SEMAFORO = ['empleo','educacion','ingresos','salud','vivienda','red'] as const;
-                const tieneDiag = sem && DIMS_SEMAFORO.some(d => sem[d]);
+                // Solo contar como diagnóstico completo si Korai llenó sus dimensiones
+                // exclusivas (salud / vivienda / red). El PreDiagnostico solo guarda
+                // empleo + educacion + ingresos, que no alcanzan para dar el check.
+                const tieneDiag = sem && (['salud','vivienda','red'] as const).some(d => sem[d]);
 
                 const DIMS = [
                   { key: 'empleo' as const,    label: 'Empleo',    icon: '💼' },
@@ -1495,6 +1498,13 @@ export default function DashboardClient({
                           🚦 Hacer el diagnóstico →
                         </a>
                         <p className="text-[10px] text-ink-300 text-center">Gratis · 5 minutos · tus datos ya están cargados</p>
+                        <a
+                          href="/dashboard"
+                          className="text-[10px] text-ink-300 hover:text-ink-500 text-center block transition-colors"
+                          style={{ textDecoration: 'none' }}
+                        >
+                          Hacerlo en otro momento
+                        </a>
                       </div>
                     ) : (
                       /* Con diagnóstico → semáforo + plan */

@@ -409,7 +409,7 @@ function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVi
 
 export default function OnboardingClient(props: Props) {
   return (
-    <Suspense>
+    <Suspense fallback={<div className="min-h-screen bg-ink-50" />}>
       <OnboardingInner {...props} />
     </Suspense>
   );

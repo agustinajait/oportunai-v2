@@ -8,17 +8,17 @@ const CTA_URL = 'https://oportunai.korai.lat/register-empresa?origen=mentores';
 const CAP_URL = 'https://oportunai.korai.lat/capacitate';
 
 const CURSOS = [
-  { icon: '⛽', titulo: 'Playero de Estación de Servicio', desc: 'Procedimientos de atención, seguridad y operación de una estación de servicio.' },
-  { icon: '💬', titulo: 'Atención al Cliente',            desc: 'Cómo escuchar, comunicarse con claridad y resolver situaciones difíciles.' },
-  { icon: '🛢️', titulo: 'Lubricentro Básico',            desc: 'Cambio de aceite, filtros y revisión de fluidos — lo esencial para arrancar.' },
-  { icon: '🧾', titulo: 'Cajero/a de Comercio',           desc: 'Manejo de caja, cobros, cierres de turno y atención en punto de venta.' },
+  { icon: '⛽', titulo: 'Vendedor de Playa EES',          desc: 'Atención en playa de combustibles: procedimientos, seguridad y trato al cliente en la estación.' },
+  { icon: '🏪', titulo: 'Vendedor de Tienda',             desc: 'Atención en minimarket y tienda: ventas, stock, reposición y caja en punto de venta.' },
+  { icon: '🛢️', titulo: 'Especialista en Lubricentro',   desc: 'Cambio de aceite, filtros y revisión de fluidos — formación técnica para el lubricentro.' },
+  { icon: '💬', titulo: 'Atención al Cliente',            desc: 'Cómo escuchar, comunicarse con claridad y resolver situaciones difíciles con clientes.' },
   { icon: '🛡️', titulo: 'Seguridad en EES',              desc: 'Normas de seguridad, prevención de accidentes y qué hacer en una emergencia.' },
-  { icon: '🏪', titulo: 'Minimarket y Stock',             desc: 'Gestión de productos, reposición e inventario en el local de la estación.' },
+  { icon: '🧾', titulo: 'Cajero/a de Comercio',           desc: 'Manejo de caja, cobros, cierres de turno y atención en punto de venta.' },
 ];
 
 const PUESTOS = [
-  'Playero / Despachador', 'Cajero/a', 'Supervisor de turno',
-  'Lubricentro', 'Lavado de autos', 'Minimarket', 'Seguridad nocturna', 'Encargado de patio',
+  'Vendedor de playa', 'Vendedor de tienda', 'Especialista de lubricentro',
+  'Cajero/a', 'Supervisor de turno', 'Lavado de autos', 'Seguridad nocturna', 'Encargado de patio',
 ];
 
 function Stripe() {
@@ -85,7 +85,7 @@ export default function MentoresPage() {
           <div className={s.benefitsGrid}>
             {[
               { icon: '🎥', title: 'Ves quién es antes de llamarlo',  body: 'Cada candidato graba una presentación en video. Sin sorpresas en la entrevista, sin CV que no dicen nada.' },
-              { icon: '⛽', title: 'Solo del rubro EES',              body: 'Playeros, cajeros, lubricentro. Gente que ya sabe lo que es pararse en una estación, no hay que explicarle todo desde cero.' },
+              { icon: '⛽', title: 'Solo del rubro EES',              body: 'Vendedores de playa y tienda, especialistas en lubricentro. Gente que ya sabe lo que es una estación, no hay que explicarle todo desde cero.' },
               { icon: '📋', title: 'Llegan con el curso hecho',       body: 'Antes de que los conozcas, el candidato ya se capacitó en los procedimientos del rubro. Entrás a elegir, no a enseñar.' },
               { icon: '🔧', title: 'Sin intermediarios',              body: 'Publicás el puesto, recibís candidatos, contratás. Sin consultoras que cobran por candidato ni formularios interminables.' },
             ].map(({ icon, title, body }) => (
@@ -165,7 +165,7 @@ export default function MentoresPage() {
       {/* CTA final */}
       <div className={s.ctaSection}>
         <div className={s.container}>
-          <h2 className={poppins.className}>Tu próximo playero<br />está en Mentor EES.</h2>
+          <h2 className={poppins.className}>El equipo de tu estación<br />está en Mentor EES.</h2>
           <p>Registrás la estación hoy. Esta semana ya tenés candidatos con video y certificado.</p>
           <a href={CTA_URL} className={s.ctaBig}>Sumar mi estación →</a>
         </div>

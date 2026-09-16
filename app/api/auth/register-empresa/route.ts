@@ -7,7 +7,7 @@ import bcrypt from 'bcryptjs';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { nombre_completo, email, password, nombre_empresa, rubro, ciudad } = body;
+    const { nombre_completo, email, password, nombre_empresa, rubro, ciudad, origen } = body;
 
     if (!nombre_completo || !email || !password || !nombre_empresa) {
       return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 });
@@ -40,8 +40,9 @@ export async function POST(req: NextRequest) {
       data: {
         nombre: nombre_empresa,
         slug,
-        rubro: rubro || null,
+        rubro:  rubro  || null,
         ciudad: ciudad || null,
+        origen: origen || null,
         miembros: {
           create: {
             usuario_id: usuario.id,

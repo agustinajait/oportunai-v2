@@ -1,10 +1,12 @@
 'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function RegisterEmpresaPage() {
+function RegisterEmpresaForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const origen = searchParams.get('origen') ?? undefined;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [form, setForm] = useState({
@@ -27,7 +29,7 @@ export default function RegisterEmpresaPage() {
       const res = await fetch('/api/auth/register-empresa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, origen }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al registrar');
@@ -142,5 +144,13 @@ export default function RegisterEmpresaPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function RegisterEmpresaPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+      <RegisterEmpresaForm />
+    </Suspense>
   );
 }

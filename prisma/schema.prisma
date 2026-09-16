@@ -199,6 +199,7 @@ model Empresa {
   color_primario      String?
   fuente              String?
   mensaje_bienvenida  String?
+  origen              String?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 

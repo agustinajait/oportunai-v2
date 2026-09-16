@@ -5,13 +5,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 
 interface Props {
-  nombre:           string;
-  bioInicial:       string;
-  fotoInicial:      string;
-  areaLaboral:      string;
-  tieneVideo:       boolean;
-  tieneDiagnostico: boolean;
-  tieneWhatsapp:    boolean;
+  nombre:             string;
+  bioInicial:         string;
+  fotoInicial:        string;
+  areaLaboral:        string;
+  tieneVideo:         boolean;
+  tieneDiagnostico:   boolean;
+  tieneWhatsapp:      boolean;
+  saltearDiagnostico?: boolean;
 }
 
 const AREAS = [
@@ -19,7 +20,7 @@ const AREAS = [
   'Logística', 'Administración', 'Tecnología', 'Salud', 'Educación', 'Otro',
 ];
 
-function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVideo, tieneDiagnostico, tieneWhatsapp }: Props) {
+function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVideo, tieneDiagnostico, tieneWhatsapp, saltearDiagnostico }: Props) {
   const router       = useRouter();
   const searchParams = useSearchParams();
 
@@ -260,7 +261,7 @@ function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVi
                   ← Atrás
                 </button>
                 <button
-                  onClick={() => setStep(3)}
+                  onClick={() => setStep(saltearDiagnostico ? 4 : 3)}
                   className="flex-2 flex-1 bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-xl transition-colors"
                 >
                   {videoOk ? 'Continuar →' : 'Hacer después →'}
@@ -385,7 +386,7 @@ function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVi
 
               <div className="flex gap-3">
                 <button
-                  onClick={() => setStep(3)}
+                  onClick={() => setStep(saltearDiagnostico ? 2 : 3)}
                   className="flex-1 border border-gray-200 text-gray-600 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm"
                 >
                   ← Atrás

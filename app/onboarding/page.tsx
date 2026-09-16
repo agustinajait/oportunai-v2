@@ -35,6 +35,16 @@ export default async function OnboardingPage() {
   const semaforo = usuario.korai_semaforo as Record<string, unknown> | null;
   const tieneDiagnostico = !!(semaforo?.salud || semaforo?.vivienda || semaforo?.red);
 
+  // Saltear paso 3 (diagnóstico Korai) si el candidato se postuló a una empresa Mentores
+  const postulacionMentores = await prisma.postulacion.findFirst({
+    where: {
+      usuario_id: session.userId,
+      oferta: { empresa: { origen: 'mentores' } },
+    },
+    select: { id: true },
+  });
+  const saltearDiagnostico = !!postulacionMentores;
+
   return (
     <OnboardingClient
       nombre={usuario.nombre_completo}
@@ -44,6 +54,7 @@ export default async function OnboardingPage() {
       tieneVideo={usuario.grabaciones_cv > 0}
       tieneDiagnostico={tieneDiagnostico}
       tieneWhatsapp={usuario.korai_opt_in}
+      saltearDiagnostico={saltearDiagnostico}
     />
   );
 }

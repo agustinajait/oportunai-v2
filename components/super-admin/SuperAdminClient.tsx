@@ -657,6 +657,18 @@ export default function SuperAdminClient({
         {/* ── TAB: EMPRESAS ──────────────────────────────────────────── */}
         {tab === 'empresas' && (
           <div className="space-y-3">
+            {/* Filtro rápido por origen */}
+            {empresas.some(e => e.origen) && (
+              <div className="flex flex-wrap gap-2 text-xs text-ink-500 pb-1">
+                <span className="font-semibold">Por origen:</span>
+                {Array.from(new Set(empresas.map(e => e.origen).filter(Boolean))).map(orig => (
+                  <span key={orig} className="bg-violet-50 text-violet-700 border border-violet-200 rounded-full px-2 py-0.5 font-semibold">
+                    {orig} — {empresas.filter(e => e.origen === orig).length}
+                  </span>
+                ))}
+              </div>
+            )}
+
             {empresas.length === 0 && (
               <div className="card p-12 text-center">
                 <Building2 size={36} className="mx-auto mb-3 text-ink-300" />
@@ -673,9 +685,14 @@ export default function SuperAdminClient({
                       <Building2 size={18} className="text-amber-600" />
                     </div>
                     <div className="text-left">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-semibold text-ink-800">{e.nombre}</p>
                         {!e.activa && <span className="badge bg-red-100 text-red-600 text-xs">Inactiva</span>}
+                        {e.origen && (
+                          <span className="text-[10px] font-semibold bg-violet-100 text-violet-700 border border-violet-200 rounded-full px-2 py-0.5">
+                            {e.origen}
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs text-ink-400">
                         {[e.rubro, e.ciudad].filter(Boolean).join(' · ')}

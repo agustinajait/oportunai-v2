@@ -87,12 +87,6 @@ export default function MentoresPage() {
           <h2 className={`${s.sectionTitle} ${poppins.className}`}>Tecnología con historia,<br />enfocada en tu sector.</h2>
           <div className={s.trustGrid}>
             <div className={s.trustCard}>
-              <div className={`${s.trustIcon} ${s.teal}`}>🤝</div>
-              <h3 className={poppins.className}>Impulsada por la ONG CAII</h3>
-              <p>Mentor EES es una iniciativa de OportunAI, desarrollada por la ONG CAII para generar más oportunidades de empleo de calidad en el sector de estaciones de servicio.</p>
-              <p>Ayudamos a estaciones a seleccionar mejor, mientras capacitamos a los candidatos del rubro.</p>
-            </div>
-            <div className={s.trustCard}>
               <div className={`${s.trustIcon} ${s.blue2}`}>🎥</div>
               <h3 className={poppins.className}>+10 años transformando la selección</h3>
               <p>OportunAI cuenta con el respaldo de Tu VideoCV, la startup argentina pionera en la incorporación del Video CV en procesos de selección.</p>

@@ -52,8 +52,15 @@
 /* ── Hero ── */
 .hero { background: var(--dark); padding: 80px 24px 88px; text-align: center; }
 .heroEyebrow {
-  font-size: 0.82rem; font-weight: 700;
-  letter-spacing: 0.2em; text-transform: uppercase; color: var(--cyan); margin-bottom: 20px;
+  display: inline-block;
+  font-size: 0.78rem; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--cyan);
+  border: 1px solid rgba(0,182,216,.35); border-radius: 20px; padding: 5px 14px;
+  margin-bottom: 28px;
+}
+.heroTagline {
+  font-size: clamp(1rem, 2.5vw, 1.2rem); font-weight: 600;
+  color: rgba(255,255,255,.55); margin-bottom: 28px;
 }
 .heroH1 {
   font-weight: 900;
@@ -88,6 +95,31 @@
   flex-wrap: wrap; margin-bottom: 32px;
 }
 .sectionHeader .sectionTitle { margin-bottom: 0; }
+
+/* ── Trust ── */
+.trust { background: var(--white); }
+.trustGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 56px; }
+.trustCard {
+  border: 1px solid var(--border); border-radius: 12px; padding: 28px 24px;
+}
+.trustIcon {
+  width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center;
+  justify-content: center; font-size: 1.3rem; margin-bottom: 16px;
+}
+.teal { background: #CCFBF1; }
+.blue2 { background: #DBEAFE; }
+.trustCard h3 { font-weight: 700; font-size: 1.05rem; color: var(--ink); margin-bottom: 12px; }
+.trustCard p { font-size: 0.9rem; color: var(--muted); line-height: 1.6; margin-top: 0; }
+.trustCard p + p { margin-top: 8px; }
+.brandsLabel {
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted); text-align: center; margin-bottom: 24px;
+}
+.brandsRow { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; }
+.brandChip {
+  font-weight: 700; font-size: 0.92rem; color: var(--muted);
+  border: 1.5px solid var(--border); border-radius: 6px; padding: 10px 20px; letter-spacing: 0.03em;
+}
 
 /* ── Benefits ── */
 .benefits { background: var(--white); }

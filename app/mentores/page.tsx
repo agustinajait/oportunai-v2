@@ -7,6 +7,8 @@ const dmSans  = DM_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700
 const CTA_URL = 'https://oportunai.korai.lat/register-empresa?origen=mentores';
 const CAP_URL = 'https://oportunai.korai.lat/capacitate';
 
+const BRANDS = ['McDonald\'s', 'Día', 'Blue Star Group', 'Grupo Cencosud', 'Frávega', 'Farmacity'];
+
 const CURSOS = [
   { icon: '⛽', titulo: 'Vendedor de Playa EES',          desc: 'Atención en playa de combustibles: procedimientos, seguridad y trato al cliente en la estación.' },
   { icon: '🏪', titulo: 'Vendedor de Tienda',             desc: 'Atención en minimarket y tienda: ventas, stock, reposición y caja en punto de venta.' },
@@ -65,16 +67,44 @@ export default function MentoresPage() {
 
       {/* Hero */}
       <div className={s.hero}>
-        <p className={`${s.heroEyebrow} ${poppins.className}`}>La primera plataforma de RRHH exclusiva para estaciones de servicio</p>
+        <span className={`${s.heroEyebrow} ${poppins.className}`}>Conectamos talento con estaciones de servicio</span>
         <h1 className={`${s.heroH1} ${poppins.className}`}>
-          8.000 estaciones en Argentina.<br /><em>Ninguna tenía esto.</em>
+          Conocé el talento real<br />de tu próximo candidato<br />antes de entrevistarlo.
         </h1>
+        <p className={`${s.heroTagline} ${poppins.className}`}>Perfiles, selección y capacitación para todo el sector.</p>
         <p className={s.heroSub}>
           Los candidatos de Mentor EES conocen el rubro, se capacitaron en los procedimientos de la estación y armaron su perfil con video. Vos llegás a elegir, no a explicar.
         </p>
         <a href={CTA_URL} className={s.heroCta}>Sumar mi estación →</a>
         <p className={s.heroNote}>Sin costo inicial · 2 minutos para empezar</p>
       </div>
+      <Stripe />
+
+      {/* Trust */}
+      <section className={`${s.section} ${s.trust}`}>
+        <div className={s.container}>
+          <p className={`${s.sectionLabel} ${poppins.className}`}>Quiénes somos</p>
+          <h2 className={`${s.sectionTitle} ${poppins.className}`}>Tecnología con historia,<br />enfocada en tu sector.</h2>
+          <div className={s.trustGrid}>
+            <div className={s.trustCard}>
+              <div className={`${s.trustIcon} ${s.teal}`}>🤝</div>
+              <h3 className={poppins.className}>Impulsada por la ONG CAII</h3>
+              <p>Mentor EES es una iniciativa de OportunAI, desarrollada por la ONG CAII para generar más oportunidades de empleo de calidad en el sector de estaciones de servicio.</p>
+              <p>Ayudamos a estaciones a seleccionar mejor, mientras capacitamos a los candidatos del rubro.</p>
+            </div>
+            <div className={s.trustCard}>
+              <div className={`${s.trustIcon} ${s.blue2}`}>🎥</div>
+              <h3 className={poppins.className}>+10 años transformando la selección</h3>
+              <p>OportunAI cuenta con el respaldo de Tu VideoCV, la startup argentina pionera en la incorporación del Video CV en procesos de selección.</p>
+              <p>Desde 2015 desarrollamos tecnología utilizada por grandes empresas. Hoy esa experiencia se pone al servicio del sector EES.</p>
+            </div>
+          </div>
+          <p className={`${s.brandsLabel} ${poppins.className}`}>Tecnología usada por</p>
+          <div className={s.brandsRow}>
+            {BRANDS.map(b => <span key={b} className={`${s.brandChip} ${poppins.className}`}>{b}</span>)}
+          </div>
+        </div>
+      </section>
       <Stripe />
 
       {/* Benefits */}

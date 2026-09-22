@@ -33,17 +33,27 @@ function Stripe() {
 
 function LogoMark() {
   return (
-    <svg className={s.logoMark} viewBox="0 0 80 80" fill="none" aria-hidden="true">
-      <circle cx="40" cy="40" r="36" fill="none" stroke="#E8188A" strokeWidth="8" strokeDasharray="56.5 56.5" strokeDashoffset="0"/>
-      <circle cx="40" cy="40" r="36" fill="none" stroke="#78C21E" strokeWidth="8" strokeDasharray="56.5 56.5" strokeDashoffset="-56.5"/>
-      <circle cx="40" cy="40" r="36" fill="none" stroke="#1A5AC8" strokeWidth="8" strokeDasharray="56.5 56.5" strokeDashoffset="-113"/>
-      <circle cx="40" cy="40" r="36" fill="none" stroke="#00B6D8" strokeWidth="8" strokeDasharray="56.5 56.5" strokeDashoffset="-169.5"/>
-      <circle cx="40" cy="40" r="27" fill="white"/>
-      <path d="M26 54V30c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2v10l3-3 2 2-4 4v11H26z" fill="#0E1117"/>
-      <rect x="29" y="33" width="12" height="7" rx="1" fill="white"/>
-      <circle cx="53" cy="29" r="2.5" fill="#0E1117"/>
-      <line x1="53" y1="31.5" x2="53" y2="34" stroke="#0E1117" strokeWidth="1.5"/>
-      <line x1="53" y1="34" x2="44" y2="34" stroke="#0E1117" strokeWidth="1.5"/>
+    <svg className={s.logoMark} viewBox="-6 -6 92 92" fill="none" aria-hidden="true">
+      {/* Energy spikes */}
+      <line x1="40" y1="7" x2="40" y2="1" stroke="#78C21E" strokeWidth="2.5" strokeLinecap="round" transform="rotate(8 40 40)"/>
+      <line x1="40" y1="7" x2="40" y2="1" stroke="#E8188A" strokeWidth="2.5" strokeLinecap="round" transform="rotate(-8 40 40)"/>
+      <line x1="40" y1="7" x2="40" y2="1" stroke="#1A5AC8" strokeWidth="2.5" strokeLinecap="round" transform="rotate(98 40 40)"/>
+      <line x1="40" y1="7" x2="40" y2="1" stroke="#E8188A" strokeWidth="2.5" strokeLinecap="round" transform="rotate(112 40 40)"/>
+      <line x1="40" y1="7" x2="40" y2="1" stroke="#00B6D8" strokeWidth="2.5" strokeLinecap="round" transform="rotate(188 40 40)"/>
+      <line x1="40" y1="7" x2="40" y2="1" stroke="#78C21E" strokeWidth="2.5" strokeLinecap="round" transform="rotate(268 40 40)"/>
+      <line x1="40" y1="7" x2="40" y2="1" stroke="#1A5AC8" strokeWidth="2.5" strokeLinecap="round" transform="rotate(282 40 40)"/>
+      <line x1="40" y1="7" x2="40" y2="1" stroke="#00B6D8" strokeWidth="2.5" strokeLinecap="round" transform="rotate(352 40 40)"/>
+      {/* 4-color ring */}
+      <circle cx="40" cy="40" r="30" fill="none" stroke="#E8188A" strokeWidth="7" strokeDasharray="47 47" strokeDashoffset="0"/>
+      <circle cx="40" cy="40" r="30" fill="none" stroke="#78C21E" strokeWidth="7" strokeDasharray="47 47" strokeDashoffset="-47"/>
+      <circle cx="40" cy="40" r="30" fill="none" stroke="#1A5AC8" strokeWidth="7" strokeDasharray="47 47" strokeDashoffset="-94"/>
+      <circle cx="40" cy="40" r="30" fill="none" stroke="#00B6D8" strokeWidth="7" strokeDasharray="47 47" strokeDashoffset="-141"/>
+      {/* White inner circle */}
+      <circle cx="40" cy="40" r="23" fill="white"/>
+      {/* Fuel nozzle */}
+      <path d="M24 60 L24 46 Q24 40 28 38 L58 26 Q61 25 61 22 L63 22 Q65 22 65 25 L65 27 Q65 30 62 31 L32 43 Q36 43 36 47 L36 60 Z" fill="#0E1117"/>
+      {/* Drop */}
+      <path d="M64 20 Q66 17 64 15 Q62 17 64 20 Z" fill="#0E1117"/>
     </svg>
   );
 }

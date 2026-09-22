@@ -35,15 +35,21 @@ export default async function OnboardingPage() {
   const semaforo = usuario.korai_semaforo as Record<string, unknown> | null;
   const tieneDiagnostico = !!(semaforo?.salud || semaforo?.vivienda || semaforo?.red);
 
-  // Saltear paso 3 (diagnóstico Korai) si el candidato se postuló a una empresa Mentores
-  const postulacionMentores = await prisma.postulacion.findFirst({
-    where: {
-      usuario_id: session.userId,
-      oferta: { empresa: { origen: 'mentores' } },
-    },
-    select: { id: true },
-  });
-  const saltearDiagnostico = !!postulacionMentores;
+  // Saltear paso 3 (diagnóstico Korai) si el candidato se postuló a una empresa Mentores.
+  // Wrapped en try/catch: si la columna origen aún no existe en la DB el onboarding sigue funcionando.
+  let saltearDiagnostico = false;
+  try {
+    const postulacionMentores = await prisma.postulacion.findFirst({
+      where: {
+        usuario_id: session.userId,
+        oferta: { empresa: { origen: 'mentores' } },
+      },
+      select: { id: true },
+    });
+    saltearDiagnostico = !!postulacionMentores;
+  } catch {
+    // origen column not yet in DB; default to false
+  }
 
   return (
     <OnboardingClient

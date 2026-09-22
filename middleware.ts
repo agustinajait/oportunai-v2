@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionFromRequest } from './lib/auth';
 
-const PUBLIC_ROUTES = ['/', '/login', '/register', '/register-empresa'];
+const PUBLIC_ROUTES = ['/', '/login', '/register', '/register-empresa', '/mentores'];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // Subdomain routing: mentores.* → /mentores
+  const host = req.headers.get('host') ?? '';
+  if (host.startsWith('mentores.')) {
+    const url = req.nextUrl.clone();
+    url.pathname = '/mentores';
+    return NextResponse.rewrite(url);
+  }
 
   if (pathname.startsWith('/u/')) return NextResponse.next();
   if (pathname.startsWith('/empresa/') && !pathname.startsWith('/empresa/dashboard')) return NextResponse.next();

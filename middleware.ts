@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionFromRequest } from './lib/auth';
 
-const PUBLIC_ROUTES = ['/', '/login', '/register', '/register-empresa', '/mentores'];
+const PUBLIC_ROUTES = ['/', '/login', '/register', '/register-empresa', '/mentoress'];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Subdomain routing: mentores.* → /mentores
   const host = req.headers.get('host') ?? '';
-  if (host.startsWith('mentores.')) {
+  if (host.startsWith('mentoress.')) {
     const url = req.nextUrl.clone();
-    url.pathname = '/mentores';
+    url.pathname = '/mentoress';
     return NextResponse.rewrite(url);
   }
 

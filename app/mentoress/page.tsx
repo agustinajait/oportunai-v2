@@ -9,7 +9,17 @@ const dmSans  = DM_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700
 const CTA_URL = 'https://oportunai.korai.lat/register-empresa?origen=mentores';
 const CAP_URL = 'https://oportunai.korai.lat/capacitate';
 
-const BRANDS = ['McDonald\'s', 'Día', 'Blue Star Group', 'Grupo Cencosud', 'Frávega', 'Farmacity'];
+const BRANDS = [
+  { name: "McDonald's",    domain: 'mcdonalds.com' },
+  { name: 'Starbucks',     domain: 'starbucks.com' },
+  { name: 'KFC',           domain: 'kfc.com' },
+  { name: "Wendy's",       domain: 'wendys.com' },
+  { name: 'Día',           domain: 'dia.com.ar' },
+  { name: 'Blue Star Group', domain: 'bluestargroup.com.ar' },
+  { name: 'Farmacity',     domain: 'farmacity.com' },
+  { name: 'Frávega',       domain: 'fravega.com' },
+  { name: 'Cencosud',      domain: 'cencosud.com' },
+];
 
 const MODULOS = [
   {
@@ -144,7 +154,15 @@ export default async function MentoresPage() {
           <div className={s.marqueeWrap} aria-label="Empresas que usaron nuestra tecnología">
             <div className={s.marqueeTrack}>
               {[...BRANDS, ...BRANDS].map((b, i) => (
-                <span key={i} className={`${s.brandChip} ${poppins.className}`}>{b}</span>
+                <div key={i} className={s.brandLogo}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`https://logo.clearbit.com/${b.domain}?size=80`}
+                    alt={b.name}
+                    className={s.brandLogoImg}
+                    title={b.name}
+                  />
+                </div>
               ))}
             </div>
           </div>

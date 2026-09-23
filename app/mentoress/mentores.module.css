@@ -138,7 +138,7 @@
 }
 .impactCell { position: relative; overflow: hidden; background: var(--off); }
 .impactBig { grid-column: span 2; }
-.impactImg { object-fit: cover; transition: transform .4s ease; }
+.impactImg { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s ease; }
 .impactCell:hover .impactImg { transform: scale(1.04); }
 
 /* Marquee */

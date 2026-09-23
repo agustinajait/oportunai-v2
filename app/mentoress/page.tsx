@@ -130,15 +130,10 @@ export default async function MentoresPage() {
           {/* Galería de impacto */}
           {galeria.length > 0 && (
             <div className={s.impactGrid}>
-              {galeria.map((img, i) => (
+              {galeria.map((img) => (
                 <div key={img.id} className={`${s.impactCell} ${img.big ? s.impactBig : ''}`}>
-                  <Image
-                    src={img.src}
-                    alt={img.label}
-                    fill
-                    sizes="(max-width: 600px) 50vw, 33vw"
-                    className={s.impactImg}
-                  />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img.src} alt={img.label} className={s.impactImg} />
                 </div>
               ))}
             </div>

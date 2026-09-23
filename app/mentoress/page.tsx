@@ -87,6 +87,10 @@ export default function MentoresPage() {
       <div className={s.hero}>
         <div className={s.heroSplit}>
           <div className={s.heroText}>
+            <div className={s.heroLogoRow}>
+              <Image src="/logo-mentoress.png" alt="Mentoress" width={48} height={48} className={s.heroLogoImg} />
+              <span className={`${s.heroLogoName} ${poppins.className}`}>Mentoress</span>
+            </div>
             <span className={`${s.heroEyebrow} ${poppins.className}`}>Conectamos talento con estaciones de servicio</span>
             <h1 className={`${s.heroH1} ${poppins.className}`}>
               Conocé el talento real<br />de tu próximo candidato<br />antes de entrevistarlo.

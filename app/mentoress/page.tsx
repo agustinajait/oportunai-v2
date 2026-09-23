@@ -96,7 +96,7 @@ export default async function MentoresPage() {
       </nav>
       <Stripe />
 
-      {/* Hero — dos audiencias, video de fondo */}
+      {/* Hero */}
       <div className={s.hero}>
         <video src="/lv_0_20260923144131.mp4" autoPlay muted loop playsInline className={s.heroBgVideo} />
         <div className={s.heroOverlay} />
@@ -105,27 +105,18 @@ export default async function MentoresPage() {
             <Image src="/logo-mentoress.png" alt="Mentoress" width={64} height={64} className={s.heroLogoImg} />
             <span className={`${s.heroLogoName} ${poppins.className}`}>Mentoress</span>
           </div>
+          <span className={`${s.heroEyebrow} ${poppins.className}`}>Conectamos talento con estaciones de servicio</span>
           <h1 className={`${s.heroH1} ${poppins.className}`}>
-            El rubro de estaciones de servicio, en una plataforma.
+            Conocé el talento real de tu próximo candidato antes de entrevistarlo.
           </h1>
-          <div className={s.heroCards}>
-            {/* Card empresa */}
-            <div className={`${s.heroCard} ${s.heroCardEmpresa}`}>
-              <span className={`${s.heroCardEyebrow} ${poppins.className}`}>🏢 Soy empresa / estación</span>
-              <h2 className={poppins.className}>Encontrá candidatos que ya conocen el rubro.</h2>
-              <p>Publicá el puesto, recibí perfiles con video y certificados de formación. Sin intermediarios.</p>
-              <a href={CTA_URL} className={`${s.heroCardCta} ${s.heroCardCtaEmpresa}`}>Sumar mi estación →</a>
-              <span className={s.heroCardNote}>Sin costo inicial · 2 minutos</span>
-            </div>
-            {/* Card candidato */}
-            <div className={`${s.heroCard} ${s.heroCardCandidato}`}>
-              <span className={`${s.heroCardEyebrow} ${poppins.className}`}>🙋 Busco trabajo</span>
-              <h2 className={poppins.className}>Capacitate gratis y conseguí trabajo en una estación.</h2>
-              <p>Completá los 4 módulos del rubro, armá tu perfil con video y postulate a las búsquedas activas.</p>
-              <a href={CAP_URL} className={`${s.heroCardCta} ${s.heroCardCtaCandidato}`}>Ver cursos gratuitos →</a>
-              <span className={s.heroCardNote}>100% gratis · Con certificado</span>
-            </div>
+          <p className={s.heroSub}>
+            Los candidatos de Mentoress conocen el rubro, completaron los módulos de formación y armaron su perfil con video. Vos llegás a elegir, no a explicar.
+          </p>
+          <div className={s.heroBtns}>
+            <a href={CTA_URL} className={s.heroCta}>Sumar mi estación →</a>
+            <a href={CAP_URL} className={s.heroCtaSecondary}>¿Querés trabajar en una estación? →</a>
           </div>
+          <p className={s.heroNote}>Sin costo inicial · 2 minutos para empezar</p>
         </div>
       </div>
       <Stripe />

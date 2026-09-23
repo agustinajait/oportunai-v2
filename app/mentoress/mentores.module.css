@@ -75,37 +75,16 @@
 .heroLogoImg { width: 64px; height: 64px; object-fit: contain; }
 .heroLogoName { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: 0.06em; text-transform: uppercase; }
 
-/* Hero — dos audiencias */
-.heroCards {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 880px;
+/* Hero — dos botones */
+.heroBtns { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; align-items: center; }
+.heroCtaSecondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; color: #fff; font-weight: 600; font-size: 1rem;
+  padding: 13px 28px; border-radius: 7px; text-decoration: none;
+  border: 2px solid rgba(255,255,255,.4);
+  transition: border-color .15s, background .15s;
 }
-.heroCard {
-  border-radius: 14px; padding: 28px 24px;
-  display: flex; flex-direction: column; gap: 12px;
-  backdrop-filter: blur(12px);
-  background: rgba(255,255,255,.06);
-  border: 1.5px solid rgba(255,255,255,.12);
-  text-align: left;
-}
-.heroCardEmpresa { border-top: 3px solid var(--pink); }
-.heroCardCandidato { border-top: 3px solid var(--cyan); }
-.heroCardEyebrow {
-  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
-  color: rgba(255,255,255,.6);
-}
-.heroCard h2 { font-weight: 800; font-size: clamp(1rem, 2vw, 1.2rem); color: #fff; line-height: 1.25; margin: 0; }
-.heroCard p { font-size: 0.88rem; color: rgba(255,255,255,.65); line-height: 1.6; margin: 0; flex: 1; }
-.heroCardCta {
-  display: inline-flex; align-items: center;
-  font-weight: 700; font-size: 0.92rem; padding: 11px 22px;
-  border-radius: 7px; text-decoration: none; width: fit-content;
-  transition: opacity .15s, transform .15s;
-}
-.heroCardCta:hover { opacity: .88; transform: translateY(-1px); }
-.heroCardCtaEmpresa { background: var(--pink); color: #fff; }
-.heroCardCtaCandidato { background: var(--cyan); color: var(--dark); }
-.heroCardNote { font-size: 0.72rem; color: rgba(255,255,255,.4); }
-@media (max-width: 600px) { .heroCards { grid-template-columns: 1fr; } }
+.heroCtaSecondary:hover { border-color: #fff; background: rgba(255,255,255,.08); }
 
 .heroEyebrow {
   display: inline-block;

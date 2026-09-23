@@ -83,36 +83,31 @@ export default function MentoresPage() {
       </nav>
       <Stripe />
 
-      {/* Hero — split layout: texto izquierda, video derecha */}
+      {/* Hero — video de fondo con overlay */}
       <div className={s.hero}>
-        <div className={s.heroSplit}>
-          <div className={s.heroText}>
-            <div className={s.heroLogoRow}>
-              <Image src="/logo-mentoress.png" alt="Mentoress" width={48} height={48} className={s.heroLogoImg} />
-              <span className={`${s.heroLogoName} ${poppins.className}`}>Mentoress</span>
-            </div>
-            <span className={`${s.heroEyebrow} ${poppins.className}`}>Conectamos talento con estaciones de servicio</span>
-            <h1 className={`${s.heroH1} ${poppins.className}`}>
-              Conocé el talento real<br />de tu próximo candidato<br />antes de entrevistarlo.
-            </h1>
-            <p className={s.heroSub}>
-              Los candidatos de Mentoress conocen el rubro, completaron los módulos de formación y armaron su perfil con video. Vos llegás a elegir, no a explicar.
-            </p>
-            <div className={s.heroActions}>
-              <a href={CTA_URL} className={s.heroCta}>Sumar mi estación →</a>
-              <p className={s.heroNote}>Sin costo inicial · 2 minutos para empezar</p>
-            </div>
+        <video
+          src="/lv_0_20260923144131.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          className={s.heroBgVideo}
+        />
+        <div className={s.heroOverlay} />
+        <div className={s.heroContent}>
+          <div className={s.heroLogoRow}>
+            <Image src="/logo-mentoress.png" alt="Mentoress" width={48} height={48} className={s.heroLogoImg} />
+            <span className={`${s.heroLogoName} ${poppins.className}`}>Mentoress</span>
           </div>
-          <div className={s.heroVideoWrap}>
-            <video
-              src="/lv_0_20260923144131.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              className={s.heroVideo}
-            />
-          </div>
+          <span className={`${s.heroEyebrow} ${poppins.className}`}>Conectamos talento con estaciones de servicio</span>
+          <h1 className={`${s.heroH1} ${poppins.className}`}>
+            Conocé el talento real<br />de tu próximo candidato<br />antes de entrevistarlo.
+          </h1>
+          <p className={s.heroSub}>
+            Los candidatos de Mentoress conocen el rubro, completaron los módulos de formación y armaron su perfil con video. Vos llegás a elegir, no a explicar.
+          </p>
+          <a href={CTA_URL} className={s.heroCta}>Sumar mi estación →</a>
+          <p className={s.heroNote}>Sin costo inicial · 2 minutos para empezar</p>
         </div>
       </div>
       <Stripe />

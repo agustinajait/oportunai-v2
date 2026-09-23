@@ -41,7 +41,7 @@
   font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--cyan);
 }
-.logoMark { width: 72px; height: 72px; display: block; flex-shrink: 0; border-radius: 50%; }
+.logoMark { width: 56px; height: 56px; display: block; flex-shrink: 0; object-fit: contain; }
 .ctaNav {
   font-size: 0.85rem; font-weight: 600;
   color: var(--dark); background: var(--pink); padding: 9px 20px;
@@ -72,8 +72,41 @@
   display: flex; flex-direction: column; align-items: center; gap: 20px;
 }
 .heroLogoRow { display: flex; align-items: center; gap: 10px; }
-.heroLogoImg { width: 72px; height: 72px; border-radius: 50%; }
+.heroLogoImg { width: 64px; height: 64px; object-fit: contain; }
 .heroLogoName { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* Hero — dos audiencias */
+.heroCards {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 880px;
+}
+.heroCard {
+  border-radius: 14px; padding: 28px 24px;
+  display: flex; flex-direction: column; gap: 12px;
+  backdrop-filter: blur(12px);
+  background: rgba(255,255,255,.06);
+  border: 1.5px solid rgba(255,255,255,.12);
+  text-align: left;
+}
+.heroCardEmpresa { border-top: 3px solid var(--pink); }
+.heroCardCandidato { border-top: 3px solid var(--cyan); }
+.heroCardEyebrow {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(255,255,255,.6);
+}
+.heroCard h2 { font-weight: 800; font-size: clamp(1rem, 2vw, 1.2rem); color: #fff; line-height: 1.25; margin: 0; }
+.heroCard p { font-size: 0.88rem; color: rgba(255,255,255,.65); line-height: 1.6; margin: 0; flex: 1; }
+.heroCardCta {
+  display: inline-flex; align-items: center;
+  font-weight: 700; font-size: 0.92rem; padding: 11px 22px;
+  border-radius: 7px; text-decoration: none; width: fit-content;
+  transition: opacity .15s, transform .15s;
+}
+.heroCardCta:hover { opacity: .88; transform: translateY(-1px); }
+.heroCardCtaEmpresa { background: var(--pink); color: #fff; }
+.heroCardCtaCandidato { background: var(--cyan); color: var(--dark); }
+.heroCardNote { font-size: 0.72rem; color: rgba(255,255,255,.4); }
+@media (max-width: 600px) { .heroCards { grid-template-columns: 1fr; } }
+
 .heroEyebrow {
   display: inline-block;
   font-size: 0.78rem; font-weight: 700;

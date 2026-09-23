@@ -67,8 +67,8 @@ function LogoMark() {
     <Image
       src="/logo-mentoress.png"
       alt="Mentoress"
-      width={72}
-      height={72}
+      width={56}
+      height={56}
       className={s.logoMark}
     />
   );
@@ -96,31 +96,36 @@ export default async function MentoresPage() {
       </nav>
       <Stripe />
 
-      {/* Hero — video de fondo con overlay */}
+      {/* Hero — dos audiencias, video de fondo */}
       <div className={s.hero}>
-        <video
-          src="/lv_0_20260923144131.mp4"
-          autoPlay
-          muted
-          loop
-          playsInline
-          className={s.heroBgVideo}
-        />
+        <video src="/lv_0_20260923144131.mp4" autoPlay muted loop playsInline className={s.heroBgVideo} />
         <div className={s.heroOverlay} />
         <div className={s.heroContent}>
           <div className={s.heroLogoRow}>
-            <Image src="/logo-mentoress.png" alt="Mentoress" width={72} height={72} className={s.heroLogoImg} />
+            <Image src="/logo-mentoress.png" alt="Mentoress" width={64} height={64} className={s.heroLogoImg} />
             <span className={`${s.heroLogoName} ${poppins.className}`}>Mentoress</span>
           </div>
-          <span className={`${s.heroEyebrow} ${poppins.className}`}>Conectamos talento con estaciones de servicio</span>
           <h1 className={`${s.heroH1} ${poppins.className}`}>
-            Conocé el talento real de tu próximo candidato antes de entrevistarlo.
+            El rubro de estaciones de servicio, en una plataforma.
           </h1>
-          <p className={s.heroSub}>
-            Los candidatos de Mentoress conocen el rubro, completaron los módulos de formación y armaron su perfil con video. Vos llegás a elegir, no a explicar.
-          </p>
-          <a href={CTA_URL} className={s.heroCta}>Sumar mi estación →</a>
-          <p className={s.heroNote}>Sin costo inicial · 2 minutos para empezar</p>
+          <div className={s.heroCards}>
+            {/* Card empresa */}
+            <div className={`${s.heroCard} ${s.heroCardEmpresa}`}>
+              <span className={`${s.heroCardEyebrow} ${poppins.className}`}>🏢 Soy empresa / estación</span>
+              <h2 className={poppins.className}>Encontrá candidatos que ya conocen el rubro.</h2>
+              <p>Publicá el puesto, recibí perfiles con video y certificados de formación. Sin intermediarios.</p>
+              <a href={CTA_URL} className={`${s.heroCardCta} ${s.heroCardCtaEmpresa}`}>Sumar mi estación →</a>
+              <span className={s.heroCardNote}>Sin costo inicial · 2 minutos</span>
+            </div>
+            {/* Card candidato */}
+            <div className={`${s.heroCard} ${s.heroCardCandidato}`}>
+              <span className={`${s.heroCardEyebrow} ${poppins.className}`}>🙋 Busco trabajo</span>
+              <h2 className={poppins.className}>Capacitate gratis y conseguí trabajo en una estación.</h2>
+              <p>Completá los 4 módulos del rubro, armá tu perfil con video y postulate a las búsquedas activas.</p>
+              <a href={CAP_URL} className={`${s.heroCardCta} ${s.heroCardCtaCandidato}`}>Ver cursos gratuitos →</a>
+              <span className={s.heroCardNote}>100% gratis · Con certificado</span>
+            </div>
+          </div>
         </div>
       </div>
       <Stripe />

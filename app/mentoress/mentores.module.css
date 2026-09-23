@@ -41,7 +41,7 @@
   font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--cyan);
 }
-.logoMark { width: 72px; height: 72px; display: block; flex-shrink: 0; border-radius: 50%; }
+.logoMark { width: 56px; height: 56px; display: block; flex-shrink: 0; object-fit: contain; }
 .ctaNav {
   font-size: 0.85rem; font-weight: 600;
   color: var(--dark); background: var(--pink); padding: 9px 20px;
@@ -72,7 +72,7 @@
   display: flex; flex-direction: column; align-items: center; gap: 20px;
 }
 .heroLogoRow { display: flex; align-items: center; gap: 10px; }
-.heroLogoImg { width: 72px; height: 72px; border-radius: 50%; }
+.heroLogoImg { width: 64px; height: 64px; object-fit: contain; }
 .heroLogoName { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: 0.06em; text-transform: uppercase; }
 .heroEyebrow {
   display: inline-block;

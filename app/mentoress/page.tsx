@@ -67,8 +67,8 @@ function LogoMark() {
     <Image
       src="/logo-mentoress.png"
       alt="Mentoress"
-      width={72}
-      height={72}
+      width={56}
+      height={56}
       className={s.logoMark}
     />
   );
@@ -109,7 +109,7 @@ export default async function MentoresPage() {
         <div className={s.heroOverlay} />
         <div className={s.heroContent}>
           <div className={s.heroLogoRow}>
-            <Image src="/logo-mentoress.png" alt="Mentoress" width={72} height={72} className={s.heroLogoImg} />
+            <Image src="/logo-mentoress.png" alt="Mentoress" width={64} height={64} className={s.heroLogoImg} />
             <span className={`${s.heroLogoName} ${poppins.className}`}>Mentoress</span>
           </div>
           <span className={`${s.heroEyebrow} ${poppins.className}`}>Conectamos talento con estaciones de servicio</span>

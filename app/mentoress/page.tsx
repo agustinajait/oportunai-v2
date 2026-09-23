@@ -101,7 +101,7 @@ export default function MentoresPage() {
           </div>
           <span className={`${s.heroEyebrow} ${poppins.className}`}>Conectamos talento con estaciones de servicio</span>
           <h1 className={`${s.heroH1} ${poppins.className}`}>
-            Conocé el talento real<br />de tu próximo candidato<br />antes de entrevistarlo.
+            Conocé el talento real de tu próximo candidato antes de entrevistarlo.
           </h1>
           <p className={s.heroSub}>
             Los candidatos de Mentoress conocen el rubro, completaron los módulos de formación y armaron su perfil con video. Vos llegás a elegir, no a explicar.

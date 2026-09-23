@@ -72,8 +72,8 @@
   display: flex; flex-direction: column; align-items: center; gap: 20px;
 }
 .heroLogoRow { display: flex; align-items: center; gap: 10px; }
-.heroLogoImg { width: 48px; height: 48px; border-radius: 50%; }
-.heroLogoName { font-size: 1.1rem; font-weight: 800; color: #fff; letter-spacing: 0.06em; text-transform: uppercase; }
+.heroLogoImg { width: 72px; height: 72px; border-radius: 50%; }
+.heroLogoName { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: 0.06em; text-transform: uppercase; }
 .heroEyebrow {
   display: inline-block;
   font-size: 0.78rem; font-weight: 700;
@@ -120,28 +120,56 @@
 
 /* ── Trust ── */
 .trust { background: var(--white); }
-.trustGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 56px; }
-.trustCard {
-  border: 1px solid var(--border); border-radius: 12px; padding: 28px 24px;
+.trustIntro {
+  font-size: 1rem; color: var(--muted); line-height: 1.7; max-width: 680px;
+  margin-bottom: 40px;
 }
-.trustIcon {
-  width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center;
-  justify-content: center; font-size: 1.3rem; margin-bottom: 16px;
+.trustIntro strong { color: var(--ink); font-weight: 700; }
+
+/* Impact photo grid */
+.impactGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 200px;
+  gap: 8px;
+  margin-bottom: 48px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.impactCell { position: relative; overflow: hidden; background: var(--off); }
+.impactBig { grid-column: span 2; }
+.impactImg { object-fit: cover; transition: transform .4s ease; }
+.impactCell:hover .impactImg { transform: scale(1.04); }
+
+/* Marquee */
+.brandsLabel {
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted); text-align: center; margin-bottom: 20px;
+}
+.marqueeWrap {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+.marqueeTrack {
+  display: flex; gap: 16px; width: max-content;
+  animation: marquee 18s linear infinite;
+}
+.marqueeTrack:hover { animation-play-state: paused; }
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.brandChip {
+  font-weight: 700; font-size: 0.92rem; color: var(--muted);
+  border: 1.5px solid var(--border); border-radius: 6px;
+  padding: 10px 24px; letter-spacing: 0.03em; white-space: nowrap;
+  flex-shrink: 0;
 }
 .teal { background: #CCFBF1; }
 .blue2 { background: #DBEAFE; }
 .trustCard h3 { font-weight: 700; font-size: 1.05rem; color: var(--ink); margin-bottom: 12px; }
 .trustCard p { font-size: 0.9rem; color: var(--muted); line-height: 1.6; margin-top: 0; }
-.trustCard p + p { margin-top: 8px; }
-.brandsLabel {
-  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--muted); text-align: center; margin-bottom: 24px;
-}
-.brandsRow { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; }
-.brandChip {
-  font-weight: 700; font-size: 0.92rem; color: var(--muted);
-  border: 1.5px solid var(--border); border-radius: 6px; padding: 10px 20px; letter-spacing: 0.03em;
-}
 
 /* ── Benefits ── */
 .benefits { background: var(--white); }

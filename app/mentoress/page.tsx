@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { Poppins, DM_Sans } from 'next/font/google';
 import s from './mentores.module.css';
+import { prisma } from '../../lib/prisma';
 
 const poppins = Poppins({ subsets: ['latin'], weight: ['600', '700', '800', '900'], display: 'swap' });
 const dmSans  = DM_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700'], display: 'swap' });
@@ -66,7 +67,12 @@ function LogoMark() {
   );
 }
 
-export default function MentoresPage() {
+export default async function MentoresPage() {
+  const galeria = await prisma.galeriaHome.findMany({
+    where: { activa: true },
+    orderBy: { orden: 'asc' },
+    take: 6,
+  });
   return (
     <div className={`${s.page} ${dmSans.className}`}>
 
@@ -96,7 +102,7 @@ export default function MentoresPage() {
         <div className={s.heroOverlay} />
         <div className={s.heroContent}>
           <div className={s.heroLogoRow}>
-            <Image src="/logo-mentoress.png" alt="Mentoress" width={48} height={48} className={s.heroLogoImg} />
+            <Image src="/logo-mentoress.png" alt="Mentoress" width={72} height={72} className={s.heroLogoImg} />
             <span className={`${s.heroLogoName} ${poppins.className}`}>Mentoress</span>
           </div>
           <span className={`${s.heroEyebrow} ${poppins.className}`}>Conectamos talento con estaciones de servicio</span>
@@ -117,17 +123,35 @@ export default function MentoresPage() {
         <div className={s.container}>
           <p className={`${s.sectionLabel} ${poppins.className}`}>Quiénes somos</p>
           <h2 className={`${s.sectionTitle} ${poppins.className}`}>Tecnología con historia,<br />enfocada en tu sector.</h2>
-          <div className={s.trustGrid}>
-            <div className={s.trustCard}>
-              <div className={`${s.trustIcon} ${s.blue2}`}>🎥</div>
-              <h3 className={poppins.className}>+10 años transformando la selección</h3>
-              <p>Mentoress es impulsada por OportunAI, con el respaldo de Tu VideoCV, la startup argentina pionera en Video CV en procesos de selección.</p>
-              <p>Desde 2015 desarrollamos tecnología utilizada por grandes empresas. Hoy esa experiencia se enfoca exclusivamente en el sector EES.</p>
+          <p className={s.trustIntro}>
+            Mentoress es impulsada por OportunAI, con el respaldo de <strong>Tu VideoCV</strong> — la startup argentina pionera en Video CV en procesos de selección desde 2015. Más de una década trabajando con las empresas más grandes del país, ahora enfocados exclusivamente en estaciones de servicio.
+          </p>
+
+          {/* Galería de impacto */}
+          {galeria.length > 0 && (
+            <div className={s.impactGrid}>
+              {galeria.map((img, i) => (
+                <div key={img.id} className={`${s.impactCell} ${img.big ? s.impactBig : ''}`}>
+                  <Image
+                    src={img.src}
+                    alt={img.label}
+                    fill
+                    sizes="(max-width: 600px) 50vw, 33vw"
+                    className={s.impactImg}
+                  />
+                </div>
+              ))}
             </div>
-          </div>
+          )}
+
+          {/* Marquee de logos */}
           <p className={`${s.brandsLabel} ${poppins.className}`}>Tecnología usada por</p>
-          <div className={s.brandsRow}>
-            {BRANDS.map(b => <span key={b} className={`${s.brandChip} ${poppins.className}`}>{b}</span>)}
+          <div className={s.marqueeWrap} aria-label="Empresas que usaron nuestra tecnología">
+            <div className={s.marqueeTrack}>
+              {[...BRANDS, ...BRANDS].map((b, i) => (
+                <span key={i} className={`${s.brandChip} ${poppins.className}`}>{b}</span>
+              ))}
+            </div>
           </div>
         </div>
       </section>

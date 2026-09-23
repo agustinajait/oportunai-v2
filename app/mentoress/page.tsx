@@ -9,7 +9,14 @@ const dmSans  = DM_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700
 const CTA_URL = 'https://oportunai.korai.lat/register-empresa?origen=mentores';
 const CAP_URL = 'https://oportunai.korai.lat/capacitate';
 
-const BRANDS = ['McDonald\'s', 'Día', 'Blue Star Group', 'Grupo Cencosud', 'Frávega', 'Farmacity'];
+const BRANDS = [
+  { name: "McDonald's", src: '/logos/logo mcd.png' },
+  { name: 'KFC',        src: '/logos/Kfc_logo-500x281.png' },
+  { name: "Wendy's",    src: '/logos/logo wendys.jpg' },
+  { name: 'Día',        src: '/logos/dia.png' },
+  { name: 'Prisma',     src: '/logos/prisma.png' },
+  { name: 'Todo Moda',  src: '/logos/todo moda.png' },
+];
 
 const MODULOS = [
   {
@@ -144,7 +151,15 @@ export default async function MentoresPage() {
           <div className={s.marqueeWrap} aria-label="Empresas que usaron nuestra tecnología">
             <div className={s.marqueeTrack}>
               {[...BRANDS, ...BRANDS].map((b, i) => (
-                <span key={i} className={`${s.brandChip} ${poppins.className}`}>{b}</span>
+                <div key={i} className={s.brandLogo}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={encodeURI(b.src)}
+                    alt={b.name}
+                    className={s.brandLogoImg}
+                    title={b.name}
+                  />
+                </div>
               ))}
             </div>
           </div>

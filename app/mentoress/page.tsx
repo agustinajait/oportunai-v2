@@ -14,18 +14,22 @@ const MODULOS = [
   {
     num: '01', icon: '⛽', titulo: 'Combustibles',
     desc: 'Naftas, diésel, GNC, calidad del combustible y seguridad. El candidato sabe qué despacha y cómo hacerlo de forma segura antes de llegar a la playa.',
+    duracion: '45 min', nivel: 'Introductorio',
   },
   {
     num: '02', icon: '🛢️', titulo: 'Lubricantes',
     desc: 'Función, viscosidad, clasificación y asesoramiento responsable. Saber escuchar al cliente y recomendar sin equivocarse.',
+    duracion: '40 min', nivel: 'Introductorio',
   },
   {
     num: '03', icon: '☕', titulo: 'Café y Barista',
     desc: 'Operación de cafetería, elaboración, servicio, higiene, presentación y latte art. La tienda como unidad de negocio con impacto real en la experiencia.',
+    duracion: '50 min', nivel: 'Introductorio',
   },
   {
     num: '04', icon: '🤝', titulo: 'Experiencia del Cliente',
     desc: 'Percepción, ciclo de atención, actitud de venta y momentos que generan fidelización. Más que amabilidad: servicio profesional.',
+    duracion: '35 min', nivel: 'Introductorio',
   },
 ];
 
@@ -231,22 +235,37 @@ export default function MentoresPage() {
           <div className={s.sectionHeader}>
             <div>
               <p className={`${s.sectionLabel} ${poppins.className}`}>Formación inicial Mentoress</p>
-              <h2 className={`${s.sectionTitle} ${poppins.className}`}>4 módulos del rubro,<br />gratis para quien se postula.</h2>
+              <h2 className={`${s.sectionTitle} ${poppins.className}`}>4 cursos del rubro,<br />gratis para quien se postula.</h2>
             </div>
-            <a href={CAP_URL} className={s.verTodosLink}>Explorar cursos →</a>
+            <a href={CAP_URL} className={s.verTodosLink}>Ver todos los cursos →</a>
           </div>
           <div className={s.capGrid}>
-            {MODULOS.map(({ num, icon, titulo, desc }) => (
+            {MODULOS.map(({ num, icon, titulo, desc, duracion, nivel }) => (
               <div key={titulo} className={s.capCard}>
-                <div className={s.capCardTop}>
-                  <div className={s.capCardIcon}>{icon}</div>
-                  <span className={s.capModNum}>Módulo {num}</span>
+                {/* Video intro placeholder */}
+                <div className={s.capVideo}>
+                  <div className={s.capVideoInner}>
+                    <span className={s.capVideoIcon}>{icon}</span>
+                    <div className={s.capPlayBtn} aria-label="Ver intro">
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <circle cx="10" cy="10" r="10" fill="white" fillOpacity="0.15"/>
+                        <polygon points="8,6 15,10 8,14" fill="white"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <span className={`${s.capModTag} ${poppins.className}`}>Módulo {num}</span>
                 </div>
-                <h3 className={poppins.className}>{titulo}</h3>
-                <p>{desc}</p>
-                <div className={s.capCardFooter}>
-                  <span className={s.capBadge}>✓ Certificado</span>
-                  <span className={s.capFree}>Gratis</span>
+                <div className={s.capCardBody}>
+                  <h3 className={poppins.className}>{titulo}</h3>
+                  <p>{desc}</p>
+                  <div className={s.capMeta}>
+                    <span className={s.capMetaItem}>⏱ {duracion}</span>
+                    <span className={s.capMetaItem}>📶 {nivel}</span>
+                  </div>
+                  <div className={s.capCardFooter}>
+                    <span className={s.capBadge}>✓ Certificado</span>
+                    <a href={CAP_URL} className={s.capCta}>Empezar gratis</a>
+                  </div>
                 </div>
               </div>
             ))}

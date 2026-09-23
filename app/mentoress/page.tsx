@@ -83,18 +83,33 @@ export default function MentoresPage() {
       </nav>
       <Stripe />
 
-      {/* Hero */}
+      {/* Hero — split layout: texto izquierda, video derecha */}
       <div className={s.hero}>
-        <span className={`${s.heroEyebrow} ${poppins.className}`}>Conectamos talento con estaciones de servicio</span>
-        <h1 className={`${s.heroH1} ${poppins.className}`}>
-          Conocé el talento real<br />de tu próximo candidato<br />antes de entrevistarlo.
-        </h1>
-        <p className={`${s.heroTagline} ${poppins.className}`}>Perfiles, selección y capacitación para todo el sector.</p>
-        <p className={s.heroSub}>
-          Los candidatos de Mentoress conocen el rubro, completaron los módulos de formación y armaron su perfil con video. Vos llegás a elegir, no a explicar.
-        </p>
-        <a href={CTA_URL} className={s.heroCta}>Sumar mi estación →</a>
-        <p className={s.heroNote}>Sin costo inicial · 2 minutos para empezar</p>
+        <div className={s.heroSplit}>
+          <div className={s.heroText}>
+            <span className={`${s.heroEyebrow} ${poppins.className}`}>Conectamos talento con estaciones de servicio</span>
+            <h1 className={`${s.heroH1} ${poppins.className}`}>
+              Conocé el talento real<br />de tu próximo candidato<br />antes de entrevistarlo.
+            </h1>
+            <p className={s.heroSub}>
+              Los candidatos de Mentoress conocen el rubro, completaron los módulos de formación y armaron su perfil con video. Vos llegás a elegir, no a explicar.
+            </p>
+            <div className={s.heroActions}>
+              <a href={CTA_URL} className={s.heroCta}>Sumar mi estación →</a>
+              <p className={s.heroNote}>Sin costo inicial · 2 minutos para empezar</p>
+            </div>
+          </div>
+          <div className={s.heroVideoWrap}>
+            <video
+              src="/lv_0_20260923144131.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              className={s.heroVideo}
+            />
+          </div>
+        </div>
       </div>
       <Stripe />
 

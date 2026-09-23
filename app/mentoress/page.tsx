@@ -10,15 +10,12 @@ const CTA_URL = 'https://oportunai.korai.lat/register-empresa?origen=mentores';
 const CAP_URL = 'https://oportunai.korai.lat/capacitate';
 
 const BRANDS = [
-  { name: "McDonald's",    domain: 'mcdonalds.com' },
-  { name: 'Starbucks',     domain: 'starbucks.com' },
-  { name: 'KFC',           domain: 'kfc.com' },
-  { name: "Wendy's",       domain: 'wendys.com' },
-  { name: 'Día',           domain: 'dia.com.ar' },
-  { name: 'Blue Star Group', domain: 'bluestargroup.com.ar' },
-  { name: 'Farmacity',     domain: 'farmacity.com' },
-  { name: 'Frávega',       domain: 'fravega.com' },
-  { name: 'Cencosud',      domain: 'cencosud.com' },
+  { name: "McDonald's", src: '/logos/logo mcd.png' },
+  { name: 'KFC',        src: '/logos/Kfc_logo-500x281.png' },
+  { name: "Wendy's",    src: '/logos/logo wendys.jpg' },
+  { name: 'Día',        src: '/logos/dia.png' },
+  { name: 'Prisma',     src: '/logos/prisma.png' },
+  { name: 'Todo Moda',  src: '/logos/todo moda.png' },
 ];
 
 const MODULOS = [
@@ -157,7 +154,7 @@ export default async function MentoresPage() {
                 <div key={i} className={s.brandLogo}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={`https://logo.clearbit.com/${b.domain}?size=80`}
+                    src={encodeURI(b.src)}
                     alt={b.name}
                     className={s.brandLogoImg}
                     title={b.name}

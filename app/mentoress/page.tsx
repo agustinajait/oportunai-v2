@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Poppins, DM_Sans } from 'next/font/google';
 import s from './mentores.module.css';
 
@@ -33,28 +34,13 @@ function Stripe() {
 
 function LogoMark() {
   return (
-    <svg className={s.logoMark} viewBox="-6 -6 92 92" fill="none" aria-hidden="true">
-      {/* Energy spikes */}
-      <line x1="40" y1="7" x2="40" y2="1" stroke="#78C21E" strokeWidth="2.5" strokeLinecap="round" transform="rotate(8 40 40)"/>
-      <line x1="40" y1="7" x2="40" y2="1" stroke="#E8188A" strokeWidth="2.5" strokeLinecap="round" transform="rotate(-8 40 40)"/>
-      <line x1="40" y1="7" x2="40" y2="1" stroke="#1A5AC8" strokeWidth="2.5" strokeLinecap="round" transform="rotate(98 40 40)"/>
-      <line x1="40" y1="7" x2="40" y2="1" stroke="#E8188A" strokeWidth="2.5" strokeLinecap="round" transform="rotate(112 40 40)"/>
-      <line x1="40" y1="7" x2="40" y2="1" stroke="#00B6D8" strokeWidth="2.5" strokeLinecap="round" transform="rotate(188 40 40)"/>
-      <line x1="40" y1="7" x2="40" y2="1" stroke="#78C21E" strokeWidth="2.5" strokeLinecap="round" transform="rotate(268 40 40)"/>
-      <line x1="40" y1="7" x2="40" y2="1" stroke="#1A5AC8" strokeWidth="2.5" strokeLinecap="round" transform="rotate(282 40 40)"/>
-      <line x1="40" y1="7" x2="40" y2="1" stroke="#00B6D8" strokeWidth="2.5" strokeLinecap="round" transform="rotate(352 40 40)"/>
-      {/* 4-color ring */}
-      <circle cx="40" cy="40" r="30" fill="none" stroke="#E8188A" strokeWidth="7" strokeDasharray="47 47" strokeDashoffset="0"/>
-      <circle cx="40" cy="40" r="30" fill="none" stroke="#78C21E" strokeWidth="7" strokeDasharray="47 47" strokeDashoffset="-47"/>
-      <circle cx="40" cy="40" r="30" fill="none" stroke="#1A5AC8" strokeWidth="7" strokeDasharray="47 47" strokeDashoffset="-94"/>
-      <circle cx="40" cy="40" r="30" fill="none" stroke="#00B6D8" strokeWidth="7" strokeDasharray="47 47" strokeDashoffset="-141"/>
-      {/* White inner circle */}
-      <circle cx="40" cy="40" r="23" fill="white"/>
-      {/* Fuel nozzle */}
-      <path d="M24 60 L24 46 Q24 40 28 38 L58 26 Q61 25 61 22 L63 22 Q65 22 65 25 L65 27 Q65 30 62 31 L32 43 Q36 43 36 47 L36 60 Z" fill="#0E1117"/>
-      {/* Drop */}
-      <path d="M64 20 Q66 17 64 15 Q62 17 64 20 Z" fill="#0E1117"/>
-    </svg>
+    <Image
+      src="/logo-mentoress.png"
+      alt="Mentoress"
+      width={72}
+      height={72}
+      className={s.logoMark}
+    />
   );
 }
 

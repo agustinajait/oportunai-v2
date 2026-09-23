@@ -191,35 +191,67 @@
 .sueldoMonto { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink); white-space: nowrap; }
 .sueldosNote { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
 
-/* ── Capacitate ── */
+/* ── Capacitate (MOOC) ── */
 .capacitate { background: var(--off); }
 .verTodosLink { font-size: 0.88rem; font-weight: 600; color: var(--cyan); text-decoration: none; white-space: nowrap; }
 .verTodosLink:hover { text-decoration: underline; }
-.capGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.capGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+
 .capCard {
-  background: var(--white); border: 1px solid var(--border); border-radius: 10px;
-  padding: 20px 18px 16px; display: flex; flex-direction: column; gap: 8px;
-  transition: box-shadow .15s, transform .15s;
+  background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+  overflow: hidden; display: flex; flex-direction: column;
+  transition: box-shadow .18s, transform .18s;
 }
-.capCard:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-2px); }
-.capCardTop { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-.capModNum { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-.capCardIcon {
-  width: 44px; height: 44px; background: var(--off); border-radius: 8px;
-  display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
-  flex-shrink: 0;
+.capCard:hover { box-shadow: 0 6px 24px rgba(0,0,0,.1); transform: translateY(-3px); }
+
+/* Video placeholder */
+.capVideo {
+  position: relative; aspect-ratio: 16/9;
+  background: linear-gradient(135deg, var(--dark2) 0%, #1e2a40 100%);
+  display: flex; align-items: center; justify-content: center;
 }
-.capCardCat { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan); }
-.capCard h3 { font-weight: 700; font-size: 1rem; line-height: 1.2; color: var(--ink); }
-.capCard p {
-  font-size: 0.8rem; color: var(--muted); line-height: 1.5;
+.capVideoInner { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.capVideoIcon { font-size: 2.8rem; filter: drop-shadow(0 2px 8px rgba(0,0,0,.4)); }
+.capPlayBtn {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.35);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background .15s, transform .15s;
+}
+.capPlayBtn:hover { background: rgba(255,255,255,.22); transform: scale(1.08); }
+.capModTag {
+  position: absolute; top: 10px; left: 10px;
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  background: rgba(0,0,0,.55); color: rgba(255,255,255,.85);
+  padding: 3px 8px; border-radius: 4px; backdrop-filter: blur(4px);
+}
+
+/* Card body */
+.capCardBody { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.capCardBody h3 { font-weight: 700; font-size: 1rem; line-height: 1.25; color: var(--ink); margin: 0; }
+.capCardBody p {
+  font-size: 0.82rem; color: var(--muted); line-height: 1.55; margin: 0;
   display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; flex: 1;
 }
+.capMeta { display: flex; gap: 12px; }
+.capMetaItem { font-size: 0.75rem; color: var(--muted); }
+
 .capCardFooter { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
 .capBadge {
   display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; font-weight: 600;
   color: #0E8A5F; background: #DCFCE7; border-radius: 20px; padding: 3px 9px;
 }
+.capCta {
+  font-size: 0.8rem; font-weight: 700; color: var(--pink);
+  text-decoration: none; letter-spacing: 0.01em;
+}
+.capCta:hover { text-decoration: underline; }
+
+/* legacy — keep so nothing breaks */
+.capCardTop { display: flex; align-items: center; justify-content: space-between; }
+.capModNum { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.capCardIcon { width: 44px; height: 44px; background: var(--off); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+.capCardCat { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan); }
 .capFree { font-size: 0.75rem; color: var(--muted); }
 
 /* ── CTA final ── */

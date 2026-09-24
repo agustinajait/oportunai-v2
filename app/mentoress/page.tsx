@@ -107,7 +107,7 @@ export default async function MentoresPage() {
             El talento que conoce el <em>rubro</em><span className={s.heroDot}>.</span>
           </h1>
           <p className={s.heroSub}>
-            Mentoreess conecta personas capacitadas con estaciones de servicio.
+            Los candidatos de Mentoreess conocen el rubro, completaron los módulos de formación y armaron su perfil con video. Vos llegás a elegir, no a explicar.
           </p>
           <div className={s.heroCards}>
             {/* Candidato */}
@@ -166,32 +166,6 @@ export default async function MentoresPage() {
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-      <Stripe />
-
-      {/* Más que un perfil */}
-      <section className={s.oportunidad}>
-        <div className={s.oportunidadInner}>
-          <div className={s.oportunidadLeft}>
-            <p className={`${s.oportunidadLabel} ${poppins.className}`}>Para el candidato</p>
-            <h2 className={`${s.oportunidadH2} ${poppins.className}`}>
-              Más que un perfil,<br />una <em>aportunidad.</em>
-            </h2>
-            <p className={s.oportunidadSub}>
-              Mentoreess es la plataforma que impulsa el talento del sector, con formación, tecnología y oportunidades reales.
-            </p>
-            <a href={REGISTER_URL} className={`${s.oportunidadCta} ${poppins.className}`}>Crear mi perfil gratis →</a>
-          </div>
-          <div className={s.oportunidadCenter}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/candidato.png" alt="Candidato grabando su VideoCV" className={s.oportunidadImg} />
-          </div>
-          <div className={s.oportunidadRight}>
-            {['CAPACITATE', 'CONECTATE', 'CRECÉ'].map((word, i) => (
-              <span key={word} className={`${s.oportunidadWord} ${poppins.className}`} style={{ opacity: 1 - i * 0.22 }}>{word}</span>
-            ))}
           </div>
         </div>
       </section>
@@ -327,6 +301,32 @@ export default async function MentoresPage() {
                   </div>
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+      <Stripe />
+
+      {/* Más que un perfil */}
+      <section className={s.oportunidad}>
+        <div className={s.oportunidadInner}>
+          <div className={s.oportunidadLeft}>
+            <p className={`${s.oportunidadLabel} ${poppins.className}`}>Para el candidato</p>
+            <h2 className={`${s.oportunidadH2} ${poppins.className}`}>
+              Más que un perfil,<br />una <em>aportunidad.</em>
+            </h2>
+            <p className={s.oportunidadSub}>
+              Mentoreess es la plataforma que impulsa el talento del sector, con formación, tecnología y oportunidades reales.
+            </p>
+            <a href={REGISTER_URL} className={`${s.oportunidadCta} ${poppins.className}`}>Crear mi perfil gratis →</a>
+          </div>
+          <div className={s.oportunidadCenter}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/candidato.png" alt="Candidato grabando su VideoCV" className={s.oportunidadImg} />
+          </div>
+          <div className={s.oportunidadRight}>
+            {['CAPACITATE', 'CONECTATE', 'CRECÉ'].map((word, i) => (
+              <span key={word} className={`${s.oportunidadWord} ${poppins.className}`} style={{ opacity: 1 - i * 0.22 }}>{word}</span>
             ))}
           </div>
         </div>

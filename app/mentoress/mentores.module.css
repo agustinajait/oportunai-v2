@@ -68,11 +68,12 @@
 }
 .heroContent {
   position: relative; z-index: 1;
-  width: 100%; max-width: 580px;
-  display: flex; flex-direction: column; justify-content: space-between;
+  width: 100%; max-width: 800px; margin: 0 auto;
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
   min-height: calc(100vh - 160px);
+  text-align: center;
 }
-.heroTop { display: flex; flex-direction: column; gap: 16px; }
+.heroTop { display: flex; flex-direction: column; gap: 16px; align-items: center; }
 .heroLogoRow { display: flex; align-items: center; gap: 10px; }
 .heroLogoImg { width: 64px; height: 64px; object-fit: contain; }
 .heroLogoName { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: 0.06em; text-transform: uppercase; }

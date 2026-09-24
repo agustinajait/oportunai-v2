@@ -390,17 +390,35 @@ export default function VideoRecorder({
     }
   }, [moduloIdx, totalModulos, uploadFinalVideo]);
 
+  // ── Activar Korai y completar onboarding ─────────────────────────
+  const activarKorai = useCallback(async () => {
+    try {
+      await fetch('/api/whatsapp/opt-in', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activo: true }),
+      });
+      await fetch('/api/user/onboarding', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completar: true }),
+      });
+    } catch { /* best-effort */ }
+    router.push('/dashboard?bienvenida=onboarding');
+  }, [router]);
+
   // ── Auto-redirect cuando el video queda listo ────────────────────
   useEffect(() => {
     if (stage !== 'done') return;
-    const dest = desdeOnboarding
-      ? '/onboarding?step=3'
-      : ofertaId
-      ? `/dashboard?tab=ofertas&oferta_id=${ofertaId}`
-      : '/dashboard?tab=perfil';
-    const t = setTimeout(() => {
-      router.push(dest);
-      if (!desdeOnboarding && !ofertaId) router.refresh();
+    const t = setTimeout(async () => {
+      if (desdeOnboarding) {
+        await activarKorai();
+      } else if (ofertaId) {
+        router.push(`/dashboard?tab=ofertas&oferta_id=${ofertaId}`);
+      } else {
+        router.push('/dashboard?tab=perfil');
+        router.refresh();
+      }
     }, 2500);
     return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -721,9 +739,9 @@ export default function VideoRecorder({
               <p className="text-brand-400 text-xs mb-8">Redirigiendo para que lo veas...</p>
               <div className="space-y-3 w-full max-w-xs">
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     if (desdeOnboarding) {
-                      router.push('/onboarding?step=3');
+                      await activarKorai();
                     } else {
                       const dest = ofertaId ? `/dashboard?tab=ofertas&oferta_id=${ofertaId}` : '/dashboard?tab=perfil';
                       router.push(dest);
@@ -732,7 +750,7 @@ export default function VideoRecorder({
                   }}
                   className="btn-primary w-full justify-center py-3.5 rounded-2xl"
                 >
-                  {desdeOnboarding ? 'Continuar con el diagnóstico →' : ofertaId ? 'Volver y postularme' : 'Ver mi video →'}
+                  {ofertaId ? 'Volver y postularme' : 'Ver mi video →'}
                 </button>
               </div>
             </div>

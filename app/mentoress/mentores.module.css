@@ -440,6 +440,7 @@
 /* ── Footer ── */
 .footer { background: var(--dark2); padding: 24px; text-align: center; font-size: 0.8rem; color: #4A5468; }
 .footer a { color: var(--cyan); text-decoration: none; }
+.eess { color: var(--cyan); }
 
 /* ── Responsive ── */
 @media (min-width: 600px) {

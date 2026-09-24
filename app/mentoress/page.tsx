@@ -331,6 +331,7 @@ export default async function MentoresPage() {
           </div>
         </div>
       </section>
+      <Stripe />
 
       {/* CTA final */}
       <div className={s.ctaSection}>

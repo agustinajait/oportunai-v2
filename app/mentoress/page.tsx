@@ -101,22 +101,28 @@ export default async function MentoresPage() {
         <video src="/lv_0_20260923144131.mp4" autoPlay muted loop playsInline className={s.heroBgVideo} />
         <div className={s.heroOverlay} />
         <div className={s.heroContent}>
-          <div className={s.heroLogoRow}>
-            <Image src="/logo-mentoress.png" alt="Mentoress" width={64} height={64} className={s.heroLogoImg} />
-            <span className={`${s.heroLogoName} ${poppins.className}`}>Mentoress</span>
-          </div>
-          <span className={`${s.heroEyebrow} ${poppins.className}`}>Conectamos talento con estaciones de servicio</span>
           <h1 className={`${s.heroH1} ${poppins.className}`}>
-            El talento que conoce el rubro.
+            El talento que conoce el <em>rubro</em><span className={s.heroDot}>.</span>
           </h1>
           <p className={s.heroSub}>
-            Los candidatos de Mentoress conocen el rubro, completaron los módulos de formación y armaron su perfil con video. Vos llegás a elegir, no a explicar.
+            Mentoress conecta personas capacitadas con estaciones de servicio.
           </p>
-          <div className={s.heroBtns}>
-            <a href={CTA_URL} className={s.heroCta}>Sumar mi estación →</a>
-            <a href={CAP_URL} className={s.heroCtaSecondary}>¿Querés trabajar en una estación? →</a>
+          <div className={s.heroCards}>
+            {/* Candidato */}
+            <div className={`${s.heroCard} ${s.heroCardCandidato}`}>
+              <span className={s.heroCardIcon}>👤</span>
+              <strong className={`${s.heroCardLabel} ${poppins.className}`}>Quiero trabajar</strong>
+              <p>Capacitate en el rubro, armá tu perfil y presentate fácil con tu VideoCV.</p>
+              <a href={CAP_URL} className={`${s.heroCardCta} ${s.heroCardCtaCandidato}`}>Crear mi perfil →</a>
+            </div>
+            {/* Empresa */}
+            <div className={`${s.heroCard} ${s.heroCardEmpresa}`}>
+              <span className={s.heroCardIcon}>⛽</span>
+              <strong className={`${s.heroCardLabel} ${poppins.className}`}>Busco talento</strong>
+              <p>Encontrá personas capacitadas, conocelas antes de entrevistarlas a través de su VideoCV y contactalas.</p>
+              <a href={CTA_URL} className={`${s.heroCardCta} ${s.heroCardCtaEmpresa}`}>Sumar mi estación →</a>
+            </div>
           </div>
-          <p className={s.heroNote}>Sin costo inicial · 2 minutos para empezar</p>
         </div>
       </div>
       <Stripe />

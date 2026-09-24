@@ -30,6 +30,7 @@ const MODULOS = [
     num: '02', icon: '🛢️', titulo: 'Lubricantes',
     desc: 'Función, viscosidad, clasificación y asesoramiento responsable. Saber escuchar al cliente y recomendar sin equivocarse.',
     duracion: '40 min', nivel: 'Introductorio',
+    video: '/lv_0_20260924141159.mp4',
   },
   {
     num: '03', icon: '☕', titulo: 'Café y Barista',
@@ -40,6 +41,7 @@ const MODULOS = [
     num: '04', icon: '🤝', titulo: 'Experiencia del Cliente',
     desc: 'Percepción, ciclo de atención, actitud de venta y momentos que generan fidelización. Más que amabilidad: servicio profesional.',
     duracion: '35 min', nivel: 'Introductorio',
+    video: '/lv_0_20260924141306.mp4',
   },
 ];
 

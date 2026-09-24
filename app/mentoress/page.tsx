@@ -113,13 +113,11 @@ export default async function MentoresPage() {
           </div>
           <div className={s.heroCards}>
             <div className={`${s.heroCard} ${s.heroCardCandidato}`}>
-              <span className={s.heroCardIcon}>👤</span>
               <strong className={`${s.heroCardLabel} ${poppins.className}`}>Quiero trabajar</strong>
               <p>Capacitate, armá tu perfil y presentate con tu VideoCV.</p>
               <a href={REGISTER_URL} className={`${s.heroCardCta} ${s.heroCardCtaCandidato}`}>Crear mi perfil →</a>
             </div>
             <div className={`${s.heroCard} ${s.heroCardEmpresa}`}>
-              <span className={s.heroCardIcon}>⛽</span>
               <strong className={`${s.heroCardLabel} ${poppins.className}`}>Busco talento</strong>
               <p>Encontrá personas capacitadas, conocelas a través de su VideoCV y contactalas.</p>
               <a href={CTA_URL} className={`${s.heroCardCta} ${s.heroCardCtaEmpresa}`}>Sumar mi estación →</a>

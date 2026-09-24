@@ -100,31 +100,30 @@ export default async function MentoresPage() {
 
       {/* Hero */}
       <div className={s.hero}>
-        <video src="/lv_0_20260923144131.mp4" autoPlay muted loop playsInline className={s.heroBgVideo} />
-        <div className={s.heroOverlay} />
-        <div className={s.heroContent}>
+        <div className={s.heroLeft}>
           <h1 className={`${s.heroH1} ${poppins.className}`}>
             El talento que conoce el <em>rubro</em><span className={s.heroDot}>.</span>
           </h1>
           <p className={s.heroSub}>
-            Los candidatos de Mentoreess conocen el rubro de estaciones de servicio, completaron los módulos de formación y armaron su perfil con video. Vos llegás a elegir, no a explicar.
+            Mentoreess conecta personas capacitadas con estaciones de servicio.
           </p>
           <div className={s.heroCards}>
-            {/* Candidato */}
             <div className={`${s.heroCard} ${s.heroCardCandidato}`}>
               <span className={s.heroCardIcon}>👤</span>
               <strong className={`${s.heroCardLabel} ${poppins.className}`}>Quiero trabajar</strong>
-              <p>Capacitate en el rubro, armá tu perfil y presentate fácil con tu VideoCV.</p>
+              <p>Capacitate, armá tu perfil y presentate con tu VideoCV.</p>
               <a href={REGISTER_URL} className={`${s.heroCardCta} ${s.heroCardCtaCandidato}`}>Crear mi perfil →</a>
             </div>
-            {/* Empresa */}
             <div className={`${s.heroCard} ${s.heroCardEmpresa}`}>
               <span className={s.heroCardIcon}>⛽</span>
               <strong className={`${s.heroCardLabel} ${poppins.className}`}>Busco talento</strong>
-              <p>Encontrá personas capacitadas, conocelas antes de entrevistarlas a través de su VideoCV y contactalas.</p>
+              <p>Encontrá personas capacitadas, conocelas a través de su VideoCV y contactalas.</p>
               <a href={CTA_URL} className={`${s.heroCardCta} ${s.heroCardCtaEmpresa}`}>Sumar mi estación →</a>
             </div>
           </div>
+        </div>
+        <div className={s.heroRight}>
+          <video src="/lv_0_20260923144131.mp4" autoPlay muted loop playsInline className={s.heroVideo} />
         </div>
       </div>
       <Stripe />

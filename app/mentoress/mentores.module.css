@@ -51,22 +51,27 @@
 
 /* ── Hero ── */
 .hero {
-  display: grid; grid-template-columns: 1fr 1fr;
-  min-height: 100vh; overflow: hidden;
-  background: var(--dark);
-}
-.heroLeft {
-  background: var(--dark);
-  padding: 80px max(48px, calc((100vw - 1200px) / 2 + 48px)) 80px max(48px, calc((100vw - 1200px) / 2));
-  display: flex; flex-direction: column; justify-content: center; gap: 28px;
-  position: relative; z-index: 1;
-}
-.heroRight {
   position: relative; overflow: hidden;
+  background: var(--dark);
+  padding: 80px 24px 80px;
+  min-height: 100vh; display: flex; align-items: center;
 }
-.heroVideo {
-  width: 100%; height: 100%; object-fit: cover; object-position: center;
-  display: block;
+.heroBgVideo {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: center;
+  opacity: 0.3; pointer-events: none;
+}
+.heroOverlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to right, rgba(14,17,23,0.96) 0%, rgba(14,17,23,0.88) 48%, rgba(14,17,23,0.2) 100%);
+  pointer-events: none;
+}
+.heroContent {
+  position: relative; z-index: 1;
+  max-width: 1200px; margin: 0 auto; width: 100%;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 28px;
+  padding-left: max(24px, calc((100vw - 1200px) / 2));
+  padding-right: 0;
 }
 .heroLogoRow { display: flex; align-items: center; gap: 10px; }
 .heroLogoImg { width: 64px; height: 64px; object-fit: contain; }
@@ -112,10 +117,9 @@
 .heroCardCtaCandidato { background: var(--pink); color: #fff; }
 .heroCardCtaEmpresa   { background: var(--cyan); color: var(--dark); font-weight: 800; }
 
-@media (max-width: 768px) {
-  .hero { grid-template-columns: 1fr; }
-  .heroLeft { padding: 64px 24px; }
-  .heroRight { height: 260px; }
+@media (max-width: 680px) {
+  .hero { padding: 80px 0 80px; }
+  .heroContent { padding-left: 24px; padding-right: 24px; }
   .heroCards { grid-template-columns: 1fr; max-width: 100%; }
 }
 
@@ -136,7 +140,7 @@
 }
 .heroH1 em { font-style: normal; color: var(--cyan); }
 .heroDot { color: var(--pink); }
-.heroSub { max-width: 560px; margin: 0; color: #9AA3B8; font-size: 1.05rem; line-height: 1.7; }
+.heroSub { max-width: 560px; margin: 0 auto 40px; color: #9AA3B8; font-size: 1.05rem; line-height: 1.7; }
 .heroCta {
   display: inline-flex; align-items: center; gap: 8px;
   background: var(--pink); color: #fff; font-weight: 700; font-size: 1.05rem;

@@ -170,22 +170,26 @@ export default async function MentoresPage() {
       </section>
       <Stripe />
 
-      {/* Qué trae el candidato */}
-      <section className={`${s.section} ${s.prepared}`}>
-        <div className={s.container}>
-          <p className={`${s.sectionLabel} ${poppins.className}`}>Antes de que lo entrevistes</p>
-          <h2 className={`${s.sectionTitle} ${poppins.className}`}>El candidato ya recorrió este camino.</h2>
-          <div className={s.preparedGrid}>
-            {[
-              { icon: '📚', title: 'Conoce el rubro', body: 'Estudió cómo funciona una estación: sus áreas, puestos, turnos rotativos y dinámica 24/7. Entiende el contexto antes del primer día.' },
-              { icon: '🎓', title: 'Completó los 4 módulos', body: 'Combustibles, Lubricantes, Café y Barista, y Experiencia del Cliente. Cada módulo con certificado digital incluido.' },
-              { icon: '🎥', title: 'Armó su perfil con video', body: 'Grabó su presentación en video, completó disponibilidad horaria, experiencia previa y habilitaciones. Vos llegás a elegir.' },
-            ].map(({ icon, title, body }) => (
-              <div key={title} className={s.preparedCard}>
-                <div className={s.preparedIcon}>{icon}</div>
-                <h3 className={poppins.className}>{title}</h3>
-                <p>{body}</p>
-              </div>
+      {/* Más que un perfil */}
+      <section className={s.oportunidad}>
+        <div className={s.oportunidadInner}>
+          <div className={s.oportunidadLeft}>
+            <p className={`${s.oportunidadLabel} ${poppins.className}`}>Para el candidato</p>
+            <h2 className={`${s.oportunidadH2} ${poppins.className}`}>
+              Más que un perfil,<br />una <em>aportunidad.</em>
+            </h2>
+            <p className={s.oportunidadSub}>
+              Mentoress es la plataforma que impulsa el talento del sector, con formación, tecnología y oportunidades reales.
+            </p>
+            <a href={REGISTER_URL} className={`${s.oportunidadCta} ${poppins.className}`}>Crear mi perfil gratis →</a>
+          </div>
+          <div className={s.oportunidadCenter}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/candidato.png" alt="Candidato grabando su VideoCV" className={s.oportunidadImg} />
+          </div>
+          <div className={s.oportunidadRight}>
+            {['CAPACITATE', 'CONECTATE', 'CRECÉ'].map((word, i) => (
+              <span key={word} className={`${s.oportunidadWord} ${poppins.className}`} style={{ opacity: 1 - i * 0.22 }}>{word}</span>
             ))}
           </div>
         </div>

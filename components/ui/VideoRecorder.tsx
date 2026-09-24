@@ -114,6 +114,12 @@ async function combineRecordings(blobs: Blob[]): Promise<Blob> {
   return finished;
 }
 
+const UPLOAD_PHASES = [
+  { label: 'Uniendo tus tomas',   sub: 'Combinando las grabaciones de cada sección...' },
+  { label: 'Subiendo a la nube',  sub: 'Enviando tu video al servidor...' },
+  { label: 'Guardando tu perfil', sub: 'Actualizando tu Video CV...' },
+];
+
 export default function VideoRecorder({
   modulos,
   session,
@@ -384,6 +390,22 @@ export default function VideoRecorder({
     }
   }, [moduloIdx, totalModulos, uploadFinalVideo]);
 
+  // ── Auto-redirect cuando el video queda listo ────────────────────
+  useEffect(() => {
+    if (stage !== 'done') return;
+    const dest = desdeOnboarding
+      ? '/onboarding?step=3'
+      : ofertaId
+      ? `/dashboard?tab=ofertas&oferta_id=${ofertaId}`
+      : '/dashboard?tab=perfil';
+    const t = setTimeout(() => {
+      router.push(dest);
+      if (!desdeOnboarding && !ofertaId) router.refresh();
+    }, 2500);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage]);
+
   // ── Empezar de cero ───────────────────────────────────────────────
   const restart = useCallback(() => {
     const recorder = recorderRef.current;
@@ -623,25 +645,80 @@ export default function VideoRecorder({
           )}
 
           {/* ── SUBIENDO ─────────────────────────────────────────────── */}
-          {stage === 'uploading' && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center bg-ink-900">
-              <div className="w-20 h-20 rounded-full bg-brand-600/20 flex items-center justify-center mb-6">
-                <Loader2 size={36} className="text-brand-400 animate-spin" />
+          {stage === 'uploading' && (() => {
+            const phaseIdx =
+              uploadProgress.includes('Procesando') ? 0 :
+              uploadProgress.includes('Subiendo')   ? 1 : 2;
+            const pct = Math.round(((phaseIdx + 0.6) / UPLOAD_PHASES.length) * 100);
+            return (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 bg-ink-900">
+                <div className="w-full max-w-xs">
+                  <p className="text-white/40 text-xs font-semibold uppercase tracking-widest text-center mb-2">
+                    {tituloVideo}
+                  </p>
+                  <h2 className="font-display text-2xl font-semibold text-white text-center mb-8">
+                    Creando tu video...
+                  </h2>
+
+                  <div className="space-y-4 mb-8">
+                    {UPLOAD_PHASES.map((phase, i) => {
+                      const done = i < phaseIdx;
+                      const active = i === phaseIdx;
+                      return (
+                        <div key={i} className={`flex items-start gap-3 transition-opacity duration-500 ${i > phaseIdx ? 'opacity-30' : 'opacity-100'}`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors duration-300 ${
+                            done   ? 'bg-emerald-500/20 border border-emerald-500/40' :
+                            active ? 'bg-brand-600/30 border border-brand-500/50' :
+                                     'bg-white/5 border border-white/10'
+                          }`}>
+                            {done
+                              ? <CheckCircle size={16} className="text-emerald-400" />
+                              : active
+                              ? <Loader2 size={16} className="text-brand-400 animate-spin" />
+                              : <div className="w-2 h-2 rounded-full bg-white/20" />
+                            }
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm font-semibold leading-tight ${
+                              done ? 'text-emerald-400' : active ? 'text-white' : 'text-white/30'
+                            }`}>{phase.label}</p>
+                            {active && (
+                              <p className="text-white/40 text-xs mt-0.5 leading-snug">{phase.sub}</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Barra de progreso */}
+                  <div className="h-1.5 bg-white/10 rounded-full overflow-hidden mb-3">
+                    <div
+                      className="h-full bg-brand-500 rounded-full transition-all duration-700 ease-out"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs text-white/30">
+                    <span>{pct}%</span>
+                    <span>No cierres esta pantalla</span>
+                  </div>
+                </div>
               </div>
-              <h2 className="font-display text-2xl font-semibold text-white mb-2">Procesando...</h2>
-              <p className="text-white/50 text-sm max-w-xs mb-4">{uploadProgress}</p>
-              <p className="text-white/30 text-xs">No cierres esta pantalla</p>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ── LISTO ────────────────────────────────────────────────── */}
           {stage === 'done' && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center bg-ink-900">
-              <div className="w-20 h-20 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mb-6">
-                <CheckCircle size={40} className="text-emerald-400" />
+              <div
+                className="w-24 h-24 rounded-full bg-emerald-500/20 border-2 border-emerald-500/40 flex items-center justify-center mb-6"
+                style={{ animation: 'scaleIn 0.4s ease' }}
+              >
+                <CheckCircle size={48} className="text-emerald-400" />
               </div>
               <h2 className="font-display text-2xl font-semibold text-white mb-2">¡{tituloVideo} listo!</h2>
-              <p className="text-white/50 text-sm max-w-sm mb-8">Tu video fue generado y guardado correctamente.</p>
+              <p className="text-white/50 text-sm max-w-sm mb-2">Tu video fue generado y guardado correctamente.</p>
+              <p className="text-brand-400 text-xs mb-8">Redirigiendo para que lo veas...</p>
               <div className="space-y-3 w-full max-w-xs">
                 <button
                   onClick={() => {
@@ -655,10 +732,7 @@ export default function VideoRecorder({
                   }}
                   className="btn-primary w-full justify-center py-3.5 rounded-2xl"
                 >
-                  {desdeOnboarding ? 'Continuar con el diagnóstico →' : ofertaId ? 'Volver y postularme' : 'Ir a mi perfil'}
-                </button>
-                <button onClick={restart} className="w-full text-white/50 hover:text-white text-sm py-2.5 transition-colors">
-                  Volver a grabar
+                  {desdeOnboarding ? 'Continuar con el diagnóstico →' : ofertaId ? 'Volver y postularme' : 'Ver mi video →'}
                 </button>
               </div>
             </div>

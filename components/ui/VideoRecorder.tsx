@@ -234,7 +234,11 @@ export default function VideoRecorder({
 
   // ── Iniciar grabación de la sección actual ────────────────────────
   const beginSectionRecording = useCallback(() => {
-    if (!streamRef.current) return;
+    if (!streamRef.current) {
+      setUploadError('La cámara no está disponible. Recargá la página e intentá de nuevo.');
+      setStage('error');
+      return;
+    }
 
     const idx = moduloIdxRef.current;
     const newAttempts = [...sectionAttemptsRef.current];
@@ -244,25 +248,31 @@ export default function VideoRecorder({
 
     sectionEndCalledRef.current = false;
     chunksRef.current = [];
-    const mimeType = getMimeType();
-    const recorder = new MediaRecorder(streamRef.current, { mimeType });
-    const finishSection = () => {
-      const blob = new Blob(chunksRef.current, { type: mimeType });
-      currentBlobRef.current = blob;
-      const url = URL.createObjectURL(blob);
-      setReviewUrl(url);
-      setStage('section_review');
-    };
-    recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-    recorder.onstop = finishSection;
-    recorder.onerror = (e) => {
-      console.error('MediaRecorder error', e);
-      finishSection();
-    };
-    recorder.start(250);
-    recorderRef.current = recorder;
-    playBeep(880, 0.15, 0.3);
-    setStage('recording');
+
+    try {
+      const mimeType = getMimeType();
+      const recorder = new MediaRecorder(streamRef.current, { mimeType });
+      const finishSection = () => {
+        const blob = new Blob(chunksRef.current, { type: mimeType });
+        currentBlobRef.current = blob;
+        const url = URL.createObjectURL(blob);
+        setReviewUrl(url);
+        setStage('section_review');
+      };
+      recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      recorder.onstop = finishSection;
+      recorder.onerror = (e) => {
+        console.error('MediaRecorder error', e);
+        finishSection();
+      };
+      recorder.start(250);
+      recorderRef.current = recorder;
+      playBeep(880, 0.15, 0.3);
+      setStage('recording');
+    } catch (err: any) {
+      setUploadError('No se pudo iniciar la grabación: ' + (err?.message ?? 'error desconocido'));
+      setStage('error');
+    }
   }, []);
 
   // ── Terminar sección (tiempo o botón) ─────────────────────────────
@@ -658,11 +668,19 @@ export default function VideoRecorder({
           {stage === 'error' && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center bg-ink-900">
               <AlertCircle size={48} className="text-red-400 mb-4" />
-              <h2 className="font-display text-xl font-semibold text-white mb-2">Error al subir</h2>
+              <h2 className="font-display text-xl font-semibold text-white mb-2">Algo salió mal</h2>
               <p className="text-white/50 text-sm mb-6">{uploadError}</p>
-              <button onClick={uploadFinalVideo} className="btn-primary justify-center">
-                Reintentar
-              </button>
+              <div className="flex flex-col gap-3 w-full max-w-xs">
+                {confirmedBlobsRef.current.length > 0 ? (
+                  <button onClick={uploadFinalVideo} className="btn-primary justify-center">
+                    Reintentar subida
+                  </button>
+                ) : (
+                  <button onClick={restart} className="btn-primary justify-center">
+                    Volver a intentar
+                  </button>
+                )}
+              </div>
             </div>
           )}
 

@@ -51,26 +51,22 @@
 
 /* ── Hero ── */
 .hero {
-  position: relative; overflow: hidden;
+  display: grid; grid-template-columns: 1fr 1fr;
+  min-height: 100vh; overflow: hidden;
   background: var(--dark);
-  padding: 80px 24px 80px;
-  min-height: 100vh; display: flex; align-items: center;
 }
-.heroBgVideo {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; object-position: center;
-  opacity: 0.3; pointer-events: none;
-}
-.heroOverlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(to right, rgba(14,17,23,0.96) 0%, rgba(14,17,23,0.88) 48%, rgba(14,17,23,0.2) 100%);
-  pointer-events: none;
-}
-.heroContent {
+.heroLeft {
+  background: var(--dark);
+  padding: 80px max(48px, calc((100vw - 1200px) / 2 + 48px)) 80px max(48px, calc((100vw - 1200px) / 2));
+  display: flex; flex-direction: column; justify-content: center; gap: 28px;
   position: relative; z-index: 1;
-  width: 52%; max-width: 620px;
-  margin-left: max(48px, calc((100vw - 1200px) / 2));
-  display: flex; flex-direction: column; align-items: flex-start; gap: 28px;
+}
+.heroRight {
+  position: relative; overflow: hidden;
+}
+.heroVideo {
+  width: 100%; height: 100%; object-fit: cover; object-position: center;
+  display: block;
 }
 .heroLogoRow { display: flex; align-items: center; gap: 10px; }
 .heroLogoImg { width: 64px; height: 64px; object-fit: contain; }
@@ -116,8 +112,10 @@
 .heroCardCtaCandidato { background: var(--pink); color: #fff; }
 .heroCardCtaEmpresa   { background: var(--cyan); color: var(--dark); font-weight: 800; }
 
-@media (max-width: 680px) {
-  .heroContent { width: 100%; margin-left: 24px; margin-right: 24px; max-width: calc(100% - 48px); }
+@media (max-width: 768px) {
+  .hero { grid-template-columns: 1fr; }
+  .heroLeft { padding: 64px 24px; }
+  .heroRight { height: 260px; }
   .heroCards { grid-template-columns: 1fr; max-width: 100%; }
 }
 

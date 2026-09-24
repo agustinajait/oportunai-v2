@@ -98,9 +98,8 @@ export default async function MentoresPage() {
 
       {/* Hero */}
       <div className={s.hero}>
-        <video src="/lv_0_20260923144131.mp4" autoPlay muted loop playsInline className={s.heroBgVideo} />
-        <div className={s.heroOverlay} />
-        <div className={s.heroContent}>
+        {/* Izquierda: contenido */}
+        <div className={s.heroLeft}>
           <h1 className={`${s.heroH1} ${poppins.className}`}>
             El talento que conoce el <em>rubro</em><span className={s.heroDot}>.</span>
           </h1>
@@ -108,14 +107,12 @@ export default async function MentoresPage() {
             Mentoress conecta personas capacitadas con estaciones de servicio.
           </p>
           <div className={s.heroCards}>
-            {/* Candidato */}
             <div className={`${s.heroCard} ${s.heroCardCandidato}`}>
               <span className={s.heroCardIcon}>👤</span>
               <strong className={`${s.heroCardLabel} ${poppins.className}`}>Quiero trabajar</strong>
               <p>Capacitate en el rubro, armá tu perfil y presentate fácil con tu VideoCV.</p>
               <a href={CAP_URL} className={`${s.heroCardCta} ${s.heroCardCtaCandidato}`}>Crear mi perfil →</a>
             </div>
-            {/* Empresa */}
             <div className={`${s.heroCard} ${s.heroCardEmpresa}`}>
               <span className={s.heroCardIcon}>⛽</span>
               <strong className={`${s.heroCardLabel} ${poppins.className}`}>Busco talento</strong>
@@ -123,6 +120,10 @@ export default async function MentoresPage() {
               <a href={CTA_URL} className={`${s.heroCardCta} ${s.heroCardCtaEmpresa}`}>Sumar mi estación →</a>
             </div>
           </div>
+        </div>
+        {/* Derecha: video */}
+        <div className={s.heroRight}>
+          <video src="/lv_0_20260923144131.mp4" autoPlay muted loop playsInline className={s.heroVideo} />
         </div>
       </div>
       <Stripe />

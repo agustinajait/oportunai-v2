@@ -6,8 +6,9 @@ import { prisma } from '../../lib/prisma';
 const poppins = Poppins({ subsets: ['latin'], weight: ['600', '700', '800', '900'], display: 'swap' });
 const dmSans  = DM_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700'], display: 'swap' });
 
-const CTA_URL = 'https://oportunai.korai.lat/register-empresa?origen=mentores';
-const CAP_URL = 'https://oportunai.korai.lat/capacitate';
+const CTA_URL      = 'https://oportunai.korai.lat/register-empresa?origen=mentores';
+const REGISTER_URL = 'https://oportunai.korai.lat/register?origen=mentoress';
+const CAP_URL      = 'https://oportunai.korai.lat/register?origen=mentoress';
 
 const BRANDS = [
   { name: "McDonald's", src: '/logos/logo mcd.png' },
@@ -113,7 +114,7 @@ export default async function MentoresPage() {
               <span className={s.heroCardIcon}>👤</span>
               <strong className={`${s.heroCardLabel} ${poppins.className}`}>Quiero trabajar</strong>
               <p>Capacitate en el rubro, armá tu perfil y presentate fácil con tu VideoCV.</p>
-              <a href={CAP_URL} className={`${s.heroCardCta} ${s.heroCardCtaCandidato}`}>Crear mi perfil →</a>
+              <a href={REGISTER_URL} className={`${s.heroCardCta} ${s.heroCardCtaCandidato}`}>Crear mi perfil →</a>
             </div>
             {/* Empresa */}
             <div className={`${s.heroCard} ${s.heroCardEmpresa}`}>

@@ -233,7 +233,9 @@
 
 /* ── Benefits ── */
 .benefits { background: var(--white); }
-.benefitsGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+.benefitsGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+@media (max-width: 900px) { .benefitsGrid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .benefitsGrid { grid-template-columns: 1fr; } }
 .benefitCard {
   border-left: 4px solid transparent; background: var(--off); border-radius: 8px; padding: 24px;
 }

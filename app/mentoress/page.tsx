@@ -100,7 +100,9 @@ export default async function MentoresPage() {
 
       {/* Hero */}
       <div className={s.hero}>
-        <div className={s.heroLeft}>
+        <video src="/lv_0_20260923144131.mp4" autoPlay muted loop playsInline className={s.heroBgVideo} />
+        <div className={s.heroOverlay} />
+        <div className={s.heroContent}>
           <h1 className={`${s.heroH1} ${poppins.className}`}>
             El talento que conoce el <em>rubro</em><span className={s.heroDot}>.</span>
           </h1>
@@ -122,9 +124,6 @@ export default async function MentoresPage() {
             </div>
           </div>
         </div>
-        <div className={s.heroRight}>
-          <video src="/lv_0_20260923144131.mp4" autoPlay muted loop playsInline className={s.heroVideo} />
-        </div>
       </div>
       <Stripe />
 
@@ -135,12 +134,12 @@ export default async function MentoresPage() {
           <h2 className={`${s.sectionTitle} ${poppins.className}`}>Publicás. Capacitamos. Elegís.</h2>
           <div className={s.steps}>
             {[
-              { n: '01', title: 'Registrás tu estación',  body: 'En 2 minutos cargás los datos y publicás el puesto. Sin papeles, sin llamadas, sin esperas.' },
-              { n: '02', title: 'El candidato se prepara', body: 'Accede gratis a los 4 módulos del rubro y arma su perfil con video. Llega a la entrevista con certificado.' },
-              { n: '03', title: 'Vos elegís al que vale',  body: 'Ves el video, revisás el certificado, citás al que te convence. El resto lo manejamos nosotros.' },
-            ].map(({ n, title, body }) => (
+              { n: '01', title: 'Registrás tu estación',  body: 'En 2 minutos cargás los datos y publicás el puesto. Sin papeles, sin llamadas, sin esperas.',   color: 'var(--pink)' },
+              { n: '02', title: 'El candidato se prepara', body: 'Accede gratis a los 4 módulos del rubro y arma su perfil con video. Llega a la entrevista con certificado.', color: 'var(--cyan)' },
+              { n: '03', title: 'Vos elegís al que vale',  body: 'Ves el video, revisás el certificado, citás al que te convence. El resto lo manejamos nosotros.',  color: 'var(--green)' },
+            ].map(({ n, title, body, color }) => (
               <div key={n} className={s.step}>
-                <div className={`${s.stepNum} ${poppins.className}`}>{n}</div>
+                <div className={`${s.stepNum} ${poppins.className}`} style={{ color }}>{n}</div>
                 <h3 className={poppins.className}>{title}</h3>
                 <p>{body}</p>
               </div>

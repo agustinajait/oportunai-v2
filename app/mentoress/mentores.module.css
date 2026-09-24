@@ -373,6 +373,7 @@
   background: linear-gradient(135deg, var(--dark2) 0%, #1e2a40 100%);
   display: flex; align-items: center; justify-content: center;
 }
+.capVideoReal { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .capVideoInner { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .capVideoIcon { font-size: 2.8rem; filter: drop-shadow(0 2px 8px rgba(0,0,0,.4)); }
 .capPlayBtn {

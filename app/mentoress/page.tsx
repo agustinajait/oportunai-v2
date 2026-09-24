@@ -103,12 +103,14 @@ export default async function MentoresPage() {
         <video src="/lv_0_20260923144131.mp4" autoPlay muted loop playsInline className={s.heroBgVideo} />
         <div className={s.heroOverlay} />
         <div className={s.heroContent}>
-          <h1 className={`${s.heroH1} ${poppins.className}`}>
-            El talento que conoce el <em>rubro</em><span className={s.heroDot}>.</span>
-          </h1>
-          <p className={s.heroSub}>
-            Mentoreess conecta personas capacitadas con estaciones de servicio.
-          </p>
+          <div className={s.heroTop}>
+            <h1 className={`${s.heroH1} ${poppins.className}`}>
+              El talento que conoce el <em>rubro</em><span className={s.heroDot}>.</span>
+            </h1>
+            <p className={s.heroSub}>
+              Mentoreess conecta personas capacitadas con estaciones de servicio.
+            </p>
+          </div>
           <div className={s.heroCards}>
             <div className={`${s.heroCard} ${s.heroCardCandidato}`}>
               <span className={s.heroCardIcon}>👤</span>

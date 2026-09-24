@@ -129,6 +129,51 @@ export default async function MentoresPage() {
       </div>
       <Stripe />
 
+      {/* How it works */}
+      <section className={`${s.section} ${s.how}`}>
+        <div className={s.container}>
+          <p className={`${s.sectionLabel} ${poppins.className}`}>Cómo funciona</p>
+          <h2 className={`${s.sectionTitle} ${poppins.className}`}>Publicás. Capacitamos. Elegís.</h2>
+          <div className={s.steps}>
+            {[
+              { n: '01', title: 'Registrás tu estación',  body: 'En 2 minutos cargás los datos y publicás el puesto. Sin papeles, sin llamadas, sin esperas.' },
+              { n: '02', title: 'El candidato se prepara', body: 'Accede gratis a los 4 módulos del rubro y arma su perfil con video. Llega a la entrevista con certificado.' },
+              { n: '03', title: 'Vos elegís al que vale',  body: 'Ves el video, revisás el certificado, citás al que te convence. El resto lo manejamos nosotros.' },
+            ].map(({ n, title, body }) => (
+              <div key={n} className={s.step}>
+                <div className={`${s.stepNum} ${poppins.className}`}>{n}</div>
+                <h3 className={poppins.className}>{title}</h3>
+                <p>{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+      <Stripe />
+
+      {/* Benefits */}
+      <section className={`${s.section} ${s.benefits}`}>
+        <div className={s.container}>
+          <p className={`${s.sectionLabel} ${poppins.className}`}>Lo que cambia</p>
+          <h2 className={`${s.sectionTitle} ${poppins.className}`}>Llegás a la entrevista<br />sabiendo con quién hablás.</h2>
+          <div className={s.benefitsGrid}>
+            {[
+              { icon: '🎥', title: 'Ves quién es antes de llamarlo',  body: 'Cada candidato graba su presentación en video. Sin sorpresas, sin CV que no dicen nada.' },
+              { icon: '⛽', title: 'Solo del rubro EES',              body: 'Vendedores de playa y tienda, lubriexpertos, encargados. Gente que ya entiende qué es una estación.' },
+              { icon: '🎓', title: 'Llegan con los módulos hechos',   body: 'Combustibles, lubricantes, café, atención al cliente — cuatro módulos completados antes de la entrevista.' },
+              { icon: '🔧', title: 'Sin intermediarios',              body: 'Publicás el puesto, recibís candidatos preparados, contratás. Sin consultoras ni formularios interminables.' },
+            ].map(({ icon, title, body }) => (
+              <div key={title} className={s.benefitCard}>
+                <span className={s.benefitIcon}>{icon}</span>
+                <h3 className={poppins.className}>{title}</h3>
+                <p>{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+      <Stripe />
+
       {/* Trust */}
       <section className={`${s.section} ${s.trust}`}>
         <div className={s.container}>
@@ -166,51 +211,6 @@ export default async function MentoresPage() {
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-      <Stripe />
-
-      {/* Benefits */}
-      <section className={`${s.section} ${s.benefits}`}>
-        <div className={s.container}>
-          <p className={`${s.sectionLabel} ${poppins.className}`}>Lo que cambia</p>
-          <h2 className={`${s.sectionTitle} ${poppins.className}`}>Llegás a la entrevista<br />sabiendo con quién hablás.</h2>
-          <div className={s.benefitsGrid}>
-            {[
-              { icon: '🎥', title: 'Ves quién es antes de llamarlo',  body: 'Cada candidato graba su presentación en video. Sin sorpresas, sin CV que no dicen nada.' },
-              { icon: '⛽', title: 'Solo del rubro EES',              body: 'Vendedores de playa y tienda, lubriexpertos, encargados. Gente que ya entiende qué es una estación.' },
-              { icon: '🎓', title: 'Llegan con los módulos hechos',   body: 'Combustibles, lubricantes, café, atención al cliente — cuatro módulos completados antes de la entrevista.' },
-              { icon: '🔧', title: 'Sin intermediarios',              body: 'Publicás el puesto, recibís candidatos preparados, contratás. Sin consultoras ni formularios interminables.' },
-            ].map(({ icon, title, body }) => (
-              <div key={title} className={s.benefitCard}>
-                <span className={s.benefitIcon}>{icon}</span>
-                <h3 className={poppins.className}>{title}</h3>
-                <p>{body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-      <Stripe />
-
-      {/* How it works */}
-      <section className={`${s.section} ${s.how}`}>
-        <div className={s.container}>
-          <p className={`${s.sectionLabel} ${poppins.className}`}>Cómo funciona</p>
-          <h2 className={`${s.sectionTitle} ${poppins.className}`}>Publicás. Capacitamos. Elegís.</h2>
-          <div className={s.steps}>
-            {[
-              { n: '01', title: 'Registrás tu estación',  body: 'En 2 minutos cargás los datos y publicás el puesto. Sin papeles, sin llamadas, sin esperas.' },
-              { n: '02', title: 'El candidato se prepara', body: 'Accede gratis a los 4 módulos del rubro y arma su perfil con video. Llega a la entrevista con certificado.' },
-              { n: '03', title: 'Vos elegís al que vale',  body: 'Ves el video, revisás el certificado, citás al que te convence. El resto lo manejamos nosotros.' },
-            ].map(({ n, title, body }) => (
-              <div key={n} className={s.step}>
-                <div className={`${s.stepNum} ${poppins.className}`}>{n}</div>
-                <h3 className={poppins.className}>{title}</h3>
-                <p>{body}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>

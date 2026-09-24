@@ -107,7 +107,7 @@ export default async function MentoresPage() {
             El talento que conoce el <em>rubro</em><span className={s.heroDot}>.</span>
           </h1>
           <p className={s.heroSub}>
-            Los candidatos de Mentoreess conocen el rubro, completaron los módulos de formación y armaron su perfil con video. Vos llegás a elegir, no a explicar.
+            Los candidatos de Mentoreess conocen el rubro de estaciones de servicio, completaron los módulos de formación y armaron su perfil con video. Vos llegás a elegir, no a explicar.
           </p>
           <div className={s.heroCards}>
             {/* Candidato */}

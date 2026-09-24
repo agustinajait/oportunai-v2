@@ -105,7 +105,7 @@ export default async function MentoresPage() {
         <div className={s.heroContent}>
           <div className={s.heroTop}>
             <h1 className={`${s.heroH1} ${poppins.className}`}>
-              El talento que conoce el <em>rubro</em><span className={s.heroDot}>.</span>
+              Capacitación, talento y selección para <em>estaciones de servicio</em><span className={s.heroDot}>.</span>
             </h1>
             <p className={s.heroSub}>
               Mentoreess conecta personas capacitadas con estaciones de servicio.

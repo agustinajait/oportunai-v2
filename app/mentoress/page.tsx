@@ -24,6 +24,7 @@ const MODULOS = [
     num: '01', icon: '⛽', titulo: 'Combustibles',
     desc: 'Naftas, diésel, GNC, calidad del combustible y seguridad. El candidato sabe qué despacha y cómo hacerlo de forma segura antes de llegar a la playa.',
     duracion: '45 min', nivel: 'Introductorio',
+    video: '/lv_0_20260924090254.mp4',
   },
   {
     num: '02', icon: '🛢️', titulo: 'Lubricantes',
@@ -295,19 +296,22 @@ export default async function MentoresPage() {
             <a href={CAP_URL} className={s.verTodosLink}>Ver todos los cursos →</a>
           </div>
           <div className={s.capGrid}>
-            {MODULOS.map(({ num, icon, titulo, desc, duracion, nivel }) => (
+            {MODULOS.map(({ num, icon, titulo, desc, duracion, nivel, video }) => (
               <div key={titulo} className={s.capCard}>
-                {/* Video intro placeholder */}
                 <div className={s.capVideo}>
-                  <div className={s.capVideoInner}>
-                    <span className={s.capVideoIcon}>{icon}</span>
-                    <div className={s.capPlayBtn} aria-label="Ver intro">
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <circle cx="10" cy="10" r="10" fill="white" fillOpacity="0.15"/>
-                        <polygon points="8,6 15,10 8,14" fill="white"/>
-                      </svg>
+                  {video ? (
+                    <video src={video} autoPlay muted loop playsInline className={s.capVideoReal} />
+                  ) : (
+                    <div className={s.capVideoInner}>
+                      <span className={s.capVideoIcon}>{icon}</span>
+                      <div className={s.capPlayBtn} aria-label="Ver intro">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                          <circle cx="10" cy="10" r="10" fill="white" fillOpacity="0.15"/>
+                          <polygon points="8,6 15,10 8,14" fill="white"/>
+                        </svg>
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <span className={`${s.capModTag} ${poppins.className}`}>Módulo {num}</span>
                 </div>
                 <div className={s.capCardBody}>

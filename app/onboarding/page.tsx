@@ -35,20 +35,25 @@ export default async function OnboardingPage() {
   const semaforo = usuario.korai_semaforo as Record<string, unknown> | null;
   const tieneDiagnostico = !!(semaforo?.salud || semaforo?.vivienda || semaforo?.red);
 
-  // Saltear paso 3 (diagnóstico Korai) si el candidato se postuló a una empresa Mentores.
-  // Wrapped en try/catch: si la columna origen aún no existe en la DB el onboarding sigue funcionando.
-  let saltearDiagnostico = false;
-  try {
-    const postulacionMentores = await prisma.postulacion.findFirst({
-      where: {
-        usuario_id: session.userId,
-        oferta: { empresa: { origen: 'mentores' } },
-      },
-      select: { id: true },
-    });
-    saltearDiagnostico = !!postulacionMentores;
-  } catch {
-    // origen column not yet in DB; default to false
+  const origenUsuario = (cvDatos.origen as string) ?? '';
+
+  // Saltear paso 3 (diagnóstico Korai) si:
+  // a) El usuario se registró desde MentorEESS (origen = 'mentoress'), o
+  // b) Se postuló a una empresa con origen = 'mentores'
+  let saltearDiagnostico = origenUsuario === 'mentoress';
+  if (!saltearDiagnostico) {
+    try {
+      const postulacionMentores = await prisma.postulacion.findFirst({
+        where: {
+          usuario_id: session.userId,
+          oferta: { empresa: { origen: 'mentores' } },
+        },
+        select: { id: true },
+      });
+      saltearDiagnostico = !!postulacionMentores;
+    } catch {
+      // origen column not yet in DB; default to false
+    }
   }
 
   return (
@@ -61,6 +66,7 @@ export default async function OnboardingPage() {
       tieneDiagnostico={tieneDiagnostico}
       tieneWhatsapp={usuario.korai_opt_in}
       saltearDiagnostico={saltearDiagnostico}
+      origen={origenUsuario}
     />
   );
 }

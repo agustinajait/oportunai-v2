@@ -18,10 +18,11 @@ function RegisterForm() {
 
   const onSubmit = async (data: RegisterInput) => {
     setServerError('');
+    const origen = searchParams.get('origen') ?? undefined;
     const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, ...(origen ? { origen } : {}) }),
     });
     const json = await res.json();
     if (!res.ok) { setServerError(json.error ?? 'Error al registrarse'); return; }

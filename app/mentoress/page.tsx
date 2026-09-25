@@ -46,9 +46,9 @@ const MODULOS = [
 ];
 
 const PUESTOS = [
-  { cat: 'Operación', roles: ['Vendedor de playa', 'Vendedor de tienda', 'Lubriexperto', 'Franquero'] },
-  { cat: 'Supervisión', roles: ['Responsable de playa', 'Responsable de tienda', 'Encargado de estación'] },
-  { cat: 'Soporte', roles: ['Administrativo', 'Embajador de tienda', 'Entrenador', 'Maestranza'] },
+  { cat: 'Operación',     roles: ['Vendedor de playa', 'Vendedor de tienda', 'Lubriexperto'] },
+  { cat: 'Mandos medios', roles: ['Encargado de playa', 'Encargado de tienda', 'Supervisor', 'Jefe de estación'] },
+  { cat: 'Soporte',       roles: ['Administrativo', 'Embajador de tienda', 'Entrenador', 'Maestranza'] },
 ];
 
 const SUELDOS = [

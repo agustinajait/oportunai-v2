@@ -38,7 +38,7 @@ export default async function OnboardingPage() {
   const origenUsuario = (cvDatos.origen as string) ?? '';
 
   // Saltear paso 3 (diagnóstico Korai) si:
-  // a) El usuario se registró desde MentorEESS (origen = 'mentoress'), o
+  // a) El usuario se registró desde Mentor EESS (origen = 'mentoress'), o
   // b) Se postuló a una empresa con origen = 'mentores'
   let saltearDiagnostico = origenUsuario === 'mentoress';
   if (!saltearDiagnostico) {

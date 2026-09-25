@@ -59,6 +59,7 @@ interface CvDatos {
   habilidades?: string[];
   herramientas_digitales?: string[];
   idiomas?: string[];
+  origen?: string;
 }
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -630,7 +631,7 @@ export default function DashboardClient({
 
   // ── Sub-componente: tab Ofertas con recomendadas ──────────────────────────
   // tipOferta / setTipOferta viven en el padre para evitar reset al re-render
-  function OfertasDashboard({ videos, initialOfertaId }: { videos: VideoItem[]; initialOfertaId?: string }) {
+  function OfertasDashboard({ videos, initialOfertaId, origenUsuario }: { videos: VideoItem[]; initialOfertaId?: string; origenUsuario?: string }) {
     const [recs, setRecs] = useState<{
       resultados: {
         id: string; tipo: 'interna' | 'externa'; titulo: string; empresa_nombre: string;
@@ -766,7 +767,7 @@ export default function DashboardClient({
         </div>
 
         {/* ── Mis postulaciones ───────────────────────────────── */}
-        <OfertasTab videos={videos} initialOfertaId={initialOfertaId} />
+        <OfertasTab videos={videos} initialOfertaId={initialOfertaId} origenUsuario={origenUsuario} />
       </div>
     );
   }
@@ -920,6 +921,7 @@ export default function DashboardClient({
           <OfertasDashboard
             videos={usuario.videos}
             initialOfertaId={initialOfertaId}
+            origenUsuario={usuario.cv_datos?.origen ?? undefined}
           />
         )}
 

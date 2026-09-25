@@ -22,13 +22,17 @@ const AREAS = [
 ];
 
 const AREAS_EESS = [
-  'Operación de playa',
-  'Atención en tienda',
+  'Vendedor de playa',
+  'Vendedor de tienda',
   'Lubriexperto',
   'Barista / Cafetería',
-  'Encargado de playa o tienda',
-  'Supervisor / Jefe de estación',
-  'Administración',
+  'Encargado de playa',
+  'Encargado de tienda',
+  'Supervisor',
+  'Jefe de estación',
+  'Administrativo',
+  'Embajador de tienda',
+  'Entrenador',
   'Maestranza',
 ];
 

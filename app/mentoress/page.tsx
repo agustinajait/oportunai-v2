@@ -79,11 +79,19 @@ function LogoMark() {
 }
 
 export default async function MentoresPage() {
-  const galeria = await prisma.galeriaHome.findMany({
-    where: { activa: true },
-    orderBy: { orden: 'asc' },
-    take: 6,
-  });
+  const [galeria, ofertasDestacadas] = await Promise.all([
+    prisma.galeriaHome.findMany({
+      where: { activa: true },
+      orderBy: { orden: 'asc' },
+      take: 6,
+    }),
+    prisma.oferta.findMany({
+      where: { estado: 'activa', empresa: { origen: 'mentores' } },
+      include: { empresa: { select: { nombre: true, logo_url: true, nombre_marca: true } } },
+      orderBy: { created_at: 'desc' },
+      take: 3,
+    }),
+  ]);
   return (
     <div className={`${s.page} ${dmSans.className}`}>
 
@@ -332,6 +340,57 @@ export default async function MentoresPage() {
         </div>
       </section>
       <Stripe />
+
+      {/* Ofertas destacadas */}
+      {ofertasDestacadas.length > 0 && (
+        <>
+          <section className={`${s.section} ${s.ofertasSection}`}>
+            <div className={s.container}>
+              <div className={s.sectionHeader}>
+                <div>
+                  <p className={`${s.sectionLabel} ${poppins.className}`}>Oportunidades reales</p>
+                  <h2 className={`${s.sectionTitle} ${poppins.className}`}>Estaciones que buscan talento ahora</h2>
+                </div>
+                <a href={REGISTER_URL} className={s.verTodosLink}>Ver todas las ofertas →</a>
+              </div>
+              <div className={s.ofertasGrid}>
+                {ofertasDestacadas.map((o) => (
+                  <div key={o.id} className={s.ofertaCard}>
+                    <div className={s.ofertaCardTop}>
+                      {(o.empresa.logo_url || o.logo_url) && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={o.empresa.logo_url ?? o.logo_url ?? ''}
+                          alt={o.empresa.nombre_marca ?? o.empresa.nombre}
+                          className={s.ofertaLogo}
+                        />
+                      )}
+                      <div className={s.ofertaCardInfo}>
+                        <p className={`${s.ofertaEmpresa} ${poppins.className}`}>
+                          {o.nombre_marca ?? o.empresa.nombre_marca ?? o.empresa.nombre}
+                        </p>
+                        <h3 className={`${s.ofertaTitulo} ${poppins.className}`}>{o.titulo}</h3>
+                      </div>
+                    </div>
+                    <div className={s.ofertaTags}>
+                      {o.modalidad && <span className={s.ofertaTag}>{o.modalidad}</span>}
+                      {o.ciudad && <span className={s.ofertaTag}>📍 {o.ciudad}</span>}
+                      {o.area && <span className={s.ofertaTag}>{o.area}</span>}
+                    </div>
+                    <a href={REGISTER_URL} className={s.ofertaCta}>Postularme →</a>
+                  </div>
+                ))}
+              </div>
+              <div className={s.ofertasVerMas}>
+                <a href={REGISTER_URL} className={`${s.ofertasVerMasBtn} ${poppins.className}`}>
+                  Ver todas las ofertas disponibles →
+                </a>
+              </div>
+            </div>
+          </section>
+          <Stripe />
+        </>
+      )}
 
       {/* CTA final */}
       <div className={s.ctaSection}>

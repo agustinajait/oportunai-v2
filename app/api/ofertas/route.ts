@@ -8,11 +8,13 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const area = searchParams.get('area');
     const ciudad = searchParams.get('ciudad');
+    const origen = searchParams.get('origen');
     const ofertas = await prisma.oferta.findMany({
       where: {
         estado: 'activa',
         ...(area ? { area } : {}),
         ...(ciudad ? { ciudad: { contains: ciudad, mode: 'insensitive' } } : {}),
+        ...(origen ? { empresa: { origen } } : {}),
       },
       include: {
         empresa: { select: { nombre: true, logo_url: true, slug: true } },

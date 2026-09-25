@@ -59,6 +59,7 @@ interface CvDatos {
   habilidades?: string[];
   herramientas_digitales?: string[];
   idiomas?: string[];
+  origen?: string;
 }
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -68,6 +69,13 @@ const HABILIDADES_SUGERIDAS = [
   'Atención al cliente', 'Trabajo en equipo', 'Comunicación', 'Responsabilidad',
   'Proactividad', 'Organización', 'Puntualidad', 'Resolución de problemas',
   'Manejo de caja', 'Ventas', 'Liderazgo', 'Adaptabilidad',
+];
+
+const HABILIDADES_EES = [
+  'Despacho de combustible', 'Atención en playa', 'Operación de surtidores',
+  'Manejo de lubricantes', 'Atención al cliente', 'Trabajo en equipo',
+  'Seguridad en EDS', 'Control de stock', 'Manejo de caja', 'Ventas',
+  'Elaboración de café', 'Puntualidad', 'Responsabilidad', 'Proactividad',
 ];
 
 const HERRAMIENTAS_DIGITALES = [
@@ -630,7 +638,7 @@ export default function DashboardClient({
 
   // ── Sub-componente: tab Ofertas con recomendadas ──────────────────────────
   // tipOferta / setTipOferta viven en el padre para evitar reset al re-render
-  function OfertasDashboard({ videos, initialOfertaId }: { videos: VideoItem[]; initialOfertaId?: string }) {
+  function OfertasDashboard({ videos, initialOfertaId, origenUsuario }: { videos: VideoItem[]; initialOfertaId?: string; origenUsuario?: string }) {
     const [recs, setRecs] = useState<{
       resultados: {
         id: string; tipo: 'interna' | 'externa'; titulo: string; empresa_nombre: string;
@@ -766,7 +774,7 @@ export default function DashboardClient({
         </div>
 
         {/* ── Mis postulaciones ───────────────────────────────── */}
-        <OfertasTab videos={videos} initialOfertaId={initialOfertaId} />
+        <OfertasTab videos={videos} initialOfertaId={initialOfertaId} origenUsuario={origenUsuario} />
       </div>
     );
   }
@@ -784,10 +792,14 @@ export default function DashboardClient({
           <div className="mb-4 flex items-start gap-3 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800">
             <span className="text-lg shrink-0">🎉</span>
             <div className="flex-1">
-              <p className="font-semibold">¡Bienvenido/a a OportunAI!</p>
+              <p className="font-semibold">
+                {usuario.cv_datos?.origen === 'mentoress' ? '¡Bienvenido/a a MentorEESS!' : '¡Bienvenido/a a OportunAI!'}
+              </p>
               <p className="text-emerald-700 mt-0.5">
-                Llegaste desde Korai. Tu diagnóstico ya está cargado en tu perfil.
-                Completá tu CV y empezá a conectar con oportunidades laborales.
+                {usuario.cv_datos?.origen === 'mentoress'
+                  ? 'Llegaste desde Korai. Tu diagnóstico ya está cargado. Completá tu perfil y empezá a conectar con estaciones de servicio.'
+                  : 'Llegaste desde Korai. Tu diagnóstico ya está cargado en tu perfil. Completá tu CV y empezá a conectar con oportunidades laborales.'
+                }
               </p>
             </div>
             <button
@@ -920,6 +932,7 @@ export default function DashboardClient({
           <OfertasDashboard
             videos={usuario.videos}
             initialOfertaId={initialOfertaId}
+            origenUsuario={usuario.cv_datos?.origen ?? undefined}
           />
         )}
 
@@ -1656,7 +1669,10 @@ export default function DashboardClient({
                     {!waActivo ? (
                       <div className="space-y-3">
                         <p className="text-sm text-ink-600 leading-relaxed">
-                          Activá esta opción y el equipo de OportunAI te va a escribir por WhatsApp para ayudarte con tu búsqueda de trabajo.
+                          {usuario.cv_datos?.origen === 'mentoress'
+                            ? 'Activá esta opción y el equipo de MentorEESS te va a escribir por WhatsApp para ayudarte a encontrar trabajo en estaciones de servicio.'
+                            : 'Activá esta opción y el equipo de OportunAI te va a escribir por WhatsApp para ayudarte con tu búsqueda de trabajo.'
+                          }
                         </p>
                         <div className="space-y-2">
                           {[
@@ -1720,7 +1736,7 @@ export default function DashboardClient({
                         {/* Paso 2: acción requerida */}
                         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-1">
                           <p className="text-sm font-bold text-amber-800 flex items-center gap-1.5">
-                            <span>📲</span> Paso 2: Escribile a OportunAI
+                            <span>📲</span> Paso 2: Escribile a {usuario.cv_datos?.origen === 'mentoress' ? 'MentorEESS' : 'OportunAI'}
                           </p>
                           <p className="text-xs text-amber-700 leading-relaxed">
                             Para que el bot pueda escribirte, <strong>vos tenés que mandar el primer mensaje</strong>. Tocá el botón y enviá el mensaje que ya está escrito.
@@ -1733,7 +1749,7 @@ export default function DashboardClient({
                           rel="noopener noreferrer"
                           className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b958] active:bg-[#1da851] text-white text-sm font-bold px-4 py-3.5 rounded-xl transition-colors shadow-sm active:scale-[0.98]"
                         >
-                          <span className="text-base">💬</span> Mandar mensaje a OportunAI →
+                          <span className="text-base">💬</span> Mandar mensaje a {usuario.cv_datos?.origen === 'mentoress' ? 'MentorEESS' : 'OportunAI'} →
                         </a>
                         <p className="text-xs text-ink-400 text-center leading-relaxed">
                           Para desactivar, tocá el botón verde de arriba a la derecha.
@@ -1775,7 +1791,7 @@ export default function DashboardClient({
                       <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl p-3">
                         <span className="w-6 h-6 rounded-full bg-[#25D366] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
                         <div>
-                          <p className="text-sm font-semibold text-ink-800">Mandás un WhatsApp a OportunAI</p>
+                          <p className="text-sm font-semibold text-ink-800">Mandás un WhatsApp a {usuario.cv_datos?.origen === 'mentoress' ? 'MentorEESS' : 'OportunAI'}</p>
                           <p className="text-xs text-ink-500 mt-0.5">Te abrimos el chat con el mensaje ya escrito. Solo tocás <strong>Enviar</strong>.</p>
                         </div>
                       </div>
@@ -2549,7 +2565,7 @@ export default function DashboardClient({
                       </div>
                       <p className="text-xs text-ink-400 mb-1.5">Sugerencias:</p>
                       <div className="flex flex-wrap gap-1.5">
-                        {HABILIDADES_SUGERIDAS.filter(h => !habilidades.includes(h)).map(h => (
+                        {(cvDatos?.origen === 'mentoress' ? HABILIDADES_EES : HABILIDADES_SUGERIDAS).filter(h => !habilidades.includes(h)).map(h => (
                           <button key={h} onClick={() => setHabilidades(p => [...p, h])}
                             className="text-xs bg-ink-100 text-ink-500 hover:bg-brand-50 hover:text-brand-600 px-2 py-0.5 rounded-full transition-colors">
                             + {h}

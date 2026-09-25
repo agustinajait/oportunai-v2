@@ -55,7 +55,7 @@ const modalidadLabel: Record<string, string> = {
   presencial: 'Presencial', remoto: 'Remoto', hibrido: 'Híbrido',
 };
 
-export default function OfertasTab({ videos, initialOfertaId }: { videos: Video[]; initialOfertaId?: string }) {
+export default function OfertasTab({ videos, initialOfertaId, origenUsuario }: { videos: Video[]; initialOfertaId?: string; origenUsuario?: string }) {
   const [vista, setVista] = useState<'explorar' | 'mis_postulaciones'>('explorar');
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const [postulaciones, setPostulaciones] = useState<PostulacionCompleta[]>([]);
@@ -91,8 +91,11 @@ export default function OfertasTab({ videos, initialOfertaId }: { videos: Video[
 
   async function cargarDatos() {
     setLoading(true);
+    const ofertasUrl = origenUsuario === 'mentoress'
+      ? '/api/ofertas?origen=mentores'
+      : '/api/ofertas';
     const [resOfertas, resPost] = await Promise.all([
-      fetch('/api/ofertas'),
+      fetch(ofertasUrl),
       fetch('/api/postulaciones'),
     ]);
     const dataOfertas = await resOfertas.json();

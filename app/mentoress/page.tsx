@@ -87,7 +87,7 @@ export default async function MentoresPage() {
     }),
     prisma.oferta.findMany({
       where: { estado: 'activa', empresa: { origen: 'mentores' } },
-      include: { empresa: { select: { nombre: true, logo_url: true, nombre_marca: true } } },
+      include: { empresa: { select: { nombre: true, logo_url: true } } },
       orderBy: { created_at: 'desc' },
       take: 3,
     }),
@@ -361,13 +361,13 @@ export default async function MentoresPage() {
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={o.empresa.logo_url ?? o.logo_url ?? ''}
-                          alt={o.empresa.nombre_marca ?? o.empresa.nombre}
+                          alt={o.nombre_marca ?? o.empresa.nombre}
                           className={s.ofertaLogo}
                         />
                       )}
                       <div className={s.ofertaCardInfo}>
                         <p className={`${s.ofertaEmpresa} ${poppins.className}`}>
-                          {o.nombre_marca ?? o.empresa.nombre_marca ?? o.empresa.nombre}
+                          {o.nombre_marca ?? o.empresa.nombre}
                         </p>
                         <h3 className={`${s.ofertaTitulo} ${poppins.className}`}>{o.titulo}</h3>
                       </div>

@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { nombre_completo, email, password, telefono, direccion, dni, fecha_nacimiento } = parsed.data;
+    const origen = typeof body.origen === 'string' && body.origen ? body.origen : null;
 
     const existing = await prisma.usuario.findFirst({
       where: { OR: [{ email }, { dni }] },
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest) {
       data: {
         nombre_completo, email, password_hash, telefono, direccion, dni, slug,
         fecha_nacimiento: fecha_nacimiento ? new Date(fecha_nacimiento) : null,
+        ...(origen ? { cv_datos: { origen } } : {}),
       },
     });
 

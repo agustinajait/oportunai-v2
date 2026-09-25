@@ -13,6 +13,7 @@ interface Props {
   tieneDiagnostico:   boolean;
   tieneWhatsapp:      boolean;
   saltearDiagnostico?: boolean;
+  origen?:            string;
 }
 
 const AREAS = [
@@ -20,7 +21,20 @@ const AREAS = [
   'Logística', 'Administración', 'Tecnología', 'Salud', 'Educación', 'Otro',
 ];
 
-function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVideo, tieneDiagnostico, tieneWhatsapp, saltearDiagnostico }: Props) {
+const AREAS_EESS = [
+  'Operación de playa',
+  'Atención en tienda',
+  'Lubriexperto',
+  'Barista / Cafetería',
+  'Encargado de playa o tienda',
+  'Supervisor / Jefe de estación',
+  'Administración',
+  'Maestranza',
+];
+
+function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVideo, tieneDiagnostico, tieneWhatsapp, saltearDiagnostico, origen }: Props) {
+  const esMentoress = origen === 'mentoress';
+  const areasDisponibles = esMentoress ? AREAS_EESS : AREAS;
   const router       = useRouter();
   const searchParams = useSearchParams();
 
@@ -114,8 +128,19 @@ function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVi
       {/* Header */}
       <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white font-bold text-sm">✦</div>
-          <span className="font-semibold text-ink-900 text-lg">Oportunai</span>
+          {esMentoress ? (
+            <>
+              <img src="/logo-mentoress.png" alt="MentorEESS" className="w-8 h-8 object-contain" />
+              <span className="font-semibold text-ink-900 text-lg">
+                Mentor<span style={{ color: '#00B6D8' }}>EESS</span>
+              </span>
+            </>
+          ) : (
+            <>
+              <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white font-bold text-sm">✦</div>
+              <span className="font-semibold text-ink-900 text-lg">Oportunai</span>
+            </>
+          )}
         </div>
         <button
           onClick={saltarYCompletar}
@@ -162,7 +187,7 @@ function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVi
                     ¿En qué área querés trabajar?
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {AREAS.map(a => (
+                    {areasDisponibles.map(a => (
                       <button
                         key={a}
                         type="button"
@@ -187,7 +212,10 @@ function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVi
                   <textarea
                     value={bio}
                     onChange={e => setBio(e.target.value)}
-                    placeholder="Ej: Tengo 3 años de experiencia en gastronomía y estoy buscando trabajo en zona norte."
+                    placeholder={esMentoress
+                      ? 'Ej: Tengo 2 años de experiencia como vendedor de playa y busco trabajo en CABA o zona norte.'
+                      : 'Ej: Tengo 3 años de experiencia en gastronomía y estoy buscando trabajo en zona norte.'
+                    }
                     rows={3}
                     maxLength={300}
                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-ink-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"

@@ -8,9 +8,23 @@ export default async function CapitatePage() {
   const session = await getSession();
   if (!session) redirect('/login');
 
+  const usuario = await prisma.usuario.findUnique({
+    where:  { id: session.userId },
+    select: { cv_datos: true },
+  });
+  const esMentoress = (usuario?.cv_datos as Record<string, unknown>)?.origen === 'mentoress';
+
   const [contenidos, progresos] = await Promise.all([
     prisma.capacitateContenido.findMany({
-      where:   { activa: true },
+      where:   {
+        activa: true,
+        // Para Mentor EESS: solo capacitaciones del rubro EES
+        // Para el resto: solo las genéricas (sin vertical asignada)
+        ...(esMentoress
+          ? { vertical: 'mentoress' }
+          : { OR: [{ vertical: null }, { vertical: '' }] }
+        ),
+      },
       orderBy: [{ categoria: 'asc' }, { orden: 'asc' }],
       include: { _count: { select: { modulos: true } } },
     }),

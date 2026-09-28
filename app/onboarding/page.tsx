@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import OnboardingClient from './OnboardingClient';
@@ -25,8 +26,13 @@ export default async function OnboardingPage() {
 
   if (!usuario) redirect('/login');
 
-  // Si ya completó el onboarding, mandarlo al dashboard
-  if (usuario.onboarding_completado) redirect('/dashboard');
+  // Si ya completó el onboarding, corregir la cookie y mandarlo al dashboard
+  if (usuario.onboarding_completado) {
+    cookies().set('onboarding_completado', 'true', {
+      httpOnly: false, path: '/', maxAge: 60 * 60 * 24 * 365, sameSite: 'lax',
+    });
+    redirect('/dashboard');
+  }
 
   const cvDatos = (usuario.cv_datos as Record<string, unknown>) ?? {};
 

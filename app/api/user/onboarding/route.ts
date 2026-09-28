@@ -9,6 +9,7 @@
  * reciba `semaforo_previo` con 2-3 dimensiones ya conocidas y acorte el diagnóstico.
  */
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { getSessionFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
@@ -165,6 +166,16 @@ export async function PATCH(req: NextRequest) {
     data,
     select: { id: true, onboarding_completado: true },
   });
+
+  // Sincronizar la cookie que usa el middleware para evitar redirect a /onboarding
+  if (body.completar === true) {
+    cookies().set('onboarding_completado', 'true', {
+      httpOnly: false,
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: 'lax',
+    });
+  }
 
   return NextResponse.json({ ok: true, usuario });
 }

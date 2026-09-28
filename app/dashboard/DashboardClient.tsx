@@ -828,8 +828,10 @@ export default function DashboardClient({
                 { id: 'documentos',  Icon: ShieldCheck,    label: 'Documentos',  badge: null },
                 { id: 'ofertas',     Icon: Briefcase,      label: 'Ofertas',     badge: null },
                 { id: 'citas',       Icon: CalendarDays,   label: 'Citas',       badge: citasPendientes > 0 ? citasPendientes : null },
-                { id: 'servicios',   Icon: Layers,         label: 'Módulos',     badge: misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length || null },
-                { id: 'capacitate',  Icon: GraduationCap,  label: 'Capacitate',  badge: null, href: '/dashboard/capacitate' },
+                ...(usuario.cv_datos?.origen !== 'mentoress' ? [
+                  { id: 'servicios',  Icon: Layers,        label: 'Módulos',     badge: misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length || null },
+                ] : []),
+                { id: 'capacitate',  Icon: GraduationCap,  label: 'Capacitate',  badge: null, href: usuario.cv_datos?.origen === 'mentoress' ? '/dashboard/capacitate?vertical=eess' : '/dashboard/capacitate' },
               ].map(({ id, Icon, label, badge, href }: { id: string; Icon: React.ElementType; label: string; badge: number | null; href?: string }) => (
                 href ? (
                   <Link
@@ -2751,7 +2753,9 @@ export default function DashboardClient({
           {([
             { id: 'perfil',     Icon: User,         label: 'Perfil',   badge: null },
             { id: 'ofertas',    Icon: Briefcase,     label: 'Ofertas',  badge: null },
-            { id: 'servicios',  Icon: Layers,        label: 'Módulos',  badge: misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length || null },
+            ...(usuario.cv_datos?.origen !== 'mentoress' ? [
+              { id: 'servicios' as typeof tab, Icon: Layers, label: 'Módulos', badge: misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length || null },
+            ] : []),
             { id: 'citas',      Icon: CalendarDays,  label: 'Citas',    badge: citasPendientes > 0 ? citasPendientes : null },
             { id: 'documentos', Icon: FileText,      label: 'Docs',     badge: null },
           ] as { id: typeof tab; Icon: React.ElementType; label: string; badge: number | null }[]).map(({ id, Icon, label, badge }) => (

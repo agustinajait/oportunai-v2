@@ -619,6 +619,7 @@ model CapacitateContenido {
   icono         String?                   // emoji o nombre de icono
   orden         Int      @default(0)      // orden dentro de su categoría
   activa        Boolean  @default(true)
+  vertical      String?                   // null = genérico, 'mentoress' = Mentor EESS
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 

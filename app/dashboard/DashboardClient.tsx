@@ -793,7 +793,7 @@ export default function DashboardClient({
             <span className="text-lg shrink-0">🎉</span>
             <div className="flex-1">
               <p className="font-semibold">
-                {usuario.cv_datos?.origen === 'mentoress' ? '¡Bienvenido/a a MentorEESS!' : '¡Bienvenido/a a OportunAI!'}
+                {usuario.cv_datos?.origen === 'mentoress' ? '¡Bienvenido/a a Mentor EESS!' : '¡Bienvenido/a a OportunAI!'}
               </p>
               <p className="text-emerald-700 mt-0.5">
                 {usuario.cv_datos?.origen === 'mentoress'
@@ -1670,7 +1670,7 @@ export default function DashboardClient({
                       <div className="space-y-3">
                         <p className="text-sm text-ink-600 leading-relaxed">
                           {usuario.cv_datos?.origen === 'mentoress'
-                            ? 'Activá esta opción y el equipo de MentorEESS te va a escribir por WhatsApp para ayudarte a encontrar trabajo en estaciones de servicio.'
+                            ? 'Activá esta opción y el equipo de Mentor EESS te va a escribir por WhatsApp para ayudarte a encontrar trabajo en estaciones de servicio.'
                             : 'Activá esta opción y el equipo de OportunAI te va a escribir por WhatsApp para ayudarte con tu búsqueda de trabajo.'
                           }
                         </p>
@@ -1736,7 +1736,7 @@ export default function DashboardClient({
                         {/* Paso 2: acción requerida */}
                         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-1">
                           <p className="text-sm font-bold text-amber-800 flex items-center gap-1.5">
-                            <span>📲</span> Paso 2: Escribile a {usuario.cv_datos?.origen === 'mentoress' ? 'MentorEESS' : 'OportunAI'}
+                            <span>📲</span> Paso 2: Escribile a {usuario.cv_datos?.origen === 'mentoress' ? 'Mentor EESS' : 'OportunAI'}
                           </p>
                           <p className="text-xs text-amber-700 leading-relaxed">
                             Para que el bot pueda escribirte, <strong>vos tenés que mandar el primer mensaje</strong>. Tocá el botón y enviá el mensaje que ya está escrito.
@@ -1749,7 +1749,7 @@ export default function DashboardClient({
                           rel="noopener noreferrer"
                           className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b958] active:bg-[#1da851] text-white text-sm font-bold px-4 py-3.5 rounded-xl transition-colors shadow-sm active:scale-[0.98]"
                         >
-                          <span className="text-base">💬</span> Mandar mensaje a {usuario.cv_datos?.origen === 'mentoress' ? 'MentorEESS' : 'OportunAI'} →
+                          <span className="text-base">💬</span> Mandar mensaje a {usuario.cv_datos?.origen === 'mentoress' ? 'Mentor EESS' : 'OportunAI'} →
                         </a>
                         <p className="text-xs text-ink-400 text-center leading-relaxed">
                           Para desactivar, tocá el botón verde de arriba a la derecha.
@@ -1791,7 +1791,7 @@ export default function DashboardClient({
                       <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl p-3">
                         <span className="w-6 h-6 rounded-full bg-[#25D366] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
                         <div>
-                          <p className="text-sm font-semibold text-ink-800">Mandás un WhatsApp a {usuario.cv_datos?.origen === 'mentoress' ? 'MentorEESS' : 'OportunAI'}</p>
+                          <p className="text-sm font-semibold text-ink-800">Mandás un WhatsApp a {usuario.cv_datos?.origen === 'mentoress' ? 'Mentor EESS' : 'OportunAI'}</p>
                           <p className="text-xs text-ink-500 mt-0.5">Te abrimos el chat con el mensaje ya escrito. Solo tocás <strong>Enviar</strong>.</p>
                         </div>
                       </div>

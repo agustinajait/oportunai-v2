@@ -70,7 +70,7 @@ function LogoMark() {
   return (
     <Image
       src="/logo-mentoress.png"
-      alt="MentorEESS"
+      alt="Mentor EESS"
       width={56}
       height={56}
       className={s.logoMark}
@@ -100,7 +100,7 @@ export default async function MentoresPage() {
         <div className={s.navLogo}>
           <LogoMark />
           <div>
-            <div className={`${s.navLogoText} ${poppins.className}`}>Mentor<span className={s.eess}>EESS</span></div>
+            <div className={`${s.navLogoText} ${poppins.className}`}>Mentor <span className={s.eess}>EESS</span></div>
             <div className={`${s.navLogoSub} ${poppins.className}`}>Estaciones de Servicio</div>
           </div>
         </div>
@@ -118,7 +118,7 @@ export default async function MentoresPage() {
               Capacitación, talento y selección para <em>estaciones de servicio</em><span className={s.heroDot}>.</span>
             </h1>
             <p className={s.heroSub}>
-              MentorEESS conecta personas capacitadas con estaciones de servicio.
+              Mentor EESS conecta personas capacitadas con estaciones de servicio.
             </p>
           </div>
           <div className={s.heroCards}>
@@ -188,7 +188,7 @@ export default async function MentoresPage() {
           <p className={`${s.sectionLabel} ${poppins.className}`}>Quiénes somos</p>
           <h2 className={`${s.sectionTitle} ${poppins.className}`}>Tecnología con historia,<br />enfocada en tu sector.</h2>
           <p className={s.trustIntro}>
-            MentorEESS es impulsada por OportunAI, con el respaldo de <strong>Tu VideoCV</strong> — la startup argentina pionera en Video CV en procesos de selección desde 2015. Más de una década trabajando con las empresas más grandes del país, ahora enfocados exclusivamente en estaciones de servicio.
+            Mentor EESS es impulsada por OportunAI, con el respaldo de <strong>Tu VideoCV</strong> — la startup argentina pionera en Video CV en procesos de selección desde 2015. Más de una década trabajando con las empresas más grandes del país, ahora enfocados exclusivamente en estaciones de servicio.
           </p>
 
           {/* Galería de impacto */}
@@ -272,7 +272,7 @@ export default async function MentoresPage() {
         <div className={s.container}>
           <div className={s.sectionHeader}>
             <div>
-              <p className={`${s.sectionLabel} ${poppins.className}`}>Formación inicial MentorEESS</p>
+              <p className={`${s.sectionLabel} ${poppins.className}`}>Formación inicial Mentor EESS</p>
               <h2 className={`${s.sectionTitle} ${poppins.className}`}>4 cursos del rubro,<br />gratis para quien se postula.</h2>
             </div>
             <a href={CAP_URL} className={s.verTodosLink}>Ver todos los cursos →</a>
@@ -324,7 +324,7 @@ export default async function MentoresPage() {
               Más que un perfil,<br />una <em>aportunidad.</em>
             </h2>
             <p className={s.oportunidadSub}>
-              MentorEESS es la plataforma que impulsa el talento del sector, con formación, tecnología y oportunidades reales.
+              Mentor EESS es la plataforma que impulsa el talento del sector, con formación, tecnología y oportunidades reales.
             </p>
             <a href={REGISTER_URL} className={`${s.oportunidadCta} ${poppins.className}`}>Crear mi perfil gratis →</a>
           </div>
@@ -395,7 +395,7 @@ export default async function MentoresPage() {
       {/* CTA final */}
       <div className={s.ctaSection}>
         <div className={s.container}>
-          <h2 className={poppins.className}>El equipo de tu estación<br />está en MentorEESS.</h2>
+          <h2 className={poppins.className}>El equipo de tu estación<br />está en Mentor EESS.</h2>
           <p>Registrás la estación hoy. Esta semana ya tenés candidatos con video, certificado y formación del rubro.</p>
           <a href={CTA_URL} className={s.ctaBig}>Sumar mi estación →</a>
         </div>
@@ -403,7 +403,7 @@ export default async function MentoresPage() {
 
       {/* Footer */}
       <footer className={s.footer}>
-<p>MentorEESS · Impulsado por <a href="https://oportunai.korai.lat">Oportunai</a></p>
+<p>Mentor EESS · Impulsado por <a href="https://oportunai.korai.lat">Oportunai</a></p>
       </footer>
 
     </div>

@@ -134,9 +134,9 @@ function OnboardingInner({ nombre, bioInicial, fotoInicial, areaLaboral, tieneVi
         <div className="flex items-center gap-2">
           {esMentoress ? (
             <>
-              <img src="/logo-mentoress.png" alt="MentorEESS" className="w-8 h-8 object-contain" />
+              <img src="/logo-mentoress.png" alt="Mentor EESS" className="w-8 h-8 object-contain" />
               <span className="font-semibold text-ink-900 text-lg">
-                Mentor<span style={{ color: '#00B6D8' }}>EESS</span>
+                Mentor <span style={{ color: '#00B6D8' }}>EESS</span>
               </span>
             </>
           ) : (

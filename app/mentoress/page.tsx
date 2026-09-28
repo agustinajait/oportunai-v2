@@ -8,6 +8,7 @@ const dmSans  = DM_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700
 
 const CTA_URL      = 'https://oportunai.korai.lat/register-empresa?origen=mentores';
 const REGISTER_URL = 'https://oportunai.korai.lat/register?origen=mentoress';
+const LOGIN_URL    = 'https://oportunai.korai.lat/login';
 const CAP_URL      = 'https://oportunai.korai.lat/register?origen=mentoress';
 
 const BRANDS = [
@@ -104,7 +105,10 @@ export default async function MentoresPage() {
             <div className={`${s.navLogoSub} ${poppins.className}`}>Estaciones de Servicio</div>
           </div>
         </div>
-        <a href={CTA_URL} className={s.ctaNav}>Sumar mi estación</a>
+        <div className={s.navActions}>
+          <a href={LOGIN_URL} className={s.loginNav}>¿Ya tenés cuenta? Ingresá</a>
+          <a href={CTA_URL} className={s.ctaNav}>Sumar mi estación</a>
+        </div>
       </nav>
       <Stripe />
 

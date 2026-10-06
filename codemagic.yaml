@@ -7,9 +7,11 @@ workflows:
     scripts:
       - name: Install Node dependencies
         script: npm ci
+      - name: Capacitor sync
+        script: npx cap sync android
       - name: Install ImageMagick and generate icons
         script: |
-          apt-get install -y imagemagick
+          brew install imagemagick
           bash scripts/generate-icons.sh
       - name: Set gradlew permissions
         script: chmod +x android/gradlew

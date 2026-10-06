@@ -10,6 +10,8 @@ workflows:
       - name: Capacitor sync
         script: |
           mkdir -p android/app/src/main/assets
+          mkdir -p android/app/src/main/res/xml
+          mkdir -p android/capacitor-cordova-android-plugins/src/main/libs
           npx cap sync android || true
       - name: Install ImageMagick and generate icons
         script: |

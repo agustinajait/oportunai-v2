@@ -1,4 +1,4 @@
-package com.oportunai.candidatos;
+package com.tuvideocv.app;
 
 import com.getcapacitor.BridgeActivity;
 

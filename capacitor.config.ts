@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.oportunai.candidatos',
-  appName: 'OportunAI',
+  appId: 'com.tuvideocv.app',
+  appName: 'Tu VideoCV',
   webDir: 'out',
   server: {
     url: 'https://oportunai.korai.lat',

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">OportunAI</string>
-    <string name="title_activity_main">OportunAI</string>
-    <string name="package_name">com.oportunai.candidatos</string>
-    <string name="custom_url_scheme">com.oportunai.candidatos</string>
+    <string name="app_name">Tu VideoCV</string>
+    <string name="title_activity_main">Tu VideoCV</string>
+    <string name="package_name">com.tuvideocv.app</string>
+    <string name="custom_url_scheme">com.tuvideocv.app</string>
 </resources>

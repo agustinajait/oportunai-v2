@@ -14,6 +14,9 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
     "@hookform/resolvers": "^3.3.4",
     "@prisma/client": "^5.10.0",
     "@supabase/supabase-js": "^2.105.4",

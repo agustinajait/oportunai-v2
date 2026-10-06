@@ -1,5 +1,14 @@
 node_modules
 .next
 .env
-*.tsbuildinfo 
+*.tsbuildinfo
 supabase/.temp/
+
+# Android build outputs
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/.idea/
+*.keystore
+!android/keystores/debug.keystore

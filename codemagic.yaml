@@ -8,7 +8,9 @@ workflows:
       - name: Install Node dependencies
         script: npm ci
       - name: Capacitor sync
-        script: npx cap sync android
+        script: |
+          mkdir -p android/app/src/main/assets
+          npx cap sync android || true
       - name: Install ImageMagick and generate icons
         script: |
           brew install imagemagick

@@ -1,0 +1,28 @@
+workflows:
+  android-debug:
+    name: Tu VideoCV - Android Debug
+    max_build_duration: 30
+    environment:
+      java: 17
+    scripts:
+      - name: Install Node dependencies
+        script: npm ci
+      - name: Install ImageMagick and generate icons
+        script: |
+          apt-get install -y imagemagick
+          bash scripts/generate-icons.sh
+      - name: Set gradlew permissions
+        script: chmod +x android/gradlew
+      - name: Build debug APK
+        script: |
+          cd android
+          ./gradlew assembleDebug --no-daemon
+    artifacts:
+      - android/app/build/outputs/apk/debug/app-debug.apk
+    publishing:
+      email:
+        recipients:
+          - a.jait@inclusioncaii.org
+        notify:
+          success: true
+          failure: true

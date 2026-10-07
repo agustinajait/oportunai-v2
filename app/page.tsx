@@ -146,15 +146,15 @@ export default async function LandingPage() {
           </h1>
 
           <p className={s.heroNewSub}>
-            VideoCV + CV optimizado para ATS + un link único para compartir con empresas.
-            Todo en un solo perfil, con acompañamiento para potenciar tu búsqueda laboral.
+            Grabá tu Video CV, mejorá tu oratoria y preparate para entrevistas laborales.
+            Construí tu perfil digital y compartilo con un link único con cualquier empresa.
           </p>
 
           <div className={s.heroNewPills}>
             <span className={s.heroNewPill}><Video size={13} strokeWidth={2}/> VideoCV</span>
             <span className={s.heroNewPill}><FileText size={13} strokeWidth={2}/> CV optimizado</span>
-            <span className={s.heroNewPill}><Target size={13} strokeWidth={2}/> Diagnóstico</span>
-            <span className={`${s.heroNewPill} ${s.heroNewPillActive}`}><Heart size={13} strokeWidth={2}/> Acompañamiento</span>
+            <span className={s.heroNewPill}><Target size={13} strokeWidth={2}/> Oratoria</span>
+            <span className={`${s.heroNewPill} ${s.heroNewPillActive}`}><Heart size={13} strokeWidth={2}/> Entrevistas</span>
           </div>
 
           <Link href="/register" className={s.heroNewCtaBtn}>

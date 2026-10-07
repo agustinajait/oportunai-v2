@@ -736,7 +736,7 @@ export default function VideoRecorder({
               </div>
               <h2 className="font-display text-2xl font-semibold text-white mb-2">¡{tituloVideo} listo!</h2>
               <p className="text-white/50 text-sm max-w-sm mb-2">Tu video fue generado y guardado correctamente.</p>
-              <p className="text-brand-400 text-xs mb-8">Redirigiendo para que lo veas...</p>
+              <p className="text-brand-400 text-xs mb-6">Redirigiendo para que lo veas...</p>
               <div className="space-y-3 w-full max-w-xs">
                 <button
                   onClick={async () => {
@@ -752,6 +752,20 @@ export default function VideoRecorder({
                 >
                   {ofertaId ? 'Volver y postularme' : 'Ver mi video →'}
                 </button>
+
+                {/* Oferta de feedback del coach */}
+                <div className="mt-2 rounded-2xl border border-white/10 bg-white/5 p-4 text-left">
+                  <p className="text-white/80 text-xs font-semibold mb-1">¿Querés feedback de un coach de RR.HH.?</p>
+                  <p className="text-white/40 text-xs mb-3">Un especialista revisa tu video y te manda sus comentarios por WhatsApp.</p>
+                  <a
+                    href={`https://wa.me/${process.env.NEXT_PUBLIC_WA_SOPORTE ?? '5491161210313'}?text=${encodeURIComponent('Hola OportunAI, acabo de grabar mi Video CV y me gustaría recibir feedback de un coach de RR.HH.')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+                  >
+                    💬 Solicitar feedback →
+                  </a>
+                </div>
               </div>
             </div>
           )}

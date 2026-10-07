@@ -30,6 +30,13 @@ interface ContenidoResumen {
 interface Props {
   contenidos:     ContenidoResumen[];
   estrellasTotal: number;
+  areaLaboral?:   string | null;
+}
+
+const AREAS_DIGITALES = ['Tecnología', 'Administración'];
+function categoriaRecomendada(area: string | null | undefined): string | null {
+  if (!area) return null;
+  return AREAS_DIGITALES.includes(area) ? 'digitales' : 'fisicos_oficios';
 }
 
 const CATEGORIAS: Record<string, { label: string; Icon: React.ElementType; color: string }> = {
@@ -120,8 +127,12 @@ function CapacitateCard({ item }: { item: ContenidoResumen }) {
   );
 }
 
-export default function CapitateDashboard({ contenidos, estrellasTotal }: Props) {
+export default function CapitateDashboard({ contenidos, estrellasTotal, areaLaboral }: Props) {
   const categorias = Object.keys(CATEGORIAS);
+  const catRec = categoriaRecomendada(areaLaboral);
+  const recomendada = catRec
+    ? contenidos.find(c => c.categoria === catRec && c.progreso?.estado !== 'aprobada')
+    : null;
 
   return (
     <div className="min-h-screen bg-ink-50">
@@ -134,6 +145,24 @@ export default function CapitateDashboard({ contenidos, estrellasTotal }: Props)
             Aprendé, practicá y sumá competencias a tu perfil laboral.
           </p>
         </div>
+
+        {/* Recomendado para vos */}
+        {recomendada && (
+          <div className="bg-brand-50 border border-brand-200 rounded-2xl p-4 flex items-start gap-3">
+            <span className="text-2xl flex-shrink-0">{recomendada.icono}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-brand-600 uppercase tracking-wide mb-0.5">Recomendado para vos · {areaLaboral}</p>
+              <h3 className="font-bold text-ink-900 text-sm">{recomendada.titulo}</h3>
+              <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{recomendada.descripcion}</p>
+              <Link
+                href={`/dashboard/capacitate/${recomendada.slug}`}
+                className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-brand-600 hover:text-brand-700"
+              >
+                Empezar <ChevronRight size={13}/>
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Resumen de estrellas */}
         {estrellasTotal > 0 && (

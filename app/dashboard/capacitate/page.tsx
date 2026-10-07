@@ -12,7 +12,9 @@ export default async function CapitatePage() {
     where:  { id: session.userId },
     select: { cv_datos: true },
   });
-  const esMentoress = (usuario?.cv_datos as Record<string, unknown>)?.origen === 'mentoress';
+  const cvDatos     = usuario?.cv_datos as Record<string, unknown> | null;
+  const esMentoress = cvDatos?.origen === 'mentoress';
+  const areaLaboral = (cvDatos?.area_laboral as string) ?? null;
 
   const [contenidos, progresos] = await Promise.all([
     prisma.capacitateContenido.findMany({
@@ -56,5 +58,5 @@ export default async function CapitatePage() {
 
   const aprobadas = progresos.filter(p => p.estado === 'aprobada').length;
 
-  return <CapitateDashboard contenidos={data} estrellasTotal={aprobadas} />;
+  return <CapitateDashboard contenidos={data} estrellasTotal={aprobadas} areaLaboral={areaLaboral} />;
 }

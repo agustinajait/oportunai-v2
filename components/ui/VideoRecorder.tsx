@@ -429,23 +429,7 @@ export default function VideoRecorder({
     router.push('/dashboard?bienvenida=onboarding');
   }, [router]);
 
-  // ── Auto-redirect cuando el video queda listo (suprimido si hay análisis) ──
-  useEffect(() => {
-    if (stage !== 'done') return;
-    if (analisisIA) return; // usuario lee el análisis y navega manualmente
-    const t = setTimeout(async () => {
-      if (desdeOnboarding) {
-        await activarKorai();
-      } else if (ofertaId) {
-        router.push(`/dashboard?tab=ofertas&oferta_id=${ofertaId}`);
-      } else {
-        router.push('/dashboard?tab=perfil');
-        router.refresh();
-      }
-    }, 2500);
-    return () => clearTimeout(t);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stage, analisisIA]);
+  // Auto-redirect eliminado — el usuario navega manualmente desde la pantalla done.
 
   // ── Empezar de cero ───────────────────────────────────────────────
   const restart = useCallback(() => {
@@ -588,7 +572,7 @@ export default function VideoRecorder({
 
           {/* ── GRABANDO ────────────────────────────────────────────── */}
           {stage === 'recording' && modulo && (
-            <div className="absolute inset-0 z-20 flex flex-col justify-between pointer-events-none">
+            <div className="absolute inset-0 z-20 flex flex-col justify-between">
               <div className="m-4 bg-black/75 backdrop-blur-sm rounded-2xl px-5 py-4">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-brand-400 text-xs font-semibold uppercase tracking-widest">
@@ -616,7 +600,7 @@ export default function VideoRecorder({
                 ))}
               </div>
 
-              <div className="mx-4 mb-6 flex gap-3 pointer-events-auto">
+              <div className="mx-4 mb-6 flex gap-3">
                 <button
                   onClick={endCurrentSection}
                   className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur text-white font-medium py-4 rounded-2xl transition-colors border border-white/20"
@@ -760,12 +744,10 @@ export default function VideoRecorder({
               </div>
               <h2 className="font-display text-2xl font-semibold text-white mb-2">¡{tituloVideo} listo!</h2>
               <p className="text-white/50 text-sm max-w-sm mb-2">Tu video fue generado y guardado correctamente.</p>
-              {!analisisIA && (
-                <p className="text-brand-400 text-xs mb-6">Redirigiendo para que lo veas...</p>
-              )}
-              {analisisIA && (
-                <p className="text-emerald-400 text-xs mb-4">Tu análisis de IA está listo ✨</p>
-              )}
+              {analisisIA
+                ? <p className="text-emerald-400 text-xs mb-4">Tu análisis de IA está listo ✨</p>
+                : <p className="text-white/30 text-xs mb-4">Hacé clic para ver tu video.</p>
+              }
 
               {/* Análisis IA */}
               {analisisIA && (

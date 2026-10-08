@@ -118,6 +118,7 @@ const UPLOAD_PHASES = [
   { label: 'Uniendo tus tomas',   sub: 'Combinando las grabaciones de cada sección...' },
   { label: 'Subiendo a la nube',  sub: 'Enviando tu video al servidor...' },
   { label: 'Guardando tu perfil', sub: 'Actualizando tu Video CV...' },
+  { label: 'Analizando con IA',   sub: 'Generando feedback personalizado de tu video...' },
 ];
 
 export default function VideoRecorder({
@@ -153,6 +154,13 @@ export default function VideoRecorder({
   const [reviewUrl, setReviewUrl] = useState<string | null>(null);
   const [sectionAttempts, setSectionAttempts] = useState<number[]>(modulos.map(() => 0));
   const [camError, setCamError] = useState<string | null>(null);
+  const [analisisIA, setAnalisisIA] = useState<{
+    puntaje: number;
+    titulo: string;
+    fortalezas: string[];
+    mejoras: { titulo: string; consejo: string }[];
+    tip_estrella: string;
+  } | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -364,6 +372,20 @@ export default function VideoRecorder({
         throw new Error(j.error ?? 'Error al guardar el video');
       }
 
+      const { videoId } = await res.json().catch(() => ({}));
+
+      // Análisis IA (best-effort — no bloquea si falla)
+      if (videoId) {
+        setUploadProgress('Analizando...');
+        try {
+          const analisisRes = await fetch(`/api/videos/${videoId}/analisis`, { method: 'POST' });
+          if (analisisRes.ok) {
+            const { analisis } = await analisisRes.json();
+            setAnalisisIA(analisis ?? null);
+          }
+        } catch { /* best-effort */ }
+      }
+
       playBeep(880, 0.3, 0.3);
       setStage('done');
     } catch (err: any) {
@@ -407,9 +429,10 @@ export default function VideoRecorder({
     router.push('/dashboard?bienvenida=onboarding');
   }, [router]);
 
-  // ── Auto-redirect cuando el video queda listo ────────────────────
+  // ── Auto-redirect cuando el video queda listo (suprimido si hay análisis) ──
   useEffect(() => {
     if (stage !== 'done') return;
+    if (analisisIA) return; // usuario lee el análisis y navega manualmente
     const t = setTimeout(async () => {
       if (desdeOnboarding) {
         await activarKorai();
@@ -422,7 +445,7 @@ export default function VideoRecorder({
     }, 2500);
     return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stage]);
+  }, [stage, analisisIA]);
 
   // ── Empezar de cero ───────────────────────────────────────────────
   const restart = useCallback(() => {
@@ -666,7 +689,8 @@ export default function VideoRecorder({
           {stage === 'uploading' && (() => {
             const phaseIdx =
               uploadProgress.includes('Procesando') ? 0 :
-              uploadProgress.includes('Subiendo')   ? 1 : 2;
+              uploadProgress.includes('Subiendo')   ? 1 :
+              uploadProgress.includes('Analizando') ? 3 : 2;
             const pct = Math.round(((phaseIdx + 0.6) / UPLOAD_PHASES.length) * 100);
             return (
               <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 bg-ink-900">
@@ -736,7 +760,47 @@ export default function VideoRecorder({
               </div>
               <h2 className="font-display text-2xl font-semibold text-white mb-2">¡{tituloVideo} listo!</h2>
               <p className="text-white/50 text-sm max-w-sm mb-2">Tu video fue generado y guardado correctamente.</p>
-              <p className="text-brand-400 text-xs mb-6">Redirigiendo para que lo veas...</p>
+              {!analisisIA && (
+                <p className="text-brand-400 text-xs mb-6">Redirigiendo para que lo veas...</p>
+              )}
+              {analisisIA && (
+                <p className="text-emerald-400 text-xs mb-4">Tu análisis de IA está listo ✨</p>
+              )}
+
+              {/* Análisis IA */}
+              {analisisIA && (
+                <div className="w-full max-w-xs mb-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-left">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-white/90 text-xs font-bold uppercase tracking-wide">Análisis IA</p>
+                    <span className="text-brand-400 text-sm font-bold">
+                      {'★'.repeat(analisisIA.puntaje)}{'☆'.repeat(5 - analisisIA.puntaje)}
+                    </span>
+                  </div>
+                  <p className="text-white/60 text-xs italic mb-3">"{analisisIA.titulo}"</p>
+
+                  <div className="space-y-1.5 mb-3">
+                    {analisisIA.fortalezas.map((f, i) => (
+                      <div key={i} className="flex items-start gap-2 text-xs text-emerald-300/90">
+                        <span className="mt-0.5 flex-shrink-0">✓</span>
+                        <span>{f}</span>
+                      </div>
+                    ))}
+                    {analisisIA.mejoras.map((m, i) => (
+                      <div key={i} className="flex items-start gap-2 text-xs text-amber-300/80">
+                        <span className="mt-0.5 flex-shrink-0">→</span>
+                        <span><span className="font-semibold">{m.titulo}:</span> {m.consejo}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {analisisIA.tip_estrella && (
+                    <div className="p-2.5 rounded-xl bg-brand-600/20 border border-brand-500/20">
+                      <p className="text-brand-300 text-xs">💡 {analisisIA.tip_estrella}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-3 w-full max-w-xs">
                 <button
                   onClick={async () => {

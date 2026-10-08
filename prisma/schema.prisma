@@ -130,6 +130,7 @@ model Video {
   taller_id        String?
   oferta_id        String?
   section_attempts Json?
+  analisis_ia      Json?
   created_at       DateTime  @default(now())
 
   usuario       Usuario       @relation(fields: [user_id], references: [id], onDelete: Cascade)

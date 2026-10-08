@@ -64,6 +64,8 @@ export async function POST(req: NextRequest) {
       // Guardar también las respuestas textuales en cv_datos para historial
       cv_datos: {
         ...cvActual,
+        // Campo plano para que aparezca en el perfil del candidato
+        nivel_estudios: body.respuestas.educacion_nivel,
         pre_diagnostico: {
           empleo_situacion: body.respuestas.empleo_situacion,
           ingresos_rango:   body.respuestas.ingresos_rango,

@@ -42,6 +42,9 @@ fecha_nacimiento DateTime?
   // Onboarding
   onboarding_completado Boolean  @default(false)  // completó el wizard de onboarding
 
+  // CV IA
+  cv_analisis           Json?                     // último análisis de CV por IA (cacheado)
+
   videos                Video[]
   archivos              Archivo[]
   documentos            Documento[]

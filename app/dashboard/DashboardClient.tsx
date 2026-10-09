@@ -329,19 +329,21 @@ export default function DashboardClient({
     faltan: string[]; fortalezas: string[];
     mejoras: { titulo: string; consejo: string }[];
     tip_ats: string;
+    cached?: boolean;
   };
   const [analisisCV, setAnalisisCV] = useState<AnalisisCvResult | null>(null);
   const [analisisLoading, setAnalisisLoading] = useState(false);
   const [analisisError, setAnalisisError] = useState<string | null>(null);
 
-  async function analizarCV() {
+  async function analizarCV(forzar = false) {
     setAnalisisLoading(true);
     setAnalisisError(null);
     try {
-      const res = await fetch('/api/cv/analizar', { method: 'POST' });
+      const url = forzar ? '/api/cv/analizar?forzar=true' : '/api/cv/analizar';
+      const res = await fetch(url, { method: 'POST' });
       if (!res.ok) throw new Error('Error al analizar');
       const data = await res.json();
-      setAnalisisCV(data.analisis ?? null);
+      setAnalisisCV(data.analisis ? { ...data.analisis, cached: data.cached } : null);
     } catch {
       setAnalisisError('No se pudo analizar el CV. Intentá de nuevo.');
     } finally {
@@ -356,14 +358,17 @@ export default function DashboardClient({
   };
   const [fitCheckInput, setFitCheckInput] = useState('');
   const [fitCheckResult, setFitCheckResult] = useState<FitCheckResult | null>(null);
+  const [fitCvAdaptado, setFitCvAdaptado] = useState<Record<string, unknown> | null>(null);
   const [fitCheckLoading, setFitCheckLoading] = useState(false);
   const [fitCheckError, setFitCheckError] = useState<string | null>(null);
+  const [descargandoCvAdaptado, setDescargandoCvAdaptado] = useState(false);
 
   async function checkFit() {
     if (!fitCheckInput.trim()) return;
     setFitCheckLoading(true);
     setFitCheckError(null);
     setFitCheckResult(null);
+    setFitCvAdaptado(null);
     try {
       const res = await fetch('/api/cv/fit-check', {
         method: 'POST',
@@ -373,10 +378,35 @@ export default function DashboardClient({
       if (!res.ok) throw new Error('Error al analizar');
       const data = await res.json();
       setFitCheckResult(data.resultado ?? null);
+      setFitCvAdaptado(data.cv_adaptado ?? null);
     } catch {
       setFitCheckError('No se pudo analizar. Intentá de nuevo.');
     } finally {
       setFitCheckLoading(false);
+    }
+  }
+
+  async function descargarCvAdaptado() {
+    if (!fitCvAdaptado) return;
+    setDescargandoCvAdaptado(true);
+    try {
+      const res = await fetch('/api/cv/fit-check/cv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cv_adaptado: fitCvAdaptado }),
+      });
+      if (!res.ok) throw new Error('error');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'cv-adaptado.docx';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('No se pudo generar el CV. Intentá de nuevo.');
+    } finally {
+      setDescargandoCvAdaptado(false);
     }
   }
 
@@ -2720,7 +2750,7 @@ export default function DashboardClient({
 
                 {!analisisCV && (
                   <button
-                    onClick={analizarCV}
+                    onClick={() => analizarCV()}
                     disabled={analisisLoading}
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98] disabled:opacity-60"
                     style={{ background: 'linear-gradient(135deg,#0ea5e9,#38bdf8)' }}
@@ -2792,12 +2822,18 @@ export default function DashboardClient({
                       </div>
                     )}
 
-                    <button
-                      onClick={() => { setAnalisisCV(null); analizarCV(); }}
-                      className="text-[10px] text-ink-400 hover:text-sky-600 hover:underline transition-colors"
-                    >
-                      Volver a analizar →
-                    </button>
+                    <div className="flex items-center justify-between">
+                      {analisisCV.cached && (
+                        <span className="text-[10px] text-ink-300 italic">Análisis guardado</span>
+                      )}
+                      <button
+                        onClick={() => analizarCV(true)}
+                        disabled={analisisLoading}
+                        className="text-[10px] text-ink-400 hover:text-sky-600 hover:underline transition-colors ml-auto"
+                      >
+                        {analisisLoading ? 'Actualizando...' : 'Actualizar análisis →'}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -2880,8 +2916,22 @@ export default function DashboardClient({
                       </div>
                     )}
 
+                    {/* CV Adaptado */}
+                    {fitCvAdaptado && (
+                      <button
+                        onClick={descargarCvAdaptado}
+                        disabled={descargandoCvAdaptado}
+                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98] disabled:opacity-60"
+                        style={{ background: 'linear-gradient(135deg,#8b5cf6,#a78bfa)' }}
+                      >
+                        {descargandoCvAdaptado
+                          ? <><Loader2 size={15} className="animate-spin" /> Generando CV...</>
+                          : <><Download size={15} /> Descargar CV adaptado a esta oferta</>}
+                      </button>
+                    )}
+
                     <button
-                      onClick={() => { setFitCheckResult(null); setFitCheckInput(''); }}
+                      onClick={() => { setFitCheckResult(null); setFitCvAdaptado(null); setFitCheckInput(''); }}
                       className="text-[10px] text-ink-400 hover:text-violet-600 hover:underline transition-colors"
                     >
                       Analizar otra oferta →

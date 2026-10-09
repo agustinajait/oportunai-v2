@@ -1,24 +1,33 @@
 /**
  * POST /api/cv/analizar
- * Analiza el CV del candidato autenticado y devuelve un diagnóstico IA.
+ * Analiza el CV del candidato. Cachea el resultado en cv_analisis.
+ * ?forzar=true para ignorar el caché y regenerar.
  */
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
-import { getSession } from '@/lib/auth';
+import { getSessionFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import type { CvDatosInput } from '@/lib/cv-generator';
 
 const client = new Anthropic();
 
-export async function POST() {
-  const session = await getSession();
+export async function POST(req: NextRequest) {
+  const session = await getSessionFromRequest(req);
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+
+  const { searchParams } = new URL(req.url);
+  const forzar = searchParams.get('forzar') === 'true';
 
   const usuario = await prisma.usuario.findUnique({
     where: { id: session.userId },
-    select: { nombre_completo: true, cv_datos: true },
+    select: { nombre_completo: true, cv_datos: true, cv_analisis: true },
   });
   if (!usuario) return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
+
+  // Devolver caché si existe y no se forzó
+  if (usuario.cv_analisis && !forzar) {
+    return NextResponse.json({ analisis: usuario.cv_analisis, cached: true });
+  }
 
   const cv = (usuario.cv_datos as CvDatosInput) ?? {};
 
@@ -73,5 +82,11 @@ Criterios:
     return NextResponse.json({ error: 'Error procesando análisis' }, { status: 500 });
   }
 
-  return NextResponse.json({ analisis });
+  // Guardar en caché
+  await prisma.usuario.update({
+    where: { id: session.userId },
+    data: { cv_analisis: analisis as any },
+  });
+
+  return NextResponse.json({ analisis, cached: false });
 }

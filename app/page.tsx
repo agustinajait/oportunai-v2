@@ -189,7 +189,7 @@ export default async function LandingPage() {
               </div>
               <div className={s.heroCardTitle}>VideoCV</div>
             </div>
-            <div className={s.heroCardSub}>Presentate en 60 segundos</div>
+            <div className={s.heroCardSub}>Mostrá lo que un CV no dice</div>
             <div className={s.heroCardBar}><div className={`${s.heroCardBarFill} ${s.heroCardBarPurple}`}/></div>
           </div>
 
@@ -234,7 +234,7 @@ export default async function LandingPage() {
         <div className={s.stepsNew}>
           {([
             { n: '1', numBg: '#5B3FE0', icoBg: 'rgba(91,63,224,0.10)',  icoColor: '#5B3FE0', Icon: User,         t: 'Creá tu perfil',               d: 'Registrate y completá tus datos básicos. Tarda menos de 2 minutos.' },
-            { n: '2', numBg: '#EF4444', icoBg: 'rgba(239,68,68,0.10)',  icoColor: '#EF4444', Icon: Video,        t: 'Grabá tu VideoCV',             d: 'Presentate en 60 segundos con nuestra herramienta de grabación desde el celular.' },
+            { n: '2', numBg: '#EF4444', icoBg: 'rgba(239,68,68,0.10)',  icoColor: '#EF4444', Icon: Video,        t: 'Grabá tu VideoCV',             d: 'Mostrá tu personalidad y habilidades que un CV no transmite. Cada grabación también te entrena para hablar mejor en tus entrevistas.' },
             { n: '3', numBg: '#22C55E', icoBg: 'rgba(34,197,94,0.10)',  icoColor: '#22C55E', Icon: Sparkles,     t: 'Te generamos el CV',           d: 'Contanos tu experiencia como puedas. Nosotros la convertimos en un CV profesional, optimizado para pasar los filtros automáticos de las empresas (ATS).' },
             { n: '4', numBg: '#F97316', icoBg: 'rgba(249,115,22,0.10)', icoColor: '#F97316', Icon: Target,       t: 'Postulate y destacate',        d: 'Adaptamos tu CV a cada oferta que te interesa. Las empresas te encuentran por tu perfil digital.' },
           ] as const).flatMap((step, i, arr) => [
@@ -274,7 +274,7 @@ export default async function LandingPage() {
           <h2 className={s.profileH}>Así se ve tu<br/>perfil laboral digital</h2>
           <p className={s.profileSub}>Un espacio profesional para mostrar quién sos y todo lo que podés lograr.</p>
           <div className={s.profileChecks}>
-            {['Tu VideoCV','Tu experiencia y habilidades','Tu CV listo para descargar','Tu link para compartir'].map(t => (
+            {['Tu VideoCV — mostrás lo que un CV no dice','Tu actitud y comunicación en 60 segundos','Tu CV optimizado listo para descargar','Tu link para compartir con cualquier empresa'].map(t => (
               <span key={t} className={s.profileCheck}>
                 <CircleCheck size={15} strokeWidth={2} color="#22C55E"/>
                 {t}

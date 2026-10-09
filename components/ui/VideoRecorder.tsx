@@ -154,6 +154,7 @@ export default function VideoRecorder({
   const [reviewUrl, setReviewUrl] = useState<string | null>(null);
   const [sectionAttempts, setSectionAttempts] = useState<number[]>(modulos.map(() => 0));
   const [camError, setCamError] = useState<string | null>(null);
+  const [finalVideoUrl, setFinalVideoUrl] = useState<string | null>(null);
   const [analisisIA, setAnalisisIA] = useState<{
     puntaje: number;
     titulo: string;
@@ -346,6 +347,7 @@ export default function VideoRecorder({
       if (error) throw new Error(error.message);
 
       const { data: urlData } = getSupabase().storage.from('videos').getPublicUrl(filename);
+      setFinalVideoUrl(urlData.publicUrl);
 
       setUploadProgress('Guardando...');
       const attempts = sectionAttemptsRef.current;
@@ -735,31 +737,40 @@ export default function VideoRecorder({
 
           {/* ── LISTO ────────────────────────────────────────────────── */}
           {stage === 'done' && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center bg-ink-900">
-              <div
-                className="w-24 h-24 rounded-full bg-emerald-500/20 border-2 border-emerald-500/40 flex items-center justify-center mb-6"
-                style={{ animation: 'scaleIn 0.4s ease' }}
-              >
-                <CheckCircle size={48} className="text-emerald-400" />
+            <div className="absolute inset-0 z-20 flex flex-col bg-ink-900 overflow-y-auto">
+              <div className="flex flex-col items-center px-6 pt-8 pb-6 text-center">
+                <div
+                  className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500/40 flex items-center justify-center mb-4"
+                  style={{ animation: 'scaleIn 0.4s ease' }}
+                >
+                  <CheckCircle size={36} className="text-emerald-400" />
+                </div>
+                <h2 className="font-display text-2xl font-semibold text-white mb-1">¡{tituloVideo} listo!</h2>
+                <p className="text-white/50 text-sm max-w-sm">Tu video quedó guardado en tu perfil.</p>
               </div>
-              <h2 className="font-display text-2xl font-semibold text-white mb-2">¡{tituloVideo} listo!</h2>
-              <p className="text-white/50 text-sm max-w-sm mb-2">Tu video fue generado y guardado correctamente.</p>
-              {analisisIA
-                ? <p className="text-emerald-400 text-xs mb-4">Tu análisis de IA está listo ✨</p>
-                : <p className="text-white/30 text-xs mb-4">Hacé clic para ver tu video.</p>
-              }
+
+              {/* Video inline */}
+              {finalVideoUrl && (
+                <div className="px-4 mb-4">
+                  <video
+                    src={finalVideoUrl}
+                    controls
+                    playsInline
+                    className="w-full rounded-2xl bg-black max-h-56 object-cover"
+                  />
+                </div>
+              )}
 
               {/* Análisis IA */}
               {analisisIA && (
-                <div className="w-full max-w-xs mb-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-left">
+                <div className="mx-4 mb-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-left">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-white/90 text-xs font-bold uppercase tracking-wide">Análisis IA</p>
+                    <p className="text-white/90 text-xs font-bold uppercase tracking-wide">Feedback de tu video</p>
                     <span className="text-brand-400 text-sm font-bold">
                       {'★'.repeat(analisisIA.puntaje)}{'☆'.repeat(5 - analisisIA.puntaje)}
                     </span>
                   </div>
                   <p className="text-white/60 text-xs italic mb-3">"{analisisIA.titulo}"</p>
-
                   <div className="space-y-1.5 mb-3">
                     {analisisIA.fortalezas.map((f, i) => (
                       <div key={i} className="flex items-start gap-2 text-xs text-emerald-300/90">
@@ -774,7 +785,6 @@ export default function VideoRecorder({
                       </div>
                     ))}
                   </div>
-
                   {analisisIA.tip_estrella && (
                     <div className="p-2.5 rounded-xl bg-brand-600/20 border border-brand-500/20">
                       <p className="text-brand-300 text-xs">💡 {analisisIA.tip_estrella}</p>
@@ -783,24 +793,40 @@ export default function VideoRecorder({
                 </div>
               )}
 
-              <div className="space-y-3 w-full max-w-xs">
-                <button
-                  onClick={async () => {
-                    if (desdeOnboarding) {
-                      await activarKorai();
-                    } else {
-                      const dest = ofertaId ? `/dashboard?tab=ofertas&oferta_id=${ofertaId}` : '/dashboard?tab=perfil';
-                      router.push(dest);
-                      router.refresh();
-                    }
-                  }}
-                  className="btn-primary w-full justify-center py-3.5 rounded-2xl"
-                >
-                  {ofertaId ? 'Volver y postularme' : 'Ver mi video →'}
-                </button>
+              <div className="px-4 pb-8 space-y-3">
+                {ofertaId ? (
+                  <button
+                    onClick={() => { router.push(`/dashboard?tab=ofertas&oferta_id=${ofertaId}`); router.refresh(); }}
+                    className="btn-primary w-full justify-center py-3.5 rounded-2xl"
+                  >
+                    Volver y postularme →
+                  </button>
+                ) : (
+                  <>
+                    <p className="text-white/40 text-xs text-center pb-1">¿Qué hacemos ahora con tu CV?</p>
+                    <button
+                      onClick={async () => {
+                        if (desdeOnboarding) await activarKorai();
+                        else { router.push('/dashboard?tab=perfil&accion=cv'); router.refresh(); }
+                      }}
+                      className="btn-primary w-full justify-center py-3.5 rounded-2xl"
+                    >
+                      Generame mi CV →
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (desdeOnboarding) await activarKorai();
+                        else { router.push('/dashboard?tab=perfil&accion=subir-cv'); router.refresh(); }
+                      }}
+                      className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white font-semibold py-3.5 rounded-2xl transition-colors border border-white/20"
+                    >
+                      Tengo un CV para subir →
+                    </button>
+                  </>
+                )}
 
                 {/* Oferta de feedback del coach */}
-                <div className="mt-2 rounded-2xl border border-white/10 bg-white/5 p-4 text-left">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-left">
                   <p className="text-white/80 text-xs font-semibold mb-1">¿Querés feedback de un coach de RR.HH.?</p>
                   <p className="text-white/40 text-xs mb-3">Un especialista revisa tu video y te manda sus comentarios por WhatsApp.</p>
                   <a

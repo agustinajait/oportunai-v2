@@ -32,6 +32,7 @@ const SITUACION_EMPLEO = [
 
 // Valores exactos del formulario de diagnóstico Korai
 const RANGOS_INGRESOS = [
+  { label: 'No tengo ingresos',              color: 'rojo'     as SemaforoColor },
   { label: 'Menos de $700.000',              color: 'rojo'     as SemaforoColor },
   { label: 'Entre $700.000 y $1.300.000',    color: 'amarillo' as SemaforoColor },
   { label: 'Entre $1.300.000 y $2.000.000',  color: 'verde'    as SemaforoColor },
@@ -127,7 +128,7 @@ export default function PreDiagnostico({ onContinuar }: Props) {
           </p>
           <h1 className="text-2xl font-bold text-ink-900">3 preguntas rápidas</h1>
           <p className="text-gray-500 mt-1 text-sm">
-            Tus respuestas quedan guardadas para que Korai no te vuelva a preguntar lo mismo.
+            Nos ayudan a personalizar tu perfil y encontrarte las mejores oportunidades.
           </p>
         </div>
 

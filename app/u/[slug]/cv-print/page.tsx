@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { notFound } from 'next/navigation';
+import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import type { CvDatosInput } from '@/lib/cv-generator';
 import PrintTrigger from './PrintTrigger';
@@ -10,13 +11,32 @@ export default async function CvPrintPage({ params }: Props) {
   const usuario = await prisma.usuario.findUnique({
     where: { slug: params.slug },
     select: {
+      id: true,
       nombre_completo: true,
       email: true,
       telefono: true,
       cv_datos: true,
+      pagado: true,
     },
   });
   if (!usuario) notFound();
+
+  // Check if the current session owns this CV and has paid
+  const session = await getSession();
+  const isOwner = session?.userId === usuario.id;
+  if (isOwner && !usuario.pagado) {
+    return (
+      <div style={{ fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: '16px', padding: '24px', textAlign: 'center' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#1B3A6B' }}>Necesitás el plan premium</h1>
+        <p style={{ color: '#475569', maxWidth: '400px' }}>
+          La vista previa e impresión de tu CV en PDF es una función del plan premium. Desbloqueá todas las funciones con un único pago.
+        </p>
+        <a href="/dashboard" style={{ background: '#1B3A6B', color: '#fff', padding: '12px 28px', borderRadius: '8px', textDecoration: 'none', fontWeight: 600 }}>
+          Ir al dashboard para desbloquear
+        </a>
+      </div>
+    );
+  }
 
   const cv = (usuario.cv_datos as CvDatosInput) ?? {};
   const primerCargo = cv.experiencia?.[0]?.cargo ?? cv.area_laboral ?? null;

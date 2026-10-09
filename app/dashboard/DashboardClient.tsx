@@ -108,6 +108,7 @@ interface Usuario {
   created_at: string; videos: VideoItem[]; archivos: Archivo[];
   whatsapp_activo: boolean; korai_opt_in: boolean;
   korai_semaforo?: KoraiSemaforo | null;
+  pagado?: boolean;
 }
 
 interface Documento {
@@ -144,11 +145,14 @@ export default function DashboardClient({
   usuario,
   tallersAsignados,
   citas,
+  pagado: pagadoProp = false,
 }: {
   usuario: Usuario;
   tallersAsignados: TallerUsuario[];
   citas: CitaInvitado[];
+  pagado?: boolean;
 }) {
+  const pagado = pagadoProp || usuario.pagado || false;
   const router = useRouter();
   const searchParams = useSearchParams();
   const [tab, setTab] = useState<'perfil' | 'ofertas' | 'documentos' | 'citas' | 'servicios' | 'capacitate'>(() => {
@@ -163,6 +167,38 @@ export default function DashboardClient({
   const [citasState, setCitasState] = useState<CitaInvitado[]>(citas);
   const [respondiendo, setRespondiendo] = useState<string | null>(null);
   const citasPendientes = citasState.filter(c => c.estado === 'pendiente').length;
+
+  // ── Stripe premium ──────────────────────────────────────────────────
+  const [pagoModalOpen, setPagoModalOpen] = useState(false);
+  const [pagoLoading, setPagoLoading] = useState(false);
+  const [pagoError, setPagoError] = useState<string | null>(null);
+  const [pagoOkToast, setPagoOkToast] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('pago') === 'ok') {
+      setPagoOkToast(true);
+      const url = new URL(window.location.href);
+      url.searchParams.delete('pago');
+      window.history.replaceState({}, '', url.toString());
+      const t = setTimeout(() => setPagoOkToast(false), 5000);
+      return () => clearTimeout(t);
+    }
+  }, [searchParams]);
+
+  async function iniciarPago() {
+    setPagoLoading(true);
+    setPagoError(null);
+    try {
+      const res = await fetch('/api/pagos/checkout', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Error al iniciar el pago');
+      if (data.url) window.location.href = data.url;
+    } catch (e: any) {
+      setPagoError(e.message ?? 'No se pudo iniciar el pago');
+      setPagoLoading(false);
+    }
+  }
+  // ────────────────────────────────────────────────────────────────────
 
   async function responderCita(id: string, estado: 'confirmada' | 'rechazada') {
     setRespondiendo(id);
@@ -364,6 +400,7 @@ export default function DashboardClient({
   const [analisisError, setAnalisisError] = useState<string | null>(null);
 
   async function analizarCV(forzar = false) {
+    if (!pagado) { setPagoModalOpen(true); return; }
     setAnalisisLoading(true);
     setAnalisisError(null);
     try {
@@ -393,6 +430,7 @@ export default function DashboardClient({
 
   async function checkFit() {
     if (!fitCheckInput.trim()) return;
+    if (!pagado) { setPagoModalOpen(true); return; }
     setFitCheckLoading(true);
     setFitCheckError(null);
     setFitCheckResult(null);
@@ -416,6 +454,7 @@ export default function DashboardClient({
 
   async function descargarCvAdaptado() {
     if (!fitCvAdaptado) return;
+    if (!pagado) { setPagoModalOpen(true); return; }
     setDescargandoCvAdaptado(true);
     try {
       const res = await fetch('/api/cv/fit-check/cv', {

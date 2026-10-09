@@ -23,9 +23,13 @@ export async function POST(req: NextRequest) {
 
   const usuario = await prisma.usuario.findUnique({
     where: { id: session.userId },
-    select: { nombre_completo: true, cv_datos: true },
+    select: { nombre_completo: true, cv_datos: true, pagado: true },
   });
   if (!usuario) return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
+
+  if (!usuario.pagado) {
+    return NextResponse.json({ error: 'Se requiere plan premium', code: 'PAYMENT_REQUIRED' }, { status: 402 });
+  }
 
   const cv = (usuario.cv_datos as CvDatosInput) ?? {};
   const oferta = descripcion_puesto.substring(0, 3000);

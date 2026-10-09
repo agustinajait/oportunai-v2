@@ -152,7 +152,7 @@ export default async function LandingPage() {
 
           <div className={s.heroNewPills}>
             <span className={s.heroNewPill}><Video size={13} strokeWidth={2}/> VideoCV</span>
-            <span className={s.heroNewPill}><FileText size={13} strokeWidth={2}/> Tu CV generado</span>
+            <span className={s.heroNewPill}><FileText size={13} strokeWidth={2}/> CV optimizado ATS</span>
             <span className={s.heroNewPill}><BrainCircuit size={13} strokeWidth={2}/> Análisis de perfil</span>
             <span className={`${s.heroNewPill} ${s.heroNewPillActive}`}><Target size={13} strokeWidth={2}/> CV adaptado por oferta</span>
           </div>
@@ -235,7 +235,7 @@ export default async function LandingPage() {
           {([
             { n: '1', numBg: '#5B3FE0', icoBg: 'rgba(91,63,224,0.10)',  icoColor: '#5B3FE0', Icon: User,         t: 'Creá tu perfil',               d: 'Registrate y completá tus datos básicos. Tarda menos de 2 minutos.' },
             { n: '2', numBg: '#EF4444', icoBg: 'rgba(239,68,68,0.10)',  icoColor: '#EF4444', Icon: Video,        t: 'Grabá tu VideoCV',             d: 'Presentate en 60 segundos con nuestra herramienta de grabación desde el celular.' },
-            { n: '3', numBg: '#22C55E', icoBg: 'rgba(34,197,94,0.10)',  icoColor: '#22C55E', Icon: Sparkles,     t: 'Te generamos el CV',           d: 'Contanos tu experiencia como puedas. Nosotros la convertimos en un CV profesional listo para usar.' },
+            { n: '3', numBg: '#22C55E', icoBg: 'rgba(34,197,94,0.10)',  icoColor: '#22C55E', Icon: Sparkles,     t: 'Te generamos el CV',           d: 'Contanos tu experiencia como puedas. Nosotros la convertimos en un CV profesional, optimizado para pasar los filtros automáticos de las empresas (ATS).' },
             { n: '4', numBg: '#F97316', icoBg: 'rgba(249,115,22,0.10)', icoColor: '#F97316', Icon: Target,       t: 'Postulate y destacate',        d: 'Adaptamos tu CV a cada oferta que te interesa. Las empresas te encuentran por tu perfil digital.' },
           ] as const).flatMap((step, i, arr) => [
             <div key={step.n} className={`${s.stepNew} sr-up sr-d${i + 1}`}>
@@ -345,10 +345,10 @@ export default async function LandingPage() {
             </div>
             <div style={{ fontWeight: 700, fontSize: 17, color: '#1e1b4b' }}>Te generamos el CV</div>
             <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, margin: 0 }}>
-              Escribí tu experiencia como puedas — informal, desordenada, en tus palabras. Nosotros la convertimos en un CV completo y profesional, listo para descargar en Word o PDF.
+              Escribí tu experiencia como puedas — informal, desordenada, en tus palabras. Lo convertimos en un CV completo, profesional y optimizado para pasar los filtros automáticos de selección (ATS) de las grandes empresas.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
-              {['Sin experiencia previa', 'Changas y trabajo informal', 'Cualquier rubro'].map(t => (
+              {['Optimizado para filtros ATS', 'Descargable en Word y PDF', 'Cualquier rubro'].map(t => (
                 <span key={t} style={{ fontSize: 11, fontWeight: 600, color: '#5B3FE0', background: 'rgba(91,63,224,0.08)', borderRadius: 20, padding: '3px 10px' }}>{t}</span>
               ))}
             </div>

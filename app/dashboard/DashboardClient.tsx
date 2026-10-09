@@ -11,7 +11,7 @@ import {
   BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck,
   CalendarDays, MapPin, Loader2, Plus, GraduationCap, Briefcase as BriefcaseIcon, Wrench,
   Star, Building2, Link2, Trash2, PlayCircle, Download, Layers, AlertTriangle, CheckCircle2, XCircle, ChevronRight,
-  User, Search,
+  User, Search, Target, BrainCircuit, Sparkles,
 } from 'lucide-react';
 import OfertasTab from '@/components/ui/OfertasTab';
 import BuscadorNL from '@/components/ui/BuscadorNL';
@@ -322,6 +322,93 @@ export default function DashboardClient({
   const [addingRef, setAddingRef] = useState(false);
   const [refMsg, setRefMsg] = useState<string | null>(null);
   const [copiedRef, setCopiedRef] = useState<string | null>(null);
+
+  // CV Analyzer
+  type AnalisisCvResult = {
+    puntaje: number; nivel: string; resumen_rapido: string;
+    faltan: string[]; fortalezas: string[];
+    mejoras: { titulo: string; consejo: string }[];
+    tip_ats: string;
+    cached?: boolean;
+  };
+  const [analisisCV, setAnalisisCV] = useState<AnalisisCvResult | null>(null);
+  const [analisisLoading, setAnalisisLoading] = useState(false);
+  const [analisisError, setAnalisisError] = useState<string | null>(null);
+
+  async function analizarCV(forzar = false) {
+    setAnalisisLoading(true);
+    setAnalisisError(null);
+    try {
+      const url = forzar ? '/api/cv/analizar?forzar=true' : '/api/cv/analizar';
+      const res = await fetch(url, { method: 'POST' });
+      if (!res.ok) throw new Error('Error al analizar');
+      const data = await res.json();
+      setAnalisisCV(data.analisis ? { ...data.analisis, cached: data.cached } : null);
+    } catch {
+      setAnalisisError('No se pudo analizar el CV. Intentá de nuevo.');
+    } finally {
+      setAnalisisLoading(false);
+    }
+  }
+
+  // Job Fit Check
+  type FitCheckResult = {
+    match_score: number; nivel_match: string; resumen: string;
+    cumple: string[]; falta: string[]; consejo_postulacion: string;
+  };
+  const [fitCheckInput, setFitCheckInput] = useState('');
+  const [fitCheckResult, setFitCheckResult] = useState<FitCheckResult | null>(null);
+  const [fitCvAdaptado, setFitCvAdaptado] = useState<Record<string, unknown> | null>(null);
+  const [fitCheckLoading, setFitCheckLoading] = useState(false);
+  const [fitCheckError, setFitCheckError] = useState<string | null>(null);
+  const [descargandoCvAdaptado, setDescargandoCvAdaptado] = useState(false);
+
+  async function checkFit() {
+    if (!fitCheckInput.trim()) return;
+    setFitCheckLoading(true);
+    setFitCheckError(null);
+    setFitCheckResult(null);
+    setFitCvAdaptado(null);
+    try {
+      const res = await fetch('/api/cv/fit-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ descripcion_puesto: fitCheckInput }),
+      });
+      if (!res.ok) throw new Error('Error al analizar');
+      const data = await res.json();
+      setFitCheckResult(data.resultado ?? null);
+      setFitCvAdaptado(data.cv_adaptado ?? null);
+    } catch {
+      setFitCheckError('No se pudo analizar. Intentá de nuevo.');
+    } finally {
+      setFitCheckLoading(false);
+    }
+  }
+
+  async function descargarCvAdaptado() {
+    if (!fitCvAdaptado) return;
+    setDescargandoCvAdaptado(true);
+    try {
+      const res = await fetch('/api/cv/fit-check/cv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cv_adaptado: fitCvAdaptado }),
+      });
+      if (!res.ok) throw new Error('error');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'cv-adaptado.docx';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('No se pudo generar el CV. Intentá de nuevo.');
+    } finally {
+      setDescargandoCvAdaptado(false);
+    }
+  }
 
   // Capacitaciones
   const [capacitaciones, setCapacitaciones] = useState<CapacitacionItem[]>([]);
@@ -1356,9 +1443,10 @@ export default function DashboardClient({
             {/* ── Acciones rápidas — solo mobile ─────────────────── */}
             <div className="lg:hidden order-1 flex gap-2">
               {[
-                { href: '/dashboard/flyer', label: 'Ver perfil', gradient: 'linear-gradient(135deg,#4B33CC,#7048F0)', Icon: () => <FileText size={18} color="#fff" strokeWidth={1.75} />, isLink: true },
-                { href: '/api/cv/download', label: 'Descargar CV', gradient: 'linear-gradient(135deg,#4B33CC,#7048F0)', Icon: () => <Download size={18} color="#fff" strokeWidth={1.75} />, isLink: false },
-              ].map(({ href, label, gradient, Icon, isLink }) => {
+                { href: '/dashboard/flyer', label: 'Ver perfil', gradient: 'linear-gradient(135deg,#4B33CC,#7048F0)', Icon: () => <FileText size={18} color="#fff" strokeWidth={1.75} />, isLink: true, download: false },
+                { href: '/api/cv/download', label: 'CV DOCX', gradient: 'linear-gradient(135deg,#4B33CC,#7048F0)', Icon: () => <Download size={18} color="#fff" strokeWidth={1.75} />, isLink: false, download: true },
+                { href: `/u/${usuario.slug}/cv-print`, label: 'CV PDF', gradient: 'linear-gradient(135deg,#DC2626,#EF4444)', Icon: () => <FileText size={18} color="#fff" strokeWidth={1.75} />, isLink: true, download: false },
+              ].map(({ href, label, gradient, Icon, isLink, download: dl }) => {
                 const inner = (
                   <>
                     <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-1 flex-shrink-0" style={{ background: gradient }}>
@@ -1369,7 +1457,7 @@ export default function DashboardClient({
                 );
                 const cls = "flex-1 flex flex-col items-center justify-center gap-0.5 bg-white border border-gray-200 rounded-2xl py-3 px-1 transition-colors active:bg-gray-50";
                 return isLink
-                  ? <Link key={href} href={href} className={cls} style={{ textDecoration: 'none' }}>{inner}</Link>
+                  ? <Link key={href} href={href} target={dl ? undefined : '_blank'} className={cls} style={{ textDecoration: 'none' }}>{inner}</Link>
                   : <a key={href} href={href} download className={cls} style={{ textDecoration: 'none' }}>{inner}</a>;
               })}
             </div>
@@ -1423,11 +1511,16 @@ export default function DashboardClient({
                 </div>
                 <div className="flex flex-col gap-2">
                   <a href="/api/cv/download" download className="w-full flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98]" style={{ textDecoration:'none', background:'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
-                    <Download size={15} /> Descargar CV
+                    <Download size={15} /> Descargar DOCX
                   </a>
-                  <Link href={`/u/${usuario.slug}/cv`} target="_blank" className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors" style={{ textDecoration:'none' }}>
-                    <FileText size={14} /> Vista previa
-                  </Link>
+                  <div className="flex gap-2">
+                    <Link href={`/u/${usuario.slug}/cv-print`} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition-colors" style={{ textDecoration:'none' }}>
+                      <FileText size={14} /> PDF
+                    </Link>
+                    <Link href={`/u/${usuario.slug}/cv`} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors" style={{ textDecoration:'none' }}>
+                      <FileText size={14} /> Vista previa
+                    </Link>
+                  </div>
                 </div>
               </div>
               {/* ── Diagnóstico Korai / Semáforo ─────────────────── */}
@@ -2642,6 +2735,211 @@ export default function DashboardClient({
                   </div>
                 </div>
               )}
+
+              {/* ── Analizador de CV ──────────────────────────────── */}
+              <div className="card p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#0ea5e9,#38bdf8)' }}>
+                    <BrainCircuit size={18} color="#fff" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-ink-800 text-sm">Analizador de CV</p>
+                    <p className="text-xs text-ink-400">IA revisa tu CV y sugiere mejoras para ATS</p>
+                  </div>
+                </div>
+
+                {!analisisCV && (
+                  <button
+                    onClick={() => analizarCV()}
+                    disabled={analisisLoading}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98] disabled:opacity-60"
+                    style={{ background: 'linear-gradient(135deg,#0ea5e9,#38bdf8)' }}
+                  >
+                    {analisisLoading
+                      ? <><Loader2 size={15} className="animate-spin" /> Analizando tu CV...</>
+                      : <><Sparkles size={15} /> Analizar mi CV</>}
+                  </button>
+                )}
+
+                {analisisError && (
+                  <p className="text-xs text-red-500 mt-2">{analisisError}</p>
+                )}
+
+                {analisisCV && (
+                  <div className="space-y-3 mt-1">
+                    {/* Score */}
+                    <div className="flex items-center gap-3 bg-sky-50 rounded-xl p-3">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg"
+                        style={{ background: analisisCV.puntaje >= 70 ? '#d1fae5' : analisisCV.puntaje >= 40 ? '#fef3c7' : '#fee2e2', color: analisisCV.puntaje >= 70 ? '#065f46' : analisisCV.puntaje >= 40 ? '#92400e' : '#991b1b' }}>
+                        {analisisCV.puntaje}
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-ink-700">{analisisCV.resumen_rapido}</p>
+                        <p className="text-[10px] text-ink-400 mt-0.5 capitalize">{analisisCV.nivel} · {analisisCV.puntaje}/100</p>
+                      </div>
+                    </div>
+
+                    {/* Fortalezas */}
+                    {analisisCV.fortalezas?.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wide mb-1">✓ Fortalezas</p>
+                        {analisisCV.fortalezas.map((f, i) => (
+                          <p key={i} className="text-xs text-ink-600 pl-3 border-l-2 border-emerald-300 mb-1">{f}</p>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Mejoras */}
+                    {analisisCV.mejoras?.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-1">↑ Mejoras sugeridas</p>
+                        {analisisCV.mejoras.map((m, i) => (
+                          <div key={i} className="bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-2 mb-1.5">
+                            <p className="text-xs font-semibold text-amber-900">{m.titulo}</p>
+                            <p className="text-[10px] text-amber-700 mt-0.5">{m.consejo}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Faltan */}
+                    {analisisCV.faltan?.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-bold text-red-600 uppercase tracking-wide mb-1">✗ Faltan completar</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {analisisCV.faltan.map((f, i) => (
+                            <span key={i} className="text-[10px] bg-red-50 border border-red-200 text-red-700 px-2 py-0.5 rounded-full">{f}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tip ATS */}
+                    {analisisCV.tip_ats && (
+                      <div className="bg-sky-50 border border-sky-200 rounded-xl px-3 py-2.5">
+                        <p className="text-[10px] font-bold text-sky-700 mb-0.5">💡 Tip ATS</p>
+                        <p className="text-[10px] text-sky-700">{analisisCV.tip_ats}</p>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between">
+                      {analisisCV.cached && (
+                        <span className="text-[10px] text-ink-300 italic">Análisis guardado</span>
+                      )}
+                      <button
+                        onClick={() => analizarCV(true)}
+                        disabled={analisisLoading}
+                        className="text-[10px] text-ink-400 hover:text-sky-600 hover:underline transition-colors ml-auto"
+                      >
+                        {analisisLoading ? 'Actualizando...' : 'Actualizar análisis →'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ── Adaptación al puesto ──────────────────────────── */}
+              <div className="card p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#8b5cf6,#a78bfa)' }}>
+                    <Target size={18} color="#fff" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-ink-800 text-sm">Adaptación al puesto</p>
+                    <p className="text-xs text-ink-400">Pegá una oferta y chequeá tu compatibilidad</p>
+                  </div>
+                </div>
+
+                {!fitCheckResult && (
+                  <div className="space-y-2">
+                    <textarea
+                      value={fitCheckInput}
+                      onChange={e => setFitCheckInput(e.target.value)}
+                      placeholder="Pegá aquí el texto de la oferta laboral..."
+                      rows={4}
+                      className="w-full text-xs border border-ink-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-violet-300 text-ink-700 placeholder-ink-300"
+                    />
+                    <button
+                      onClick={checkFit}
+                      disabled={fitCheckLoading || !fitCheckInput.trim()}
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98] disabled:opacity-60"
+                      style={{ background: 'linear-gradient(135deg,#8b5cf6,#a78bfa)' }}
+                    >
+                      {fitCheckLoading
+                        ? <><Loader2 size={15} className="animate-spin" /> Analizando...</>
+                        : <><Target size={15} /> Ver compatibilidad</>}
+                    </button>
+                    {fitCheckError && <p className="text-xs text-red-500">{fitCheckError}</p>}
+                  </div>
+                )}
+
+                {fitCheckResult && (
+                  <div className="space-y-3">
+                    {/* Score */}
+                    <div className="flex items-center gap-3 bg-violet-50 rounded-xl p-3">
+                      <div className="flex-shrink-0 w-14 h-14 rounded-full flex flex-col items-center justify-center font-bold"
+                        style={{ background: fitCheckResult.match_score >= 70 ? '#d1fae5' : fitCheckResult.match_score >= 40 ? '#fef3c7' : '#fee2e2', color: fitCheckResult.match_score >= 70 ? '#065f46' : fitCheckResult.match_score >= 40 ? '#92400e' : '#991b1b' }}>
+                        <span className="text-xl">{fitCheckResult.match_score}</span>
+                        <span className="text-[9px] font-normal">/ 100</span>
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-ink-700">{fitCheckResult.resumen}</p>
+                        <p className="text-[10px] text-ink-400 mt-0.5 capitalize">{fitCheckResult.nivel_match}</p>
+                      </div>
+                    </div>
+
+                    {/* Cumple */}
+                    {fitCheckResult.cumple?.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wide mb-1">✓ Lo que cumplís</p>
+                        {fitCheckResult.cumple.map((c, i) => (
+                          <p key={i} className="text-xs text-ink-600 pl-3 border-l-2 border-emerald-300 mb-1">{c}</p>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Falta */}
+                    {fitCheckResult.falta?.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-1">↑ Brechas a cubrir</p>
+                        {fitCheckResult.falta.map((f, i) => (
+                          <p key={i} className="text-xs text-ink-600 pl-3 border-l-2 border-amber-300 mb-1">{f}</p>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Consejo */}
+                    {fitCheckResult.consejo_postulacion && (
+                      <div className="bg-violet-50 border border-violet-200 rounded-xl px-3 py-2.5">
+                        <p className="text-[10px] font-bold text-violet-700 mb-0.5">💡 Consejo para postularte</p>
+                        <p className="text-[10px] text-violet-700">{fitCheckResult.consejo_postulacion}</p>
+                      </div>
+                    )}
+
+                    {/* CV Adaptado */}
+                    {fitCvAdaptado && (
+                      <button
+                        onClick={descargarCvAdaptado}
+                        disabled={descargandoCvAdaptado}
+                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98] disabled:opacity-60"
+                        style={{ background: 'linear-gradient(135deg,#8b5cf6,#a78bfa)' }}
+                      >
+                        {descargandoCvAdaptado
+                          ? <><Loader2 size={15} className="animate-spin" /> Generando CV...</>
+                          : <><Download size={15} /> Descargar CV adaptado a esta oferta</>}
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => { setFitCheckResult(null); setFitCvAdaptado(null); setFitCheckInput(''); }}
+                      className="text-[10px] text-ink-400 hover:text-violet-600 hover:underline transition-colors"
+                    >
+                      Analizar otra oferta →
+                    </button>
+                  </div>
+                )}
+              </div>
+
             </div>
           </div>
         )}

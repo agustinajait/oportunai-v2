@@ -2221,8 +2221,8 @@ export default function DashboardClient({
                     <Sparkles size={18} color="#fff" />
                   </div>
                   <div>
-                    <p className="font-semibold text-ink-800 text-sm">Armá tu CV con IA</p>
-                    <p className="text-xs text-ink-400">Contanos lo que sabés — lo formateamos nosotros</p>
+                    <p className="font-semibold text-ink-800 text-sm">Tu CV profesional</p>
+                    <p className="text-xs text-ink-400">Contanos lo que sabés — lo armamos nosotros</p>
                   </div>
                 </div>
 
@@ -2269,7 +2269,7 @@ export default function DashboardClient({
                             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-50 transition-colors"
                             style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}
                           >
-                            {generandoCV ? <><Loader2 size={13} className="animate-spin" /> Actualizando...</> : <><Sparkles size={13} /> Actualizar CV</>}
+                            {generandoCV ? <><Loader2 size={13} className="animate-spin" /> Actualizando tu CV...</> : <><Sparkles size={13} /> Actualizar mi CV</>}
                           </button>
                         </div>
                       </details>
@@ -2300,8 +2300,8 @@ export default function DashboardClient({
                     {/* Tab: texto libre */}
                     {cvBuilderTab === 'texto' && (
                       <div className="space-y-2">
-                        <p className="text-[10px] text-ink-500 leading-relaxed">
-                          Contanos en tus palabras: en qué trabajaste (aunque sea changas o informal), qué sabés hacer, hasta qué año fuiste al colegio o si hiciste algún curso. No importa si está desordenado.
+                            <p className="text-[10px] text-ink-500 leading-relaxed">
+                          Contanos en tus palabras: en qué trabajaste (aunque sea changas o informal), qué sabés hacer, hasta qué año fuiste al colegio o si hiciste algún curso. No importa si está desordenado — nosotros lo ordenamos.
                         </p>
                         <textarea
                           value={textoLibre}
@@ -2317,8 +2317,8 @@ export default function DashboardClient({
                           style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}
                         >
                           {generandoCV
-                            ? <><Loader2 size={15} className="animate-spin" /> Armando tu CV...</>
-                            : <><Sparkles size={15} /> Armá mi CV</>}
+                            ? <><Loader2 size={15} className="animate-spin" /> Generando tu CV...</>
+                            : <><Sparkles size={15} /> Generame mi CV</>}
                         </button>
                         {generarMsg && (
                           <p className={`text-xs text-center ${generarMsg.includes('!') ? 'text-emerald-600' : 'text-red-500'}`}>{generarMsg}</p>
@@ -2475,7 +2475,7 @@ export default function DashboardClient({
                   {
                     id: 'cv', icon: '✨',
                     title: 'Armá tu CV',
-                    desc: 'Contanos lo que sabés — aunque sea de manera informal — y lo armamos nosotros',
+                    desc: 'Contanos tu experiencia en tus palabras — nosotros la convertimos en un CV profesional',
                     done: tieneSummary || tieneExp || tieneHabs,
                     cta: { label: 'Armar mi CV', click: () => setTimeout(() => document.getElementById('cv-builder-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50) },
                   },
@@ -2973,21 +2973,21 @@ export default function DashboardClient({
                     <BrainCircuit size={18} color="#fff" />
                   </div>
                   <div>
-                    <p className="font-semibold text-ink-800 text-sm">Analizador de CV</p>
-                    <p className="text-xs text-ink-400">IA revisa tu CV y sugiere mejoras para ATS</p>
+                    <p className="font-semibold text-ink-800 text-sm">Revisión de tu CV</p>
+                    <p className="text-xs text-ink-400">Analizamos tu CV y te decimos exactamente qué mejorar</p>
                   </div>
                 </div>
 
                 {/* Bloqueo si no hay datos */}
                 {!cvDatos?.resumen && !(cvDatos?.experiencia?.length) && !(cvDatos?.habilidades?.length) && (
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center space-y-2">
-                    <p className="text-xs text-amber-800 font-medium">Primero armá tu CV</p>
-                    <p className="text-[10px] text-amber-700">Completá la sección "Armá tu CV con IA" para usar el analizador.</p>
+                    <p className="text-xs text-amber-800 font-medium">Primero completá tu CV</p>
+                    <p className="text-[10px] text-amber-700">Para poder revisarlo necesitamos que primero nos cuentes tu experiencia.</p>
                     <button
                       onClick={() => document.getElementById('cv-builder-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                       className="text-[10px] font-semibold text-amber-700 hover:underline"
                     >
-                      Ir a armar mi CV →
+                      Completar mi CV →
                     </button>
                   </div>
                 )}
@@ -3000,8 +3000,8 @@ export default function DashboardClient({
                     style={{ background: 'linear-gradient(135deg,#0ea5e9,#38bdf8)' }}
                   >
                     {analisisLoading
-                      ? <><Loader2 size={15} className="animate-spin" /> Analizando tu CV...</>
-                      : <><Sparkles size={15} /> Analizar mi CV</>}
+                      ? <><Loader2 size={15} className="animate-spin" /> Revisando tu CV...</>
+                      : <><Sparkles size={15} /> Revisar mi CV</>}
                   </button>
                 )}
 
@@ -3097,13 +3097,13 @@ export default function DashboardClient({
                 {/* Bloqueo si no hay datos */}
                 {!cvDatos?.resumen && !(cvDatos?.experiencia?.length) && !(cvDatos?.habilidades?.length) && (
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center space-y-2">
-                    <p className="text-xs text-amber-800 font-medium">Primero armá tu CV</p>
-                    <p className="text-[10px] text-amber-700">Para comparar con una oferta necesitamos saber tu perfil primero.</p>
+                    <p className="text-xs text-amber-800 font-medium">Primero completá tu CV</p>
+                    <p className="text-[10px] text-amber-700">Para compararlo con una oferta necesitamos conocer tu perfil primero.</p>
                     <button
                       onClick={() => document.getElementById('cv-builder-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                       className="text-[10px] font-semibold text-amber-700 hover:underline"
                     >
-                      Ir a armar mi CV →
+                      Completar mi CV →
                     </button>
                   </div>
                 )}
@@ -3124,8 +3124,8 @@ export default function DashboardClient({
                       style={{ background: 'linear-gradient(135deg,#8b5cf6,#a78bfa)' }}
                     >
                       {fitCheckLoading
-                        ? <><Loader2 size={15} className="animate-spin" /> Analizando...</>
-                        : <><Target size={15} /> Ver compatibilidad</>}
+                        ? <><Loader2 size={15} className="animate-spin" /> Comparando tu perfil...</>
+                        : <><Target size={15} /> Ver qué tan compatible soy</>}
                     </button>
                     {fitCheckError && <p className="text-xs text-red-500">{fitCheckError}</p>}
                   </div>
@@ -3183,8 +3183,8 @@ export default function DashboardClient({
                         style={{ background: 'linear-gradient(135deg,#8b5cf6,#a78bfa)' }}
                       >
                         {descargandoCvAdaptado
-                          ? <><Loader2 size={15} className="animate-spin" /> Generando CV...</>
-                          : <><Download size={15} /> Descargar CV adaptado a esta oferta</>}
+                          ? <><Loader2 size={15} className="animate-spin" /> Preparando tu CV...</>
+                          : <><Download size={15} /> Descargar tu CV adaptado a esta oferta</>}
                       </button>
                     )}
 
@@ -3419,7 +3419,7 @@ export default function DashboardClient({
               {[
                 'CV en formato DOCX listo para enviar',
                 'CV PDF optimizado para imprimir',
-                'Analizador de CV con IA',
+                'Revisión completa de tu CV',
                 'Adaptación del CV a cualquier oferta',
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-2">

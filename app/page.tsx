@@ -146,15 +146,15 @@ export default async function LandingPage() {
           </h1>
 
           <p className={s.heroNewSub}>
-            No importa si nunca hiciste un CV. Contanos lo que sabés y la IA lo arma por vos.
-            Grabá tu VideoCV, analizá tu perfil y postulate con el CV adaptado a cada oferta.
+            No importa si nunca hiciste un CV. Contanos lo que sabés y te lo armamos nosotros.
+            Grabá tu VideoCV, analizamos tu perfil y te damos el CV listo para cada oferta.
           </p>
 
           <div className={s.heroNewPills}>
             <span className={s.heroNewPill}><Video size={13} strokeWidth={2}/> VideoCV</span>
-            <span className={s.heroNewPill}><FileText size={13} strokeWidth={2}/> CV con IA</span>
-            <span className={s.heroNewPill}><BrainCircuit size={13} strokeWidth={2}/> Análisis ATS</span>
-            <span className={`${s.heroNewPill} ${s.heroNewPillActive}`}><Target size={13} strokeWidth={2}/> Adaptación al puesto</span>
+            <span className={s.heroNewPill}><FileText size={13} strokeWidth={2}/> Tu CV generado</span>
+            <span className={s.heroNewPill}><BrainCircuit size={13} strokeWidth={2}/> Análisis de perfil</span>
+            <span className={`${s.heroNewPill} ${s.heroNewPillActive}`}><Target size={13} strokeWidth={2}/> CV adaptado por oferta</span>
           </div>
 
           <Link href="/register" className={s.heroNewCtaBtn}>
@@ -235,8 +235,8 @@ export default async function LandingPage() {
           {([
             { n: '1', numBg: '#5B3FE0', icoBg: 'rgba(91,63,224,0.10)',  icoColor: '#5B3FE0', Icon: User,         t: 'Creá tu perfil',               d: 'Registrate y completá tus datos básicos. Tarda menos de 2 minutos.' },
             { n: '2', numBg: '#EF4444', icoBg: 'rgba(239,68,68,0.10)',  icoColor: '#EF4444', Icon: Video,        t: 'Grabá tu VideoCV',             d: 'Presentate en 60 segundos con nuestra herramienta de grabación desde el celular.' },
-            { n: '3', numBg: '#22C55E', icoBg: 'rgba(34,197,94,0.10)',  icoColor: '#22C55E', Icon: Sparkles,     t: 'La IA te arma el CV',          d: 'Contanos tu experiencia como puedas — la IA la convierte en un CV profesional y ATS-friendly.' },
-            { n: '4', numBg: '#F97316', icoBg: 'rgba(249,115,22,0.10)', icoColor: '#F97316', Icon: Target,       t: 'Postulate y destacate',        d: 'Adaptá tu CV a cada oferta con un clic. Las empresas te encuentran por tu perfil digital.' },
+            { n: '3', numBg: '#22C55E', icoBg: 'rgba(34,197,94,0.10)',  icoColor: '#22C55E', Icon: Sparkles,     t: 'Te generamos el CV',           d: 'Contanos tu experiencia como puedas. Nosotros la convertimos en un CV profesional listo para usar.' },
+            { n: '4', numBg: '#F97316', icoBg: 'rgba(249,115,22,0.10)', icoColor: '#F97316', Icon: Target,       t: 'Postulate y destacate',        d: 'Adaptamos tu CV a cada oferta que te interesa. Las empresas te encuentran por tu perfil digital.' },
           ] as const).flatMap((step, i, arr) => [
             <div key={step.n} className={`${s.stepNew} sr-up sr-d${i + 1}`}>
               <div className={s.stepNewNum} style={{ background: step.numBg }}>{step.n}</div>
@@ -329,10 +329,10 @@ export default async function LandingPage() {
       <section className={`${s.sec} sr-up`} style={{ background: 'linear-gradient(180deg,#f8f7ff 0%,#ffffff 100%)' }}>
         <div className={s.secHead}>
           <div>
-            <p className={s.eyebrow}>Inteligencia Artificial · Incluido en tu perfil</p>
-            <h2 className={s.secH}>Tres herramientas que hacen<br/>el trabajo pesado por vos.</h2>
+            <p className={s.eyebrow}>Incluido en tu perfil · Sin costo extra</p>
+            <h2 className={s.secH}>Hacemos el trabajo pesado<br/>para que vos te enfoqués en postularte.</h2>
             <p style={{ fontSize: 15, color: '#64748b', lineHeight: 1.6, maxWidth: 480, margin: '8px 0 0' }}>
-              No importa si nunca hiciste un CV. Contanos lo que sabés y la IA lo transforma en un perfil profesional, analiza qué tan bien estás posicionado y adapta tu CV a cada oferta que te interesa.
+              No importa si nunca hiciste un CV. Contanos lo que sabés, nosotros lo convertimos en un perfil profesional, analizamos cómo estás posicionado y preparamos tu CV para cada oferta que te interesa.
             </p>
           </div>
         </div>
@@ -343,9 +343,9 @@ export default async function LandingPage() {
             <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(91,63,224,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Sparkles size={22} strokeWidth={1.75} color="#5B3FE0"/>
             </div>
-            <div style={{ fontWeight: 700, fontSize: 17, color: '#1e1b4b' }}>Armá tu CV con IA</div>
+            <div style={{ fontWeight: 700, fontSize: 17, color: '#1e1b4b' }}>Te generamos el CV</div>
             <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, margin: 0 }}>
-              Escribí tu experiencia como puedas — informal, desordenada, en tus palabras. La IA la convierte en un CV completo y profesional, listo para descargar en Word o PDF.
+              Escribí tu experiencia como puedas — informal, desordenada, en tus palabras. Nosotros la convertimos en un CV completo y profesional, listo para descargar en Word o PDF.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
               {['Sin experiencia previa', 'Changas y trabajo informal', 'Cualquier rubro'].map(t => (
@@ -359,9 +359,9 @@ export default async function LandingPage() {
             <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(20,199,168,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <BrainCircuit size={22} strokeWidth={1.75} color="#0A9485"/>
             </div>
-            <div style={{ fontWeight: 700, fontSize: 17, color: '#1e1b4b' }}>Análisis inteligente de tu CV</div>
+            <div style={{ fontWeight: 700, fontSize: 17, color: '#1e1b4b' }}>Analizamos tu CV</div>
             <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, margin: 0 }}>
-              La IA evalúa tu CV con un puntaje del 0 al 100, detecta qué falta, señala tus fortalezas y te da consejos concretos para pasar los filtros ATS de las grandes empresas.
+              Evaluamos tu CV con un puntaje del 0 al 100, detectamos qué falta, señalamos tus fortalezas y te damos consejos concretos para pasar los filtros de las grandes empresas.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
               {['Puntaje ATS', 'Qué mejorar', 'Fortalezas detectadas'].map(t => (
@@ -375,9 +375,9 @@ export default async function LandingPage() {
             <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(249,115,22,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Target size={22} strokeWidth={1.75} color="#F97316"/>
             </div>
-            <div style={{ fontWeight: 700, fontSize: 17, color: '#1e1b4b' }}>Adaptación al puesto</div>
+            <div style={{ fontWeight: 700, fontSize: 17, color: '#1e1b4b' }}>Adaptamos tu CV a cada oferta</div>
             <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, margin: 0 }}>
-              Pegá la descripción de cualquier oferta y la IA te dice qué tan compatible sos, qué requisitos cumplís y reescribe tu CV resaltando lo más relevante para ese trabajo específico.
+              Pegá la descripción de cualquier oferta y te decimos qué tan compatible sos, qué requisitos cumplís y reescribimos tu CV resaltando lo más relevante para ese trabajo específico.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
               {['Match score', 'CV adaptado', 'Consejos de postulación'].map(t => (
@@ -622,7 +622,7 @@ export default async function LandingPage() {
         <p className={s.ctaTag}>Gratis · Desde el celular · 2 minutos</p>
         <h2 className={s.ctaH}>Tu próximo trabajo<br/>empieza acá.</h2>
         <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, margin: '0 0 28px', maxWidth: 420, textAlign: 'center', lineHeight: 1.6 }}>
-          Creá tu perfil, grabá tu VideoCV y dejá que la IA te arme el CV. Sin costos, sin complicaciones.
+          Creá tu perfil, grabá tu VideoCV y nosotros te armamos el CV. Sin costos, sin complicaciones.
         </p>
         <div className={s.ctaBtns}>
           <Link href="/register" className={s.ctaBtnP}>

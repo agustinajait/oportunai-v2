@@ -248,6 +248,34 @@ export default function DashboardClient({
   const [analyzingCV, setAnalyzingCV] = useState(false);
   const [cvDatos, setCvDatos] = useState<CvDatos | null>(usuario.cv_datos);
 
+  // CV builder — texto libre
+  const [cvBuilderTab, setCvBuilderTab] = useState<'texto' | 'pdf'>('texto');
+  const [textoLibre, setTextoLibre] = useState('');
+  const [generandoCV, setGenerandoCV] = useState(false);
+  const [generarMsg, setGenerarMsg] = useState<string | null>(null);
+
+  async function generarCVdesdeTexto() {
+    if (!textoLibre.trim() || textoLibre.trim().length < 20) return;
+    setGenerandoCV(true);
+    setGenerarMsg(null);
+    try {
+      const res = await fetch('/api/cv/generar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texto_libre: textoLibre }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Error');
+      setCvDatos(data.cv_datos);
+      setGenerarMsg('¡CV armado! Ya podés descargarlo y usarlo.');
+      setTextoLibre('');
+    } catch (e: any) {
+      setGenerarMsg(e.message ?? 'No se pudo generar. Intentá de nuevo.');
+    } finally {
+      setGenerandoCV(false);
+    }
+  }
+
   // Formulario de datos del perfil
   const [editandoDatos, setEditandoDatos] = useState(false);
   const [guardandoDatos, setGuardandoDatos] = useState(false);
@@ -915,9 +943,6 @@ export default function DashboardClient({
                 { id: 'documentos',  Icon: ShieldCheck,    label: 'Documentos',  badge: null },
                 { id: 'ofertas',     Icon: Briefcase,      label: 'Ofertas',     badge: null },
                 { id: 'citas',       Icon: CalendarDays,   label: 'Citas',       badge: citasPendientes > 0 ? citasPendientes : null },
-                ...(usuario.cv_datos?.origen !== 'mentoress' ? [
-                  { id: 'servicios',  Icon: Layers,        label: 'Módulos',     badge: misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length || null },
-                ] : []),
                 { id: 'capacitate',  Icon: GraduationCap,  label: 'Capacitate',  badge: null, href: usuario.cv_datos?.origen === 'mentoress' ? '/dashboard/capacitate?vertical=eess' : '/dashboard/capacitate' },
               ].map(({ id, Icon, label, badge, href }: { id: string; Icon: React.ElementType; label: string; badge: number | null; href?: string }) => (
                 href ? (
@@ -2086,63 +2111,159 @@ export default function DashboardClient({
                 )}
               </div>
 
-              {/* CV File */}
-              <div className="card p-6">
-                <h2 className="font-semibold text-ink-800 mb-4">Archivo CV</h2>
-                {archivoCV ? (
+              {/* ── Armá tu CV ───────────────────────────────────── */}
+              <div id="cv-builder-section" className="card p-5">
+                {/* Header */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
+                    <Sparkles size={18} color="#fff" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-ink-800 text-sm">Armá tu CV con IA</p>
+                    <p className="text-xs text-ink-400">Contanos lo que sabés — lo formateamos nosotros</p>
+                  </div>
+                </div>
+
+                {/* Si ya tiene datos → estado completado */}
+                {cvDatos?.resumen || (cvDatos?.experiencia?.length ?? 0) > 0 || (cvDatos?.habilidades?.length ?? 0) > 0 ? (
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 bg-ink-50 rounded-xl p-3">
-                      <div className="w-9 h-9 bg-brand-100 rounded-lg flex items-center justify-center">
-                        <FileText size={16} className="text-brand-600" />
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold text-emerald-700">✓ CV armado</p>
+                        <button
+                          onClick={() => setCvBuilderTab('texto')}
+                          className="text-[10px] text-emerald-600 hover:underline"
+                        >
+                          Actualizar →
+                        </button>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-ink-700 truncate">CV subido</p>
-                        <p className="text-xs text-ink-400">{new Date(archivoCV.created_at).toLocaleDateString('es-AR')}</p>
-                      </div>
-                      <a href={archivoCV.file_url} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 mr-1">
-                        <ExternalLink size={15} />
-                      </a>
+                      {cvDatos?.resumen && <p className="text-xs text-emerald-800 leading-relaxed line-clamp-2">{cvDatos.resumen}</p>}
+                      {(cvDatos?.habilidades?.length ?? 0) > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {cvDatos!.habilidades!.slice(0, 5).map((h, i) => (
+                            <span key={i} className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">{h}</span>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    {cvDatos ? (
-                      <div className="bg-emerald-50 rounded-xl p-3 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs font-semibold text-emerald-700">CV analizado ✓</p>
-                          <button onClick={analyzeCV} disabled={analyzingCV} className="text-xs text-emerald-600 hover:underline disabled:opacity-50">
-                            {analyzingCV ? 'Analizando...' : 'Re-analizar'}
+
+                    {/* Permitir re-generar */}
+                    {generarMsg === null && (
+                      <details className="group">
+                        <summary className="text-[10px] text-ink-400 hover:text-brand-600 cursor-pointer list-none">
+                          Actualizar con nueva info →
+                        </summary>
+                        <div className="mt-3 space-y-2">
+                          <textarea
+                            value={textoLibre}
+                            onChange={e => setTextoLibre(e.target.value)}
+                            placeholder="Contanos qué cambió — nuevos trabajos, cursos, habilidades..."
+                            rows={3}
+                            className="w-full text-xs border border-ink-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-brand-300 text-ink-700 placeholder-ink-300"
+                          />
+                          <button
+                            onClick={generarCVdesdeTexto}
+                            disabled={generandoCV || textoLibre.trim().length < 20}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-50 transition-colors"
+                            style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}
+                          >
+                            {generandoCV ? <><Loader2 size={13} className="animate-spin" /> Actualizando...</> : <><Sparkles size={13} /> Actualizar CV</>}
                           </button>
                         </div>
-                        {cvDatos.resumen && <p className="text-xs text-emerald-800 leading-relaxed">{cvDatos.resumen}</p>}
-                        {(cvDatos.habilidades?.length ?? 0) > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {cvDatos.habilidades!.slice(0, 6).map((h, i) => (
-                              <span key={i} className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">{h}</span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <button
-                        onClick={analyzeCV}
-                        disabled={analyzingCV}
-                        className="w-full btn-secondary text-xs py-2 justify-center gap-2 disabled:opacity-50"
-                      >
-                        <Zap size={13} />
-                        {analyzingCV ? 'Analizando con IA...' : 'Analizar CV con IA'}
-                      </button>
+                      </details>
+                    )}
+                    {generarMsg && (
+                      <p className={`text-xs text-center ${generarMsg.includes('!') ? 'text-emerald-600' : 'text-red-500'}`}>{generarMsg}</p>
                     )}
                   </div>
                 ) : (
-                  <div className="border-2 border-dashed border-ink-200 rounded-xl p-6 text-center">
-                    <Upload size={20} className="text-ink-300 mx-auto mb-2" />
-                    <p className="text-sm text-ink-400 mb-3">PDF · máx 5 MB</p>
-                    <label className={`btn-secondary text-xs py-2 px-4 cursor-pointer ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
-                      <Upload size={13} />
-                      {uploading ? 'Subiendo...' : 'Subir CV en PDF'}
-                      <input type="file" accept=".pdf" className="hidden" onChange={handleFileUpload} />
-                    </label>
+                  /* Sin datos — mostrar las dos rutas */
+                  <div className="space-y-3">
+                    {/* Tabs */}
+                    <div className="flex gap-1 bg-ink-50 rounded-xl p-1">
+                      <button
+                        onClick={() => setCvBuilderTab('texto')}
+                        className={`flex-1 text-xs font-semibold py-2 rounded-lg transition-colors ${cvBuilderTab === 'texto' ? 'bg-white text-brand-700 shadow-sm' : 'text-ink-400 hover:text-ink-600'}`}
+                      >
+                        No tengo CV
+                      </button>
+                      <button
+                        onClick={() => setCvBuilderTab('pdf')}
+                        className={`flex-1 text-xs font-semibold py-2 rounded-lg transition-colors ${cvBuilderTab === 'pdf' ? 'bg-white text-brand-700 shadow-sm' : 'text-ink-400 hover:text-ink-600'}`}
+                      >
+                        Ya tengo un CV
+                      </button>
+                    </div>
+
+                    {/* Tab: texto libre */}
+                    {cvBuilderTab === 'texto' && (
+                      <div className="space-y-2">
+                        <p className="text-[10px] text-ink-500 leading-relaxed">
+                          Contanos en tus palabras: en qué trabajaste (aunque sea changas o informal), qué sabés hacer, hasta qué año fuiste al colegio o si hiciste algún curso. No importa si está desordenado.
+                        </p>
+                        <textarea
+                          value={textoLibre}
+                          onChange={e => setTextoLibre(e.target.value)}
+                          placeholder="Ejemplo: Trabajé 3 años limpiando casas en Palermo, también cuide a una señora mayor. Sé cocinar, soy organizada. Terminé el secundario en 2018. Ahora estoy haciendo un curso de peluquería..."
+                          rows={5}
+                          className="w-full text-xs border border-ink-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-brand-300 text-ink-700 placeholder-ink-300"
+                        />
+                        <button
+                          onClick={generarCVdesdeTexto}
+                          disabled={generandoCV || textoLibre.trim().length < 20}
+                          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-colors active:scale-[0.98]"
+                          style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}
+                        >
+                          {generandoCV
+                            ? <><Loader2 size={15} className="animate-spin" /> Armando tu CV...</>
+                            : <><Sparkles size={15} /> Armá mi CV</>}
+                        </button>
+                        {generarMsg && (
+                          <p className={`text-xs text-center ${generarMsg.includes('!') ? 'text-emerald-600' : 'text-red-500'}`}>{generarMsg}</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Tab: subir PDF */}
+                    {cvBuilderTab === 'pdf' && (
+                      <div className="space-y-2">
+                        <p className="text-[10px] text-ink-500">Subí tu CV en PDF y lo analizamos para optimizarlo.</p>
+                        {archivoCV ? (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3 bg-ink-50 rounded-xl p-3">
+                              <FileText size={15} className="text-brand-600 flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-ink-700 truncate">CV subido</p>
+                                <p className="text-[10px] text-ink-400">{new Date(archivoCV.created_at).toLocaleDateString('es-AR')}</p>
+                              </div>
+                              <a href={archivoCV.file_url} target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:text-brand-600">
+                                <ExternalLink size={14} />
+                              </a>
+                            </div>
+                            <button
+                              onClick={analyzeCV}
+                              disabled={analyzingCV}
+                              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-60"
+                              style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}
+                            >
+                              {analyzingCV ? <><Loader2 size={13} className="animate-spin" /> Extrayendo datos...</> : <><Zap size={13} /> Extraer datos del CV</>}
+                            </button>
+                          </div>
+                        ) : (
+                          <label className={`flex flex-col items-center gap-2 border-2 border-dashed border-ink-200 rounded-xl p-5 cursor-pointer hover:border-brand-300 hover:bg-brand-50/30 transition-colors ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
+                            <Upload size={20} className="text-ink-300" />
+                            <p className="text-xs text-ink-400 text-center">
+                              {uploading ? 'Subiendo...' : 'Tocá para subir tu CV en PDF'}
+                            </p>
+                            <p className="text-[10px] text-ink-300">PDF · máx 10 MB</p>
+                            <input type="file" accept=".pdf" className="hidden" onChange={handleFileUpload} />
+                          </label>
+                        )}
+                        {uploadMsg && <p className={`text-xs text-center ${uploadMsg.includes('✓') ? 'text-emerald-600' : 'text-red-500'}`}>{uploadMsg}</p>}
+                      </div>
+                    )}
                   </div>
                 )}
-                {uploadMsg && <p className={`text-xs mt-2 text-center ${uploadMsg.includes('✓') ? 'text-emerald-600' : 'text-red-500'}`}>{uploadMsg}</p>}
               </div>
 
               {/* Talleres */}
@@ -2250,11 +2371,18 @@ export default function DashboardClient({
                     cta: { label: 'Grabar ahora', href: '/dashboard/grabar' },
                   },
                   {
-                    id: 'datos', icon: '📝',
-                    title: 'Completá tu perfil',
-                    desc: 'Resumen, experiencia y habilidades — el motor de tu CV',
+                    id: 'cv', icon: '✨',
+                    title: 'Armá tu CV',
+                    desc: 'Contanos lo que sabés — aunque sea de manera informal — y lo armamos nosotros',
                     done: tieneSummary || tieneExp || tieneHabs,
-                    cta: { label: 'Editar perfil', click: () => { setEditandoDatos(true); setTimeout(() => document.getElementById('mis-datos-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); } },
+                    cta: { label: 'Armar mi CV', click: () => setTimeout(() => document.getElementById('cv-builder-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50) },
+                  },
+                  {
+                    id: 'datos', icon: '📝',
+                    title: 'Completá tus datos',
+                    desc: 'Zona, disponibilidad y contacto para que las empresas te encuentren',
+                    done: tieneLocalidad,
+                    cta: { label: 'Completar datos', click: () => { setEditandoDatos(true); setTimeout(() => document.getElementById('mis-datos-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); } },
                   },
                   {
                     id: 'zona', icon: '📍',
@@ -2748,7 +2876,21 @@ export default function DashboardClient({
                   </div>
                 </div>
 
-                {!analisisCV && (
+                {/* Bloqueo si no hay datos */}
+                {!cvDatos?.resumen && !(cvDatos?.experiencia?.length) && !(cvDatos?.habilidades?.length) && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center space-y-2">
+                    <p className="text-xs text-amber-800 font-medium">Primero armá tu CV</p>
+                    <p className="text-[10px] text-amber-700">Completá la sección "Armá tu CV con IA" para usar el analizador.</p>
+                    <button
+                      onClick={() => document.getElementById('cv-builder-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                      className="text-[10px] font-semibold text-amber-700 hover:underline"
+                    >
+                      Ir a armar mi CV →
+                    </button>
+                  </div>
+                )}
+
+                {!analisisCV && !!(cvDatos?.resumen || (cvDatos?.experiencia?.length ?? 0) > 0 || (cvDatos?.habilidades?.length ?? 0) > 0) && (
                   <button
                     onClick={() => analizarCV()}
                     disabled={analisisLoading}
@@ -2850,7 +2992,21 @@ export default function DashboardClient({
                   </div>
                 </div>
 
-                {!fitCheckResult && (
+                {/* Bloqueo si no hay datos */}
+                {!cvDatos?.resumen && !(cvDatos?.experiencia?.length) && !(cvDatos?.habilidades?.length) && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center space-y-2">
+                    <p className="text-xs text-amber-800 font-medium">Primero armá tu CV</p>
+                    <p className="text-[10px] text-amber-700">Para comparar con una oferta necesitamos saber tu perfil primero.</p>
+                    <button
+                      onClick={() => document.getElementById('cv-builder-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                      className="text-[10px] font-semibold text-amber-700 hover:underline"
+                    >
+                      Ir a armar mi CV →
+                    </button>
+                  </div>
+                )}
+
+                {!fitCheckResult && !!(cvDatos?.resumen || (cvDatos?.experiencia?.length ?? 0) > 0 || (cvDatos?.habilidades?.length ?? 0) > 0) && (
                   <div className="space-y-2">
                     <textarea
                       value={fitCheckInput}
@@ -3051,9 +3207,6 @@ export default function DashboardClient({
           {([
             { id: 'perfil',     Icon: User,         label: 'Perfil',   badge: null },
             { id: 'ofertas',    Icon: Briefcase,     label: 'Ofertas',  badge: null },
-            ...(usuario.cv_datos?.origen !== 'mentoress' ? [
-              { id: 'servicios' as typeof tab, Icon: Layers, label: 'Módulos', badge: misModulos.filter(m => m.estado === 'en_progreso' || m.estado === 'en_riesgo').length || null },
-            ] : []),
             { id: 'citas',      Icon: CalendarDays,  label: 'Citas',    badge: citasPendientes > 0 ? citasPendientes : null },
             { id: 'documentos', Icon: FileText,      label: 'Docs',     badge: null },
           ] as { id: typeof tab; Icon: React.ElementType; label: string; badge: number | null }[]).map(({ id, Icon, label, badge }) => (

@@ -1128,7 +1128,7 @@ export default function DashboardClient({
         )}
 
         {/* Tab Servicios */}
-        {tab === 'servicios' && (
+        {false && tab === 'servicios' && (
           <div className="space-y-8 animate-fade-in">
             {loadingServicios && (
               <div className="flex items-center justify-center py-12 text-ink-400">
@@ -1693,9 +1693,9 @@ export default function DashboardClient({
                 const tieneVideoCV = !!videoCV;
                 type TabKey = 'perfil' | 'ofertas' | 'documentos' | 'citas' | 'servicios';
                 const ACCIONES: { dim: typeof DIMS[number]['key']; icon: string; texto: string; accion?: { label: string; tab?: TabKey } }[] = [
-                  { dim: 'empleo',    icon: '💼', texto: tieneVideoCV ? 'Aplicá a los módulos de trabajo disponibles según tu situación laboral.' : 'Completá tu Video CV y aplicá a los módulos de trabajo disponibles.', accion: { label: 'Ver módulos', tab: 'servicios' } },
-                  { dim: 'educacion', icon: '📚', texto: 'Completá las capacitaciones disponibles para sumar certificados a tu perfil.', accion: { label: 'Ver capacitaciones', tab: 'servicios' } },
-                  { dim: 'ingresos',  icon: '💰', texto: 'Los módulos de trabajo pueden ser una fuente de ingresos rápida.', accion: { label: 'Ver módulos', tab: 'servicios' } },
+                  { dim: 'empleo',    icon: '💼', texto: tieneVideoCV ? 'Buscá ofertas de trabajo que se ajusten a tu perfil.' : 'Completá tu Video CV para postularte a ofertas de trabajo.', accion: { label: 'Ver ofertas', tab: 'ofertas' } },
+                  { dim: 'educacion', icon: '📚', texto: 'Completá las capacitaciones disponibles para sumar certificados a tu perfil.', accion: { label: 'Ver capacitaciones', tab: 'ofertas' } },
+                  { dim: 'ingresos',  icon: '💰', texto: 'Explorá las ofertas de trabajo disponibles para vos.', accion: { label: 'Ver ofertas', tab: 'ofertas' } },
                   { dim: 'red',       icon: '🤝', texto: 'Agregá referencias laborales a tu perfil para fortalecer tu red.', accion: { label: 'Mi perfil', tab: 'perfil' } },
                 ];
                 const accionesFiltradas = tieneDiag
@@ -2584,7 +2584,7 @@ export default function DashboardClient({
                     )}
 
                     {/* Alerta de diagnóstico Korai — si dimensión empleo roja/amarilla */}
-                    {sem && (sem.empleo === 'rojo' || sem.empleo === 'amarillo') && (
+                    {false && sem && (sem.empleo === 'rojo' || sem.empleo === 'amarillo') && (
                       <div
                         className="rounded-xl px-3 py-2.5 mb-3"
                         style={{
@@ -3367,7 +3367,7 @@ export default function DashboardClient({
               {[
                 { icon: '🔗', text: 'Te mandamos el link de tu perfil laboral' },
                 { icon: '🚦', text: 'Te guiamos al diagnóstico para recomendarte oportunidades según tu situación' },
-                { icon: '💼', text: 'Te avisamos cuando hay módulos u ofertas que encajan con vos' },
+                { icon: '💼', text: 'Te avisamos cuando hay ofertas que encajan con vos' },
               ].map(({ icon, text }) => (
                 <div key={text} className="flex items-start gap-3">
                   <span className="text-lg flex-shrink-0">{icon}</span>

@@ -130,7 +130,7 @@ export default async function LandingPage() {
 
         <div className={s.navLinks}>
           <Link href="/login"    className={s.btnGhost}>Iniciar sesión</Link>
-          <Link href="/register" className={s.btnFill}>Crear mi perfil gratis</Link>
+          <Link href="/register" className={s.btnFill}>Crear mi perfil</Link>
         </div>
       </nav>
 
@@ -139,7 +139,7 @@ export default async function LandingPage() {
 
         {/* ── Izquierda: copy ── */}
         <div className={s.heroNewLeft}>
-          <span className={s.heroNewBadge}>100% GRATIS</span>
+          <span className={s.heroNewBadge}>Tu perfil laboral digital</span>
 
           <h1 className={s.heroNewH}>
             El primer creador de<br/><span className={s.heroNewAccent}>Perfil Laboral Digital</span>
@@ -158,12 +158,12 @@ export default async function LandingPage() {
           </div>
 
           <Link href="/register" className={s.heroNewCtaBtn}>
-            Crear mi perfil gratis <ArrowRight size={16} strokeWidth={2.5}/>
+            Crear mi perfil <ArrowRight size={16} strokeWidth={2.5}/>
           </Link>
 
           <p className={s.heroNewHint}>
             <CircleCheck size={14} strokeWidth={2}/>
-            Sin costos. Sin complicaciones.
+            En minutos, desde tu celular.
           </p>
 
           {/* Scroll down arrow — desktop only */}
@@ -329,7 +329,7 @@ export default async function LandingPage() {
       <section className={`${s.sec} sr-up`} style={{ background: 'linear-gradient(180deg,#f8f7ff 0%,#ffffff 100%)' }}>
         <div className={s.secHead}>
           <div>
-            <p className={s.eyebrow}>Incluido en tu perfil · Sin costo extra</p>
+            <p className={s.eyebrow}>Incluido en tu perfil</p>
             <h2 className={s.secH}>Hacemos el trabajo pesado<br/>para que vos te enfoqués en postularte.</h2>
             <p style={{ fontSize: 15, color: '#64748b', lineHeight: 1.6, maxWidth: 480, margin: '8px 0 0' }}>
               No importa si nunca hiciste un CV. Contanos lo que sabés, nosotros lo convertimos en un perfil profesional, analizamos cómo estás posicionado y preparamos tu CV para cada oferta que te interesa.
@@ -389,7 +389,7 @@ export default async function LandingPage() {
 
         <div style={{ textAlign: 'center', marginTop: 32 }}>
           <Link href="/register" className={s.heroNewCtaBtn} style={{ display: 'inline-flex' }}>
-            Crear mi perfil gratis <ArrowRight size={16} strokeWidth={2.5}/>
+            Crear mi perfil <ArrowRight size={16} strokeWidth={2.5}/>
           </Link>
         </div>
       </section>
@@ -398,7 +398,7 @@ export default async function LandingPage() {
       <section className={`${s.sec} sr-up`}>
         <div className={s.secHead}>
           <div>
-            <p className={s.eyebrow}>Exclusivo Oportunai · Gratis</p>
+            <p className={s.eyebrow}>Exclusivo Oportunai</p>
             <h2 className={s.secH}>Aprendé antes de arrancar.<br/>Entrá capacitado desde el día uno.</h2>
             <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, maxWidth: 420, margin: '8px 0 0' }}>Capacitaciones en video para estaciones de servicio, atención al cliente y comidas rápidas. Cargadas por las mismas empresas que buscan personal.</p>
             <p style={{ fontSize: 13, color: '#5B3FE0', fontWeight: 600, margin: '10px 0 0', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -418,7 +418,7 @@ export default async function LandingPage() {
                         <th.Icon size={44} strokeWidth={1} color={th.color} />
                       </div>
                       <div className={s.capPlay}>
-                        <Video size={12} /> Disponible · Gratis
+                        <Video size={12} /> Disponible
                       </div>
                     </div>
                     <div className={s.capBody}>
@@ -438,7 +438,7 @@ export default async function LandingPage() {
                       <c.Icon size={44} strokeWidth={1} color={c.color} />
                     </div>
                     <div className={s.capPlay}>
-                      <Video size={12} /> {c.dur} · Gratis
+                      <Video size={12} /> {c.dur}
                     </div>
                   </div>
                   <div className={s.capBody}>
@@ -491,7 +491,7 @@ export default async function LandingPage() {
               </div>
               <div className={s.capacitateFoot}>
                 <span className={s.capacitateBadge}>✓ Certificado</span>
-                <span className={s.capacitateGratis}>Gratis</span>
+                
               </div>
             </Link>
           ))}
@@ -619,15 +619,15 @@ export default async function LandingPage() {
 
       {/* ── CTA FINAL ── */}
       <section className={s.ctaFinal}>
-        <p className={s.ctaTag}>Gratis · Desde el celular · 2 minutos</p>
+        <p className={s.ctaTag}>Desde el celular · 2 minutos</p>
         <h2 className={s.ctaH}>Tu próximo trabajo<br/>empieza acá.</h2>
         <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, margin: '0 0 28px', maxWidth: 420, textAlign: 'center', lineHeight: 1.6 }}>
-          Creá tu perfil, grabá tu VideoCV y nosotros te armamos el CV. Sin costos, sin complicaciones.
+          Creá tu perfil, grabá tu VideoCV y nosotros te armamos el CV.
         </p>
         <div className={s.ctaBtns}>
           <Link href="/register" className={s.ctaBtnP}>
             <Sparkles size={16} strokeWidth={2} />
-            Crear mi perfil gratis
+            Crear mi perfil
           </Link>
           <Link href="/register-empresa" className={s.ctaBtnS}>
             <Building2 size={16} strokeWidth={2} />

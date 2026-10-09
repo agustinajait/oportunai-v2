@@ -1650,8 +1650,8 @@ export default function DashboardClient({
                   </div>
                 </div>
               </div>
-              {/* ── Diagnóstico Korai / Semáforo ─────────────────── */}
-              {(() => {
+              {/* ── Diagnóstico Korai / Semáforo — oculto temporalmente ─────────────────── */}
+              {false && ((() => {
                 const sem = usuario.korai_semaforo ?? null;
                 const DIMS_SEMAFORO = ['empleo','educacion','ingresos','salud','vivienda','red'] as const;
                 // Solo contar como diagnóstico completo si Korai llenó sus dimensiones
@@ -1816,7 +1816,7 @@ export default function DashboardClient({
                     )}
                   </div>
                 );
-              })()}
+              })())}
 
               {/* Perfil digital */}
               <div className="card p-6">

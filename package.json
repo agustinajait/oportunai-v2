@@ -26,6 +26,7 @@
     "html-to-image": "^1.11.13",
     "jose": "^6.2.3",
     "lucide-react": "^1.16.0",
+    "mercadopago": "^3.6.1",
     "next": "14.2.35",
     "postcss": "^8.5.14",
     "qrcode.react": "^4.2.0",

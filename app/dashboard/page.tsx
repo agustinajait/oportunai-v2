@@ -30,6 +30,7 @@ export default async function DashboardPage() {
         whatsapp_activo: true,
         korai_opt_in: true,
         korai_semaforo: true,
+        pagado: true,
         videos: {
           where: { es_fragmento: false },
           orderBy: { created_at: 'desc' },
@@ -65,5 +66,5 @@ export default async function DashboardPage() {
 
   if (!usuario) redirect('/login');
 
-  return <DashboardClient usuario={usuario as any} tallersAsignados={tallersAsignados as any} citas={citas as any} />;
+  return <DashboardClient usuario={usuario as any} tallersAsignados={tallersAsignados as any} citas={citas as any} pagado={usuario.pagado ?? false} />;
 }

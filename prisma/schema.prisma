@@ -45,6 +45,11 @@ fecha_nacimiento DateTime?
   // CV IA
   cv_analisis           Json?                     // último análisis de CV por IA (cacheado)
 
+  // Pagos Stripe
+  pagado                Boolean  @default(false)
+  stripe_customer_id    String?
+  stripe_session_id     String?
+
   videos                Video[]
   archivos              Archivo[]
   documentos            Documento[]

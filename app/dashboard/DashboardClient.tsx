@@ -185,6 +185,15 @@ export default function DashboardClient({
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    const accion = searchParams.get('accion');
+    if (accion === 'cv' || accion === 'subir-cv') {
+      setTimeout(() => {
+        document.getElementById('cv-builder-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 400);
+    }
+  }, [searchParams]);
+
   async function iniciarPago() {
     setPagoLoading(true);
     setPagoError(null);

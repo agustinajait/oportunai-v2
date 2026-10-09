@@ -7,7 +7,7 @@ import {
   GraduationCap, ClipboardList, RefreshCw,
   HardHat, Handshake, Building2, ChevronRight,
   Target, Smartphone, Smile, Play, Send, CircleCheck,
-  Heart, Camera, ArrowRight, Download,
+  Heart, Camera, ArrowRight, Download, BrainCircuit, Sparkles, BadgeCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import s from './landing.module.css';
@@ -146,15 +146,15 @@ export default async function LandingPage() {
           </h1>
 
           <p className={s.heroNewSub}>
-            Grabá tu Video CV, mejorá tu oratoria y preparate para entrevistas laborales.
-            Construí tu perfil digital y compartilo con un link único con cualquier empresa.
+            No importa si nunca hiciste un CV. Contanos lo que sabés y la IA lo arma por vos.
+            Grabá tu VideoCV, analizá tu perfil y postulate con el CV adaptado a cada oferta.
           </p>
 
           <div className={s.heroNewPills}>
             <span className={s.heroNewPill}><Video size={13} strokeWidth={2}/> VideoCV</span>
-            <span className={s.heroNewPill}><FileText size={13} strokeWidth={2}/> CV optimizado</span>
-            <span className={s.heroNewPill}><Target size={13} strokeWidth={2}/> Oratoria</span>
-            <span className={`${s.heroNewPill} ${s.heroNewPillActive}`}><Heart size={13} strokeWidth={2}/> Entrevistas</span>
+            <span className={s.heroNewPill}><FileText size={13} strokeWidth={2}/> CV con IA</span>
+            <span className={s.heroNewPill}><BrainCircuit size={13} strokeWidth={2}/> Análisis ATS</span>
+            <span className={`${s.heroNewPill} ${s.heroNewPillActive}`}><Target size={13} strokeWidth={2}/> Adaptación al puesto</span>
           </div>
 
           <Link href="/register" className={s.heroNewCtaBtn}>
@@ -205,15 +205,15 @@ export default async function LandingPage() {
             <div className={s.heroCardSub}>Listo para postularte</div>
           </div>
 
-          {/* Card 3 — Diagnóstico Korai */}
+          {/* Card 3 — Fit Check */}
           <div className={`${s.heroCard} ${s.heroCard3}`}>
             <div className={s.heroCardInner}>
               <div className={s.heroCardIco} style={{ background: 'rgba(59,130,246,0.12)' }}>
-                <Target size={16} strokeWidth={1.75} color="#3B82F6"/>
+                <BrainCircuit size={16} strokeWidth={1.75} color="#3B82F6"/>
               </div>
-              <div className={s.heroCardTitle}>Diagnóstico Korai</div>
+              <div className={s.heroCardTitle}>Adaptación al puesto</div>
             </div>
-            <div className={s.heroCardSub}>Conocé tus fortalezas y qué podés mejorar</div>
+            <div className={s.heroCardSub}>Tu CV reescrito para cada oferta</div>
             <div className={s.heroCardBar}><div className={`${s.heroCardBarFill} ${s.heroCardBarTeal}`}/></div>
           </div>
         </div>
@@ -233,11 +233,10 @@ export default async function LandingPage() {
 
         <div className={s.stepsNew}>
           {([
-            { n: '1', numBg: '#5B3FE0', icoBg: 'rgba(91,63,224,0.10)',  icoColor: '#5B3FE0', Icon: User,     t: 'Creá tu perfil',                        d: 'Completá tus datos, experiencia y habilidades.' },
-            { n: '2', numBg: '#EF4444', icoBg: 'rgba(239,68,68,0.10)',  icoColor: '#EF4444', Icon: Video,    t: 'Grabá tu VideoCV',                      d: 'Presentate con nuestra herramienta de VideoCV en 4 pasos.' },
-            { n: '3', numBg: '#22C55E', icoBg: 'rgba(34,197,94,0.10)',  icoColor: '#22C55E', Icon: FileText, t: 'Generá tu CV para ATS',                 d: 'Obtené un CV optimizado para plataformas de búsqueda de empleo.' },
-            { n: '4', numBg: '#3B82F6', icoBg: 'rgba(59,130,246,0.10)', icoColor: '#3B82F6', Icon: Target,   t: 'Conocé tu situación',                   d: 'Realizá un diagnóstico en áreas clave para iniciar tu camino a la inserción laboral.' },
-            { n: '5', numBg: '#F97316', icoBg: 'rgba(249,115,22,0.10)', icoColor: '#F97316', Icon: Heart,    t: 'Recibí oportunidades y acompañamiento', d: 'Accedé a herramientas, recursos y oportunidades personalizadas para tu búsqueda o tu reconversión.' },
+            { n: '1', numBg: '#5B3FE0', icoBg: 'rgba(91,63,224,0.10)',  icoColor: '#5B3FE0', Icon: User,         t: 'Creá tu perfil',               d: 'Registrate y completá tus datos básicos. Tarda menos de 2 minutos.' },
+            { n: '2', numBg: '#EF4444', icoBg: 'rgba(239,68,68,0.10)',  icoColor: '#EF4444', Icon: Video,        t: 'Grabá tu VideoCV',             d: 'Presentate en 60 segundos con nuestra herramienta de grabación desde el celular.' },
+            { n: '3', numBg: '#22C55E', icoBg: 'rgba(34,197,94,0.10)',  icoColor: '#22C55E', Icon: Sparkles,     t: 'La IA te arma el CV',          d: 'Contanos tu experiencia como puedas — la IA la convierte en un CV profesional y ATS-friendly.' },
+            { n: '4', numBg: '#F97316', icoBg: 'rgba(249,115,22,0.10)', icoColor: '#F97316', Icon: Target,       t: 'Postulate y destacate',        d: 'Adaptá tu CV a cada oferta con un clic. Las empresas te encuentran por tu perfil digital.' },
           ] as const).flatMap((step, i, arr) => [
             <div key={step.n} className={`${s.stepNew} sr-up sr-d${i + 1}`}>
               <div className={s.stepNewNum} style={{ background: step.numBg }}>{step.n}</div>
@@ -326,84 +325,74 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* ── KORAI ── */}
-      <div className={s.koraiWrap}>
-        <section className={s.koraiSec}>
-          {/* Left: texto */}
+      {/* ── HERRAMIENTAS IA ── */}
+      <section className={`${s.sec} sr-up`} style={{ background: 'linear-gradient(180deg,#f8f7ff 0%,#ffffff 100%)' }}>
+        <div className={s.secHead}>
           <div>
-            <div className={s.koraiLogo}>
-              <div className={s.koraiLogoIcon}>🚦</div>
-              <div>
-                <div className={s.koraiLogoText}>KORAI</div>
-                <div className={s.koraiLogoSub}>por OportunAI</div>
-              </div>
+            <p className={s.eyebrow}>Inteligencia Artificial · Incluido en tu perfil</p>
+            <h2 className={s.secH}>Tres herramientas que hacen<br/>el trabajo pesado por vos.</h2>
+            <p style={{ fontSize: 15, color: '#64748b', lineHeight: 1.6, maxWidth: 480, margin: '8px 0 0' }}>
+              No importa si nunca hiciste un CV. Contanos lo que sabés y la IA lo transforma en un perfil profesional, analiza qué tan bien estás posicionado y adapta tu CV a cada oferta que te interesa.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 20, marginTop: 32 }}>
+          {/* Herramienta 1 */}
+          <div style={{ background: '#fff', borderRadius: 16, border: '1.5px solid rgba(91,63,224,0.12)', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(91,63,224,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Sparkles size={22} strokeWidth={1.75} color="#5B3FE0"/>
             </div>
-            <h2 className={s.koraiH}>Conocé tu punto de partida<br/>para llegar más lejos</h2>
-            <p className={s.koraiSub}>El diagnóstico de Korai te ayuda a identificar tus fortalezas, detectar qué necesitás y armar un plan de acción personalizado.</p>
-            {/* Áreas evaluadas */}
-            <div className={s.koraiAreas}>
-              {[
-                { emoji: '💼', label: 'Empleo' },
-                { emoji: '📚', label: 'Educación' },
-                { emoji: '💰', label: 'Ingresos' },
-                { emoji: '❤️', label: 'Salud' },
-                { emoji: '🏠', label: 'Vivienda' },
-                { emoji: '🤝', label: 'Red social' },
-              ].map(a => (
-                <span key={a.label} className={s.koraiAreaChip}>
-                  {a.emoji} {a.label}
-                </span>
+            <div style={{ fontWeight: 700, fontSize: 17, color: '#1e1b4b' }}>Armá tu CV con IA</div>
+            <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, margin: 0 }}>
+              Escribí tu experiencia como puedas — informal, desordenada, en tus palabras. La IA la convierte en un CV completo y profesional, listo para descargar en Word o PDF.
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+              {['Sin experiencia previa', 'Changas y trabajo informal', 'Cualquier rubro'].map(t => (
+                <span key={t} style={{ fontSize: 11, fontWeight: 600, color: '#5B3FE0', background: 'rgba(91,63,224,0.08)', borderRadius: 20, padding: '3px 10px' }}>{t}</span>
               ))}
             </div>
-            <Link href="/api/korai/redirect" className={s.koraiCtaBtn}>
-              Hacer diagnóstico gratis <ArrowRight size={14}/>
-            </Link>
           </div>
 
-          {/* Centro: video demo */}
-          <div className={s.koraiVideoWrap}>
-            <div className={s.koraiVideoBadge}>▶ Demo</div>
-            <video
-              src="/videodemokorai.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              className={s.koraiVideo}
-            />
-            <div className={s.koraiVideoGlow} />
+          {/* Herramienta 2 */}
+          <div style={{ background: '#fff', borderRadius: 16, border: '1.5px solid rgba(20,199,168,0.15)', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(20,199,168,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <BrainCircuit size={22} strokeWidth={1.75} color="#0A9485"/>
+            </div>
+            <div style={{ fontWeight: 700, fontSize: 17, color: '#1e1b4b' }}>Análisis inteligente de tu CV</div>
+            <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, margin: 0 }}>
+              La IA evalúa tu CV con un puntaje del 0 al 100, detecta qué falta, señala tus fortalezas y te da consejos concretos para pasar los filtros ATS de las grandes empresas.
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+              {['Puntaje ATS', 'Qué mejorar', 'Fortalezas detectadas'].map(t => (
+                <span key={t} style={{ fontSize: 11, fontWeight: 600, color: '#0A9485', background: 'rgba(20,199,168,0.08)', borderRadius: 20, padding: '3px 10px' }}>{t}</span>
+              ))}
+            </div>
           </div>
 
-          {/* Derecha: result box */}
-          <div className={s.koraiResultBox}>
-            <div className={s.koraiResultBadge}>Tu resultado</div>
-            <div className={s.koraiResultGrid}>
-              <div className={s.koraiResult} style={{ background: 'rgba(74,222,128,0.15)' }}>
-                <div className={s.koraiResultN} style={{ color: '#4ADE80' }}>3</div>
-                <div className={s.koraiResultL} style={{ color: '#4ADE80' }}>Fortalezas</div>
-              </div>
-              <div className={s.koraiResult} style={{ background: 'rgba(251,146,60,0.15)' }}>
-                <div className={s.koraiResultN} style={{ color: '#FB923C' }}>2</div>
-                <div className={s.koraiResultL} style={{ color: '#FB923C' }}>A mejorar</div>
-              </div>
-              <div className={s.koraiResult} style={{ background: 'rgba(248,113,113,0.15)' }}>
-                <div className={s.koraiResultN} style={{ color: '#F87171' }}>1</div>
-                <div className={s.koraiResultL} style={{ color: '#F87171' }}>Prioridad</div>
-              </div>
+          {/* Herramienta 3 */}
+          <div style={{ background: '#fff', borderRadius: 16, border: '1.5px solid rgba(249,115,22,0.15)', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(249,115,22,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Target size={22} strokeWidth={1.75} color="#F97316"/>
             </div>
-            {/* Bar visual */}
-            <div className={s.koraiResultBar}>
-              <div className={s.koraiResultBarFill} style={{ width: '50%', background: '#4ADE80' }} />
-              <div className={s.koraiResultBarFill} style={{ width: '33%', background: '#FB923C' }} />
-              <div className={s.koraiResultBarFill} style={{ width: '17%', background: '#F87171' }} />
+            <div style={{ fontWeight: 700, fontSize: 17, color: '#1e1b4b' }}>Adaptación al puesto</div>
+            <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, margin: 0 }}>
+              Pegá la descripción de cualquier oferta y la IA te dice qué tan compatible sos, qué requisitos cumplís y reescribe tu CV resaltando lo más relevante para ese trabajo específico.
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+              {['Match score', 'CV adaptado', 'Consejos de postulación'].map(t => (
+                <span key={t} style={{ fontSize: 11, fontWeight: 600, color: '#F97316', background: 'rgba(249,115,22,0.08)', borderRadius: 20, padding: '3px 10px' }}>{t}</span>
+              ))}
             </div>
-            <div className={s.koraiResultSub}>Recibí recomendaciones y recursos para avanzar en cada área.</div>
-            <Link href="/api/korai/redirect" className={s.koraiResultCta}>
-              Ver mi plan de acción <ArrowRight size={14}/>
-            </Link>
           </div>
-        </section>
-      </div>
+        </div>
+
+        <div style={{ textAlign: 'center', marginTop: 32 }}>
+          <Link href="/register" className={s.heroNewCtaBtn} style={{ display: 'inline-flex' }}>
+            Crear mi perfil gratis <ArrowRight size={16} strokeWidth={2.5}/>
+          </Link>
+        </div>
+      </section>
 
       {/* ── CAPACITACIONES ── */}
       <section className={`${s.sec} sr-up`}>
@@ -554,26 +543,41 @@ export default async function LandingPage() {
       <section className={s.whySec}>
         <div className={s.whyHead}>
           <p className={s.eyebrow}>Confianza · Trayectoria · Propósito</p>
-          <h2 className={s.secH}>¿Por qué OportunAI?</h2>
-          <p className={s.whySub}>Tecnología con experiencia.<br/>Selección con propósito.</p>
+          <h2 className={s.secH}>Quiénes estamos detrás</h2>
+          <p className={s.whySub}>No somos una startup de Silicon Valley.<br/>Somos un equipo argentino con 10 años en el campo.</p>
         </div>
         <div className={s.whyBlocks}>
           <div className={s.whyBlock}>
             <div className={s.whyBlockIco} style={{ background: 'linear-gradient(135deg,#0A9485,#14C7A8)', boxShadow: '0 4px 16px rgba(20,199,168,0.35)' }}>
               <Heart size={20} color="#fff" strokeWidth={2} />
             </div>
-            <h3 className={s.whyBlockH}>Impulsada por la ONG CAII</h3>
-            <p className={s.whyBlockP}>OportunAI es una iniciativa desarrollada por la ONG CAII para generar más oportunidades de capacitación y empleo mediante tecnología.</p>
-            <p className={s.whyBlockP}>Ayudamos a empresas, comercios y organizaciones a seleccionar mejor a sus candidatos mediante VideoCV y capacitación, mientras impulsamos más oportunidades laborales para quienes buscan trabajo.</p>
+            <h3 className={s.whyBlockH}>ONG CAII — 10 años acompañando la empleabilidad</h3>
+            <p className={s.whyBlockP}>La ONG CAII trabaja desde 2015 en Argentina acompañando a personas en situación de vulnerabilidad social hacia el empleo formal. No lo hacemos desde un escritorio — lo hacemos en territorio, con las personas y para las personas.</p>
+            <p className={s.whyBlockP}>OportunAI es nuestra apuesta tecnológica para multiplicar ese impacto. La IA nos permite llegar a más personas con mejores herramientas, sin perder el foco humano que nos define.</p>
           </div>
           <div className={s.whyBlock}>
             <div className={s.whyBlockIco} style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 16px rgba(91,63,224,0.35)' }}>
               <Video size={20} color="#fff" strokeWidth={2} />
             </div>
-            <h3 className={s.whyBlockH}>+10 años transformando la selección</h3>
-            <p className={s.whyBlockP}>OportunAI cuenta con el respaldo de Tu VideoCV, la startup argentina pionera en la incorporación del VideoCV en procesos de selección.</p>
-            <p className={s.whyBlockP}>Desde 2015 desarrollamos tecnología utilizada por grandes empresas. Hoy esa experiencia se pone al servicio de una plataforma con impacto social.</p>
+            <h3 className={s.whyBlockH}>Tu VideoCV — pioneros del VideoCV en Argentina</h3>
+            <p className={s.whyBlockP}>Antes de que fuera tendencia, ya lo estábamos construyendo. Desde 2015 desarrollamos tecnología de VideoCV que hoy usan empresas líderes de Argentina para sus procesos de selección.</p>
+            <p className={s.whyBlockP}>Con esa experiencia acumulada en miles de procesos de selección, hoy ponemos esa misma tecnología — y todo lo que aprendimos — al servicio de los candidatos.</p>
           </div>
+        </div>
+
+        {/* Stats de trayectoria */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center', margin: '32px 0' }}>
+          {[
+            { n: '+10 años', d: 'de experiencia en RRHH y tecnología' },
+            { n: '+500 empresas', d: 'utilizaron nuestra tecnología de VideoCV' },
+            { n: '100% Argentina', d: 'equipo local, conocemos el mercado' },
+            { n: 'IA + propósito', d: 'tecnología al servicio del impacto social' },
+          ].map(stat => (
+            <div key={stat.n} style={{ background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 14, padding: '18px 24px', textAlign: 'center', minWidth: 180 }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#5B3FE0', letterSpacing: '-0.02em' }}>{stat.n}</div>
+              <div style={{ fontSize: 13, color: '#64748b', marginTop: 4, lineHeight: 1.4 }}>{stat.d}</div>
+            </div>
+          ))}
         </div>
 
         {/* Galería */}
@@ -616,11 +620,14 @@ export default async function LandingPage() {
       {/* ── CTA FINAL ── */}
       <section className={s.ctaFinal}>
         <p className={s.ctaTag}>Gratis · Desde el celular · 2 minutos</p>
-        <h2 className={s.ctaH}>Empezá hoy.<br/>Tu oportunidad te espera.</h2>
+        <h2 className={s.ctaH}>Tu próximo trabajo<br/>empieza acá.</h2>
+        <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, margin: '0 0 28px', maxWidth: 420, textAlign: 'center', lineHeight: 1.6 }}>
+          Creá tu perfil, grabá tu VideoCV y dejá que la IA te arme el CV. Sin costos, sin complicaciones.
+        </p>
         <div className={s.ctaBtns}>
           <Link href="/register" className={s.ctaBtnP}>
-            <Video size={16} strokeWidth={2} />
-            Crear mi Video CV
+            <Sparkles size={16} strokeWidth={2} />
+            Crear mi perfil gratis
           </Link>
           <Link href="/register-empresa" className={s.ctaBtnS}>
             <Building2 size={16} strokeWidth={2} />
@@ -637,7 +644,7 @@ export default async function LandingPage() {
           <Link href="#" className={s.footLink}>Contacto</Link>
           <Link href="/register-empresa" className={s.footLink}>Para empresas</Link>
         </div>
-        <span className={s.footCopy}>2026 · Video CV y capacitaciones</span>
+        <span className={s.footCopy}>2026 · OportunAI — impulsado por ONG CAII</span>
       </footer>
 
     </div>

@@ -1871,7 +1871,7 @@ export default function DashboardClient({
               </div>
 
               {/* Acompañamiento WhatsApp */}
-              {(
+              {false && (
                   <div className={`card p-4 sm:p-6 ${waActivo ? 'border-green-200 bg-green-50/30' : ''}`}>
                     {/* Header */}
                     <div className="flex items-start justify-between gap-3 mb-4">
@@ -1991,7 +1991,7 @@ export default function DashboardClient({
               )}
 
               {/* Modal confirmación WhatsApp opt-in */}
-              {waModalOpen && (
+              {false && waModalOpen && (
                 <div
                   className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm"
                   onClick={e => { if (e.target === e.currentTarget) setWaModalOpen(false); }}

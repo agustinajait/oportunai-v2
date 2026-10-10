@@ -807,7 +807,7 @@ export default function VideoRecorder({
                     <button
                       onClick={async () => {
                         if (desdeOnboarding) await activarKorai();
-                        else { router.push('/dashboard?tab=perfil&accion=cv'); router.refresh(); }
+                        else router.push('/dashboard/armar-cv');
                       }}
                       className="btn-primary w-full justify-center py-3.5 rounded-2xl"
                     >

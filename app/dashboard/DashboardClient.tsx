@@ -2241,12 +2241,9 @@ export default function DashboardClient({
                     <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-2">
                       <div className="flex items-center justify-between">
                         <p className="text-xs font-semibold text-emerald-700">✓ CV armado</p>
-                        <button
-                          onClick={() => setCvBuilderTab('texto')}
-                          className="text-[10px] text-emerald-600 hover:underline"
-                        >
+                        <Link href="/dashboard/armar-cv" className="text-[10px] text-emerald-600 hover:underline">
                           Actualizar →
-                        </button>
+                        </Link>
                       </div>
                       {cvDatos?.resumen && <p className="text-xs text-emerald-800 leading-relaxed line-clamp-2">{cvDatos.resumen}</p>}
                       {(cvDatos?.habilidades?.length ?? 0) > 0 && (
@@ -2309,29 +2306,16 @@ export default function DashboardClient({
                     {/* Tab: texto libre */}
                     {cvBuilderTab === 'texto' && (
                       <div className="space-y-2">
-                            <p className="text-[10px] text-ink-500 leading-relaxed">
-                          Contanos en tus palabras: en qué trabajaste (aunque sea changas o informal), qué sabés hacer, hasta qué año fuiste al colegio o si hiciste algún curso. No importa si está desordenado — nosotros lo ordenamos.
+                        <p className="text-[10px] text-ink-500 leading-relaxed">
+                          Contanos en tus palabras: en qué trabajaste (aunque sea changas o informal), qué sabés hacer, hasta qué año fuiste al colegio o si hiciste algún curso.
                         </p>
-                        <textarea
-                          value={textoLibre}
-                          onChange={e => setTextoLibre(e.target.value)}
-                          placeholder="Ejemplo: Trabajé 3 años limpiando casas en Palermo, también cuide a una señora mayor. Sé cocinar, soy organizada. Terminé el secundario en 2018. Ahora estoy haciendo un curso de peluquería..."
-                          rows={5}
-                          className="w-full text-xs border border-ink-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-brand-300 text-ink-700 placeholder-ink-300"
-                        />
-                        <button
-                          onClick={generarCVdesdeTexto}
-                          disabled={generandoCV || textoLibre.trim().length < 20}
-                          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-colors active:scale-[0.98]"
-                          style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}
+                        <Link
+                          href="/dashboard/armar-cv"
+                          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98]"
+                          style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', textDecoration: 'none' }}
                         >
-                          {generandoCV
-                            ? <><Loader2 size={15} className="animate-spin" /> Generando tu CV...</>
-                            : <><Sparkles size={15} /> Generame mi CV</>}
-                        </button>
-                        {generarMsg && (
-                          <p className={`text-xs text-center ${generarMsg.includes('!') ? 'text-emerald-600' : 'text-red-500'}`}>{generarMsg}</p>
-                        )}
+                          <Sparkles size={15} /> Generame mi CV
+                        </Link>
                       </div>
                     )}
 

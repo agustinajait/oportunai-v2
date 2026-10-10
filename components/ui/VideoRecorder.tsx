@@ -296,19 +296,35 @@ export default function VideoRecorder({
     sectionEndCalledRef.current = true;
     clearInterval(timerRef.current!);
     const recorder = recorderRef.current;
-    if (!recorder || recorder.state === 'inactive') return;
+    if (!recorder) return;
 
-    // Salvaguarda: si el navegador no dispara onstop/ondataavailable a tiempo
-    // (se ha visto en algunas versiones de Chrome con streams reusados),
-    // forzamos el avance con lo que se haya capturado hasta ese momento.
+    // El recorder puede haberse detenido solo en móviles (ej. pérdida de foco,
+    // o el browser pausó el stream). En ese caso avanzamos con los chunks que
+    // tengamos en lugar de quedarnos colgados en la pantalla de grabación.
+    if (recorder.state === 'inactive') {
+      if (!currentBlobRef.current) {
+        const mimeType = recorder.mimeType || getMimeType();
+        const blob = new Blob(chunksRef.current, { type: mimeType });
+        currentBlobRef.current = blob;
+        setReviewUrl(URL.createObjectURL(blob));
+        setStage('section_review');
+      }
+      return;
+    }
+
+    // Forzar el flush de datos pendientes antes de detener (especialmente útil
+    // en Chrome para Android donde el último chunk puede llegar tarde).
+    try { recorder.requestData(); } catch {}
+
     const fallback = setTimeout(() => {
       if (currentBlobRef.current) return; // onstop ya corrió
-      const mimeType = recorder.mimeType || 'video/webm';
+      const mimeType = recorder.mimeType || getMimeType();
       const blob = new Blob(chunksRef.current, { type: mimeType });
       currentBlobRef.current = blob;
       setReviewUrl(URL.createObjectURL(blob));
       setStage('section_review');
-    }, 2500);
+    }, 800);
+
     const originalOnStop = recorder.onstop;
     recorder.onstop = (ev) => {
       clearTimeout(fallback);

@@ -12,21 +12,15 @@ export default async function OnboardingPage() {
   const usuario = await prisma.usuario.findUnique({
     where:  { id: session.userId },
     select: {
-      id:                    true,
       nombre_completo:       true,
-      bio:                   true,
-      foto_url:              true,
       cv_datos:              true,
       grabaciones_cv:        true,
-      korai_semaforo:        true,
-      korai_opt_in:          true,
       onboarding_completado: true,
     },
   });
 
   if (!usuario) redirect('/login');
 
-  // Si ya completó el onboarding, corregir la cookie y mandarlo al dashboard
   if (usuario.onboarding_completado) {
     cookies().set('onboarding_completado', 'true', {
       httpOnly: false, path: '/', maxAge: 60 * 60 * 24 * 365, sameSite: 'lax',
@@ -36,43 +30,12 @@ export default async function OnboardingPage() {
 
   const cvDatos = (usuario.cv_datos as Record<string, unknown>) ?? {};
 
-  // Solo marcar como "diagnóstico hecho" si Korai completó las 6 dimensiones.
-  // PreDiagnostico solo guarda empleo/educacion/ingresos — no alcanza para dar el check.
-  const semaforo = usuario.korai_semaforo as Record<string, unknown> | null;
-  const tieneDiagnostico = !!(semaforo?.salud || semaforo?.vivienda || semaforo?.red);
-
-  const origenUsuario = (cvDatos.origen as string) ?? '';
-
-  // Saltear paso 3 (diagnóstico Korai) si:
-  // a) El usuario se registró desde Mentor EESS (origen = 'mentoress'), o
-  // b) Se postuló a una empresa con origen = 'mentores'
-  let saltearDiagnostico = origenUsuario === 'mentoress';
-  if (!saltearDiagnostico) {
-    try {
-      const postulacionMentores = await prisma.postulacion.findFirst({
-        where: {
-          usuario_id: session.userId,
-          oferta: { empresa: { origen: 'mentores' } },
-        },
-        select: { id: true },
-      });
-      saltearDiagnostico = !!postulacionMentores;
-    } catch {
-      // origen column not yet in DB; default to false
-    }
-  }
-
   return (
     <OnboardingClient
-      nombre={usuario.nombre_completo}
-      bioInicial={usuario.bio ?? ''}
-      fotoInicial={usuario.foto_url ?? ''}
+      nombre={usuario.nombre_completo ?? ''}
       areaLaboral={(cvDatos.area_laboral as string) ?? ''}
       tieneVideo={usuario.grabaciones_cv > 0}
-      tieneDiagnostico={tieneDiagnostico}
-      tieneWhatsapp={usuario.korai_opt_in}
-      saltearDiagnostico={saltearDiagnostico}
-      origen={origenUsuario}
+      origen={(cvDatos.origen as string) ?? ''}
     />
   );
 }

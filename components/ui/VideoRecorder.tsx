@@ -414,21 +414,16 @@ export default function VideoRecorder({
     }
   }, [moduloIdx, totalModulos, uploadFinalVideo]);
 
-  // ── Activar Korai y completar onboarding ─────────────────────────
+  // ── Completar onboarding y continuar al armado de CV ────────────
   const activarKorai = useCallback(async () => {
     try {
-      await fetch('/api/whatsapp/opt-in', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ activo: true }),
-      });
       await fetch('/api/user/onboarding', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ completar: true }),
       });
     } catch { /* best-effort */ }
-    router.push('/dashboard?bienvenida=onboarding');
+    router.push('/dashboard/armar-cv');
   }, [router]);
 
   // Auto-redirect eliminado — el usuario navega manualmente desde la pantalla done.

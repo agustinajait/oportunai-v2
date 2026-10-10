@@ -1009,7 +1009,7 @@ export default function DashboardClient({
             <h1 className="font-display text-2xl sm:text-3xl font-light text-ink-900">
               Hola, <span className="font-semibold italic">{usuario.nombre_completo.split(' ')[0]}</span> 👋
             </h1>
-            <p className="text-ink-400 mt-1 text-sm">Administrá tu perfil y tus contenidos</p>
+            <p className="text-ink-400 mt-1 text-sm">Tu perfil laboral digital, todo en un lugar</p>
           </div>
 
           {/* Tabs — solo desktop; en mobile se usa la bottom nav */}
@@ -1018,7 +1018,6 @@ export default function DashboardClient({
               {[
                 { id: 'perfil',      Icon: Video,          label: 'Mi perfil',   badge: null },
                 { id: 'documentos',  Icon: ShieldCheck,    label: 'Documentos',  badge: null },
-                { id: 'ofertas',     Icon: Briefcase,      label: 'Ofertas',     badge: null },
                 { id: 'citas',       Icon: CalendarDays,   label: 'Citas',       badge: citasPendientes > 0 ? citasPendientes : null },
                 { id: 'capacitate',  Icon: GraduationCap,  label: 'Capacitate',  badge: null, href: usuario.cv_datos?.origen === 'mentoress' ? '/dashboard/capacitate?vertical=eess' : '/dashboard/capacitate' },
               ].map(({ id, Icon, label, badge, href }: { id: string; Icon: React.ElementType; label: string; badge: number | null; href?: string }) => (
@@ -1119,7 +1118,7 @@ export default function DashboardClient({
         )}
 
         {/* Tab Ofertas */}
-        {tab === 'ofertas' && (
+        {false && tab === 'ofertas' && (
           <OfertasDashboard
             videos={usuario.videos}
             initialOfertaId={initialOfertaId}
@@ -2510,7 +2509,7 @@ export default function DashboardClient({
                       <span className="text-xl flex-shrink-0">🗺️</span>
                       <div className="flex-1 min-w-0">
                         <h2 className="font-semibold text-ink-800 text-sm leading-tight">Mi camino al empleo</h2>
-                        <p className="text-[10px] text-ink-400">Plan personalizado según tu perfil y diagnóstico</p>
+                        <p className="text-[10px] text-ink-400">Tus próximos pasos para conseguir trabajo</p>
                       </div>
                       {/* Progress pill */}
                       <div className="flex items-center gap-2 flex-shrink-0">
@@ -2530,7 +2529,7 @@ export default function DashboardClient({
                         <span className="text-2xl flex-shrink-0">✅</span>
                         <div>
                           <p className="text-sm font-semibold text-emerald-800">¡Perfil listo para postularte!</p>
-                          <p className="text-xs text-emerald-700 mt-0.5">Tus datos están completos. Buscá ofertas y aplicá con tu Video CV.</p>
+                          <p className="text-xs text-emerald-700 mt-0.5">Descargá tu CV y compartí tu perfil laboral con empleadores.</p>
                         </div>
                       </div>
                     ) : (
@@ -2601,19 +2600,15 @@ export default function DashboardClient({
                       </div>
                     )}
 
-                    {/* CTA buscar ofertas (siempre visible, mensaje adaptado) */}
-                    <button
-                      onClick={() => setTab('ofertas')}
+                    {/* CTA Ver perfil laboral */}
+                    <Link
+                      href="/dashboard/flyer"
                       className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-all active:scale-[0.98]"
-                      style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 14px rgba(109,40,217,0.25)' }}
+                      style={{ textDecoration: 'none', background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 14px rgba(109,40,217,0.25)' }}
                     >
-                      🔍 {zonaLabel
-                        ? `Buscar ofertas en ${zonaLabel}`
-                        : cargoLabel
-                        ? `Buscar ofertas de ${cargoLabel}`
-                        : 'Buscar ofertas ahora'}
+                      👤 Ver mi perfil laboral
                       <ChevronRight size={16} />
-                    </button>
+                    </Link>
                   </div>
                 );
               })()}
@@ -2929,7 +2924,7 @@ export default function DashboardClient({
 
               <VideoCard
                 tipo="video_cv" titulo="Video CV"
-                descripcion="Presentá tu perfil laboral en 4 módulos guiados"
+                descripcion="Tu presentación va primero — las empresas te ven antes de leer nada"
                 icon={Video} color="brand"
                 recordHref="/dashboard/grabar-cv"
                 video={videoCV}
@@ -3301,7 +3296,6 @@ export default function DashboardClient({
         <div className="flex items-stretch">
           {([
             { id: 'perfil',     Icon: User,         label: 'Perfil',   badge: null },
-            { id: 'ofertas',    Icon: Briefcase,     label: 'Ofertas',  badge: null },
             { id: 'citas',      Icon: CalendarDays,  label: 'Citas',    badge: citasPendientes > 0 ? citasPendientes : null },
             { id: 'documentos', Icon: FileText,      label: 'Docs',     badge: null },
           ] as { id: typeof tab; Icon: React.ElementType; label: string; badge: number | null }[]).map(({ id, Icon, label, badge }) => (
@@ -3325,6 +3319,14 @@ export default function DashboardClient({
               </span>
             </button>
           ))}
+          <Link
+            href={usuario.cv_datos?.origen === 'mentoress' ? '/dashboard/capacitate?vertical=eess' : '/dashboard/capacitate'}
+            className="flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors text-ink-400 active:text-ink-600"
+            style={{ textDecoration: 'none' }}
+          >
+            <GraduationCap size={22} strokeWidth={1.75} />
+            <span className="text-[10px] leading-tight font-medium">Capacitate</span>
+          </Link>
         </div>
       </nav>
 

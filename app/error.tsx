@@ -7,7 +7,7 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
   useEffect(() => { console.error(error); }, [error]);
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#F0F0F8', padding: '24px', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0d0d14', padding: '24px', fontFamily: 'system-ui, sans-serif' }}>
       <div style={{ maxWidth: 400, textAlign: 'center' }}>
         <div style={{ width: 64, height: 64, borderRadius: 20, background: 'linear-gradient(135deg,#4B33CC,#7048F0)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: 28 }}>
           ⚠️

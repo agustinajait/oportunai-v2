@@ -538,28 +538,38 @@ export default function VideoRecorder({
 
           {/* ── PREVIEW INICIAL ─────────────────────────────────────── */}
           {stage === 'preview' && modulo && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center">
-              <div className="bg-black/80 backdrop-blur rounded-3xl p-8 max-w-sm w-full">
-                <p className="text-white/50 text-sm mb-1">{tituloVideo} · {totalModulos} secciones</p>
-                <h2 className="font-display text-2xl font-semibold text-white mb-6">¿Listo para grabar?</h2>
-                <div className="space-y-2 mb-6 text-left">
-                  {modulos.map((m, i) => (
-                    <div key={m.id} className="flex items-center gap-3 text-sm">
-                      <div className="w-6 h-6 rounded-full bg-brand-600/30 border border-brand-500/50 flex items-center justify-center text-brand-400 text-xs font-bold flex-shrink-0">
-                        {i + 1}
+            <div className="absolute inset-0 z-20 flex flex-col justify-end px-4 pb-6">
+              {/* Card flotante */}
+              <div className="rounded-3xl overflow-hidden" style={{ background: 'linear-gradient(160deg,rgba(26,15,60,0.97),rgba(45,27,105,0.97))', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div className="px-6 pt-6 pb-4">
+                  <p className="text-violet-300 text-xs font-bold uppercase tracking-widest mb-1">{tituloVideo}</p>
+                  <h2 className="text-white font-bold text-2xl leading-tight mb-1">¿Listo para grabar?</h2>
+                  <p className="text-white/40 text-sm mb-5">
+                    Son {totalModulos} sección{totalModulos !== 1 ? 'es' : ''} corta{totalModulos !== 1 ? 's' : ''}. Después de cada una podés regrabar.
+                  </p>
+
+                  <div className="space-y-2 mb-5">
+                    {modulos.map((m, i) => (
+                      <div key={m.id} className="flex items-center gap-3">
+                        <div className="w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0 text-violet-300" style={{ background: 'rgba(112,72,240,0.25)', border: '1px solid rgba(112,72,240,0.4)' }}>
+                          {i + 1}
+                        </div>
+                        <span className="text-white/80 text-sm flex-1">{m.nombre_modulo}</span>
+                        <span className="text-white/25 text-xs">{m.duracion_base}s</span>
                       </div>
-                      <span className="text-white/70">{m.nombre_modulo}</span>
-                      <span className="text-white/30 ml-auto">{m.duracion_base}s</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-                <p className="text-white/40 text-xs mb-5">Después de cada sección podrás ver tu grabación y decidir si la repetís.</p>
-                <button
-                  onClick={() => { setCountdown(3); setStage('countdown'); }}
-                  className="btn-primary w-full justify-center text-base py-3.5 rounded-2xl"
-                >
-                  <Circle size={18} /> Comenzar
-                </button>
+
+                <div className="px-6 pb-6">
+                  <button
+                    onClick={() => { setCountdown(3); setStage('countdown'); }}
+                    className="w-full flex items-center justify-center gap-2.5 py-4 rounded-2xl font-bold text-base text-white transition-all active:scale-[0.98]"
+                    style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 20px rgba(109,40,217,0.5)' }}
+                  >
+                    <Circle size={18} fill="white" strokeWidth={0} /> Comenzar a grabar
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -748,79 +758,85 @@ export default function VideoRecorder({
 
           {/* ── LISTO ────────────────────────────────────────────────── */}
           {stage === 'done' && (
-            <div className="absolute inset-0 z-20 flex flex-col bg-ink-900 overflow-y-auto">
-              <div className="flex flex-col items-center px-6 pt-8 pb-6 text-center">
+            <div className="absolute inset-0 z-20 flex flex-col overflow-y-auto" style={{ background: '#0d0d14' }}>
+
+              {/* Celebración */}
+              <div className="relative px-6 pt-10 pb-8 text-center" style={{ background: 'linear-gradient(160deg,#064e3b,#065f46)' }}>
+                <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 50% 80%, #10b981 0%, transparent 60%)' }} />
                 <div
-                  className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500/40 flex items-center justify-center mb-4"
-                  style={{ animation: 'scaleIn 0.4s ease' }}
+                  className="relative z-10 w-20 h-20 rounded-full mx-auto flex items-center justify-center mb-4"
+                  style={{ background: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.25)', animation: 'scaleIn 0.4s ease' }}
                 >
-                  <CheckCircle size={36} className="text-emerald-400" />
+                  <CheckCircle size={38} className="text-white" strokeWidth={1.5} />
                 </div>
-                <h2 className="font-display text-2xl font-semibold text-white mb-1">¡{tituloVideo} listo!</h2>
-                <p className="text-white/50 text-sm max-w-sm">Tu video quedó guardado en tu perfil.</p>
+                <h2 className="relative z-10 font-bold text-white text-2xl leading-tight mb-1">¡{tituloVideo} listo!</h2>
+                <p className="relative z-10 text-white/60 text-sm">Tu video quedó guardado en tu perfil</p>
               </div>
 
               {/* Video inline */}
               {finalVideoUrl && (
-                <div className="px-4 mb-4">
+                <div className="mx-4 -mt-3 mb-4 rounded-2xl overflow-hidden shadow-xl">
                   <video
                     src={finalVideoUrl}
                     controls
                     playsInline
-                    className="w-full rounded-2xl bg-black max-h-56 object-cover"
+                    className="w-full aspect-video bg-black object-cover"
                   />
                 </div>
               )}
 
-              {/* Análisis IA */}
+              {/* Análisis */}
               {analisisIA && (
-                <div className="mx-4 mb-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-left">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-white/90 text-xs font-bold uppercase tracking-wide">Feedback de tu video</p>
-                    <span className="text-brand-400 text-sm font-bold">
+                <div className="mx-4 mb-4 rounded-2xl p-4 space-y-3" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div className="flex items-center justify-between">
+                    <p className="text-white/70 text-xs font-bold uppercase tracking-widest">Tu feedback</p>
+                    <span className="text-amber-400 text-sm font-bold tracking-wider">
                       {'★'.repeat(analisisIA.puntaje)}{'☆'.repeat(5 - analisisIA.puntaje)}
                     </span>
                   </div>
-                  <p className="text-white/60 text-xs italic mb-3">"{analisisIA.titulo}"</p>
-                  <div className="space-y-1.5 mb-3">
+                  <p className="text-white/50 text-sm italic leading-snug">"{analisisIA.titulo}"</p>
+                  <div className="space-y-2">
                     {analisisIA.fortalezas.map((f, i) => (
-                      <div key={i} className="flex items-start gap-2 text-xs text-emerald-300/90">
-                        <span className="mt-0.5 flex-shrink-0">✓</span>
-                        <span>{f}</span>
+                      <div key={i} className="flex items-start gap-2.5 text-sm text-emerald-300/90">
+                        <CheckCircle size={13} className="mt-0.5 flex-shrink-0" />
+                        <span className="leading-snug">{f}</span>
                       </div>
                     ))}
                     {analisisIA.mejoras.map((m, i) => (
-                      <div key={i} className="flex items-start gap-2 text-xs text-amber-300/80">
-                        <span className="mt-0.5 flex-shrink-0">→</span>
-                        <span><span className="font-semibold">{m.titulo}:</span> {m.consejo}</span>
+                      <div key={i} className="flex items-start gap-2.5 text-sm text-amber-300/80">
+                        <span className="mt-0.5 flex-shrink-0 font-bold">→</span>
+                        <span className="leading-snug"><span className="font-semibold">{m.titulo}:</span> {m.consejo}</span>
                       </div>
                     ))}
                   </div>
                   {analisisIA.tip_estrella && (
-                    <div className="p-2.5 rounded-xl bg-brand-600/20 border border-brand-500/20">
-                      <p className="text-brand-300 text-xs">💡 {analisisIA.tip_estrella}</p>
+                    <div className="rounded-xl px-3 py-2.5" style={{ background: 'rgba(112,72,240,0.2)', border: '1px solid rgba(112,72,240,0.3)' }}>
+                      <p className="text-violet-300 text-xs leading-snug">💡 {analisisIA.tip_estrella}</p>
                     </div>
                   )}
                 </div>
               )}
 
-              <div className="px-4 pb-8 space-y-3">
+              {/* CTAs */}
+              <div className="px-4 pb-10 space-y-3 mt-auto">
                 {ofertaId ? (
                   <button
                     onClick={() => { router.push(`/dashboard?tab=ofertas&oferta_id=${ofertaId}`); router.refresh(); }}
-                    className="btn-primary w-full justify-center py-3.5 rounded-2xl"
+                    className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base text-white transition-all active:scale-[0.98]"
+                    style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 20px rgba(109,40,217,0.4)' }}
                   >
                     Volver y postularme →
                   </button>
                 ) : (
                   <>
-                    <p className="text-white/40 text-xs text-center pb-1">¿Qué hacemos ahora con tu CV?</p>
+                    <p className="text-white/30 text-xs text-center">¿Qué hacemos ahora?</p>
                     <button
                       onClick={async () => {
                         if (desdeOnboarding) await activarKorai();
                         else router.push('/dashboard/armar-cv');
                       }}
-                      className="btn-primary w-full justify-center py-3.5 rounded-2xl"
+                      className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base text-white transition-all active:scale-[0.98]"
+                      style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 20px rgba(109,40,217,0.4)' }}
                     >
                       Generame mi CV →
                     </button>
@@ -829,22 +845,22 @@ export default function VideoRecorder({
                         if (desdeOnboarding) await activarKorai();
                         else { router.push('/dashboard?tab=perfil&accion=subir-cv'); router.refresh(); }
                       }}
-                      className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white font-semibold py-3.5 rounded-2xl transition-colors border border-white/20"
+                      className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold text-sm text-white/80 transition-colors"
+                      style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}
                     >
                       Tengo un CV para subir →
                     </button>
                   </>
                 )}
 
-                {/* Oferta de feedback del coach */}
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-left">
-                  <p className="text-white/80 text-xs font-semibold mb-1">¿Querés feedback de un coach de RR.HH.?</p>
-                  <p className="text-white/40 text-xs mb-3">Un especialista revisa tu video y te manda sus comentarios por WhatsApp.</p>
+                <div className="rounded-2xl p-4 text-left" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <p className="text-white/60 text-xs font-semibold mb-0.5">¿Querés feedback de un coach de RR.HH.?</p>
+                  <p className="text-white/30 text-xs mb-2">Un especialista revisa tu video por WhatsApp.</p>
                   <a
                     href={`https://wa.me/${process.env.NEXT_PUBLIC_WA_SOPORTE ?? '5491161210313'}?text=${encodeURIComponent('Hola OportunAI, acabo de grabar mi Video CV y me gustaría recibir feedback de un coach de RR.HH.')}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors"
                   >
                     💬 Solicitar feedback →
                   </a>

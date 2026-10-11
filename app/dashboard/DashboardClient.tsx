@@ -846,28 +846,28 @@ export default function DashboardClient({
         <div>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Briefcase size={16} className="text-brand-600" />
-              <h2 className="font-semibold text-ink-800 text-sm">
+              <Briefcase size={16} style={{ color: '#a78bfa' }} />
+              <h2 className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>
                 {loadingRecs ? 'Cargando ofertas…' :
                   recs?.modo === 'perfil' ? 'Ofertas para tu perfil' : 'Últimas ofertas disponibles'}
               </h2>
             </div>
             {recs?.query_usado && (
-              <span className="text-[10px] text-ink-400 italic">basado en: {recs.query_usado}</span>
+              <span className="text-[10px] italic" style={{ color: 'rgba(255,255,255,0.35)' }}>basado en: {recs.query_usado}</span>
             )}
           </div>
 
           {loadingRecs && (
-            <div className="flex items-center justify-center py-10 text-ink-400">
+            <div className="flex items-center justify-center py-10" style={{ color: 'rgba(255,255,255,0.4)' }}>
               <Loader2 size={20} className="animate-spin mr-2" /> Buscando ofertas…
             </div>
           )}
 
           {!loadingRecs && recs && recs.resultados.length === 0 && (
-            <div className="card p-8 text-center text-ink-400">
+            <div className="p-8 text-center rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
               <Briefcase size={32} className="mx-auto mb-2 opacity-30" />
               <p className="text-sm">No encontramos ofertas en este momento.</p>
-              <p className="text-xs text-ink-300 mt-1">Usá el buscador de abajo para explorar manualmente.</p>
+              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Usá el buscador de abajo para explorar manualmente.</p>
             </div>
           )}
 
@@ -877,9 +877,9 @@ export default function DashboardClient({
                 const fc = fuenteColor[r.fuente] ?? { bg: '#ede9fe', color: '#6d28d9' };
                 const letra = (r.empresa_nombre || '?')[0].toUpperCase();
                 return (
-                  <div key={r.id} className="card flex items-center gap-4 p-4 hover:border-brand-200 transition-all">
+                  <div key={r.id} className="flex items-center gap-4 p-4 rounded-2xl transition-all" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                     {/* Logo / Avatar */}
-                    <div className="w-11 h-11 rounded-xl flex-shrink-0 overflow-hidden bg-gray-100 flex items-center justify-center">
+                    <div className="w-11 h-11 rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.1)' }}>
                       {r.logo_url ? (
                         <img src={r.logo_url} alt={r.empresa_nombre} className="w-full h-full object-contain" />
                       ) : (
@@ -893,12 +893,12 @@ export default function DashboardClient({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide"
-                          style={{ background: fc.bg, color: fc.color }}>
+                          style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
                           {fuenteLabel[r.fuente] || r.fuente}
                         </span>
                       </div>
-                      <p className="text-sm font-semibold text-ink-800 truncate">{r.titulo}</p>
-                      <p className="text-xs text-ink-400">{r.empresa_nombre}
+                      <p className="text-sm font-semibold truncate" style={{ color: 'rgba(255,255,255,0.9)' }}>{r.titulo}</p>
+                      <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>{r.empresa_nombre}
                         {r.ciudad && <span className="ml-1">· {r.ciudad}</span>}
                         {r.salario && <span className="ml-1">· 💰 {r.salario}</span>}
                       </p>
@@ -907,14 +907,14 @@ export default function DashboardClient({
                     {r.tipo === 'interna' ? (
                       <a href={r.url}
                         className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-lg text-white flex items-center gap-1"
-                        style={{ background: '#6d28d9', textDecoration: 'none' }}>
+                        style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', textDecoration: 'none' }}>
                         Postularme <ArrowRight size={12} />
                       </a>
                     ) : (
                       <button
                         type="button"
                         className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1"
-                        style={{ background: '#f3f4f6', color: '#374151', border: 'none', cursor: 'pointer' }}
+                        style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.65)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}
                         onClick={() => setTipOferta({ titulo: r.titulo, empresa: r.empresa_nombre, url: r.url })}
                       >
                         Ver oferta <ExternalLink size={12} />
@@ -930,8 +930,8 @@ export default function DashboardClient({
         {/* ── Buscador manual ─────────────────────────────────── */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Search size={15} className="text-ink-400" />
-            <h2 className="font-semibold text-ink-800 text-sm">Buscar más ofertas</h2>
+            <Search size={15} style={{ color: 'rgba(255,255,255,0.4)' }} />
+            <h2 className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>Buscar más ofertas</h2>
           </div>
           <BuscadorNL variant="dashboard" profileSlug={usuario.slug} />
         </div>
@@ -943,7 +943,7 @@ export default function DashboardClient({
   }
 
   return (
-    <div className="min-h-screen bg-ink-50">
+    <div className="min-h-screen" style={{ background: '#0d0d14' }}>
       {/* Registra push silenciosamente si el usuario tiene opt-in */}
       {usuario.korai_opt_in && <PushRegistrar />}
       <Navbar session={{ nombre: usuario.nombre_completo, role: usuario.role, slug: usuario.slug }} />
@@ -1006,15 +1006,15 @@ export default function DashboardClient({
 
         <div className="mb-6 sm:mb-8">
           <div className="mb-4">
-            <h1 className="font-display text-2xl sm:text-3xl font-light text-ink-900">
+            <h1 className="text-2xl sm:text-3xl font-light" style={{ color: 'rgba(255,255,255,0.9)' }}>
               Hola, <span className="font-semibold italic">{usuario.nombre_completo.split(' ')[0]}</span> 👋
             </h1>
-            <p className="text-ink-400 mt-1 text-sm">Tu perfil laboral digital, todo en un lugar</p>
+            <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Tu perfil laboral digital, todo en un lugar</p>
           </div>
 
           {/* Tabs — solo desktop; en mobile se usa la bottom nav */}
           <div className="hidden sm:block overflow-x-auto -mx-4 sm:mx-0 scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
-            <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 mx-4 sm:mx-0 w-max sm:w-auto min-w-0">
+            <div className="flex gap-1 rounded-xl p-1 mx-4 sm:mx-0 w-max sm:w-auto min-w-0" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
               {[
                 { id: 'perfil',      Icon: Video,          label: 'Mi perfil',   badge: null },
                 { id: 'documentos',  Icon: ShieldCheck,    label: 'Documentos',  badge: null },
@@ -1025,9 +1025,8 @@ export default function DashboardClient({
                   <Link
                     key={id}
                     href={href}
-                    className={`relative flex items-center gap-1.5 px-2.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
-                      'text-ink-500 hover:text-ink-800'
-                    }`}
+                    className="relative flex items-center gap-1.5 px-2.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap"
+                    style={{ color: 'rgba(255,255,255,0.5)' }}
                   >
                     <Icon size={13} className="sm:hidden flex-shrink-0" />
                     <Icon size={14} className="hidden sm:block flex-shrink-0" />
@@ -1037,15 +1036,17 @@ export default function DashboardClient({
                   <button
                     key={id}
                     onClick={() => setTab(id as typeof tab)}
-                    className={`relative flex items-center gap-1.5 px-2.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
-                      tab === id ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
-                    }`}
+                    className="relative flex items-center gap-1.5 px-2.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap"
+                    style={tab === id
+                      ? { background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' }
+                      : { color: 'rgba(255,255,255,0.5)' }
+                    }
                   >
                     <Icon size={13} className="sm:hidden flex-shrink-0" />
                     <Icon size={14} className="hidden sm:block flex-shrink-0" />
                     {label}
                     {badge !== null && (
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${tab === id ? 'bg-white/30 text-white' : 'bg-red-500 text-white'}`}>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-red-500 text-white">
                         {badge}
                       </span>
                     )}
@@ -1060,45 +1061,47 @@ export default function DashboardClient({
         {tab === 'citas' && (
           <div className="max-w-2xl space-y-4 animate-fade-in">
             {citasState.length === 0 && (
-              <div className="card p-8 text-center text-ink-400">
+              <div className="p-8 text-center rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
                 <CalendarDays size={32} className="mx-auto mb-2 opacity-40" />
                 <p>Todavía no tenés citas o entrevistas agendadas</p>
               </div>
             )}
             {citasState.map(c => (
-              <div key={c.id} className="card p-5">
+              <div key={c.id} className="p-5 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <p className="font-medium text-ink-800">{c.cita.empresa.nombre}</p>
-                    {c.cita.oferta && <p className="text-xs text-ink-400">{c.cita.oferta.titulo}</p>}
+                    <p className="font-medium" style={{ color: 'rgba(255,255,255,0.9)' }}>{c.cita.empresa.nombre}</p>
+                    {c.cita.oferta && <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>{c.cita.oferta.titulo}</p>}
                   </div>
-                  <span className={`badge ${
-                    c.estado === 'confirmada' ? 'bg-emerald-100 text-emerald-700' :
-                    c.estado === 'rechazada' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'
-                  }`}>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={
+                    c.estado === 'confirmada' ? { background: 'rgba(52,211,153,0.12)', color: '#34d399', border: '1px solid rgba(52,211,153,0.25)' } :
+                    c.estado === 'rechazada' ? { background: 'rgba(252,165,165,0.1)', color: '#fca5a5', border: '1px solid rgba(252,165,165,0.2)' } :
+                    { background: 'rgba(251,191,36,0.12)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.25)' }
+                  }>
                     {c.estado === 'confirmada' ? 'Confirmada' : c.estado === 'rechazada' ? 'Rechazada' : 'Pendiente'}
                   </span>
                 </div>
-                <div className="space-y-1.5 text-sm text-ink-600 mb-4">
+                <div className="space-y-1.5 text-sm mb-4" style={{ color: 'rgba(255,255,255,0.55)' }}>
                   <p className="flex items-center gap-2">
-                    <Clock size={14} className="text-ink-400" />
+                    <Clock size={14} style={{ color: 'rgba(255,255,255,0.35)' }} />
                     {new Date(c.cita.fecha).toLocaleString('es-AR', { dateStyle: 'full', timeStyle: 'short' })}
                   </p>
                   <p className="flex items-center gap-2">
-                    <MapPin size={14} className="text-ink-400" />
+                    <MapPin size={14} style={{ color: 'rgba(255,255,255,0.35)' }} />
                     {c.cita.modalidad === 'presencial' ? c.cita.lugar : (
-                      <a href={c.cita.lugar} target="_blank" className="text-brand-600 underline">{c.cita.lugar}</a>
+                      <a href={c.cita.lugar} target="_blank" style={{ color: '#a78bfa' }} className="underline">{c.cita.lugar}</a>
                     )}
-                    <span className="text-ink-400 text-xs">({c.cita.modalidad === 'presencial' ? 'presencial' : 'virtual'}{c.cita.grupal ? ' · grupal' : ''})</span>
+                    <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>({c.cita.modalidad === 'presencial' ? 'presencial' : 'virtual'}{c.cita.grupal ? ' · grupal' : ''})</span>
                   </p>
-                  {c.cita.mensaje && <p className="text-ink-500 italic">"{c.cita.mensaje}"</p>}
+                  {c.cita.mensaje && <p className="italic" style={{ color: 'rgba(255,255,255,0.45)' }}>"{c.cita.mensaje}"</p>}
                 </div>
                 {c.estado === 'pendiente' && (
                   <div className="flex gap-2">
                     <button
                       onClick={() => responderCita(c.id, 'confirmada')}
                       disabled={respondiendo === c.id}
-                      className="btn-primary py-1.5 px-4 text-sm"
+                      className="flex items-center gap-1.5 py-1.5 px-4 text-sm font-semibold rounded-xl text-white transition-all disabled:opacity-50"
+                      style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}
                     >
                       {respondiendo === c.id ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                       Confirmar
@@ -1106,7 +1109,8 @@ export default function DashboardClient({
                     <button
                       onClick={() => responderCita(c.id, 'rechazada')}
                       disabled={respondiendo === c.id}
-                      className="btn-ghost py-1.5 px-4 text-sm"
+                      className="flex items-center gap-1.5 py-1.5 px-4 text-sm font-medium rounded-xl transition-all disabled:opacity-50"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.55)' }}
                     >
                       <X size={14} /> Rechazar
                     </button>
@@ -1474,13 +1478,15 @@ export default function DashboardClient({
         {/* Tab Documentos */}
         {tab === 'documentos' && (
           <div className="max-w-2xl space-y-4 animate-fade-in">
-            <p className="text-ink-500 text-sm mb-6">
+            <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.45)' }}>
               Subí tus documentos para que las empresas puedan verificar tu perfil al revisar tu postulación.
             </p>
             {docMsg && (
-              <div className={`rounded-lg px-4 py-3 text-sm font-medium mb-4 ${
-                docMsg.includes('✓') ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
-              }`}>
+              <div className="rounded-lg px-4 py-3 text-sm font-medium mb-4"
+                style={docMsg.includes('✓')
+                  ? { background: 'rgba(52,211,153,0.1)', color: '#34d399', border: '1px solid rgba(52,211,153,0.2)' }
+                  : { background: 'rgba(252,165,165,0.1)', color: '#fca5a5', border: '1px solid rgba(252,165,165,0.2)' }
+                }>
                 {docMsg}
               </div>
             )}
@@ -1489,39 +1495,35 @@ export default function DashboardClient({
               const documento = getDocumento(doc.tipo);
               const cargando = uploadingDoc === doc.tipo;
               return (
-                <div key={doc.tipo} className="card p-5 flex items-center justify-between gap-4">
+                <div key={doc.tipo} className="p-5 rounded-2xl flex items-center justify-between gap-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div className="flex items-center gap-3 flex-1">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      tiene ? 'bg-emerald-100' : 'bg-ink-100'
-                    }`}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={tiene ? { background: 'rgba(52,211,153,0.12)' } : { background: 'rgba(255,255,255,0.08)' }}>
                       {tiene
-                        ? <Check size={18} className="text-emerald-600" />
-                        : <FileText size={18} className="text-ink-400" />
+                        ? <Check size={18} style={{ color: '#34d399' }} />
+                        : <FileText size={18} style={{ color: 'rgba(255,255,255,0.4)' }} />
                       }
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-medium text-ink-800 text-sm">{doc.label}</p>
+                        <p className="font-medium text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>{doc.label}</p>
                         {tiene && (
-                          <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">
+                          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(52,211,153,0.12)', color: '#34d399' }}>
                             ✓ Cargado
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-ink-400">{doc.descripcion}</p>
+                      <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{doc.descripcion}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {tiene && documento && (
-                      <a
-                        href={documento.file_url}
-                        target="_blank"
-                        className="text-brand-600 hover:text-brand-700"
-                      >
+                      <a href={documento.file_url} target="_blank" style={{ color: '#a78bfa' }}>
                         <ExternalLink size={15} />
                       </a>
                     )}
-                    <label className={`border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-xs cursor-pointer hover:bg-gray-50 transition-colors ${cargando ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <label className={`px-3 py-1.5 rounded-lg text-xs cursor-pointer transition-colors ${cargando ? 'opacity-50 pointer-events-none' : ''}`}
+                      style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.06)' }}>
                       {cargando ? 'Subiendo...' : tiene ? 'Reemplazar' : 'Subir'}
                       <input
                         type="file"
@@ -1560,16 +1562,16 @@ export default function DashboardClient({
                   <ChevronRight size={18} className="text-white/60 flex-shrink-0" />
                 </Link>
               ) : (
-                <div className="flex items-center gap-4 w-full rounded-2xl p-4 bg-emerald-50 border border-emerald-200">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-100">
-                    <CheckCircle2 size={22} className="text-emerald-600" />
+                <div className="flex items-center gap-4 w-full rounded-2xl p-4" style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)' }}>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(52,211,153,0.15)' }}>
+                    <CheckCircle2 size={22} style={{ color: '#34d399' }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-emerald-800 leading-tight">Video CV listo ✓</p>
-                    <p className="text-emerald-600 text-xs mt-0.5">{pagado ? 'Podés compartirlo con empleadores' : 'Desbloqueá para compartirlo'}</p>
+                    <p className="font-bold text-sm leading-tight" style={{ color: '#34d399' }}>Video CV listo ✓</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(52,211,153,0.7)' }}>{pagado ? 'Podés compartirlo con empleadores' : 'Desbloqueá para compartirlo'}</p>
                   </div>
                   {!pagado && (
-                    <button onClick={() => setPagoModalOpen(true)} className="text-xs font-bold bg-brand-600 text-white px-3 py-1.5 rounded-lg flex-shrink-0">
+                    <button onClick={() => setPagoModalOpen(true)} className="text-xs font-bold text-white px-3 py-1.5 rounded-lg flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
                       Activar
                     </button>
                   )}
@@ -1580,33 +1582,33 @@ export default function DashboardClient({
               {!cvDatos?.resumen && !(cvDatos?.experiencia?.length) && !(cvDatos?.habilidades?.length) ? (
                 <Link
                   href="/dashboard/armar-cv"
-                  className="flex items-center gap-4 w-full rounded-2xl p-4 bg-white border-2 border-brand-200 transition-all active:scale-[0.99]"
-                  style={{ textDecoration: 'none' }}
+                  className="flex items-center gap-4 w-full rounded-2xl p-4 transition-all active:scale-[0.99]"
+                  style={{ textDecoration: 'none', background: 'rgba(255,255,255,0.05)', border: '2px solid rgba(112,72,240,0.35)' }}
                 >
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
                     <Sparkles size={20} color="#fff" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-ink-800 leading-tight">Armá tu CV</p>
-                    <p className="text-ink-400 text-xs mt-0.5">Contanos tu experiencia · lo armamos nosotros</p>
+                    <p className="font-bold text-sm leading-tight" style={{ color: 'rgba(255,255,255,0.9)' }}>Armá tu CV</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>Contanos tu experiencia · lo armamos nosotros</p>
                   </div>
-                  <ChevronRight size={18} className="text-ink-300 flex-shrink-0" />
+                  <ChevronRight size={18} style={{ color: 'rgba(255,255,255,0.3)' }} className="flex-shrink-0" />
                 </Link>
               ) : (
-                <div className="flex items-center gap-3 w-full rounded-2xl p-4 bg-white border border-gray-100 shadow-sm">
+                <div className="flex items-center gap-3 w-full rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
                     <FileText size={20} color="#fff" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-ink-800 leading-tight">CV listo ✓</p>
-                    <p className="text-ink-400 text-xs mt-0.5 line-clamp-1">{cvDatos?.resumen?.substring(0,60) ?? 'Tu CV profesional está armado'}</p>
+                    <p className="font-bold text-sm leading-tight" style={{ color: 'rgba(255,255,255,0.9)' }}>CV listo ✓</p>
+                    <p className="text-xs mt-0.5 line-clamp-1" style={{ color: 'rgba(255,255,255,0.45)' }}>{cvDatos?.resumen?.substring(0,60) ?? 'Tu CV profesional está armado'}</p>
                   </div>
                   <div className="flex gap-1.5 flex-shrink-0">
                     {pagado
-                      ? <a href="/api/cv/download" download className="text-xs font-bold bg-brand-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1"><Download size={12} /> DOCX</a>
-                      : <button onClick={() => setPagoModalOpen(true)} className="text-xs font-bold bg-ink-100 text-ink-500 px-3 py-1.5 rounded-lg flex items-center gap-1"><Lock size={12} /> DOCX</button>
+                      ? <a href="/api/cv/download" download className="text-xs font-bold text-white px-3 py-1.5 rounded-lg flex items-center gap-1" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}><Download size={12} /> DOCX</a>
+                      : <button onClick={() => setPagoModalOpen(true)} className="text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}><Lock size={12} /> DOCX</button>
                     }
-                    <Link href="/dashboard/armar-cv" className="text-xs font-medium text-brand-600 px-3 py-1.5 rounded-lg bg-brand-50 flex items-center gap-1" style={{ textDecoration: 'none' }}>Editar</Link>
+                    <Link href="/dashboard/armar-cv" className="text-xs font-medium px-3 py-1.5 rounded-lg flex items-center gap-1" style={{ textDecoration: 'none', background: 'rgba(112,72,240,0.15)', color: '#a78bfa' }}>Editar</Link>
                   </div>
                 </div>
               )}
@@ -1615,27 +1617,28 @@ export default function DashboardClient({
             {/* ── Columna izquierda ──────────────────────────────── */}
             <div className="space-y-5 order-3 lg:order-1">
               {/* Flyer card — oculto en mobile (reemplazado por barra de acciones rápidas) */}
-              <div className="hidden lg:block card p-5 space-y-4">
+              <div className="hidden lg:block p-5 space-y-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl flex items-center justify-content-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                  <div className="w-11 h-11 rounded-xl flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                     <FileText size={20} color="#fff" strokeWidth={1.75} />
                   </div>
                   <div>
-                    <p className="font-semibold text-ink-800 text-sm">Mi perfil laboral</p>
-                    <p className="text-xs text-ink-400">Tarjeta con QR para imprimir o compartir</p>
+                    <p className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>Mi perfil laboral</p>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Tarjeta con QR para imprimir o compartir</p>
                   </div>
                 </div>
                 {/* Foto de perfil */}
                 <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-ink-100 flex items-center justify-center border-2 border-ink-200">
+                  <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.1)', border: '2px solid rgba(255,255,255,0.15)' }}>
                     {fotoUrl
                       ? <img src={fotoUrl} alt="Foto" className="w-full h-full object-cover" />
-                      : <span className="text-ink-400 text-xs font-bold">{usuario.nombre_completo.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase()}</span>
+                      : <span className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>{usuario.nombre_completo.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase()}</span>
                     }
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs text-ink-500 mb-1.5">{fotoUrl ? 'Foto cargada ✓' : 'Sin foto de perfil todavía'}</p>
-                    <label className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer transition-colors ${uploadingFoto ? 'bg-ink-100 text-ink-400 pointer-events-none' : 'bg-brand-50 text-brand-600 hover:bg-brand-100'}`}>
+                    <p className="text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>{fotoUrl ? 'Foto cargada ✓' : 'Sin foto de perfil todavía'}</p>
+                    <label className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer transition-colors ${uploadingFoto ? 'pointer-events-none opacity-50' : ''}`}
+                      style={{ background: 'rgba(112,72,240,0.15)', color: '#a78bfa' }}>
                       {uploadingFoto ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
                       {uploadingFoto ? 'Subiendo...' : fotoUrl ? 'Cambiar foto' : 'Subir foto'}
                       <input type="file" accept="image/*" className="hidden" disabled={uploadingFoto}
@@ -1643,24 +1646,24 @@ export default function DashboardClient({
                     </label>
                   </div>
                 </div>
-                <Link href="/dashboard/flyer" className="btn-primary w-full justify-center text-sm py-2.5" style={{ textDecoration:'none', display:'flex', alignItems:'center', gap:6 }}>
+                <Link href="/dashboard/flyer" className="w-full flex items-center justify-center gap-1.5 text-sm font-bold py-2.5 rounded-xl text-white" style={{ textDecoration:'none', background:'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
                   <FileText size={15} /> Ver mi perfil laboral
                 </Link>
               </div>
 
               {/* Descargar CV — oculto en mobile */}
-              <div className="hidden lg:block card p-4">
+              <div className="hidden lg:block p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-11 h-11 rounded-xl flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                     <FileText size={18} color="#fff" />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-semibold text-ink-800 text-sm">Descargá tu CV para postularte</p>
-                    <p className="text-xs text-ink-400 leading-relaxed">Oportunai lo arma con tus datos · optimizado para filtros ATS</p>
+                    <p className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>Descargá tu CV para postularte</p>
+                    <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>Oportunai lo arma con tus datos · optimizado para filtros ATS</p>
                   </div>
                 </div>
                 {!pagado && (
-                  <div className="mb-2 flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-700">
+                  <div className="mb-2 flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', color: '#fbbf24' }}>
                     <Sparkles size={13} /> Función premium · <button onClick={() => setPagoModalOpen(true)} className="underline font-semibold">Desbloquear</button>
                   </div>
                 )}
@@ -1675,14 +1678,14 @@ export default function DashboardClient({
                   }
                   <div className="flex gap-2">
                     {pagado
-                      ? <Link href={`/u/${usuario.slug}/cv-print`} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition-colors" style={{ textDecoration:'none' }}>
+                      ? <Link href={`/u/${usuario.slug}/cv-print`} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-colors" style={{ textDecoration:'none', background:'rgba(252,165,165,0.1)', color:'#fca5a5', border:'1px solid rgba(252,165,165,0.2)' }}>
                           <FileText size={14} /> PDF
                         </Link>
-                      : <button onClick={() => setPagoModalOpen(true)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
+                      : <button onClick={() => setPagoModalOpen(true)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-colors" style={{ background:'rgba(252,165,165,0.1)', color:'#fca5a5', border:'1px solid rgba(252,165,165,0.2)' }}>
                           <FileText size={14} /> PDF
                         </button>
                     }
-                    <Link href={`/u/${usuario.slug}/cv`} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors" style={{ textDecoration:'none' }}>
+                    <Link href={`/u/${usuario.slug}/cv`} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-colors" style={{ textDecoration:'none', background:'rgba(112,72,240,0.15)', color:'#a78bfa', border:'1px solid rgba(112,72,240,0.25)' }}>
                       <FileText size={14} /> Vista previa
                     </Link>
                   </div>

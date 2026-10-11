@@ -50,7 +50,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#F5F5F7' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: '#0d0d14' }}>
 
       {/* Hero oscuro */}
       <div
@@ -70,13 +70,13 @@ function LoginForm() {
 
       {/* Formulario */}
       <div className="flex-1 px-4 pt-6 pb-8 max-w-md mx-auto w-full">
-        <div className="bg-white rounded-2xl border border-black/5 shadow-sm p-6 mb-4">
+        <div className="rounded-2xl p-6 mb-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
 
           {/* Google OAuth */}
           <a
             href="/api/auth/google"
             className="flex items-center justify-center gap-3 w-full rounded-xl py-3 text-sm font-medium transition-colors mb-5"
-            style={{ border: '1px solid #e5e7eb', color: '#374151', background: 'white' }}
+            style={{ border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.07)' }}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
               <path d="M17.64 9.205c0-.638-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" fill="#4285F4"/>
@@ -88,39 +88,39 @@ function LoginForm() {
           </a>
 
           <div className="flex items-center gap-3 mb-5">
-            <div className="flex-1 h-px" style={{ background: '#f0f0f0' }} />
-            <span className="text-xs" style={{ color: '#9ca3af' }}>o ingresá con email</span>
-            <div className="flex-1 h-px" style={{ background: '#f0f0f0' }} />
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.1)' }} />
+            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>o ingresá con email</span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.1)' }} />
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: '#6b7280' }}>Email</label>
+              <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Email</label>
               <input
                 {...register('email')}
                 type="email"
                 placeholder="tu@email.com"
                 className="w-full rounded-xl px-4 py-3 text-sm transition-all outline-none"
-                style={{ border: '1.5px solid #e5e7eb', color: '#111', background: '#fafafa' }}
+                style={{ border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.06)' }}
               />
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: '#6b7280' }}>Contraseña</label>
+              <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Contraseña</label>
               <div className="relative">
                 <input
                   {...register('password')}
                   type={showPass ? 'text' : 'password'}
                   placeholder="••••••••"
                   className="w-full rounded-xl px-4 py-3 pr-12 text-sm transition-all outline-none"
-                  style={{ border: '1.5px solid #e5e7eb', color: '#111', background: '#fafafa' }}
+                  style={{ border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.06)' }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors"
-                  style={{ color: '#9ca3af' }}
+                  style={{ color: 'rgba(255,255,255,0.4)' }}
                 >
                   {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
@@ -129,7 +129,7 @@ function LoginForm() {
             </div>
 
             {serverError && (
-              <div className="text-sm px-4 py-3 rounded-xl" style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}>
+              <div className="text-sm px-4 py-3 rounded-xl" style={{ background: 'rgba(220,38,38,0.1)', color: '#fca5a5', border: '1px solid rgba(220,38,38,0.25)' }}>
                 {serverError}
               </div>
             )}
@@ -146,7 +146,7 @@ function LoginForm() {
           </form>
         </div>
 
-        <p className="text-center text-sm" style={{ color: '#9ca3af' }}>
+        <p className="text-center text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
           ¿No tenés cuenta?{' '}
           <Link href="/register" className="font-semibold" style={{ color: '#7048F0' }}>
             Registrate gratis

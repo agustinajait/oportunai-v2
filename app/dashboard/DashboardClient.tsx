@@ -1542,44 +1542,74 @@ export default function DashboardClient({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
 
             {/* ── Acciones rápidas — solo mobile ─────────────────── */}
-            <div className="lg:hidden order-1 flex gap-2">
-              {/* Ver perfil */}
-              <Link href="/dashboard/flyer" className="flex-1 flex flex-col items-center justify-center gap-0.5 bg-white border border-gray-200 rounded-2xl py-3 px-1 transition-colors active:bg-gray-50" style={{ textDecoration: 'none' }}>
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-1 flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
-                  <FileText size={18} color="#fff" strokeWidth={1.75} />
+            <div className="lg:hidden order-1 space-y-2.5">
+              {/* Acción principal: Video CV */}
+              {!videoCV ? (
+                <Link
+                  href="/dashboard/grabar-cv"
+                  className="flex items-center gap-4 w-full rounded-2xl p-4 text-white transition-all active:scale-[0.99]"
+                  style={{ background: 'linear-gradient(135deg,#2d1b69,#4B33CC)', textDecoration: 'none' }}
+                >
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.15)' }}>
+                    <Video size={22} color="#fff" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm leading-tight">Grabá tu Video CV</p>
+                    <p className="text-white/70 text-xs mt-0.5">Solo tardás 2 minutos · guiado</p>
+                  </div>
+                  <ChevronRight size={18} className="text-white/60 flex-shrink-0" />
+                </Link>
+              ) : (
+                <div className="flex items-center gap-4 w-full rounded-2xl p-4 bg-emerald-50 border border-emerald-200">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-100">
+                    <CheckCircle2 size={22} className="text-emerald-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-emerald-800 leading-tight">Video CV listo ✓</p>
+                    <p className="text-emerald-600 text-xs mt-0.5">{pagado ? 'Podés compartirlo con empleadores' : 'Desbloqueá para compartirlo'}</p>
+                  </div>
+                  {!pagado && (
+                    <button onClick={() => setPagoModalOpen(true)} className="text-xs font-bold bg-brand-600 text-white px-3 py-1.5 rounded-lg flex-shrink-0">
+                      Activar
+                    </button>
+                  )}
                 </div>
-                <span className="text-[11px] font-semibold text-ink-700 leading-tight text-center">Ver perfil</span>
-              </Link>
-              {/* CV DOCX */}
-              {pagado
-                ? <a href="/api/cv/download" download className="flex-1 flex flex-col items-center justify-center gap-0.5 bg-white border border-gray-200 rounded-2xl py-3 px-1 transition-colors active:bg-gray-50" style={{ textDecoration: 'none' }}>
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-1 flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
-                      <Download size={18} color="#fff" strokeWidth={1.75} />
-                    </div>
-                    <span className="text-[11px] font-semibold text-ink-700 leading-tight text-center">CV DOCX</span>
-                  </a>
-                : <button onClick={() => setPagoModalOpen(true)} className="flex-1 flex flex-col items-center justify-center gap-0.5 bg-white border border-amber-200 rounded-2xl py-3 px-1 transition-colors active:bg-amber-50">
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-1 flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
-                      <Download size={18} color="#fff" strokeWidth={1.75} />
-                    </div>
-                    <span className="text-[11px] font-semibold text-ink-700 leading-tight text-center">CV DOCX</span>
-                  </button>
-              }
-              {/* CV PDF */}
-              {pagado
-                ? <Link href={`/u/${usuario.slug}/cv-print`} target="_blank" className="flex-1 flex flex-col items-center justify-center gap-0.5 bg-white border border-gray-200 rounded-2xl py-3 px-1 transition-colors active:bg-gray-50" style={{ textDecoration: 'none' }}>
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-1 flex-shrink-0" style={{ background: 'linear-gradient(135deg,#DC2626,#EF4444)' }}>
-                      <FileText size={18} color="#fff" strokeWidth={1.75} />
-                    </div>
-                    <span className="text-[11px] font-semibold text-ink-700 leading-tight text-center">CV PDF</span>
-                  </Link>
-                : <button onClick={() => setPagoModalOpen(true)} className="flex-1 flex flex-col items-center justify-center gap-0.5 bg-white border border-amber-200 rounded-2xl py-3 px-1 transition-colors active:bg-amber-50">
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-1 flex-shrink-0" style={{ background: 'linear-gradient(135deg,#DC2626,#EF4444)' }}>
-                      <FileText size={18} color="#fff" strokeWidth={1.75} />
-                    </div>
-                    <span className="text-[11px] font-semibold text-ink-700 leading-tight text-center">CV PDF</span>
-                  </button>
-              }
+              )}
+
+              {/* Acción secundaria: CV */}
+              {!cvDatos?.resumen && !(cvDatos?.experiencia?.length) && !(cvDatos?.habilidades?.length) ? (
+                <Link
+                  href="/dashboard/armar-cv"
+                  className="flex items-center gap-4 w-full rounded-2xl p-4 bg-white border-2 border-brand-200 transition-all active:scale-[0.99]"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
+                    <Sparkles size={20} color="#fff" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-ink-800 leading-tight">Armá tu CV</p>
+                    <p className="text-ink-400 text-xs mt-0.5">Contanos tu experiencia · lo armamos nosotros</p>
+                  </div>
+                  <ChevronRight size={18} className="text-ink-300 flex-shrink-0" />
+                </Link>
+              ) : (
+                <div className="flex items-center gap-3 w-full rounded-2xl p-4 bg-white border border-gray-100 shadow-sm">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
+                    <FileText size={20} color="#fff" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-ink-800 leading-tight">CV listo ✓</p>
+                    <p className="text-ink-400 text-xs mt-0.5 line-clamp-1">{cvDatos?.resumen?.substring(0,60) ?? 'Tu CV profesional está armado'}</p>
+                  </div>
+                  <div className="flex gap-1.5 flex-shrink-0">
+                    {pagado
+                      ? <a href="/api/cv/download" download className="text-xs font-bold bg-brand-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1"><Download size={12} /> DOCX</a>
+                      : <button onClick={() => setPagoModalOpen(true)} className="text-xs font-bold bg-ink-100 text-ink-500 px-3 py-1.5 rounded-lg flex items-center gap-1"><Lock size={12} /> DOCX</button>
+                    }
+                    <Link href="/dashboard/armar-cv" className="text-xs font-medium text-brand-600 px-3 py-1.5 rounded-lg bg-brand-50 flex items-center gap-1" style={{ textDecoration: 'none' }}>Editar</Link>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* ── Columna izquierda ──────────────────────────────── */}
@@ -2441,6 +2471,20 @@ export default function DashboardClient({
             {/* ── Columna derecha (2 cols) ───────────────────────── */}
             <div className="lg:col-span-2 space-y-5 order-2 lg:order-2">
 
+              <VideoCard
+                tipo="video_cv" titulo="Video CV"
+                descripcion="Tu presentación va primero — las empresas te ven antes de leer nada"
+                icon={Video} color="brand"
+                recordHref="/dashboard/grabar-cv"
+                video={videoCV}
+                shareUrl={cvUrl}
+                copied={copied}
+                onCopy={() => copyUrl(cvUrl, 'cv')}
+                copiedKey="cv"
+                pagado={pagado}
+                onUnlock={() => setPagoModalOpen(true)}
+              />
+
               {/* ── Mi camino al empleo (plan personalizado) ──────── */}
               {(() => {
                 const tieneVideo   = !!videoCV;
@@ -2922,40 +2966,6 @@ export default function DashboardClient({
                 )}
               </div>
 
-              <VideoCard
-                tipo="video_cv" titulo="Video CV"
-                descripcion="Tu presentación va primero — las empresas te ven antes de leer nada"
-                icon={Video} color="brand"
-                recordHref="/dashboard/grabar-cv"
-                video={videoCV}
-                shareUrl={cvUrl}
-                copied={copied}
-                onCopy={() => copyUrl(cvUrl, 'cv')}
-                copiedKey="cv"
-                pagado={pagado}
-                onUnlock={() => setPagoModalOpen(true)}
-              />
-
-              {usuario.videos.filter(v => v.taller).length > 0 && (
-                <div className="card p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <BookOpen size={16} className="text-purple-600" />
-                    <h2 className="font-semibold text-ink-800">Videos de Talleres</h2>
-                  </div>
-                  <div className="space-y-3">
-                    {usuario.videos.filter(v => v.taller).map(v => (
-                      <div key={v.id} className="flex items-center gap-3 bg-ink-50 rounded-xl p-3">
-                        <VideoThumbnail src={v.video_url} size="sm" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-ink-700">Video CV</p>
-                          <p className="text-xs text-ink-400 truncate">{v.taller?.nombre} · {new Date(v.created_at).toLocaleDateString('es-AR')}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* ── Analizador de CV ──────────────────────────────── */}
               <div className="card p-5">
                 <div className="flex items-center gap-3 mb-3">
@@ -3187,6 +3197,26 @@ export default function DashboardClient({
                   </div>
                 )}
               </div>
+
+              {usuario.videos.filter(v => v.taller).length > 0 && (
+                <div className="card p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <BookOpen size={16} className="text-purple-600" />
+                    <h2 className="font-semibold text-ink-800">Videos de Talleres</h2>
+                  </div>
+                  <div className="space-y-3">
+                    {usuario.videos.filter(v => v.taller).map(v => (
+                      <div key={v.id} className="flex items-center gap-3 bg-ink-50 rounded-xl p-3">
+                        <VideoThumbnail src={v.video_url} size="sm" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-ink-700">Video CV</p>
+                          <p className="text-xs text-ink-400 truncate">{v.taller?.nombre} · {new Date(v.created_at).toLocaleDateString('es-AR')}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
             </div>
           </div>
@@ -3450,112 +3480,113 @@ export default function DashboardClient({
   );
 }
 
-function VideoCard({
-  tipo, titulo, descripcion, icon: Icon, color, recordHref, video, shareUrl, copied, onCopy, copiedKey, pagado, onUnlock
-}: {
+function VideoCard({ tipo, titulo, descripcion, icon: Icon, color, recordHref, video, shareUrl, copied, onCopy, copiedKey, pagado, onUnlock }: {
   tipo: string; titulo: string; descripcion: string; icon: any; color: string;
   recordHref: string; video?: VideoItem; shareUrl: string;
   copied: string | null; onCopy: () => void; copiedKey: string;
   pagado?: boolean; onUnlock?: () => void;
 }) {
-  const colorMap: Record<string, string> = {
-    brand: 'bg-brand-50 text-brand-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
-  };
-  const btnMap: Record<string, string> = {
-    brand: 'btn-primary',
-    emerald: 'inline-flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl active:scale-95 transition-all text-sm',
-  };
-
   return (
-    <div className="card p-6">
-      <div className="flex items-start justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${colorMap[color]}`}>
-            <Icon size={22} />
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-5 pt-5 pb-3 flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="font-bold text-ink-900 text-base">{titulo}</h2>
+            {video
+              ? <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full"><Check size={9} strokeWidth={3} /> Grabado</span>
+              : <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full"><Circle size={9} /> Pendiente</span>}
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="font-semibold text-ink-800">{titulo}</h2>
-              {video
-                ? <span className="badge bg-emerald-100 text-emerald-700 flex items-center gap-1"><Check size={10} />Grabado</span>
-                : <span className="badge bg-ink-100 text-ink-400 flex items-center gap-1"><Clock size={10} />Pendiente</span>}
-            </div>
-            <p className="text-xs text-ink-400 mt-0.5">{descripcion}</p>
-          </div>
+          <p className="text-xs text-ink-400 mt-0.5">{descripcion}</p>
         </div>
-        <Link href={shareUrl} target="_blank" className="btn-ghost text-xs gap-1 py-1.5">
-          <ExternalLink size={13} /> Ver perfil
+        <Link href={shareUrl} target="_blank" className="text-xs text-brand-600 font-medium hover:underline flex items-center gap-1 flex-shrink-0 ml-3">
+          <ExternalLink size={12} /> Ver perfil
         </Link>
       </div>
 
       {video ? (
-        <div className="space-y-3">
-          <div className="bg-ink-900 rounded-xl aspect-video">
-            <video src={video.video_url} controls className="w-full h-full rounded-xl object-cover" />
+        <>
+          {/* Video player */}
+          <div className="mx-4 mb-4 rounded-xl overflow-hidden bg-ink-900 aspect-video">
+            <video src={video.video_url} controls className="w-full h-full object-cover" />
           </div>
+
           {pagado ? (
-            <div className="space-y-2">
-              <p className="text-xs text-ink-500 font-medium">Compartí tu perfil laboral por WhatsApp</p>
+            <div className="px-4 pb-4 space-y-2.5">
+              <p className="text-xs font-semibold text-ink-500 uppercase tracking-wide">Compartí con empleadores</p>
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(`¡Hola! Te comparto mi perfil laboral 👇\n${shareUrl}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2.5 rounded-xl py-3.5 font-bold text-sm text-white transition-all active:scale-[0.98]"
+                style={{ background: '#25D366', boxShadow: '0 4px 12px rgba(37,211,102,0.3)' }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.523 5.845L0 24l6.305-1.501A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.793 9.793 0 01-5.001-1.374l-.357-.213-3.744.892.942-3.629-.234-.373A9.818 9.818 0 012.182 12C2.182 6.58 6.58 2.182 12 2.182S21.818 6.58 21.818 12 17.42 21.818 12 21.818z"/></svg>
+                Compartir por WhatsApp
+              </a>
               <div className="flex gap-2">
-                <a
-                  href={`https://wa.me/?text=${encodeURIComponent(`¡Hola! Te comparto mi perfil laboral 👇\n${shareUrl}`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 font-semibold text-sm text-white transition-all active:scale-[0.98]"
-                  style={{ background: '#25D366' }}
+                <button
+                  onClick={onCopy}
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 border border-gray-200 text-ink-600 text-sm font-medium hover:bg-gray-50 transition-colors"
                 >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.523 5.845L0 24l6.305-1.501A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.793 9.793 0 01-5.001-1.374l-.357-.213-3.744.892.942-3.629-.234-.373A9.818 9.818 0 012.182 12C2.182 6.58 6.58 2.182 12 2.182S21.818 6.58 21.818 12 17.42 21.818 12 21.818z"/></svg>
-                  WhatsApp
-                </a>
-                <button onClick={onCopy} className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 border border-gray-200 text-ink-600 text-sm font-medium hover:bg-gray-50 transition-colors shrink-0">
                   {copied === copiedKey ? <CheckCheck size={14} className="text-green-500" /> : <Copy size={14} />}
                   {copied === copiedKey ? '¡Copiado!' : 'Copiar link'}
                 </button>
+                <Link
+                  href={recordHref}
+                  className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 border border-gray-200 text-ink-500 text-sm font-medium hover:bg-gray-50 transition-colors"
+                >
+                  <Circle size={13} /> Re-grabar
+                </Link>
               </div>
             </div>
           ) : (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="flex-1 bg-ink-50 rounded-lg px-3 py-2 text-xs text-ink-300 font-mono truncate select-none blur-[2px]">{shareUrl}</div>
-                <button onClick={onUnlock} className="btn-ghost text-xs gap-1 py-2 shrink-0 opacity-50">
-                  <Copy size={14} /> Copiar
-                </button>
-              </div>
+            <div className="px-4 pb-4 space-y-2.5">
+              <button
+                onClick={onUnlock}
+                className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 font-bold text-sm text-white transition-all active:scale-[0.98]"
+                style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 14px rgba(109,40,217,0.3)' }}
+              >
+                <Lock size={15} /> Desbloquear para compartir
+              </button>
               <div className="flex gap-2">
-                <button
-                  onClick={onUnlock}
-                  className="flex-1 flex items-center justify-center gap-2 rounded-xl py-3 font-bold text-sm text-white transition-all active:scale-[0.98]"
-                  style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 14px rgba(109,40,217,0.3)' }}
-                >
-                  <Lock size={14} /> Desbloquear para compartir
+                <button onClick={onUnlock} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 border border-gray-200 text-ink-400 text-sm font-medium hover:bg-gray-50 transition-colors opacity-60">
+                  <Copy size={14} /> Copiar link
                 </button>
-                <button
-                  onClick={onUnlock}
-                  className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-3 border border-gray-200 text-ink-500 text-sm font-medium hover:bg-gray-50 transition-colors"
-                >
+                <button onClick={onUnlock} className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 border border-gray-200 text-ink-400 text-sm hover:bg-gray-50 transition-colors opacity-60">
                   <Download size={14} /> Descargar
                 </button>
               </div>
-              <p className="text-center text-xs text-ink-400">
-                Mostrá tu talento a empleadores — compartí tu perfil y destacate
-              </p>
+              <p className="text-center text-xs text-ink-400 leading-relaxed">Activá tu perfil para compartirlo con empleadores</p>
+              <Link href={recordHref} className="text-center text-xs text-ink-300 hover:text-brand-600 transition-colors block">
+                Volver a grabar →
+              </Link>
             </div>
           )}
-          <Link href={recordHref} className={`${btnMap[color]} text-sm py-2 px-4`}>
-            <Circle size={13} /> Volver a grabar
-          </Link>
-        </div>
+        </>
       ) : (
-        <div className="border-2 border-dashed border-ink-200 rounded-xl p-8 text-center">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 ${colorMap[color]}`}>
-            <Icon size={22} />
+        /* Sin video: estado vacío atractivo */
+        <div
+          className="mx-4 mb-4 rounded-2xl overflow-hidden relative"
+          style={{ background: 'linear-gradient(135deg,#1a0f3c,#2d1b69,#1a0f3c)', minHeight: 200 }}
+        >
+          {/* Fondo decorativo */}
+          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 30% 50%, #7048F0 0%, transparent 60%), radial-gradient(circle at 70% 30%, #4B33CC 0%, transparent 50%)' }} />
+
+          <div className="relative z-10 flex flex-col items-center justify-center py-10 px-6 text-center">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'rgba(255,255,255,0.12)', border: '2px solid rgba(255,255,255,0.2)' }}>
+              <PlayCircle size={28} className="text-white" />
+            </div>
+            <p className="text-white font-bold text-lg leading-tight mb-1">Grabá tu Video CV</p>
+            <p className="text-white/60 text-sm leading-relaxed mb-6">Las empresas te ven antes de leer nada.<br/>Solo tardás 2 minutos.</p>
+            <Link
+              href={recordHref}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-[0.98]"
+              style={{ background: 'linear-gradient(135deg,#7048F0,#9b6dff)', boxShadow: '0 4px 16px rgba(112,72,240,0.5)' }}
+            >
+              <Circle size={14} /> Grabar ahora
+            </Link>
           </div>
-          <p className="text-sm font-medium text-ink-600 mb-1">Todavía no grabaste tu {titulo}</p>
-          <p className="text-xs text-ink-400 mb-5">El flujo es guiado — solo seguí las instrucciones en pantalla</p>
-          <Link href={recordHref} className={btnMap[color]}>
-            <Circle size={15} /> Grabar {titulo}
-          </Link>
         </div>
       )}
     </div>

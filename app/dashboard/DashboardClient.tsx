@@ -11,7 +11,7 @@ import {
   BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck,
   CalendarDays, MapPin, Loader2, Plus, GraduationCap, Briefcase as BriefcaseIcon, Wrench,
   Star, Building2, Link2, Trash2, PlayCircle, Download, Layers, AlertTriangle, CheckCircle2, XCircle, ChevronRight,
-  User, Search, Target, BrainCircuit, Sparkles,
+  User, Search, Target, BrainCircuit, Sparkles, Lock,
 } from 'lucide-react';
 import OfertasTab from '@/components/ui/OfertasTab';
 import BuscadorNL from '@/components/ui/BuscadorNL';
@@ -2932,6 +2932,8 @@ export default function DashboardClient({
                 copied={copied}
                 onCopy={() => copyUrl(cvUrl, 'cv')}
                 copiedKey="cv"
+                pagado={pagado}
+                onUnlock={() => setPagoModalOpen(true)}
               />
 
               {usuario.videos.filter(v => v.taller).length > 0 && (
@@ -3449,11 +3451,12 @@ export default function DashboardClient({
 }
 
 function VideoCard({
-  tipo, titulo, descripcion, icon: Icon, color, recordHref, video, shareUrl, copied, onCopy, copiedKey
+  tipo, titulo, descripcion, icon: Icon, color, recordHref, video, shareUrl, copied, onCopy, copiedKey, pagado, onUnlock
 }: {
   tipo: string; titulo: string; descripcion: string; icon: any; color: string;
   recordHref: string; video?: VideoItem; shareUrl: string;
   copied: string | null; onCopy: () => void; copiedKey: string;
+  pagado?: boolean; onUnlock?: () => void;
 }) {
   const colorMap: Record<string, string> = {
     brand: 'bg-brand-50 text-brand-600',
@@ -3491,13 +3494,26 @@ function VideoCard({
           <div className="bg-ink-900 rounded-xl aspect-video">
             <video src={video.video_url} controls className="w-full h-full rounded-xl object-cover" />
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 bg-ink-50 rounded-lg px-3 py-2 text-xs text-ink-500 font-mono truncate">{shareUrl}</div>
-            <button onClick={onCopy} className="btn-ghost text-xs gap-1 py-2 shrink-0">
-              {copied === copiedKey ? <CheckCheck size={14} className="text-green-500" /> : <Copy size={14} />}
-              {copied === copiedKey ? '¡Copiado!' : 'Copiar'}
+          {pagado ? (
+            <div className="flex items-center gap-2">
+              <div className="flex-1 bg-ink-50 rounded-lg px-3 py-2 text-xs text-ink-500 font-mono truncate">{shareUrl}</div>
+              <button onClick={onCopy} className="btn-ghost text-xs gap-1 py-2 shrink-0">
+                {copied === copiedKey ? <CheckCheck size={14} className="text-green-500" /> : <Copy size={14} />}
+                {copied === copiedKey ? '¡Copiado!' : 'Copiar'}
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={onUnlock}
+              className="w-full flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 text-left hover:bg-amber-100 transition-colors"
+            >
+              <Lock size={14} className="text-amber-500 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-amber-700">Compartí tu perfil con empleadores</p>
+                <p className="text-xs text-amber-600">Desbloqueá para activar tu link público →</p>
+              </div>
             </button>
-          </div>
+          )}
           <Link href={recordHref} className={`${btnMap[color]} text-sm py-2 px-4`}>
             <Circle size={13} /> Volver a grabar
           </Link>

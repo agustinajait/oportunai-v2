@@ -45,6 +45,7 @@ interface UsuarioPublico {
   alfa_score?: number | null;
   fecha_nacimiento?: string | null;
   cv_datos?: CvDatos | null;
+  pagado?: boolean;
   videos: VideoItem[];
   archivos: ArchivoItem[];
   documentos?: DocumentoItem[];
@@ -289,7 +290,7 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                   {isCv ? 'Video CV' : 'Video Pitch'}
                 </p>
               </div>
-              {video ? (
+              {video && usuario.pagado ? (
                 <video
                   src={video.video_url}
                   controls
@@ -297,6 +298,22 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                   playsInline
                   className="w-full aspect-video bg-black"
                 />
+              ) : video && !usuario.pagado ? (
+                <div className="mx-3 mb-3 rounded-xl bg-ink-900 aspect-video flex flex-col items-center justify-center gap-2 relative overflow-hidden">
+                  <video
+                    src={video.video_url}
+                    preload="metadata"
+                    playsInline
+                    className="w-full h-full object-cover absolute inset-0 opacity-20 blur-sm"
+                  />
+                  <div className="relative z-10 flex flex-col items-center gap-2">
+                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                      <ShieldCheck size={20} className="text-white/70" />
+                    </div>
+                    <p className="text-white/80 text-xs font-medium">Video disponible próximamente</p>
+                    <p className="text-white/40 text-[10px]">El candidato está activando su perfil</p>
+                  </div>
+                </div>
               ) : (
                 <div className="mx-3 mb-3 rounded-xl bg-ink-900 aspect-video flex flex-col items-center justify-center gap-2">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${accentClass.ring}`}>
@@ -307,7 +324,7 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                   <p className="text-white/40 text-xs">Sin video</p>
                 </div>
               )}
-              {video && (
+              {video && usuario.pagado && (
                 <div className="px-3 py-2.5 flex gap-2 border-t border-ink-100 mt-auto">
                   <button
                     onClick={handleShare}

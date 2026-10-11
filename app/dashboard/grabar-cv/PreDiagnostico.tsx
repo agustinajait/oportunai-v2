@@ -1,26 +1,17 @@
 'use client';
 
-/**
- * PreDiagnostico — pantalla de 3 preguntas rápidas antes de grabar el Video CV.
- *
- * Las respuestas se mapean a dimensiones del semáforo Korai y se guardan en
- * korai_semaforo. Cuando el usuario llega al diagnóstico, Korai ya tiene
- * Empleo + Ingresos + Educación cargados y solo pregunta las 3 restantes.
- *
- * Costo: $0 — sin APIs externas, puro TypeScript en el servidor.
- */
-
 import { useState } from 'react';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 type SemaforoColor = 'verde' | 'amarillo' | 'rojo';
 
 interface RespuestasPreDiag {
-  empleo_situacion: string | null;    // valor display
+  empleo_situacion: string | null;
   empleo_color:     SemaforoColor | null;
-  ingresos_rango:   string | null;    // valor display (igual que Korai)
+  ingresos_rango:   string | null;
   ingresos_color:   SemaforoColor | null;
-  educacion_nivel:  string | null;    // valor display
+  educacion_nivel:  string | null;
   educacion_color:  SemaforoColor | null;
 }
 
@@ -30,7 +21,6 @@ const SITUACION_EMPLEO = [
   { label: 'No, estoy buscando trabajo',   value: 'buscando',   color: 'rojo'     as SemaforoColor },
 ];
 
-// Valores exactos del formulario de diagnóstico Korai
 const RANGOS_INGRESOS = [
   { label: 'No tengo ingresos',              color: 'rojo'     as SemaforoColor },
   { label: 'Menos de $700.000',              color: 'rojo'     as SemaforoColor },
@@ -45,33 +35,60 @@ const NIVELES_EDUCACION = [
   { label: 'No terminé el secundario',          value: 'sin_secundario', color: 'rojo'     as SemaforoColor },
 ];
 
+const PREGUNTAS = [
+  {
+    pregunta: '¿Estás trabajando actualmente?',
+    opciones: SITUACION_EMPLEO,
+    key: 'empleo',
+  },
+  {
+    pregunta: '¿Cuáles son tus ingresos mensuales?',
+    opciones: RANGOS_INGRESOS.map(o => ({ ...o, value: o.label })),
+    key: 'ingresos',
+  },
+  {
+    pregunta: '¿Terminaste el secundario?',
+    opciones: NIVELES_EDUCACION,
+    key: 'educacion',
+  },
+];
+
 interface Props {
   onContinuar: () => void;
 }
 
 export default function PreDiagnostico({ onContinuar }: Props) {
+  const router = useRouter();
+  const [paso, setPaso] = useState(0); // 0, 1, 2 = pregunta activa
   const [empleo,    setEmpleo]    = useState<typeof SITUACION_EMPLEO[0]   | null>(null);
   const [ingresos,  setIngresos]  = useState<typeof RANGOS_INGRESOS[0]    | null>(null);
   const [educacion, setEducacion] = useState<typeof NIVELES_EDUCACION[0]  | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [error,     setError]     = useState('');
 
+  const seleccionActual = [empleo, ingresos, educacion][paso];
   const todoCompleto = empleo !== null && ingresos !== null && educacion !== null;
+
+  function handleSelect(op: any) {
+    if (paso === 0) setEmpleo(op);
+    else if (paso === 1) setIngresos(op);
+    else setEducacion(op);
+  }
+
+  function handleSiguiente() {
+    if (paso < 2) { setPaso(p => p + 1); return; }
+    guardarYContinuar();
+  }
 
   async function guardarYContinuar() {
     if (!todoCompleto) return;
     setGuardando(true);
     setError('');
-
-    // Construir semáforo parcial con las respuestas
     const semaforoParcial: Record<string, SemaforoColor> = {
       empleo:    empleo!.color,
       ingresos:  ingresos!.color,
       educacion: educacion!.color,
     };
-
-    // Guardar en korai_semaforo via API de onboarding
-    // Reutilizamos el endpoint existente con un campo nuevo
     try {
       const res = await fetch('/api/user/pre-diagnostico', {
         method:  'POST',
@@ -93,112 +110,98 @@ export default function PreDiagnostico({ onContinuar }: Props) {
     }
   }
 
-  function Opcion({
-    label, selected, onClick,
-  }: { label: string; selected: boolean; onClick: () => void }) {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border text-left text-sm font-medium transition-all ${
-          selected
-            ? 'bg-brand-600 border-brand-600 text-white'
-            : 'bg-white border-gray-200 text-ink-900 hover:border-brand-400'
-        }`}
-      >
-        <span className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-          selected ? 'border-white' : 'border-gray-300'
-        }`}>
-          {selected && <span className="w-2 h-2 rounded-full bg-white block" />}
-        </span>
-        {label}
-        {selected && <CheckCircle size={16} className="ml-auto flex-shrink-0 opacity-80" />}
-      </button>
-    );
-  }
+  const pregunta = PREGUNTAS[paso];
+  const seleccionPaso = [empleo, ingresos, educacion][paso];
 
   return (
-    <div className="min-h-screen bg-ink-50 flex flex-col items-center justify-start px-4 py-10">
-      <div className="w-full max-w-lg space-y-6">
+    <div className="min-h-screen flex flex-col" style={{ background: '#0d0d14' }}>
 
-        {/* Header */}
-        <div>
-          <p className="text-sm font-semibold text-brand-600 uppercase tracking-wide mb-1">
-            Antes de grabar
-          </p>
-          <h1 className="text-2xl font-bold text-ink-900">3 preguntas rápidas</h1>
-          <p className="text-gray-500 mt-1 text-sm">
-            Nos ayudan a personalizar tu perfil y encontrarte las mejores oportunidades.
-          </p>
-        </div>
-
-        {/* Pregunta 1: Empleo */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
-          <p className="font-semibold text-ink-900 text-sm">¿Estás trabajando actualmente?</p>
-          <div className="space-y-2">
-            {SITUACION_EMPLEO.map(op => (
-              <Opcion
-                key={op.value}
-                label={op.label}
-                selected={empleo?.value === op.value}
-                onClick={() => setEmpleo(op)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Pregunta 2: Ingresos */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
-          <p className="font-semibold text-ink-900 text-sm">¿Cuáles son tus ingresos mensuales?</p>
-          <div className="space-y-2">
-            {RANGOS_INGRESOS.map(op => (
-              <Opcion
-                key={op.label}
-                label={op.label}
-                selected={ingresos?.label === op.label}
-                onClick={() => setIngresos(op)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Pregunta 3: Educación */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
-          <p className="font-semibold text-ink-900 text-sm">¿Terminaste el secundario?</p>
-          <div className="space-y-2">
-            {NIVELES_EDUCACION.map(op => (
-              <Opcion
-                key={op.value}
-                label={op.label}
-                selected={educacion?.value === op.value}
-                onClick={() => setEducacion(op)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-
+      {/* Header oscuro */}
+      <div className="relative px-4 pt-12 pb-8" style={{ background: 'linear-gradient(160deg,#1a0f3c,#2d1b69)' }}>
+        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 70% 30%, #4B33CC 0%, transparent 60%)' }} />
         <button
-          onClick={guardarYContinuar}
-          disabled={!todoCompleto || guardando}
-          className="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-40"
+          onClick={() => router.push('/dashboard')}
+          className="relative z-10 flex items-center gap-1.5 text-white/50 hover:text-white/80 text-sm mb-6 transition-colors"
         >
-          {guardando ? 'Guardando...' : '🎥 Grabar mi Video CV →'}
+          <ArrowLeft size={15} /> Volver
+        </button>
+        <div className="relative z-10">
+          <div className="flex gap-1.5 mb-4">
+            {[0, 1, 2].map(i => (
+              <div
+                key={i}
+                className="h-1 rounded-full flex-1 transition-all duration-300"
+                style={{ background: i <= paso ? '#7048F0' : 'rgba(255,255,255,0.15)' }}
+              />
+            ))}
+          </div>
+          <p className="text-white/50 text-xs font-bold uppercase tracking-widest mb-1">
+            Antes de grabar · Pregunta {paso + 1} de 3
+          </p>
+          <h1 className="text-white font-bold text-2xl leading-tight">
+            {pregunta.pregunta}
+          </h1>
+        </div>
+      </div>
+
+      {/* Opciones */}
+      <div className="flex-1 px-4 pt-5 pb-6 space-y-3">
+        {pregunta.opciones.map((op: any) => {
+          const selected = seleccionPaso?.value === op.value || seleccionPaso?.label === op.label;
+          return (
+            <button
+              key={op.value ?? op.label}
+              type="button"
+              onClick={() => handleSelect(op)}
+              className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl border text-left transition-all active:scale-[0.98]"
+              style={selected
+                ? { background: 'linear-gradient(135deg,#4B33CC,#7048F0)', borderColor: 'transparent', boxShadow: '0 4px 14px rgba(109,40,217,0.3)' }
+                : { background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' }
+              }
+            >
+              <span className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                selected ? 'border-white' : 'border-white/20'
+              }`}>
+                {selected && <span className="w-2.5 h-2.5 rounded-full bg-white block" />}
+              </span>
+              <span className={`text-sm font-medium flex-1 leading-tight ${selected ? 'text-white' : 'text-white/70'}`}>
+                {op.label}
+              </span>
+              {selected && <CheckCircle size={16} className="text-white/80 flex-shrink-0" />}
+            </button>
+          );
+        })}
+
+        {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+      </div>
+
+      {/* CTA sticky */}
+      <div className="px-4 pb-8 pt-2 space-y-3">
+        <button
+          onClick={handleSiguiente}
+          disabled={!seleccionPaso || guardando}
+          className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base text-white transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+          style={seleccionPaso && !guardando
+            ? { background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 20px rgba(109,40,217,0.4)' }
+            : { background: 'rgba(255,255,255,0.08)' }
+          }
+        >
+          {guardando ? (
+            'Guardando...'
+          ) : paso < 2 ? (
+            <>Siguiente →</>
+          ) : (
+            <>🎥 Grabar mi Video CV</>
+          )}
         </button>
 
         <button
           type="button"
           onClick={onContinuar}
-          className="w-full text-sm text-gray-400 hover:text-gray-600 py-2 transition-colors"
+          className="w-full text-sm text-white/30 hover:text-white/50 py-2 transition-colors text-center"
         >
           Hacerlo en otro momento →
         </button>
-
-        <p className="text-center text-xs text-gray-400">
-          Esta info nos ayuda a personalizar tu acompañamiento
-        </p>
-
       </div>
     </div>
   );

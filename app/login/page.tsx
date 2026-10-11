@@ -50,23 +50,33 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-ink-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <img src="/logo.png" alt="Oportunai" className="w-9 h-9" />
-            <span className="font-display text-2xl font-semibold text-ink-800">Oportunai</span>
-          </Link>
-          <h1 className="font-display text-3xl font-light text-ink-900 mb-1">Bienvenido/a</h1>
-          <p className="text-ink-400 text-sm">Ingresá a tu cuenta</p>
-        </div>
+    <div className="min-h-screen flex flex-col" style={{ background: '#F5F5F7' }}>
 
-        <div className="card p-8">
+      {/* Hero oscuro */}
+      <div
+        className="relative px-6 pt-14 pb-10 flex flex-col items-center"
+        style={{ background: 'linear-gradient(160deg,#1a0f3c,#2d1b69)' }}
+      >
+        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 70% 20%, #4B33CC 0%, transparent 60%)' }} />
+        <Link href="/" className="relative z-10 flex items-center gap-2.5 mb-6">
+          <img src="/logo.png" alt="Oportunai" className="w-9 h-9" />
+          <span className="text-white font-bold text-xl tracking-tight">Oportunai</span>
+        </Link>
+        <div className="relative z-10 text-center">
+          <h1 className="text-white font-bold text-3xl leading-tight mb-1.5">Bienvenido/a</h1>
+          <p className="text-white/55 text-sm">Ingresá a tu cuenta para continuar</p>
+        </div>
+      </div>
+
+      {/* Formulario */}
+      <div className="flex-1 px-4 pt-6 pb-8 max-w-md mx-auto w-full">
+        <div className="bg-white rounded-2xl border border-black/5 shadow-sm p-6 mb-4">
+
           {/* Google OAuth */}
           <a
             href="/api/auth/google"
-            className="flex items-center justify-center gap-3 w-full border border-ink-200 rounded-xl py-3 text-sm font-medium text-ink-700 hover:bg-ink-50 transition-colors mb-5"
+            className="flex items-center justify-center gap-3 w-full rounded-xl py-3 text-sm font-medium transition-colors mb-5"
+            style={{ border: '1px solid #e5e7eb', color: '#374151', background: 'white' }}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
               <path d="M17.64 9.205c0-.638-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" fill="#4285F4"/>
@@ -78,60 +88,68 @@ function LoginForm() {
           </a>
 
           <div className="flex items-center gap-3 mb-5">
-            <div className="flex-1 h-px bg-ink-100" />
-            <span className="text-xs text-ink-300">o ingresá con email</span>
-            <div className="flex-1 h-px bg-ink-100" />
+            <div className="flex-1 h-px" style={{ background: '#f0f0f0' }} />
+            <span className="text-xs" style={{ color: '#9ca3af' }}>o ingresá con email</span>
+            <div className="flex-1 h-px" style={{ background: '#f0f0f0' }} />
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <label className="label">Email</label>
+              <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: '#6b7280' }}>Email</label>
               <input
                 {...register('email')}
                 type="email"
                 placeholder="tu@email.com"
-                className="input-field"
+                className="w-full rounded-xl px-4 py-3 text-sm transition-all outline-none"
+                style={{ border: '1.5px solid #e5e7eb', color: '#111', background: '#fafafa' }}
               />
-              {errors.email && <p className="error-text">{errors.email.message}</p>}
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
             </div>
 
             <div>
-              <label className="label">Contraseña</label>
+              <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: '#6b7280' }}>Contraseña</label>
               <div className="relative">
                 <input
                   {...register('password')}
                   type={showPass ? 'text' : 'password'}
                   placeholder="••••••••"
-                  className="input-field pr-12"
+                  className="w-full rounded-xl px-4 py-3 pr-12 text-sm transition-all outline-none"
+                  style={{ border: '1.5px solid #e5e7eb', color: '#111', background: '#fafafa' }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors"
+                  style={{ color: '#9ca3af' }}
                 >
-                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
-              {errors.password && <p className="error-text">{errors.password.message}</p>}
+              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
             </div>
 
             {serverError && (
-              <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl border border-red-200">
+              <div className="text-sm px-4 py-3 rounded-xl" style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}>
                 {serverError}
               </div>
             )}
 
-            <button type="submit" disabled={isSubmitting} className="btn-primary w-full justify-center py-3.5">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base text-white transition-all active:scale-[0.98] disabled:opacity-50 mt-2"
+              style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 20px rgba(109,40,217,0.35)' }}
+            >
               {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : null}
               {isSubmitting ? 'Ingresando...' : 'Ingresar'}
             </button>
           </form>
         </div>
 
-        <p className="text-center text-ink-400 text-sm mt-6">
+        <p className="text-center text-sm" style={{ color: '#9ca3af' }}>
           ¿No tenés cuenta?{' '}
-          <Link href="/register" className="text-brand-600 hover:text-brand-700 font-medium">
-            Registrate
+          <Link href="/register" className="font-semibold" style={{ color: '#7048F0' }}>
+            Registrate gratis
           </Link>
         </p>
       </div>

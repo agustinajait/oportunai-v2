@@ -65,7 +65,6 @@ export default async function VideoCVPage({ params }: Props) {
       documentos: {
         select: { tipo: true, file_url: true },
       },
-      korai_semaforo: true,
       capacitate_progreso: {
         where: { estado: 'aprobada' },
         orderBy: { aprobada_en: 'desc' },

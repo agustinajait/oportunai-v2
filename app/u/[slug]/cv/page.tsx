@@ -39,6 +39,7 @@ export default async function VideoCVPage({ params }: Props) {
       id: true,
       nombre_completo: true,
       bio: true,
+      pagado: true,
       linkedin_url: true,
       instagram_url: true,
       sitio_web: true,

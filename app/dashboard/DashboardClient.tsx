@@ -11,7 +11,7 @@ import {
   BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck,
   CalendarDays, MapPin, Loader2, Plus, GraduationCap, Briefcase as BriefcaseIcon, Wrench,
   Star, Building2, Link2, Trash2, PlayCircle, Download, Layers, AlertTriangle, CheckCircle2, XCircle, ChevronRight,
-  User, Search, Target, BrainCircuit, Sparkles,
+  User, Search, Target, BrainCircuit, Sparkles, Lock,
 } from 'lucide-react';
 import OfertasTab from '@/components/ui/OfertasTab';
 import BuscadorNL from '@/components/ui/BuscadorNL';
@@ -2932,6 +2932,8 @@ export default function DashboardClient({
                 copied={copied}
                 onCopy={() => copyUrl(cvUrl, 'cv')}
                 copiedKey="cv"
+                pagado={pagado}
+                onUnlock={() => setPagoModalOpen(true)}
               />
 
               {usuario.videos.filter(v => v.taller).length > 0 && (
@@ -3449,11 +3451,12 @@ export default function DashboardClient({
 }
 
 function VideoCard({
-  tipo, titulo, descripcion, icon: Icon, color, recordHref, video, shareUrl, copied, onCopy, copiedKey
+  tipo, titulo, descripcion, icon: Icon, color, recordHref, video, shareUrl, copied, onCopy, copiedKey, pagado, onUnlock
 }: {
   tipo: string; titulo: string; descripcion: string; icon: any; color: string;
   recordHref: string; video?: VideoItem; shareUrl: string;
   copied: string | null; onCopy: () => void; copiedKey: string;
+  pagado?: boolean; onUnlock?: () => void;
 }) {
   const colorMap: Record<string, string> = {
     brand: 'bg-brand-50 text-brand-600',
@@ -3491,13 +3494,42 @@ function VideoCard({
           <div className="bg-ink-900 rounded-xl aspect-video">
             <video src={video.video_url} controls className="w-full h-full rounded-xl object-cover" />
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 bg-ink-50 rounded-lg px-3 py-2 text-xs text-ink-500 font-mono truncate">{shareUrl}</div>
-            <button onClick={onCopy} className="btn-ghost text-xs gap-1 py-2 shrink-0">
-              {copied === copiedKey ? <CheckCheck size={14} className="text-green-500" /> : <Copy size={14} />}
-              {copied === copiedKey ? '¡Copiado!' : 'Copiar'}
-            </button>
-          </div>
+          {pagado ? (
+            <div className="flex items-center gap-2">
+              <div className="flex-1 bg-ink-50 rounded-lg px-3 py-2 text-xs text-ink-500 font-mono truncate">{shareUrl}</div>
+              <button onClick={onCopy} className="btn-ghost text-xs gap-1 py-2 shrink-0">
+                {copied === copiedKey ? <CheckCheck size={14} className="text-green-500" /> : <Copy size={14} />}
+                {copied === copiedKey ? '¡Copiado!' : 'Copiar'}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-ink-50 rounded-lg px-3 py-2 text-xs text-ink-300 font-mono truncate select-none blur-[2px]">{shareUrl}</div>
+                <button onClick={onUnlock} className="btn-ghost text-xs gap-1 py-2 shrink-0 opacity-50">
+                  <Copy size={14} /> Copiar
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={onUnlock}
+                  className="flex-1 flex items-center justify-center gap-2 rounded-xl py-3 font-bold text-sm text-white transition-all active:scale-[0.98]"
+                  style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 14px rgba(109,40,217,0.3)' }}
+                >
+                  <Lock size={14} /> Desbloquear para compartir
+                </button>
+                <button
+                  onClick={onUnlock}
+                  className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-3 border border-gray-200 text-ink-500 text-sm font-medium hover:bg-gray-50 transition-colors"
+                >
+                  <Download size={14} /> Descargar
+                </button>
+              </div>
+              <p className="text-center text-xs text-ink-400">
+                Mostrá tu talento a empleadores — compartí tu perfil y destacate
+              </p>
+            </div>
+          )}
           <Link href={recordHref} className={`${btnMap[color]} text-sm py-2 px-4`}>
             <Circle size={13} /> Volver a grabar
           </Link>

@@ -214,7 +214,7 @@ export default function AmarCVClient({
                     )}
                     <input
                       type="text"
-                      placeholder="Cargo o puesto (ej: vendedor, cajera, limpieza)"
+                      placeholder="Cargo o puesto (ej: vendedor, cajera)"
                       value={exp.cargo}
                       onChange={e => updateExp(i, 'cargo', e.target.value)}
                       className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-400 bg-white"

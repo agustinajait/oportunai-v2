@@ -32,45 +32,46 @@ export async function POST(req: NextRequest) {
     max_tokens: 2000,
     messages: [{
       role: 'user',
-      content: `Sos un experto en recursos humanos argentino. Un usuario te va a contar en sus propias palabras sobre su experiencia laboral, estudios y habilidades — sin estructura, tal como le sale. Tu trabajo es convertir eso en un CV profesional estructurado.
+      content: `Sos un especialista en redacción de CVs para el mercado laboral argentino, con foco en que los CVs pasen filtros ATS (sistemas de seguimiento de candidatos) de empresas como Mercado Libre, Walmart, McDonald's, Carrefour, y demás empleadores masivos.
+
+Tu tarea: convertir lo que contó el usuario en texto libre en un CV estructurado, con lenguaje concreto y palabras clave que los ATS reconozcan.
 
 NOMBRE: ${usuario.nombre_completo}
 
 LO QUE CONTÓ EL USUARIO:
 ${texto_libre.substring(0, 3000)}
 
-Generá un JSON con esta estructura exacta (sin markdown, sin texto extra):
+Generá un JSON con esta estructura exacta (sin markdown, sin texto extra, sin comillas especiales):
 {
-  "resumen": "<2-3 oraciones profesionales en primera persona que describan su perfil. Si no hay suficiente info, generá algo genérico pero positivo basado en lo que contó>",
+  "resumen": "<perfil profesional de 2-3 oraciones. REGLAS ESTRICTAS: (1) Empezá con el rol/sector concreto, ej: 'Vendedora con X años de experiencia en comercio minorista' o 'Operario de limpieza con experiencia en mantenimiento de espacios comerciales'. (2) Incluí 2-3 habilidades o tareas específicas del sector que los ATS buscan. (3) Cerrá con disponibilidad o zona si la mencionó. PROHIBIDO: frases genéricas como 'soy responsable', 'soy proactivo/a', 'me adapto fácilmente', 'busco crecer profesionalmente' — esas frases bajan el score ATS.>",
   "experiencia": [
     {
-      "cargo": "<puesto o rol, inferilo si no lo dijo explícitamente>",
-      "empresa": "<nombre de empresa o lugar, o 'Emprendimiento propio' / 'Trabajo informal' si corresponde>",
-      "periodo": "<fechas aproximadas si las mencionó, si no dejá vacío>",
-      "descripcion": "<qué hacía, en 1-2 líneas>"
+      "cargo": "<título estándar del puesto que los ATS reconocen, ej: 'Vendedor/a', 'Operario/a de limpieza', 'Repositor/a', 'Cajero/a', 'Cuidador/a de adultos mayores'>",
+      "empresa": "<nombre real si lo mencionó, si no: tipo de lugar, ej: 'Comercio minorista', 'Domicilio particular', 'Empresa de construcción'>",
+      "periodo": "<fechas si las mencionó, ej: '2020 – 2023', si no: ''>",
+      "descripcion": "<2-3 tareas concretas con verbos de acción en pasado: 'Atendí clientes', 'Gestioné cobros en efectivo y con tarjeta', 'Realicé reposición de mercadería'. Sin 'Responsable de', sin infinitivos, sin gerundios.>"
     }
   ],
   "educacion": [
     {
-      "titulo": "<nivel o título>",
-      "institucion": "<nombre del colegio/instituto/universidad si lo mencionó, si no: 'No especificada'>",
-      "periodo": "<año o período si lo mencionó>"
+      "titulo": "<nivel exacto: 'Primario completo', 'Secundario completo', 'Secundario incompleto', 'Terciario en X', 'Universitario en X'>",
+      "institucion": "<nombre si lo mencionó, si no: ''>",
+      "periodo": "<año o período si lo mencionó, si no: ''>"
     }
   ],
-  "habilidades": ["<habilidad concreta>", ...],
-  "herramientas_digitales": ["<herramienta o app>", ...],
-  "idiomas": ["<idioma nivel si lo mencionó>"],
-  "nivel_estudios": "<nivel más alto: Primario / Secundario / Terciario / Universitario / Posgrado>",
-  "area_laboral": "<área principal de trabajo en 2-3 palabras>"
+  "habilidades": ["<habilidades específicas del sector, ej: 'Atención al cliente presencial', 'Manejo de caja registradora', 'Cobro con POS', 'Reposición de góndolas', 'Limpieza de pisos y superficies', 'Cuidado de adultos mayores', 'Conducción de moto'. Mínimo 5, máximo 10. Solo habilidades reales y verificables, no actitudes.>"],
+  "herramientas_digitales": ["<solo si las mencionó: apps, sistemas, herramientas. Si no mencionó nada digital, array vacío []>"],
+  "idiomas": ["<solo si los mencionó, ej: 'Inglés básico'. Si no mencionó: []>"],
+  "nivel_estudios": "<exactamente uno de: Primario / Secundario / Terciario / Universitario / Posgrado>",
+  "area_laboral": "<sector en 2-3 palabras que los ATS usen, ej: 'Ventas y comercio', 'Limpieza y mantenimiento', 'Cuidado de personas', 'Logística y depósito', 'Gastronomía y cocina', 'Construcción y obras'>"
 }
 
-Reglas importantes:
-- Si no mencionó experiencia formal, poné trabajos informales, changas, cuidado de personas, limpieza, construcción, etc. como experiencia válida
-- Inferí habilidades razonables de lo que contó (ej: si cuidó personas → "Cuidado de adultos mayores", "Primeros auxilios básicos")
-- Si solo hay estudios primarios o secundarios, es válido — ponélo sin vergüenza
-- Nunca inventés datos concretos que no mencionó (nombres de empresas, títulos específicos)
-- El array experiencia puede estar vacío [] si no mencionó nada laboral
-- El array habilidades debe tener AL MENOS 3 items inferidos del contexto`,
+Reglas de contenido:
+- Trabajos informales, changas, cuidado de familiares, construcción en negro — todo cuenta como experiencia válida
+- Inferí habilidades del contexto: si cuidó personas mayores → "Asistencia en higiene personal", "Preparación de alimentos", "Acompañamiento y contención"
+- Si no mencionó experiencia laboral, dejá experiencia como [] sin inventar
+- Nunca inventés nombres de empresas, fechas ni títulos que no mencionó
+- El resumen tiene que sonar como lo escribió un humano profesional, no una IA`,
     }],
   });
 

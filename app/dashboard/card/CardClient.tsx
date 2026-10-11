@@ -135,15 +135,19 @@ export default function CardClient({ usuario }: Props) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F0F0F8', padding: '32px 16px' }}>
+    <div style={{ minHeight: '100vh', background: '#0d0d14', padding: '0 0 32px' }}>
 
-      {/* Nav */}
-      <div style={{ maxWidth: 400, margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#5B3FE0', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
-          <ArrowLeft size={16} /> Volver
-        </Link>
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#9090A8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Mi tarjeta digital</span>
+      {/* Header oscuro */}
+      <div style={{ background: 'linear-gradient(160deg,#1a0f3c,#2d1b69)', padding: '48px 16px 24px', marginBottom: 24, position: 'relative' }}>
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.2, backgroundImage: 'radial-gradient(circle at 70% 30%, #4B33CC 0%, transparent 60%)' }} />
+        <div style={{ maxWidth: 400, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
+          <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.55)', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
+            <ArrowLeft size={16} /> Volver
+          </Link>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Mi tarjeta digital</span>
+        </div>
       </div>
+      <div style={{ padding: '0 16px' }}>
 
       {/* ── TARJETA ── */}
       <div ref={cardRef}
@@ -229,8 +233,8 @@ export default function CardClient({ usuario }: Props) {
       </div>
 
       {/* ── Acciones ── */}
-      <div style={{ maxWidth: 360, margin: '16px auto 0', background: '#fff', borderRadius: 16, padding: '18px 20px', border: '1px solid rgba(0,0,0,0.07)', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
-        <p style={{ fontSize: 11.5, fontWeight: 700, color: '#9090A8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>Compartir y guardar</p>
+      <div style={{ maxWidth: 360, margin: '16px auto 0', background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: '18px 20px', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <p style={{ fontSize: 11.5, fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>Compartir y guardar</p>
 
         {/* Guardar contacto — acción principal */}
         <button onClick={descargarVCard}
@@ -256,11 +260,12 @@ export default function CardClient({ usuario }: Props) {
           </button>
         </div>
 
-        <p style={{ fontSize: 11, color: '#B0B0C4', marginTop: 10, lineHeight: 1.5, margin: '10px 0 0' }}>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 10, lineHeight: 1.5, margin: '10px 0 0' }}>
           💡 <strong>Guardar en contactos</strong>: el receptor abre el archivo y lo agrega directo a su teléfono.
         </p>
       </div>
 
+      </div>{/* end padding wrapper */}
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );

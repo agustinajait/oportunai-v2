@@ -231,39 +231,44 @@ export default function FlyerClient({ usuario }: Props) {
         }
       `}</style>
 
-      <div style={{ minHeight: '100vh', background: '#F0F0F8', padding: '32px 16px' }}>
+      <div style={{ minHeight: '100vh', background: '#0d0d14', padding: '0 0 32px' }}>
 
-        {/* Nav */}
-        <div style={{ maxWidth: 560, margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-          <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#5B3FE0', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
-            <ArrowLeft size={16} /> Volver
-          </Link>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-            {savedOk && <span style={{ fontSize: 13, color: '#0A9485', fontWeight: 600 }}>✓ Guardado</span>}
-            <button onClick={() => setEditing(e => !e)}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, background: editing ? '#F0F0F8' : '#fff', color: '#5B3FE0', border: '1px solid #D0C8F8', borderRadius: 10, padding: '9px 14px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
-              <Edit3 size={14} /> {editing ? 'Ver flyer' : 'Editar datos'}
-            </button>
-            <button onClick={() => window.print()}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', color: '#374151', border: '1px solid #E0E0F0', borderRadius: 10, padding: '9px 14px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
-              <Printer size={14} /> PDF
-            </button>
+        {/* Header oscuro */}
+        <div style={{ background: 'linear-gradient(160deg,#1a0f3c,#2d1b69)', padding: '48px 16px 20px', marginBottom: 24, position: 'relative' }}>
+          <div style={{ position: 'absolute', inset: 0, opacity: 0.2, backgroundImage: 'radial-gradient(circle at 30% 30%, #4B33CC 0%, transparent 60%)' }} />
+          <div style={{ maxWidth: 560, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, position: 'relative', zIndex: 1 }}>
+            <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.55)', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
+              <ArrowLeft size={16} /> Volver
+            </Link>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              {savedOk && <span style={{ fontSize: 13, color: '#34d399', fontWeight: 600 }}>✓ Guardado</span>}
+              <button onClick={() => setEditing(e => !e)}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, padding: '9px 14px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+                <Edit3 size={14} /> {editing ? 'Ver flyer' : 'Editar datos'}
+              </button>
+              <button onClick={() => window.print()}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '9px 14px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+                <Printer size={14} /> PDF
+              </button>
+            </div>
           </div>
         </div>
 
+        <div style={{ padding: '0 16px' }}>
+
         {/* ── EDIT PANEL ── */}
         {editing && (
-          <div style={{ maxWidth: 560, margin: '0 auto 24px', background: '#fff', borderRadius: 16, padding: '24px', border: '1px solid #E0D8FC', boxShadow: '0 4px 20px rgba(91,63,224,0.08)' }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111118', marginBottom: 18 }}>Completá los datos del flyer</h3>
+          <div style={{ maxWidth: 560, margin: '0 auto 24px', background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,0.9)', marginBottom: 18 }}>Completá los datos del flyer</h3>
 
             {/* Foto */}
             <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
-              <div style={{ width: 64, height: 64, borderRadius: '50%', background: fotoUrl ? 'transparent' : 'linear-gradient(135deg,#4B33CC,#7048F0)', border: '3px solid #E0D8FC', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: fotoUrl ? 'transparent' : 'linear-gradient(135deg,#4B33CC,#7048F0)', border: '3px solid rgba(112,72,240,0.4)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
                 {fotoUrl ? <img src={fotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : getInitials(usuario.nombre_completo)}
               </div>
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#5B3FE0', display: 'block', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Foto de perfil</label>
-                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: uploadingFoto ? '#F0F0F8' : '#ECE9FB', color: '#5B3FE0', borderRadius: 8, padding: '7px 14px', fontSize: 13, fontWeight: 600, cursor: uploadingFoto ? 'default' : 'pointer' }}>
+                <label style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Foto de perfil</label>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(112,72,240,0.2)', color: '#a78bfa', borderRadius: 8, padding: '7px 14px', fontSize: 13, fontWeight: 600, cursor: uploadingFoto ? 'default' : 'pointer' }}>
                   {uploadingFoto ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <Camera size={13} />}
                   {uploadingFoto ? 'Subiendo...' : fotoUrl ? 'Cambiar foto' : 'Subir foto'}
                   <input type="file" accept="image/*" style={{ display: 'none' }} disabled={uploadingFoto}
@@ -274,76 +279,76 @@ export default function FlyerClient({ usuario }: Props) {
 
             {/* Resumen */}
             <div style={{ marginBottom: 18 }}>
-              <label style={{ fontSize: 12, fontWeight: 700, color: '#5B3FE0', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Sobre mí / Resumen</label>
+              <label style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Sobre mí / Resumen</label>
               <textarea value={resumen} onChange={e => setResumen(e.target.value)} rows={3}
                 placeholder="Breve descripción de tu perfil y objetivos..."
-                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid #E0E0F0', fontSize: 13, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.6 }} />
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.85)', fontSize: 13, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.6 }} />
             </div>
 
             {/* Experiencia */}
             <div style={{ marginBottom: 18 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#5B3FE0', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Experiencia laboral</label>
+                <label style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Experiencia laboral</label>
                 <button onClick={() => setExperiencias(p => [...p, { empresa: '', cargo: '', periodo: '', descripcion: '' }])}
-                  style={{ fontSize: 12, color: '#5B3FE0', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
+                  style={{ fontSize: 12, color: '#a78bfa', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
                   <Plus size={13} /> Agregar
                 </button>
               </div>
               {experiencias.map((e, i) => (
-                <div key={i} style={{ background: '#F8F8FC', borderRadius: 10, padding: '12px', marginBottom: 8 }}>
+                <div key={i} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: '12px', marginBottom: 8, border: '1px solid rgba(255,255,255,0.07)' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
                     <input value={e.cargo} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, cargo: ev.target.value } : x))}
-                      placeholder="Cargo / puesto" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #E0E0F0', fontSize: 12, fontFamily: 'inherit' }} />
+                      placeholder="Cargo / puesto" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.85)', fontSize: 12, fontFamily: 'inherit' }} />
                     <input value={e.empresa} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, empresa: ev.target.value } : x))}
-                      placeholder="Empresa" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #E0E0F0', fontSize: 12, fontFamily: 'inherit' }} />
+                      placeholder="Empresa" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.85)', fontSize: 12, fontFamily: 'inherit' }} />
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <input value={e.periodo} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, periodo: ev.target.value } : x))}
-                      placeholder="Período (ej: 2020–2023)" style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid #E0E0F0', fontSize: 12, fontFamily: 'inherit' }} />
+                      placeholder="Período (ej: 2020–2023)" style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.85)', fontSize: 12, fontFamily: 'inherit' }} />
                     <button onClick={() => setExperiencias(p => p.filter((_, j) => j !== i))}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', padding: '0 8px' }}><X size={14} /></button>
                   </div>
                 </div>
               ))}
-              {experiencias.length === 0 && <p style={{ fontSize: 12, color: '#B0B0C4', fontStyle: 'italic' }}>Sin experiencia cargada</p>}
+              {experiencias.length === 0 && <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>Sin experiencia cargada</p>}
             </div>
 
             {/* Educación */}
             <div style={{ marginBottom: 18 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#5B3FE0', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Educación</label>
+                <label style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Educación</label>
                 <button onClick={() => setEducaciones(p => [...p, { institucion: '', titulo: '', periodo: '' }])}
-                  style={{ fontSize: 12, color: '#5B3FE0', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
+                  style={{ fontSize: 12, color: '#a78bfa', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
                   <Plus size={13} /> Agregar
                 </button>
               </div>
               {educaciones.map((e, i) => (
-                <div key={i} style={{ background: '#F8F8FC', borderRadius: 10, padding: '12px', marginBottom: 8 }}>
+                <div key={i} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: '12px', marginBottom: 8, border: '1px solid rgba(255,255,255,0.07)' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
                     <input value={e.titulo} onChange={ev => setEducaciones(p => p.map((x, j) => j === i ? { ...x, titulo: ev.target.value } : x))}
-                      placeholder="Título / carrera" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #E0E0F0', fontSize: 12, fontFamily: 'inherit' }} />
+                      placeholder="Título / carrera" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.85)', fontSize: 12, fontFamily: 'inherit' }} />
                     <input value={e.institucion} onChange={ev => setEducaciones(p => p.map((x, j) => j === i ? { ...x, institucion: ev.target.value } : x))}
-                      placeholder="Institución" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #E0E0F0', fontSize: 12, fontFamily: 'inherit' }} />
+                      placeholder="Institución" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.85)', fontSize: 12, fontFamily: 'inherit' }} />
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <input value={e.periodo} onChange={ev => setEducaciones(p => p.map((x, j) => j === i ? { ...x, periodo: ev.target.value } : x))}
-                      placeholder="Período (ej: 2018–2022)" style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid #E0E0F0', fontSize: 12, fontFamily: 'inherit' }} />
+                      placeholder="Período (ej: 2018–2022)" style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.85)', fontSize: 12, fontFamily: 'inherit' }} />
                     <button onClick={() => setEducaciones(p => p.filter((_, j) => j !== i))}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', padding: '0 8px' }}><X size={14} /></button>
                   </div>
                 </div>
               ))}
-              {educaciones.length === 0 && <p style={{ fontSize: 12, color: '#B0B0C4', fontStyle: 'italic' }}>Sin educación cargada</p>}
+              {educaciones.length === 0 && <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>Sin educación cargada</p>}
             </div>
 
             {/* Habilidades */}
             <div style={{ marginBottom: 22 }}>
-              <label style={{ fontSize: 12, fontWeight: 700, color: '#5B3FE0', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Habilidades</label>
+              <label style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Habilidades</label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
                 {habilidades.map((h, i) => (
-                  <span key={i} style={{ background: '#ECE9FB', color: '#5B3FE0', fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span key={i} style={{ background: 'rgba(112,72,240,0.2)', color: '#a78bfa', fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 5 }}>
                     {h}
-                    <button onClick={() => setHabilidades(p => p.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8B6CF6', padding: 0, lineHeight: 1 }}><X size={10} /></button>
+                    <button onClick={() => setHabilidades(p => p.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a78bfa', padding: 0, lineHeight: 1 }}><X size={10} /></button>
                   </span>
                 ))}
               </div>
@@ -351,22 +356,22 @@ export default function FlyerClient({ usuario }: Props) {
                 <input value={habilidadInput} onChange={e => setHabilidadInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') { addHabilidad(); e.preventDefault(); } }}
                   placeholder="Escribí una habilidad y presioná Enter"
-                  style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0F0', fontSize: 12, fontFamily: 'inherit' }} />
+                  style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.85)', fontSize: 12, fontFamily: 'inherit' }} />
                 <button onClick={addHabilidad}
-                  style={{ background: '#ECE9FB', color: '#5B3FE0', border: 'none', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>
+                  style={{ background: 'rgba(112,72,240,0.2)', color: '#a78bfa', border: 'none', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>
                   <Plus size={14} />
                 </button>
               </div>
             </div>
 
             {saveError && (
-              <div style={{ marginBottom: 12, padding: '10px 14px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, fontSize: 13, color: '#B91C1C' }}>
+              <div style={{ marginBottom: 12, padding: '10px 14px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, fontSize: 13, color: '#f87171' }}>
                 ⚠️ {saveError}
               </div>
             )}
 
             <button onClick={guardar} disabled={saving}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'linear-gradient(135deg,#4B33CC,#6D5AE6)', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 24px', fontWeight: 600, fontSize: 14, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 24px', fontWeight: 600, fontSize: 14, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, boxShadow: '0 4px 16px rgba(109,40,217,0.35)' }}>
               {saving ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Check size={15} />}
               {saving ? 'Guardando...' : 'Guardar y ver flyer'}
             </button>
@@ -496,8 +501,8 @@ export default function FlyerClient({ usuario }: Props) {
             </div>
 
             {/* ── Acciones de compartir ── */}
-            <div style={{ maxWidth: 420, margin: '16px auto 0', background: '#fff', borderRadius: 16, padding: '18px 20px', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: '#9090A8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>Compartir y descargar</p>
+            <div style={{ maxWidth: 420, margin: '16px auto 0', background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: '18px 20px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>Compartir y descargar</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
                 {/* Descargar imagen */}
                 <button onClick={descargarImagen} disabled={downloading}
@@ -524,7 +529,7 @@ export default function FlyerClient({ usuario }: Props) {
                   <Mail size={14} /> Email
                 </button>
               </div>
-              <p style={{ fontSize: 11, color: '#B0B0C4', marginTop: 10, lineHeight: 1.5 }}>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 10, lineHeight: 1.5 }}>
                 💡 <strong>Descargar PNG</strong>: imagen tal cual se ve. <strong>WhatsApp/Email</strong>: comparte el link de tu CV.
                 En celular, <strong>Compartir</strong> abre el menú del teléfono para enviar la imagen directo.
               </p>
@@ -532,6 +537,7 @@ export default function FlyerClient({ usuario }: Props) {
           </>
         )}
 
+        </div>{/* end padding wrapper */}
       </div>
     </>
   );

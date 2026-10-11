@@ -189,6 +189,15 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
         </div>
       </nav>
 
+      {/* ── CONTEXTO PERFIL LABORAL ─────────────────────────── */}
+      <div className="bg-white border-b border-ink-100">
+        <div className="max-w-3xl mx-auto px-4 py-2.5 flex items-center gap-2">
+          <span className="text-xs font-semibold text-brand-700 uppercase tracking-wide">Perfil laboral digital</span>
+          <span className="text-ink-200">·</span>
+          <span className="text-xs text-ink-400">{firstName} está buscando trabajo</span>
+        </div>
+      </div>
+
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-5">
 
         {/* ── HERO: una sola card con info + video integrado ──────── */}
@@ -306,12 +315,16 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                     playsInline
                     className="w-full h-full object-cover absolute inset-0 opacity-20 blur-sm"
                   />
-                  <div className="relative z-10 flex flex-col items-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                      <ShieldCheck size={20} className="text-white/70" />
+                  <div className="relative z-10 flex flex-col items-center gap-3 px-4 text-center">
+                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
+                      <ShieldCheck size={22} className="text-white/80" />
                     </div>
-                    <p className="text-white/80 text-xs font-medium">Video disponible próximamente</p>
-                    <p className="text-white/40 text-[10px]">El candidato está activando su perfil</p>
+                    <div>
+                      <p className="text-white font-semibold text-sm">Video en activación</p>
+                      <p className="text-white/50 text-xs mt-1 leading-relaxed">
+                        {firstName} está configurando su perfil.<br />Podés contactarle directamente.
+                      </p>
+                    </div>
                   </div>
                 </div>
               ) : (

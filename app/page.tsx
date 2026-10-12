@@ -226,7 +226,7 @@ export default async function LandingPage() {
           <h2 className={s.secStepsH}>
             Tu camino en <span className={s.secStepsAccent}>5 pasos</span>
           </h2>
-          <p style={{ fontSize: 15, color: '#64748b', marginTop: 8 }}>
+          <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.55)', marginTop: 8 }}>
             Desde cero hasta conseguir tu trabajo — así es el proceso.
           </p>
         </div>
@@ -326,12 +326,12 @@ export default async function LandingPage() {
       </section>
 
       {/* ── HERRAMIENTAS IA ── */}
-      <section className={`${s.sec} sr-up`} style={{ background: 'linear-gradient(180deg,#f8f7ff 0%,#ffffff 100%)' }}>
+      <section className={`${s.sec} sr-up`} style={{ background: 'rgba(255,255,255,0.02)' }}>
         <div className={s.secHead}>
           <div>
             <p className={s.eyebrow}>Incluido en tu perfil</p>
             <h2 className={s.secH}>Hacemos el trabajo pesado<br/>para que vos te enfoqués en postularte.</h2>
-            <p style={{ fontSize: 15, color: '#64748b', lineHeight: 1.6, maxWidth: 480, margin: '8px 0 0' }}>
+            <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, maxWidth: 480, margin: '8px 0 0' }}>
               No importa si nunca hiciste un CV. Contanos lo que sabés, nosotros lo convertimos en un perfil profesional, analizamos cómo estás posicionado y preparamos tu CV para cada oferta que te interesa.
             </p>
           </div>
@@ -339,12 +339,12 @@ export default async function LandingPage() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 20, marginTop: 32 }}>
           {/* Herramienta 1 */}
-          <div style={{ background: '#fff', borderRadius: 16, border: '1.5px solid rgba(91,63,224,0.12)', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, border: '1.5px solid rgba(91,63,224,0.2)', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(91,63,224,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Sparkles size={22} strokeWidth={1.75} color="#5B3FE0"/>
+              <Sparkles size={22} strokeWidth={1.75} color="#a78bfa"/>
             </div>
-            <div style={{ fontWeight: 700, fontSize: 17, color: '#1e1b4b' }}>Te generamos el CV</div>
-            <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, margin: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 17, color: 'rgba(255,255,255,0.9)' }}>Te generamos el CV</div>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, margin: 0 }}>
               Escribí tu experiencia como puedas — informal, desordenada, en tus palabras. Lo convertimos en un CV completo, profesional y optimizado para pasar los filtros automáticos de selección (ATS) de las grandes empresas.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
@@ -355,12 +355,12 @@ export default async function LandingPage() {
           </div>
 
           {/* Herramienta 2 */}
-          <div style={{ background: '#fff', borderRadius: 16, border: '1.5px solid rgba(20,199,168,0.15)', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, border: '1.5px solid rgba(20,199,168,0.2)', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(20,199,168,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BrainCircuit size={22} strokeWidth={1.75} color="#0A9485"/>
+              <BrainCircuit size={22} strokeWidth={1.75} color="#2dd4bf"/>
             </div>
-            <div style={{ fontWeight: 700, fontSize: 17, color: '#1e1b4b' }}>Analizamos tu CV</div>
-            <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, margin: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 17, color: 'rgba(255,255,255,0.9)' }}>Analizamos tu CV</div>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, margin: 0 }}>
               Evaluamos tu CV con un puntaje del 0 al 100, detectamos qué falta, señalamos tus fortalezas y te damos consejos concretos para pasar los filtros de las grandes empresas.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
@@ -371,12 +371,12 @@ export default async function LandingPage() {
           </div>
 
           {/* Herramienta 3 */}
-          <div style={{ background: '#fff', borderRadius: 16, border: '1.5px solid rgba(249,115,22,0.15)', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, border: '1.5px solid rgba(249,115,22,0.2)', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(249,115,22,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Target size={22} strokeWidth={1.75} color="#F97316"/>
+              <Target size={22} strokeWidth={1.75} color="#fb923c"/>
             </div>
-            <div style={{ fontWeight: 700, fontSize: 17, color: '#1e1b4b' }}>Adaptamos tu CV a cada oferta</div>
-            <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, margin: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 17, color: 'rgba(255,255,255,0.9)' }}>Adaptamos tu CV a cada oferta</div>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, margin: 0 }}>
               Pegá la descripción de cualquier oferta y te decimos qué tan compatible sos, qué requisitos cumplís y reescribimos tu CV resaltando lo más relevante para ese trabajo específico.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
@@ -400,7 +400,7 @@ export default async function LandingPage() {
           <div>
             <p className={s.eyebrow}>Exclusivo Oportunai</p>
             <h2 className={s.secH}>Aprendé antes de arrancar.<br/>Entrá capacitado desde el día uno.</h2>
-            <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, maxWidth: 420, margin: '8px 0 0' }}>Capacitaciones en video para estaciones de servicio, atención al cliente y comidas rápidas. Cargadas por las mismas empresas que buscan personal.</p>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, maxWidth: 420, margin: '8px 0 0' }}>Capacitaciones en video para estaciones de servicio, atención al cliente y comidas rápidas. Cargadas por las mismas empresas que buscan personal.</p>
             <p style={{ fontSize: 13, color: '#5B3FE0', fontWeight: 600, margin: '10px 0 0', display: 'flex', alignItems: 'center', gap: 6 }}>
               <CircleCheck size={14} strokeWidth={2}/> Incluye Test de Nativo Digital — completalo y destacate en tu perfil
             </p>
@@ -456,16 +456,16 @@ export default async function LandingPage() {
       </section>
 
       {/* ── CAPACITATE: cursos propios ── */}
-      <section className={`${s.sec} sr-up`} style={{ background: 'linear-gradient(180deg, #f0fdf9 0%, #ffffff 100%)' }}>
+      <section className={`${s.sec} sr-up`} style={{ background: 'rgba(45,212,191,0.03)' }}>
         <div className={s.secHead}>
           <div>
-            <p className={s.eyebrow} style={{ color: '#0A9485' }}>🎓 Capacitate · Oportunai</p>
+            <p className={s.eyebrow} style={{ color: '#2dd4bf' }}>🎓 Capacitate · Oportunai</p>
             <h2 className={s.secH}>Desarrollá competencias.<br/>Sumá certificados a tu perfil.</h2>
-            <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, maxWidth: 420, margin: '8px 0 0' }}>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, maxWidth: 420, margin: '8px 0 0' }}>
               Módulos cortos con quiz final. Cada curso que aprobás aparece certificado en tu perfil público y lo ven los empleadores.
             </p>
           </div>
-          <Link href="/register" className={s.verMas} style={{ color: '#0A9485', borderColor: '#0A9485' }}>Ver todos →</Link>
+          <Link href="/register" className={s.verMas} style={{ color: '#2dd4bf', borderColor: '#2dd4bf' }}>Ver todos →</Link>
           {/* "Ver todos" podría apuntar a /capacitate cuando haya listado público */}
         </div>
 
@@ -573,9 +573,9 @@ export default async function LandingPage() {
             { n: '100% Argentina', d: 'equipo local, conocemos el mercado' },
             { n: 'IA + propósito', d: 'tecnología al servicio del impacto social' },
           ].map(stat => (
-            <div key={stat.n} style={{ background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 14, padding: '18px 24px', textAlign: 'center', minWidth: 180 }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#5B3FE0', letterSpacing: '-0.02em' }}>{stat.n}</div>
-              <div style={{ fontSize: 13, color: '#64748b', marginTop: 4, lineHeight: 1.4 }}>{stat.d}</div>
+            <div key={stat.n} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '18px 24px', textAlign: 'center', minWidth: 180 }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#a78bfa', letterSpacing: '-0.02em' }}>{stat.n}</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', marginTop: 4, lineHeight: 1.4 }}>{stat.d}</div>
             </div>
           ))}
         </div>

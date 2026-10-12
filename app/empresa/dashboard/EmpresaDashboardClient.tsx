@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FONT_OPTIONS, type FontKey } from '@/lib/fonts';
 import { Check, X, Eye, Phone, Users, Trophy, Archive, Clock, Filter, Plus, Trash2, Pencil, ToggleLeft, ToggleRight, Globe, Copy, ExternalLink, LogOut, CalendarPlus, Loader2, GraduationCap, Star, Layers, PlayCircle, CheckCircle2, XCircle, ChevronDown, FileText } from 'lucide-react';
@@ -28,14 +28,14 @@ function parseDocTipo(d: string): string {
 }
 
 const PIPELINE = [
-  { estado: 'pendiente', label: 'Sin ver', color: 'bg-gray-100 text-gray-600', icon: Clock },
-  { estado: 'visto', label: 'Visto', color: 'bg-blue-100 text-blue-600', icon: Eye },
-  { estado: 'interesado', label: 'Interesado', color: 'bg-purple-100 text-purple-600', icon: Check },
-  { estado: 'contactar', label: 'Contactar', color: 'bg-yellow-100 text-yellow-700', icon: Phone },
-  { estado: 'en_proceso', label: 'En proceso', color: 'bg-orange-100 text-orange-600', icon: Users },
-  { estado: 'contratado', label: 'Contratado', color: 'bg-green-100 text-green-700', icon: Trophy },
-  { estado: 'bolsa_talentos', label: 'Bolsa talentos', color: 'bg-teal-100 text-teal-600', icon: Archive },
-  { estado: 'descartado', label: 'Descartado', color: 'bg-red-100 text-red-600', icon: X },
+  { estado: 'pendiente', label: 'Sin ver', chipStyle: { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)' }, icon: Clock },
+  { estado: 'visto', label: 'Visto', chipStyle: { background: 'rgba(96,165,250,0.15)', color: '#60a5fa' }, icon: Eye },
+  { estado: 'interesado', label: 'Interesado', chipStyle: { background: 'rgba(167,139,250,0.15)', color: '#a78bfa' }, icon: Check },
+  { estado: 'contactar', label: 'Contactar', chipStyle: { background: 'rgba(251,191,36,0.15)', color: '#fbbf24' }, icon: Phone },
+  { estado: 'en_proceso', label: 'En proceso', chipStyle: { background: 'rgba(251,146,60,0.15)', color: '#fb923c' }, icon: Users },
+  { estado: 'contratado', label: 'Contratado', chipStyle: { background: 'rgba(52,211,153,0.15)', color: '#34d399' }, icon: Trophy },
+  { estado: 'bolsa_talentos', label: 'Bolsa talentos', chipStyle: { background: 'rgba(45,212,191,0.15)', color: '#2dd4bf' }, icon: Archive },
+  { estado: 'descartado', label: 'Descartado', chipStyle: { background: 'rgba(248,113,113,0.15)', color: '#f87171' }, icon: X },
 ];
 
 function calcularEdad(fecha_nacimiento: string | null): string {
@@ -191,11 +191,11 @@ function ModuloEmpresaCard({
   });
   const [guardando, setGuardando] = useState(false);
 
-  const ESTADO_COLOR: Record<string, string> = {
-    en_progreso: 'bg-blue-100 text-blue-700',
-    en_riesgo: 'bg-orange-100 text-orange-700',
-    completado: 'bg-green-100 text-green-700',
-    aprobado: 'bg-teal-100 text-teal-700',
+  const ESTADO_COLOR: Record<string, React.CSSProperties> = {
+    en_progreso: { background: 'rgba(96,165,250,0.15)', color: '#60a5fa' },
+    en_riesgo: { background: 'rgba(251,146,60,0.15)', color: '#fb923c' },
+    completado: { background: 'rgba(52,211,153,0.15)', color: '#34d399' },
+    aprobado: { background: 'rgba(45,212,191,0.15)', color: '#2dd4bf' },
   };
   const ESTADO_LABEL: Record<string, string> = {
     en_progreso: 'En progreso', en_riesgo: 'En riesgo', completado: 'Completado', aprobado: 'Aprobado',
@@ -232,80 +232,83 @@ function ModuloEmpresaCard({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <button onClick={() => setOpen(v => !v)} className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+      <button onClick={() => setOpen(v => !v)} className="w-full p-4 flex items-center justify-between transition-colors">
         <div className="flex items-center gap-3 text-left">
           {modulo.usuario.foto_url ? (
-            <img src={modulo.usuario.foto_url} alt="" className="w-9 h-9 rounded-full object-cover border border-gray-200 flex-shrink-0" />
+            <img src={modulo.usuario.foto_url} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0" style={{ border: '1px solid rgba(255,255,255,0.12)' }} />
           ) : (
-            <div className="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-sm flex-shrink-0">
+            <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0" style={{ background: 'rgba(45,212,191,0.15)', color: '#2dd4bf' }}>
               {modulo.usuario.nombre_completo[0]}
             </div>
           )}
           <div>
-            <p className="font-medium text-gray-900 text-sm">{modulo.usuario.nombre_completo}</p>
-            <p className="text-xs text-gray-400">{modulo.usuario.email}</p>
+            <p className="font-medium text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>{modulo.usuario.nombre_completo}</p>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{modulo.usuario.email}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
           {modulo.remito && (
-            <span className="text-xs bg-teal-600 text-white px-2 py-0.5 rounded-full">#{modulo.remito.numero_remito}</span>
+            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: '#2dd4bf', color: '#0d0d14' }}>#{modulo.remito.numero_remito}</span>
           )}
           {totalHonorario && !editando && (
-            <span className="text-xs font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ color: 'rgba(255,255,255,0.8)', background: 'rgba(255,255,255,0.1)' }}>
               ${totalHonorario}
             </span>
           )}
           {modulo.horas_asignadas && !editando && (
-            <span className="text-xs text-gray-500">{modulo.horas_asignadas} hs</span>
+            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>{modulo.horas_asignadas} hs</span>
           )}
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ESTADO_COLOR[modulo.estado] ?? 'bg-gray-100 text-gray-600'}`}>
+          <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={ESTADO_COLOR[modulo.estado] ?? { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)' }}>
             {ESTADO_LABEL[modulo.estado] ?? modulo.estado}
           </span>
-          <span className="text-xs text-gray-400">{aprobados}/{protocolo.length}</span>
-          <ChevronDown size={14} className={`text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{aprobados}/{protocolo.length}</span>
+          <ChevronDown size={14} style={{ color: 'rgba(255,255,255,0.4)' }} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
         </div>
       </button>
 
       {open && (
-        <div className="border-t border-gray-100 p-4 bg-gray-50/50 space-y-3">
+        <div className="p-4 space-y-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.03)' }}>
           {/* Bloque editable: horas, precio, deadline */}
           {editando ? (
-            <div className="bg-white rounded-xl border border-teal-200 p-3 space-y-3">
-              <p className="text-xs font-semibold text-gray-700">Editar datos del módulo</p>
+            <div className="rounded-xl p-3 space-y-3" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(45,212,191,0.3)' }}>
+              <p className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.8)' }}>Editar datos del módulo</p>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-[11px] text-gray-500 mb-1">Hs asignadas</label>
+                  <label className="block text-[11px] mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Hs asignadas</label>
                   <input type="number" min="1" value={editForm.horas_asignadas}
                     onChange={e => setEditForm(p => ({ ...p, horas_asignadas: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                    className="w-full rounded-lg px-2 py-1.5 text-sm focus:outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                     placeholder="Ej: 40" />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-gray-500 mb-1">Precio/hora ($)</label>
+                  <label className="block text-[11px] mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Precio/hora ($)</label>
                   <input type="number" min="0" step="0.01" value={editForm.precio_hora}
                     onChange={e => setEditForm(p => ({ ...p, precio_hora: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                    className="w-full rounded-lg px-2 py-1.5 text-sm focus:outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                     placeholder="Ej: 3500" />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-gray-500 mb-1">Deadline</label>
+                  <label className="block text-[11px] mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Deadline</label>
                   <input type="date" value={editForm.deadline}
                     onChange={e => setEditForm(p => ({ ...p, deadline: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500" />
+                    className="w-full rounded-lg px-2 py-1.5 text-sm focus:outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                 </div>
               </div>
               {editForm.horas_asignadas && editForm.precio_hora && (
-                <p className="text-xs text-teal-700 font-semibold">
+                <p className="text-xs font-semibold" style={{ color: '#2dd4bf' }}>
                   Total estimado: ${(parseFloat(editForm.horas_asignadas) * parseFloat(editForm.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })}
                 </p>
               )}
               <div className="flex gap-2">
                 <button onClick={guardarEdicion} disabled={guardando}
-                  className="text-xs bg-teal-600 text-white px-3 py-1.5 rounded-lg hover:bg-teal-700 flex items-center gap-1 disabled:opacity-50">
+                  className="text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 disabled:opacity-50" style={{ background: '#2dd4bf', color: '#0d0d14' }}>
                   {guardando ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />} Guardar
                 </button>
-                <button onClick={() => setEditando(false)} className="text-xs border border-gray-200 text-gray-500 px-3 py-1.5 rounded-lg hover:bg-gray-50">
+                <button onClick={() => setEditando(false)} className="text-xs px-3 py-1.5 rounded-lg" style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.5)' }}>
                   Cancelar
                 </button>
               </div>
@@ -313,37 +316,38 @@ function ModuloEmpresaCard({
           ) : (
             <div className="flex items-center gap-3 flex-wrap">
               {modulo.horas_asignadas && (
-                <span className="text-xs font-semibold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: 'rgba(45,212,191,0.15)', color: '#2dd4bf' }}>
                   <Clock size={11} /> {modulo.horas_asignadas} hs
                 </span>
               )}
               {modulo.precio_hora && (
-                <span className="text-xs font-semibold bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.8)' }}>
                   ${Number(modulo.precio_hora).toLocaleString('es-AR')}/hs
                 </span>
               )}
               {totalHonorario && (
-                <span className="text-xs font-bold text-gray-800 bg-yellow-50 border border-yellow-200 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ color: '#fbbf24', background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.25)' }}>
                   Total: ${totalHonorario}
                 </span>
               )}
               {modulo.deadline && (
-                <span className="text-xs text-gray-500 flex items-center gap-1">
+                <span className="text-xs flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
                   <Clock size={11} /> {new Date(modulo.deadline).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </span>
               )}
               <button onClick={() => { setEditForm({ horas_asignadas: modulo.horas_asignadas?.toString() ?? '', precio_hora: modulo.precio_hora?.toString() ?? '', deadline: modulo.deadline ? new Date(modulo.deadline).toISOString().slice(0, 10) : '' }); setEditando(true); }}
-                className="text-xs text-teal-600 hover:underline flex items-center gap-1 ml-auto">
+                className="text-xs hover:underline flex items-center gap-1 ml-auto" style={{ color: '#2dd4bf' }}>
                 <Pencil size={11} /> Editar
               </button>
             </div>
           )}
           {/* Cambiar estado */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-gray-500">Estado:</span>
+            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>Estado:</span>
             {(['en_progreso', 'en_riesgo', 'completado', 'aprobado'] as const).map(e => (
               <button key={e} onClick={() => onCambiarEstado(modulo.id, e)}
-                className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${modulo.estado === e ? (ESTADO_COLOR[e] + ' border-transparent') : 'border-gray-200 text-gray-500 hover:border-gray-400'}`}>
+                className="text-xs px-2 py-0.5 rounded-full border transition-colors"
+                style={modulo.estado === e ? { ...(ESTADO_COLOR[e] ?? { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)' }), border: '1px solid transparent' } : { border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.5)' }}>
                 {ESTADO_LABEL[e]}
               </button>
             ))}
@@ -353,37 +357,38 @@ function ModuloEmpresaCard({
             {protocolo.map((item, idx) => {
               const ev = modulo.evidencias.find(e => e.item_index === idx);
               return (
-                <div key={idx} className={`bg-white rounded-lg border p-3 ${
-                  ev?.estado === 'aprobado' ? 'border-green-200' :
-                  ev?.estado === 'rechazado' ? 'border-red-200' :
-                  ev ? 'border-blue-200' : 'border-gray-200'
-                }`}>
+                <div key={idx} className="rounded-lg p-3" style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: ev?.estado === 'aprobado' ? '1px solid rgba(52,211,153,0.3)' :
+                    ev?.estado === 'rechazado' ? '1px solid rgba(248,113,113,0.3)' :
+                    ev ? '1px solid rgba(96,165,250,0.3)' : '1px solid rgba(255,255,255,0.08)'
+                }}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-800">{item.item}</p>
-                      {item.descripcion && <p className="text-xs text-gray-400 mt-0.5">{item.descripcion}</p>}
+                      <p className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.85)' }}>{item.item}</p>
+                      {item.descripcion && <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{item.descripcion}</p>}
                       {ev && (
-                        <p className="text-xs text-gray-600 mt-1.5 bg-gray-50 rounded px-2 py-1">
-                          <span className="text-gray-400">Evidencia: </span>{ev.texto}
+                        <p className="text-xs mt-1.5 rounded px-2 py-1" style={{ color: 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.05)' }}>
+                          <span style={{ color: 'rgba(255,255,255,0.4)' }}>Evidencia: </span>{ev.texto}
                         </p>
                       )}
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
-                      {ev?.estado === 'aprobado' && <CheckCircle2 size={16} className="text-green-500" />}
-                      {ev?.estado === 'rechazado' && <XCircle size={16} className="text-red-500" />}
+                      {ev?.estado === 'aprobado' && <CheckCircle2 size={16} style={{ color: '#34d399' }} />}
+                      {ev?.estado === 'rechazado' && <XCircle size={16} style={{ color: '#f87171' }} />}
                       {ev && ev.estado === 'pendiente' && (
                         <>
                           <button onClick={() => onAprobarItem(modulo.id, idx, 'aprobado')}
-                            className="text-xs bg-green-600 text-white px-2 py-1 rounded-lg hover:bg-green-700 flex items-center gap-0.5">
+                            className="text-xs px-2 py-1 rounded-lg flex items-center gap-0.5" style={{ background: '#34d399', color: '#0d0d14' }}>
                             <Check size={11} /> OK
                           </button>
                           <button onClick={() => onAprobarItem(modulo.id, idx, 'rechazado')}
-                            className="text-xs border border-red-200 text-red-600 px-2 py-1 rounded-lg hover:bg-red-50 flex items-center gap-0.5">
+                            className="text-xs px-2 py-1 rounded-lg flex items-center gap-0.5" style={{ border: '1px solid rgba(248,113,113,0.3)', color: '#f87171' }}>
                             <X size={11} /> Rechazar
                           </button>
                         </>
                       )}
-                      {!ev && <span className="text-xs text-gray-300">Sin evidencia</span>}
+                      {!ev && <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Sin evidencia</span>}
                     </div>
                   </div>
                 </div>
@@ -394,20 +399,20 @@ function ModuloEmpresaCard({
           {(modulo.estado === 'completado' || modulo.estado === 'aprobado') && (
             <div className="pt-2">
               {modulo.remito ? (
-                <div className="flex items-center gap-2 text-xs text-teal-700 bg-teal-50 rounded-lg px-3 py-2">
+                <div className="flex items-center gap-2 text-xs rounded-lg px-3 py-2" style={{ color: '#2dd4bf', background: 'rgba(45,212,191,0.12)' }}>
                   <FileText size={14} />
                   Remito generado: <strong>{modulo.remito.numero_remito}</strong>
                 </div>
               ) : (
                 <button onClick={() => onGenerarRemito(modulo.id)}
                   disabled={generandoRemito === modulo.id}
-                  className="text-sm bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 flex items-center gap-2 disabled:opacity-50">
+                  className="text-sm px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50" style={{ background: '#2dd4bf', color: '#0d0d14' }}>
                   {generandoRemito === modulo.id ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}
                   Generar remito
                 </button>
               )}
               {msgRemito && (
-                <p className={`text-xs mt-1 ${msgRemito.ok ? 'text-teal-700' : 'text-red-600'}`}>{msgRemito.msg}</p>
+                <p className="text-xs mt-1" style={{ color: msgRemito.ok ? '#2dd4bf' : '#f87171' }}>{msgRemito.msg}</p>
               )}
             </div>
           )}
@@ -1104,25 +1109,26 @@ export default function EmpresaDashboard() {
   }, {} as Record<string, CitaEmpresa[]>);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ background: '#0d0d14' }}>
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             {empresa?.logo_url ? (
-              <img src={empresa.logo_url} alt="logo" className="w-12 h-12 rounded-xl object-cover border border-gray-200" />
+              <img src={empresa.logo_url} alt="logo" className="w-12 h-12 rounded-xl object-cover" style={{ border: '1px solid rgba(255,255,255,0.12)' }} />
             ) : (
-              <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">{empresa?.nombre?.[0] || 'E'}</div>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg" style={{ background: 'rgba(96,165,250,0.15)', color: '#60a5fa' }}>{empresa?.nombre?.[0] || 'E'}</div>
             )}
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{empresa?.nombre || 'Panel de empresa'}</h1>
-              {empresa?.rubro && <p className="text-sm text-gray-500">{empresa.rubro}</p>}
+              <h1 className="text-2xl font-bold" style={{ color: 'rgba(255,255,255,0.9)' }}>{empresa?.nombre || 'Panel de empresa'}</h1>
+              {empresa?.rubro && <p className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>{empresa.rubro}</p>}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => setTab('nueva')} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">+ Nueva oferta</button>
+            <button onClick={() => setTab('nueva')} className="px-4 py-2 rounded-lg text-sm font-medium transition-colors" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' }}>+ Nueva oferta</button>
             <button
               onClick={async () => { await fetch('/api/auth/logout', { method: 'POST' }); router.push('/login'); router.refresh(); }}
-              className="flex items-center gap-1.5 border border-gray-200 text-gray-500 px-3 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm transition-colors"
+              style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.5)' }}
               title="Cerrar sesión"
             >
               <LogOut size={15} /> Salir
@@ -1132,15 +1138,15 @@ export default function EmpresaDashboard() {
 
         {/* Banner página pública */}
         {empresa?.slug && (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl px-4 py-3 mb-6" style={{ background: 'rgba(45,212,191,0.08)', border: '1px solid rgba(45,212,191,0.2)' }}>
             <div className="flex items-center gap-2 min-w-0">
-              <Globe size={15} className="text-teal-600 flex-shrink-0" />
-              <span className="text-sm text-teal-800 font-medium flex-shrink-0">Tu página pública:</span>
+              <Globe size={15} style={{ color: '#2dd4bf' }} className="flex-shrink-0" />
+              <span className="text-sm font-medium flex-shrink-0" style={{ color: '#2dd4bf' }}>Tu página pública:</span>
               <a
                 href={`/empresa/${empresa.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-teal-600 hover:underline font-mono truncate flex items-center gap-1"
+                className="text-sm hover:underline font-mono truncate flex items-center gap-1" style={{ color: '#2dd4bf' }}
               >
                 {appUrl.replace(/https?:\/\//, '')}/empresa/{empresa.slug}
                 <ExternalLink size={12} className="flex-shrink-0" />
@@ -1149,7 +1155,7 @@ export default function EmpresaDashboard() {
             <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={copiarLink}
-                className="flex items-center gap-1.5 text-sm border border-teal-300 text-teal-700 px-3 py-1.5 rounded-lg hover:bg-teal-100 transition-colors"
+                className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg transition-colors" style={{ border: '1px solid rgba(45,212,191,0.4)', color: '#2dd4bf' }}
               >
                 <Copy size={13} />
                 {linkCopiado ? '¡Copiado!' : 'Copiar link'}
@@ -1158,7 +1164,7 @@ export default function EmpresaDashboard() {
                 href={`https://wa.me/?text=${encodeURIComponent(shareText(empresa.nombre, `${appUrl}/empresa/${empresa.slug}`))}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 transition-colors"
+                className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg transition-colors" style={{ background: '#34d399', color: '#0d0d14' }}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
@@ -1169,10 +1175,11 @@ export default function EmpresaDashboard() {
           </div>
         )}
 
-        <div className="flex gap-1 mb-6 bg-white border border-gray-200 rounded-lg p-1 w-fit">
+        <div className="flex gap-1 mb-6 rounded-lg p-1 w-fit flex-wrap" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
           {tabs.map(t => (
             <button key={t.key} onClick={() => setTab(t.key as any)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${tab === t.key ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-gray-900'}`}>
+              className="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              style={tab === t.key ? { background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' } : { color: 'rgba(255,255,255,0.6)' }}>
               {t.label}
             </button>
           ))}
@@ -1182,57 +1189,58 @@ export default function EmpresaDashboard() {
         {tab === 'ofertas' && (
           <div className="space-y-4">
             {ofertas.length === 0 ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                <p className="text-gray-400 text-lg mb-4">Todavía no publicaste ninguna oferta</p>
-                <button onClick={() => setTab('nueva')} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Publicar primera oferta</button>
+              <div className="rounded-xl p-12 text-center" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <p className="text-lg mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>Todavía no publicaste ninguna oferta</p>
+                <button onClick={() => setTab('nueva')} className="px-6 py-2 rounded-lg text-sm font-medium" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' }}>Publicar primera oferta</button>
               </div>
             ) : (
               ofertas.map(oferta => (
-                <div key={oferta.id} className="bg-white rounded-xl border border-gray-200 p-5 flex items-center justify-between">
+                <div key={oferta.id} className="rounded-xl p-5 flex items-center justify-between" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div>
-                    <h3 className="font-semibold text-gray-900">{oferta.titulo}</h3>
-                    <div className="flex gap-3 mt-1 text-sm text-gray-500">
+                    <h3 className="font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>{oferta.titulo}</h3>
+                    <div className="flex gap-3 mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
                       {oferta.area && <span>{oferta.area}</span>}
                       {oferta.ciudad && <span>· {oferta.ciudad}</span>}
                       <span>· {oferta.modalidad}</span>
                     </div>
                     {oferta.docs_requeridos?.length > 0 && (
-                      <p className="text-xs text-purple-600 mt-1">📋 Requiere: {oferta.docs_requeridos.map(d => parseDocLabel(d)).join(', ')}</p>
+                      <p className="text-xs mt-1" style={{ color: '#a78bfa' }}>📋 Requiere: {oferta.docs_requeridos.map(d => parseDocLabel(d)).join(', ')}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="text-center mr-2">
-                      <div className="text-2xl font-bold text-blue-600">{oferta._count.postulaciones}</div>
-                      <div className="text-xs text-gray-400">postulantes</div>
+                      <div className="text-2xl font-bold" style={{ color: '#60a5fa' }}>{oferta._count.postulaciones}</div>
+                      <div className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>postulantes</div>
                     </div>
                     <button onClick={() => toggleEstadoOferta(oferta)}
                       title={oferta.estado === 'activa' ? 'Cerrar oferta' : 'Activar oferta'}
-                      className={`p-2 rounded-lg border transition-colors ${oferta.estado === 'activa' ? 'border-green-200 text-green-600 hover:bg-green-50' : 'border-gray-200 text-gray-400 hover:bg-gray-50'}`}>
+                      className="p-2 rounded-lg border transition-colors"
+                      style={oferta.estado === 'activa' ? { border: '1px solid rgba(52,211,153,0.3)', color: '#34d399' } : { border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.4)' }}>
                       {oferta.estado === 'activa' ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
                     </button>
                     <button onClick={() => abrirEditar(oferta)}
-                      className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors" title="Editar oferta">
+                      className="p-2 rounded-lg border transition-colors" style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.5)' }} title="Editar oferta">
                       <Pencil size={16} />
                     </button>
                     <button
                       onClick={() => copiarLinkOferta(oferta)}
                       title="Copiar enlace de la oferta"
-                      className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors text-xs"
+                      className="p-2 rounded-lg border transition-colors text-xs" style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.5)' }}
                     >
-                      {ofertaLinkCopiada === oferta.id ? <Check size={15} className="text-green-600" /> : <Copy size={15} />}
+                      {ofertaLinkCopiada === oferta.id ? <Check size={15} style={{ color: '#34d399' }} /> : <Copy size={15} />}
                     </button>
                     <a
                       href={`https://wa.me/?text=${encodeURIComponent(shareText(oferta.nombre_marca || empresa?.nombre || '', `${appUrl}/ofertas/${oferta.id}`))}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       title="Compartir por WhatsApp"
-                      className="p-2 rounded-lg border border-green-200 text-green-600 hover:bg-green-50 transition-colors"
+                      className="p-2 rounded-lg border transition-colors" style={{ border: '1px solid rgba(52,211,153,0.3)', color: '#34d399' }}
                     >
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
                       </svg>
                     </a>
-                    <button onClick={() => verPostulantes(oferta)} className="border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">Ver candidatos →</button>
+                    <button onClick={() => verPostulantes(oferta)} className="px-4 py-2 rounded-lg text-sm transition-colors" style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.8)' }}>Ver candidatos →</button>
                   </div>
                 </div>
               ))
@@ -1242,41 +1250,41 @@ export default function EmpresaDashboard() {
 
         {/* Tab: Nueva oferta */}
         {tab === 'nueva' && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6 max-w-xl">
-            <h2 className="text-lg font-semibold text-gray-900 mb-5">Nueva oferta de trabajo</h2>
+          <div className="rounded-xl p-6 max-w-xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <h2 className="text-lg font-semibold mb-5" style={{ color: 'rgba(255,255,255,0.9)' }}>Nueva oferta de trabajo</h2>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">Título *</label>
-                <input value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Título *</label>
+                <input value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">Descripción *</label>
-                <textarea value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} rows={4} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Descripción *</label>
+                <textarea value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} rows={4} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">Requisitos</label>
-                <textarea value={form.requisitos} onChange={e => setForm({ ...form, requisitos: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Requisitos</label>
+                <textarea value={form.requisitos} onChange={e => setForm({ ...form, requisitos: e.target.value })} rows={3} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-1">Área</label>
-                  <input value={form.area} onChange={e => setForm({ ...form, area: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Área</label>
+                  <input value={form.area} onChange={e => setForm({ ...form, area: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-1">Modalidad</label>
-                  <select value={form.modalidad} onChange={e => setForm({ ...form, modalidad: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Modalidad</label>
+                  <select value={form.modalidad} onChange={e => setForm({ ...form, modalidad: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}>
                     <option value="presencial">Presencial</option>
                     <option value="remoto">Remoto</option>
                     <option value="hibrido">Híbrido</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-1">Ciudad</label>
-                  <input value={form.ciudad} onChange={e => setForm({ ...form, ciudad: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Ciudad</label>
+                  <input value={form.ciudad} onChange={e => setForm({ ...form, ciudad: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-2">Documentos requeridos</label>
+                <label className="text-sm font-medium block mb-2" style={{ color: 'rgba(255,255,255,0.8)' }}>Documentos requeridos</label>
                 <div className="space-y-2">
                   {DOCS_CONFIG.map(doc => (
                     <div key={doc.tipo}>
@@ -1285,7 +1293,7 @@ export default function EmpresaDashboard() {
                           checked={form.docs_requeridos.some(d => parseDocTipo(d) === doc.tipo)}
                           onChange={() => toggleDocRequerido(doc.tipo)}
                           className="w-4 h-4 accent-blue-600" />
-                        <span className="text-sm text-gray-700">{doc.label}</span>
+                        <span className="text-sm" style={{ color: 'rgba(255,255,255,0.8)' }}>{doc.label}</span>
                       </label>
                       {doc.tipo === 'otro' && form.docs_requeridos.some(d => parseDocTipo(d) === 'otro') && (
                         <input
@@ -1300,7 +1308,7 @@ export default function EmpresaDashboard() {
                             }));
                           }}
                           placeholder="¿Qué documento es? (ej: Carnet de salud)"
-                          className="ml-7 mt-1 w-64 border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="ml-7 mt-1 w-64 rounded-lg px-3 py-1.5 text-xs focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                         />
                       )}
                     </div>
@@ -1308,26 +1316,27 @@ export default function EmpresaDashboard() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-2">Preguntas para el Video CV</label>
-                <p className="text-xs text-gray-400 mb-2">Los candidatos verán estas preguntas al postularse, como guía para su video.</p>
+                <label className="text-sm font-medium block mb-2" style={{ color: 'rgba(255,255,255,0.8)' }}>Preguntas para el Video CV</label>
+                <p className="text-xs mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>Los candidatos verán estas preguntas al postularse, como guía para su video.</p>
                 <div className="flex gap-2 mb-2">
                   <input
                     value={preguntaInput}
                     onChange={e => setPreguntaInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), agregarPregunta())}
                     placeholder="Ej: ¿Cuál es tu experiencia en el rubro?"
-                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                   />
-                  <button type="button" onClick={agregarPregunta} className="border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-600">
+                  <button type="button" onClick={agregarPregunta} className="px-3 py-2 rounded-lg" style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)' }}>
                     <Plus size={16} />
                   </button>
                 </div>
                 {form.preguntas_videocv.length > 0 && (
                   <div className="space-y-1.5">
                     {form.preguntas_videocv.map((p, i) => (
-                      <div key={i} className="flex items-center gap-2 bg-blue-50 rounded-lg px-3 py-2">
-                        <span className="text-xs text-blue-700 flex-1">{i + 1}. {p}</span>
-                        <button type="button" onClick={() => eliminarPregunta(i)} className="text-blue-400 hover:text-red-500 transition-colors">
+                      <div key={i} className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: 'rgba(96,165,250,0.12)' }}>
+                        <span className="text-xs flex-1" style={{ color: '#60a5fa' }}>{i + 1}. {p}</span>
+                        <button type="button" onClick={() => eliminarPregunta(i)} className="transition-colors" style={{ color: 'rgba(96,165,250,0.6)' }}>
                           <Trash2 size={13} />
                         </button>
                       </div>
@@ -1336,21 +1345,21 @@ export default function EmpresaDashboard() {
                 )}
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">Mensaje WhatsApp (opcional)</label>
-                <textarea value={form.mensaje_whatsapp} onChange={e => setForm({ ...form, mensaje_whatsapp: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <p className="text-xs text-gray-400 mt-1">Se enviará: "Hola [nombre], te contacto desde [empresa]. [tu mensaje]"</p>
+                <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Mensaje WhatsApp (opcional)</label>
+                <textarea value={form.mensaje_whatsapp} onChange={e => setForm({ ...form, mensaje_whatsapp: e.target.value })} rows={2} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
+                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Se enviará: "Hola [nombre], te contacto desde [empresa]. [tu mensaje]"</p>
               </div>
-              <div className="border-t border-gray-100 pt-4">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">Marca (opcional)</p>
+              <div className="pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>Marca (opcional)</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-sm font-medium text-gray-700 block mb-1">Nombre de la marca</label>
-                    <input value={form.nombre_marca} onChange={e => setForm({ ...form, nombre_marca: e.target.value })} placeholder={empresa?.nombre ?? ''} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Nombre de la marca</label>
+                    <input value={form.nombre_marca} onChange={e => setForm({ ...form, nombre_marca: e.target.value })} placeholder={empresa?.nombre ?? ''} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700 block mb-1">Logo de la marca</label>
-                    {form.logo_url && <img src={form.logo_url} alt="preview" className="w-10 h-10 rounded-lg object-cover mb-1 border border-gray-200" />}
-                    <label className="cursor-pointer flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+                    <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Logo de la marca</label>
+                    {form.logo_url && <img src={form.logo_url} alt="preview" className="w-10 h-10 rounded-lg object-cover mb-1" style={{ border: '1px solid rgba(255,255,255,0.12)' }} />}
+                    <label className="cursor-pointer flex items-center gap-2 text-sm" style={{ color: '#60a5fa' }}>
                       <input type="file" accept="image/*" className="hidden" disabled={logoUploadingNueva} onChange={async e => {
                         const file = e.target.files?.[0]; if (!file) return;
                         setLogoUploadingNueva(true);
@@ -1366,25 +1375,25 @@ export default function EmpresaDashboard() {
                     </label>
                   </div>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">Si esta oferta es de una submarca del grupo, podés poner su nombre y logo propio.</p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Si esta oferta es de una submarca del grupo, podés poner su nombre y logo propio.</p>
               </div>
-              <div className="border-t border-gray-100 pt-4">
-                <label className="text-sm font-medium text-gray-700 block mb-1">
-                  Título del hero <span className="text-xs text-gray-400 font-normal">(texto grande en la página de la oferta)</span>
+              <div className="pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                  Título del hero <span className="text-xs font-normal" style={{ color: 'rgba(255,255,255,0.4)' }}>(texto grande en la página de la oferta)</span>
                 </label>
                 <input
                   value={form.titulo_hero}
                   onChange={e => setForm({ ...form, titulo_hero: e.target.value })}
                   placeholder={form.titulo || 'Ej: Barista con experiencia'}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                 />
-                <p className="text-xs text-gray-400 mt-1">Si lo dejás vacío, se usa el título de la oferta.</p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Si lo dejás vacío, se usa el título de la oferta.</p>
               </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={crearOferta} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+                <button onClick={crearOferta} disabled={loading} className="px-6 py-2 rounded-lg text-sm font-medium disabled:opacity-50" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' }}>
                   {loading ? 'Publicando...' : 'Publicar oferta'}
                 </button>
-                <button onClick={() => setTab('ofertas')} className="border border-gray-200 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
+                <button onClick={() => setTab('ofertas')} className="px-6 py-2 rounded-lg text-sm" style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)' }}>Cancelar</button>
               </div>
             </div>
           </div>
@@ -1392,41 +1401,41 @@ export default function EmpresaDashboard() {
 
         {/* Tab: Editar oferta */}
         {tab === 'editar' && ofertaEditando && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6 max-w-xl">
-            <h2 className="text-lg font-semibold text-gray-900 mb-5">Editar oferta</h2>
+          <div className="rounded-xl p-6 max-w-xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <h2 className="text-lg font-semibold mb-5" style={{ color: 'rgba(255,255,255,0.9)' }}>Editar oferta</h2>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">Título *</label>
-                <input value={editForm.titulo} onChange={e => setEditForm({ ...editForm, titulo: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Título *</label>
+                <input value={editForm.titulo} onChange={e => setEditForm({ ...editForm, titulo: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">Descripción *</label>
-                <textarea value={editForm.descripcion} onChange={e => setEditForm({ ...editForm, descripcion: e.target.value })} rows={4} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Descripción *</label>
+                <textarea value={editForm.descripcion} onChange={e => setEditForm({ ...editForm, descripcion: e.target.value })} rows={4} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">Requisitos</label>
-                <textarea value={editForm.requisitos} onChange={e => setEditForm({ ...editForm, requisitos: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Requisitos</label>
+                <textarea value={editForm.requisitos} onChange={e => setEditForm({ ...editForm, requisitos: e.target.value })} rows={3} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-1">Área</label>
-                  <input value={editForm.area} onChange={e => setEditForm({ ...editForm, area: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Área</label>
+                  <input value={editForm.area} onChange={e => setEditForm({ ...editForm, area: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-1">Modalidad</label>
-                  <select value={editForm.modalidad} onChange={e => setEditForm({ ...editForm, modalidad: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Modalidad</label>
+                  <select value={editForm.modalidad} onChange={e => setEditForm({ ...editForm, modalidad: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}>
                     <option value="presencial">Presencial</option>
                     <option value="remoto">Remoto</option>
                     <option value="hibrido">Híbrido</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-1">Ciudad</label>
-                  <input value={editForm.ciudad} onChange={e => setEditForm({ ...editForm, ciudad: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Ciudad</label>
+                  <input value={editForm.ciudad} onChange={e => setEditForm({ ...editForm, ciudad: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-2">Documentos requeridos</label>
+                <label className="text-sm font-medium block mb-2" style={{ color: 'rgba(255,255,255,0.8)' }}>Documentos requeridos</label>
                 <div className="space-y-2">
                   {DOCS_CONFIG.map(doc => (
                     <div key={doc.tipo}>
@@ -1435,7 +1444,7 @@ export default function EmpresaDashboard() {
                           checked={editForm.docs_requeridos.some(d => parseDocTipo(d) === doc.tipo)}
                           onChange={() => toggleEditDocRequerido(doc.tipo)}
                           className="w-4 h-4 accent-blue-600" />
-                        <span className="text-sm text-gray-700">{doc.label}</span>
+                        <span className="text-sm" style={{ color: 'rgba(255,255,255,0.8)' }}>{doc.label}</span>
                       </label>
                       {doc.tipo === 'otro' && editForm.docs_requeridos.some(d => parseDocTipo(d) === 'otro') && (
                         <input
@@ -1450,7 +1459,7 @@ export default function EmpresaDashboard() {
                             }));
                           }}
                           placeholder="¿Qué documento es? (ej: Carnet de salud)"
-                          className="ml-7 mt-1 w-64 border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="ml-7 mt-1 w-64 rounded-lg px-3 py-1.5 text-xs focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                         />
                       )}
                     </div>
@@ -1458,7 +1467,7 @@ export default function EmpresaDashboard() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-2">Preguntas para el Video CV</label>
+                <label className="text-sm font-medium block mb-2" style={{ color: 'rgba(255,255,255,0.8)' }}>Preguntas para el Video CV</label>
                 <div className="flex gap-2 mb-2">
                   <input
                     value={editPreguntaInput}
@@ -1474,7 +1483,8 @@ export default function EmpresaDashboard() {
                       }
                     }}
                     placeholder="Ej: ¿Cuál es tu experiencia en el rubro?"
-                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                   />
                   <button type="button" onClick={() => {
                     const p = editPreguntaInput.trim();
@@ -1482,16 +1492,16 @@ export default function EmpresaDashboard() {
                       setEditForm(prev => ({ ...prev, preguntas_videocv: [...prev.preguntas_videocv, p] }));
                       setEditPreguntaInput('');
                     }
-                  }} className="border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-600">
+                  }} className="px-3 py-2 rounded-lg" style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)' }}>
                     <Plus size={16} />
                   </button>
                 </div>
                 {editForm.preguntas_videocv.length > 0 && (
                   <div className="space-y-1.5">
                     {editForm.preguntas_videocv.map((p, i) => (
-                      <div key={i} className="flex items-center gap-2 bg-blue-50 rounded-lg px-3 py-2">
-                        <span className="text-xs text-blue-700 flex-1">{i + 1}. {p}</span>
-                        <button type="button" onClick={() => setEditForm(prev => ({ ...prev, preguntas_videocv: prev.preguntas_videocv.filter((_, j) => j !== i) }))} className="text-blue-400 hover:text-red-500 transition-colors">
+                      <div key={i} className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: 'rgba(96,165,250,0.12)' }}>
+                        <span className="text-xs flex-1" style={{ color: '#60a5fa' }}>{i + 1}. {p}</span>
+                        <button type="button" onClick={() => setEditForm(prev => ({ ...prev, preguntas_videocv: prev.preguntas_videocv.filter((_, j) => j !== i) }))} className="transition-colors" style={{ color: 'rgba(96,165,250,0.6)' }}>
                           <Trash2 size={13} />
                         </button>
                       </div>
@@ -1500,20 +1510,20 @@ export default function EmpresaDashboard() {
                 )}
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">Mensaje WhatsApp (opcional)</label>
-                <textarea value={editForm.mensaje_whatsapp} onChange={e => setEditForm({ ...editForm, mensaje_whatsapp: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Mensaje WhatsApp (opcional)</label>
+                <textarea value={editForm.mensaje_whatsapp} onChange={e => setEditForm({ ...editForm, mensaje_whatsapp: e.target.value })} rows={2} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
               </div>
-              <div className="border-t border-gray-100 pt-4">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">Marca (opcional)</p>
+              <div className="pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>Marca (opcional)</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-sm font-medium text-gray-700 block mb-1">Nombre de la marca</label>
-                    <input value={editForm.nombre_marca} onChange={e => setEditForm({ ...editForm, nombre_marca: e.target.value })} placeholder={empresa?.nombre ?? ''} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Nombre de la marca</label>
+                    <input value={editForm.nombre_marca} onChange={e => setEditForm({ ...editForm, nombre_marca: e.target.value })} placeholder={empresa?.nombre ?? ''} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700 block mb-1">Logo de la marca</label>
-                    {editForm.logo_url && <img src={editForm.logo_url} alt="preview" className="w-10 h-10 rounded-lg object-cover mb-1 border border-gray-200" />}
-                    <label className="cursor-pointer flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+                    <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Logo de la marca</label>
+                    {editForm.logo_url && <img src={editForm.logo_url} alt="preview" className="w-10 h-10 rounded-lg object-cover mb-1" style={{ border: '1px solid rgba(255,255,255,0.12)' }} />}
+                    <label className="cursor-pointer flex items-center gap-2 text-sm" style={{ color: '#60a5fa' }}>
                       <input type="file" accept="image/*" className="hidden" disabled={logoUploadingEditar} onChange={async e => {
                         const file = e.target.files?.[0]; if (!file) return;
                         setLogoUploadingEditar(true);
@@ -1529,25 +1539,25 @@ export default function EmpresaDashboard() {
                     </label>
                   </div>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">Si esta oferta es de una submarca del grupo, podés poner su nombre y logo propio.</p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Si esta oferta es de una submarca del grupo, podés poner su nombre y logo propio.</p>
               </div>
-              <div className="border-t border-gray-100 pt-4">
-                <label className="text-sm font-medium text-gray-700 block mb-1">
-                  Título del hero <span className="text-xs text-gray-400 font-normal">(texto grande en la página de la oferta)</span>
+              <div className="pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                  Título del hero <span className="text-xs font-normal" style={{ color: 'rgba(255,255,255,0.4)' }}>(texto grande en la página de la oferta)</span>
                 </label>
                 <input
                   value={editForm.titulo_hero}
                   onChange={e => setEditForm({ ...editForm, titulo_hero: e.target.value })}
                   placeholder={editForm.titulo || 'Ej: Barista con experiencia'}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                 />
-                <p className="text-xs text-gray-400 mt-1">Si lo dejás vacío, se usa el título de la oferta.</p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Si lo dejás vacío, se usa el título de la oferta.</p>
               </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={guardarEdicion} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+                <button onClick={guardarEdicion} disabled={loading} className="px-6 py-2 rounded-lg text-sm font-medium disabled:opacity-50" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' }}>
                   {loading ? 'Guardando...' : 'Guardar cambios'}
                 </button>
-                <button onClick={() => { setTab('ofertas'); setOfertaEditando(null); }} className="border border-gray-200 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
+                <button onClick={() => { setTab('ofertas'); setOfertaEditando(null); }} className="px-6 py-2 rounded-lg text-sm" style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)' }}>Cancelar</button>
               </div>
             </div>
           </div>
@@ -1559,59 +1569,62 @@ export default function EmpresaDashboard() {
             {/* Breadcrumb */}
             {ofertaSeleccionada && (
               <div className="flex items-center gap-2 mb-4 text-sm">
-                <button onClick={() => setTab('ofertas')} className="text-blue-600 hover:underline flex items-center gap-1">
+                <button onClick={() => setTab('ofertas')} className="hover:underline flex items-center gap-1" style={{ color: '#60a5fa' }}>
                   ← Mis ofertas
                 </button>
-                <span className="text-gray-400">/</span>
-                <span className="text-gray-700 font-medium truncate">{ofertaSeleccionada.titulo}</span>
+                <span style={{ color: 'rgba(255,255,255,0.4)' }}>/</span>
+                <span className="font-medium truncate" style={{ color: 'rgba(255,255,255,0.8)' }}>{ofertaSeleccionada.titulo}</span>
               </div>
             )}
             {/* Panel de filtros avanzados */}
-            <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4">
+            <div className="rounded-xl p-4 mb-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
               <div className="flex items-center gap-2 mb-3">
-                <Filter size={14} className="text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">Filtros</span>
+                <Filter size={14} style={{ color: 'rgba(255,255,255,0.5)' }} />
+                <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>Filtros</span>
                 {hayFiltrosActivos && (
-                  <button onClick={limpiarFiltros} className="ml-auto text-xs text-blue-600 hover:underline">
+                  <button onClick={limpiarFiltros} className="ml-auto text-xs hover:underline" style={{ color: '#60a5fa' }}>
                     Limpiar filtros
                   </button>
                 )}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-500 block mb-1">Edad</label>
+                  <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Edad</label>
                   <div className="flex gap-2 items-center">
                     <input
                       type="number" min="16" max="99" placeholder="Mín"
                       value={filtroEdadMin} onChange={e => setFiltroEdadMin(e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full rounded-lg px-2 py-1.5 text-xs focus:outline-none"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                     />
-                    <span className="text-gray-400 text-xs shrink-0">—</span>
+                    <span className="text-xs shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }}>—</span>
                     <input
                       type="number" min="16" max="99" placeholder="Máx"
                       value={filtroEdadMax} onChange={e => setFiltroEdadMax(e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full rounded-lg px-2 py-1.5 text-xs focus:outline-none"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-500 block mb-1">Ciudad</label>
+                  <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Ciudad</label>
                   <input
                     type="text" placeholder="Ej: Buenos Aires"
                     value={filtroCiudad} onChange={e => setFiltroCiudad(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-lg px-2 py-1.5 text-xs focus:outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                   />
                 </div>
                 {(ofertaSeleccionada?.docs_requeridos?.length ?? 0) > 0 && (
                   <div>
-                    <label className="text-xs font-medium text-gray-500 block mb-1">Documentos</label>
+                    <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Documentos</label>
                     <label className="flex items-center gap-2 cursor-pointer py-1.5">
                       <input
                         type="checkbox" checked={filtroDocsCompletos}
                         onChange={e => setFiltroDocsCompletos(e.target.checked)}
                         className="w-4 h-4 accent-blue-600"
                       />
-                      <span className="text-xs text-gray-700">Solo con docs completos</span>
+                      <span className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>Solo con docs completos</span>
                     </label>
                   </div>
                 )}
@@ -1620,7 +1633,8 @@ export default function EmpresaDashboard() {
 
             <div className="flex gap-2 mb-6 flex-wrap items-center">
               <button onClick={() => setFiltroEstado('todos')}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filtroEstado === 'todos' ? 'bg-gray-800 text-white' : 'bg-white border border-gray-200 text-gray-600'}`}>
+                className="px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
+                style={filtroEstado === 'todos' ? { background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.9)' } : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)' }}>
                 Todos ({postulantes.length})
               </button>
               {PIPELINE.map(p => {
@@ -1628,24 +1642,25 @@ export default function EmpresaDashboard() {
                 if (count === 0) return null;
                 return (
                   <button key={p.estado} onClick={() => setFiltroEstado(p.estado)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filtroEstado === p.estado ? 'bg-gray-800 text-white' : `${p.color}`}`}>
+                    className="px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
+                    style={filtroEstado === p.estado ? { background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.9)' } : p.chipStyle}>
                     {p.label} ({count})
                   </button>
                 );
               })}
               {(hayFiltrosActivos || filtroEstado !== 'todos') && (
-                <span className="ml-auto text-xs text-gray-400">
+                <span className="ml-auto text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
                   {postulanteFiltrados.length} resultado{postulanteFiltrados.length !== 1 ? 's' : ''}
                 </span>
               )}
             </div>
 
             {seleccionados.size > 0 && (
-              <div className="sticky top-2 z-10 mb-4 bg-gray-900 text-white rounded-xl px-4 py-3 flex items-center justify-between shadow-lg">
-                <span className="text-sm">{seleccionados.size} candidato{seleccionados.size !== 1 ? 's' : ''} seleccionado{seleccionados.size !== 1 ? 's' : ''}</span>
+              <div className="sticky top-2 z-10 mb-4 rounded-xl px-4 py-3 flex items-center justify-between shadow-lg" style={{ background: 'rgba(20,20,35,0.95)', border: '1px solid rgba(255,255,255,0.12)' }}>
+                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>{seleccionados.size} candidato{seleccionados.size !== 1 ? 's' : ''} seleccionado{seleccionados.size !== 1 ? 's' : ''}</span>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setSeleccionados(new Set())} className="text-xs text-gray-300 hover:text-white">Cancelar</button>
-                  <button onClick={() => setCitaModalOpen(true)} className="flex items-center gap-1.5 bg-teal-500 hover:bg-teal-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
+                  <button onClick={() => setSeleccionados(new Set())} className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>Cancelar</button>
+                  <button onClick={() => setCitaModalOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors" style={{ background: '#2dd4bf', color: '#0d0d14' }}>
                     <CalendarPlus size={14} /> Agendar cita{seleccionados.size > 1 ? ' grupal' : ''}
                   </button>
                 </div>
@@ -1653,13 +1668,13 @@ export default function EmpresaDashboard() {
             )}
 
             {postulanteFiltrados.length === 0 ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                <p className="text-gray-400">No hay postulantes en este estado</p>
+              <div className="rounded-xl p-12 text-center" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <p style={{ color: 'rgba(255,255,255,0.4)' }}>No hay postulantes en este estado</p>
               </div>
             ) : (
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
                 {/* Header tabla */}
-                <div className="hidden md:grid grid-cols-[28px_180px_1fr_auto_160px] gap-4 px-4 py-2 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-400 uppercase tracking-wide items-center">
+                <div className="hidden md:grid grid-cols-[28px_180px_1fr_auto_160px] gap-4 px-4 py-2 uppercase tracking-wide items-center text-xs font-medium" style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
                   <span />
                   <span>Video CV</span>
                   <span>Candidato</span>
@@ -1673,20 +1688,20 @@ export default function EmpresaDashboard() {
                   const edad = calcularEdad(p.usuario.fecha_nacimiento);
                   const ciudad = p.usuario.direccion?.split(',').slice(-2).join(',').trim() || '';
                   return (
-                    <div key={p.id} className={`flex md:grid md:grid-cols-[28px_180px_1fr_auto_160px] gap-4 items-center px-4 py-3 ${idx !== postulanteFiltrados.length - 1 ? 'border-b border-gray-100' : ''} hover:bg-gray-50 transition-colors`}>
+                    <div key={p.id} className="flex md:grid md:grid-cols-[28px_180px_1fr_auto_160px] gap-4 items-center px-4 py-3 transition-colors" style={idx !== postulanteFiltrados.length - 1 ? { borderBottom: '1px solid rgba(255,255,255,0.05)' } : {}}>
 
                       {/* Checkbox selección */}
                       <input
                         type="checkbox"
                         checked={seleccionados.has(p.id)}
                         onChange={() => toggleSeleccionado(p.id)}
-                        className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer flex-shrink-0"
+                        className="w-4 h-4 rounded cursor-pointer flex-shrink-0"
                       />
 
                       {/* Thumbnail video */}
                       <div
-                        className="relative bg-gray-900 rounded-xl overflow-hidden cursor-pointer group flex-shrink-0"
-                        style={{ width: 180, height: 101 }}
+                        className="relative rounded-xl overflow-hidden cursor-pointer group flex-shrink-0"
+                        style={{ background: '#0d0d14', width: 180, height: 101 }}
                         onClick={() => { setVideoModal(p); if (p.estado === 'pendiente') cambiarEstado(p.id, 'visto'); }}
                       >
                         <video
@@ -1705,7 +1720,7 @@ export default function EmpresaDashboard() {
                           </div>
                         </div>
                         <div className="absolute bottom-1.5 right-1.5 pointer-events-none">
-                          <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${pipelineInfo.color}`}>
+                          <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={pipelineInfo.chipStyle}>
                             <Icon size={9} />{pipelineInfo.label}
                           </span>
                         </div>
@@ -1714,37 +1729,37 @@ export default function EmpresaDashboard() {
                       {/* Info candidato */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-semibold text-gray-900 text-sm">{p.usuario.nombre_completo}</h3>
+                          <h3 className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>{p.usuario.nombre_completo}</h3>
                           {p.usuario.alfa_digital && (
-                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(167,139,250,0.15)', color: '#a78bfa' }}>
                               {p.usuario.alfa_digital === 'Perfil nativo digital' ? '🚀' : p.usuario.alfa_digital === 'Usuario digital activo' ? '⚡' : '🌱'}
                             </span>
                           )}
                         </div>
-                        <div className="flex gap-3 text-xs text-gray-400 mt-0.5">
+                        <div className="flex gap-3 text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
                           {edad && <span>{edad}</span>}
                           {ciudad && <span>📍 {ciudad}</span>}
                         </div>
-                        {p.usuario.bio && <p className="text-xs text-gray-500 line-clamp-1 mt-1">{p.usuario.bio}</p>}
+                        {p.usuario.bio && <p className="text-xs line-clamp-1 mt-1" style={{ color: 'rgba(255,255,255,0.5)' }}>{p.usuario.bio}</p>}
                         {/* Habilidades rápidas si tiene CV */}
                         {(p.usuario.cv_datos?.habilidades?.length ?? 0) > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1.5">
                             {p.usuario.cv_datos!.habilidades!.slice(0, 3).map((h, i) => (
-                              <span key={i} className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">{h}</span>
+                              <span key={i} className="text-xs px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(96,165,250,0.12)', color: '#60a5fa' }}>{h}</span>
                             ))}
                             {(p.usuario.cv_datos!.habilidades!.length ?? 0) > 3 && (
-                              <span className="text-xs text-gray-400">+{p.usuario.cv_datos!.habilidades!.length - 3}</span>
+                              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>+{p.usuario.cv_datos!.habilidades!.length - 3}</span>
                             )}
                           </div>
                         )}
                         <div className="flex gap-2 mt-2">
                           <a href={`/u/${p.usuario.slug}/cv`} target="_blank"
-                            className="text-xs border border-blue-200 text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-50">
+                            className="text-xs px-2 py-1 rounded-lg" style={{ border: '1px solid rgba(96,165,250,0.3)', color: '#60a5fa' }}>
                             Ver perfil
                           </a>
                           {ofertaSeleccionada?.mensaje_whatsapp && p.usuario.telefono && (
                             <a href={whatsappUrl(p.usuario.telefono, ofertaSeleccionada.mensaje_whatsapp, p.usuario.nombre_completo)}
-                              target="_blank" className="text-xs bg-green-500 text-white px-2 py-1 rounded-lg hover:bg-green-600">
+                              target="_blank" className="text-xs px-2 py-1 rounded-lg" style={{ background: '#34d399', color: '#0d0d14' }}>
                               WhatsApp
                             </a>
                           )}
@@ -1760,13 +1775,13 @@ export default function EmpresaDashboard() {
                               const doc = p.documentos?.find(d => d.tipo === tipoBase);
                               const label = parseDocLabel(tipo);
                               return (
-                                <span key={tipo} className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 whitespace-nowrap ${tieneDoc ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-500'}`}>
+                                <span key={tipo} className="text-xs px-2 py-0.5 rounded-full flex items-center gap-1 whitespace-nowrap" style={tieneDoc ? { background: 'rgba(52,211,153,0.15)', color: '#34d399' } : { background: 'rgba(248,113,113,0.12)', color: '#f87171' }}>
                                   {tieneDoc ? <Check size={9} /> : <X size={9} />}
                                   {tieneDoc && doc ? <a href={doc.file_url} target="_blank" className="hover:underline">{label}</a> : label}
                                 </span>
                               );
                             })
-                          : <span className="text-xs text-gray-300">—</span>
+                          : <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>—</span>
                         }
                       </div>
 
@@ -1775,7 +1790,7 @@ export default function EmpresaDashboard() {
                         <select
                           value={p.estado}
                           onChange={e => cambiarEstado(p.id, e.target.value)}
-                          className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full rounded-lg px-2 py-1.5 text-xs focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                         >
                           {PIPELINE.map(s => <option key={s.estado} value={s.estado}>{s.label}</option>)}
                         </select>
@@ -1793,40 +1808,40 @@ export default function EmpresaDashboard() {
         {tab === 'citas' && (
           <div className="space-y-6 max-w-3xl">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-500">Entrá a una oferta y seleccioná candidatos para agendarles una cita.</p>
-              <button onClick={() => setTab('ofertas')} className="flex items-center gap-1.5 bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors flex-shrink-0">
+              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>Entrá a una oferta y seleccioná candidatos para agendarles una cita.</p>
+              <button onClick={() => setTab('ofertas')} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex-shrink-0" style={{ background: '#2dd4bf', color: '#0d0d14' }}>
                 <CalendarPlus size={14} /> Nueva cita
               </button>
             </div>
             {citas.length === 0 ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                <p className="text-gray-400">Todavía no agendaste ninguna cita</p>
+              <div className="rounded-xl p-12 text-center" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <p style={{ color: 'rgba(255,255,255,0.4)' }}>Todavía no agendaste ninguna cita</p>
               </div>
             ) : (
               Object.entries(citasPorDia).map(([dia, items]) => (
                 <div key={dia}>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2 capitalize">{dia}</h3>
-                  <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+                  <h3 className="text-sm font-semibold mb-2 capitalize" style={{ color: 'rgba(255,255,255,0.8)' }}>{dia}</h3>
+                  <div className="rounded-xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                     {items.map(c => (
                       <div key={c.id} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
-                        <div className="w-16 flex-shrink-0 text-sm font-medium text-gray-900">
+                        <div className="w-16 flex-shrink-0 text-sm font-medium" style={{ color: 'rgba(255,255,255,0.9)' }}>
                           {new Date(c.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${c.modalidad === 'presencial' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>
+                            <span className="text-xs px-2 py-0.5 rounded-full" style={c.modalidad === 'presencial' ? { background: 'rgba(251,146,60,0.15)', color: '#fb923c' } : { background: 'rgba(96,165,250,0.15)', color: '#60a5fa' }}>
                               {c.modalidad === 'presencial' ? 'Presencial' : 'Virtual'}
                             </span>
-                            {c.grupal && <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">Grupal</span>}
-                            {c.oferta && <span className="text-xs text-gray-400">{c.oferta.titulo}</span>}
+                            {c.grupal && <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(167,139,250,0.15)', color: '#a78bfa' }}>Grupal</span>}
+                            {c.oferta && <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{c.oferta.titulo}</span>}
                           </div>
-                          <p className="text-sm text-gray-600 mt-1 truncate">{c.lugar}</p>
+                          <p className="text-sm mt-1 truncate" style={{ color: 'rgba(255,255,255,0.6)' }}>{c.lugar}</p>
                           <div className="flex flex-wrap gap-1.5 mt-2">
                             {c.invitados.map(inv => (
-                              <span key={inv.id} className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${
-                                inv.estado === 'confirmada' ? 'bg-emerald-100 text-emerald-700' :
-                                inv.estado === 'rechazada' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'
-                              }`}>
+                              <span key={inv.id} className="text-xs px-2 py-0.5 rounded-full flex items-center gap-1" style={
+                                inv.estado === 'confirmada' ? { background: 'rgba(52,211,153,0.15)', color: '#34d399' } :
+                                inv.estado === 'rechazada' ? { background: 'rgba(248,113,113,0.15)', color: '#f87171' } : { background: 'rgba(251,191,36,0.15)', color: '#fbbf24' }
+                              }>
                                 {inv.postulacion.usuario.nombre_completo}
                                 {inv.estado === 'confirmada' && ' ✓'}
                                 {inv.estado === 'rechazada' && ' ✕'}
@@ -1848,118 +1863,120 @@ export default function EmpresaDashboard() {
           <div className="space-y-4 max-w-3xl">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Mis capacitaciones</h2>
-                <p className="text-sm text-gray-500 mt-0.5">Los candidatos ven tu video y completan una pregunta para ganar una estrella en su perfil.</p>
+                <h2 className="text-lg font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>Mis capacitaciones</h2>
+                <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Los candidatos ven tu video y completan una pregunta para ganar una estrella en su perfil.</p>
               </div>
               <button
                 onClick={() => setNewCapOpen(v => !v)}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' }}
               >
                 <Plus size={15} /> Nueva capacitación
               </button>
             </div>
 
             {capMsg && (
-              <div className={`rounded-lg px-4 py-3 text-sm font-medium ${capMsg.includes('✓') ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+              <div className="rounded-lg px-4 py-3 text-sm font-medium" style={capMsg.includes('✓') ? { background: 'rgba(52,211,153,0.12)', color: '#34d399' } : { background: 'rgba(248,113,113,0.12)', color: '#f87171' }}>
                 {capMsg}
               </div>
             )}
 
             {/* Formulario nueva */}
             {newCapOpen && (
-              <div className="bg-white rounded-xl border border-blue-200 p-5 space-y-4">
-                <h3 className="font-semibold text-gray-900 flex items-center gap-2"><GraduationCap size={16} className="text-blue-600" /> Nueva capacitación</h3>
+              <div className="rounded-xl p-5 space-y-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(96,165,250,0.25)' }}>
+                <h3 className="font-semibold flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.9)' }}><GraduationCap size={16} style={{ color: '#60a5fa' }} /> Nueva capacitación</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="col-span-2">
-                    <label className="text-xs font-medium text-gray-600 block mb-1">Título *</label>
-                    <input value={capForm.titulo} onChange={e => setCapForm(f => ({ ...f, titulo: e.target.value }))} placeholder="Ej: Introducción al servicio al cliente" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Título *</label>
+                    <input value={capForm.titulo} onChange={e => setCapForm(f => ({ ...f, titulo: e.target.value }))} placeholder="Ej: Introducción al servicio al cliente" className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                   </div>
                   <div className="col-span-2">
-                    <label className="text-xs font-medium text-gray-600 block mb-1">Descripción (opcional)</label>
-                    <textarea value={capForm.descripcion} onChange={e => setCapForm(f => ({ ...f, descripcion: e.target.value }))} rows={2} placeholder="¿De qué trata esta capacitación?" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+                    <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Descripción (opcional)</label>
+                    <textarea value={capForm.descripcion} onChange={e => setCapForm(f => ({ ...f, descripcion: e.target.value }))} rows={2} placeholder="¿De qué trata esta capacitación?" className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                   </div>
                   <div className="col-span-2">
-                    <label className="text-xs font-medium text-gray-600 block mb-1">URL de YouTube *</label>
-                    <input value={capForm.video_url} onChange={e => setCapForm(f => ({ ...f, video_url: e.target.value }))} placeholder="https://www.youtube.com/watch?v=..." className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>URL de YouTube *</label>
+                    <input value={capForm.video_url} onChange={e => setCapForm(f => ({ ...f, video_url: e.target.value }))} placeholder="https://www.youtube.com/watch?v=..." className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                     {getYouTubeId(capForm.video_url) && (
                       <img src={`https://img.youtube.com/vi/${getYouTubeId(capForm.video_url)}/mqdefault.jpg`} alt="preview" className="mt-2 rounded-lg w-48 object-cover" />
                     )}
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-600 block mb-1">Rubro (opcional)</label>
-                    <input value={capForm.rubro} onChange={e => setCapForm(f => ({ ...f, rubro: e.target.value }))} placeholder="Ej: Gastronomía" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Rubro (opcional)</label>
+                    <input value={capForm.rubro} onChange={e => setCapForm(f => ({ ...f, rubro: e.target.value }))} placeholder="Ej: Gastronomía" className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                   </div>
-                  <div className="col-span-2 border-t border-gray-100 pt-3">
-                    <label className="text-xs font-medium text-gray-600 block mb-1">Pregunta de verificación *</label>
-                    <input value={capForm.pregunta} onChange={e => setCapForm(f => ({ ...f, pregunta: e.target.value }))} placeholder="Ej: ¿Cuál es la actitud correcta ante un cliente molesto?" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <div className="col-span-2 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                    <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Pregunta de verificación *</label>
+                    <input value={capForm.pregunta} onChange={e => setCapForm(f => ({ ...f, pregunta: e.target.value }))} placeholder="Ej: ¿Cuál es la actitud correcta ante un cliente molesto?" className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                   </div>
                   <div className="col-span-2 space-y-2">
-                    <label className="text-xs font-medium text-gray-600 block">Opciones de respuesta * <span className="text-gray-400 font-normal">(marcá la correcta)</span></label>
+                    <label className="text-xs font-medium block" style={{ color: 'rgba(255,255,255,0.6)' }}>Opciones de respuesta * <span className="font-normal" style={{ color: 'rgba(255,255,255,0.4)' }}>(marcá la correcta)</span></label>
                     {capForm.opciones.map((op, i) => (
                       <div key={i} className="flex items-center gap-2">
                         <button
                           onClick={() => setCapForm(f => ({ ...f, respuesta_correcta: i }))}
-                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${capForm.respuesta_correcta === i ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300 bg-white hover:border-emerald-400'}`}
+                          className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors"
+                          style={capForm.respuesta_correcta === i ? { borderColor: '#34d399', background: '#34d399' } : { borderColor: 'rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)' }}
                         >
-                          {capForm.respuesta_correcta === i && <Check size={12} className="text-white" />}
+                          {capForm.respuesta_correcta === i && <Check size={12} style={{ color: '#fff' }} />}
                         </button>
-                        <span className="text-xs font-medium text-gray-500 w-5">{String.fromCharCode(65 + i)}.</span>
+                        <span className="text-xs font-medium w-5" style={{ color: 'rgba(255,255,255,0.5)' }}>{String.fromCharCode(65 + i)}.</span>
                         <input
                           value={op}
                           onChange={e => setCapForm(f => { const o = [...f.opciones]; o[i] = e.target.value; return { ...f, opciones: o }; })}
                           placeholder={`Opción ${String.fromCharCode(65 + i)}`}
-                          className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="flex-1 rounded-lg px-3 py-1.5 text-sm focus:outline-none"
+                          style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                         />
                       </div>
                     ))}
-                    <p className="text-xs text-gray-400">El círculo verde indica la opción correcta.</p>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>El círculo verde indica la opción correcta.</p>
                   </div>
                 </div>
                 {capMsg && (
-                  <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-lg px-3 py-2">
+                  <div className="text-sm rounded-lg px-3 py-2" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)', color: '#fbbf24' }}>
                     ⚠️ {capMsg}
                   </div>
                 )}
                 <div className="flex gap-2 pt-1">
-                  <button onClick={crearCapacitacion} disabled={savingCap} className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5">
+                  <button onClick={crearCapacitacion} disabled={savingCap} className="px-5 py-2 rounded-lg text-sm font-medium disabled:opacity-50 flex items-center gap-1.5" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' }}>
                     {savingCap ? <Loader2 size={14} className="animate-spin" /> : <GraduationCap size={14} />}
                     Crear capacitación
                   </button>
-                  <button onClick={() => setNewCapOpen(false)} className="border border-gray-200 text-gray-600 px-5 py-2 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
+                  <button onClick={() => setNewCapOpen(false)} className="px-5 py-2 rounded-lg text-sm" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>Cancelar</button>
                 </div>
               </div>
             )}
 
             {/* Lista */}
             {capacitaciones.length === 0 && !newCapOpen ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                <GraduationCap size={32} className="mx-auto mb-3 text-gray-300" />
-                <p className="text-gray-400 mb-4">Todavía no creaste ninguna capacitación</p>
-                <button onClick={() => setNewCapOpen(true)} className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Crear primera capacitación</button>
+              <div className="rounded-xl p-12 text-center" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <GraduationCap size={32} className="mx-auto mb-3" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                <p className="mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>Todavía no creaste ninguna capacitación</p>
+                <button onClick={() => setNewCapOpen(true)} className="px-5 py-2 rounded-lg text-sm font-medium" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' }}>Crear primera capacitación</button>
               </div>
             ) : (
               <div className="space-y-3">
                 {capacitaciones.map(cap => {
                   const ytId = getYouTubeId(cap.video_url);
                   return (
-                    <div key={cap.id} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+                    <div key={cap.id} className="rounded-xl p-4 flex items-center gap-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                       {ytId ? (
                         <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt={cap.titulo} className="w-28 h-16 object-cover rounded-lg flex-shrink-0" />
                       ) : (
-                        <div className="w-28 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <GraduationCap size={20} className="text-gray-300" />
+                        <div className="w-28 h-16 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                          <GraduationCap size={20} style={{ color: 'rgba(255,255,255,0.3)' }} />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-semibold text-gray-900 text-sm">{cap.titulo}</h3>
-                          {cap.rubro && <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{cap.rubro}</span>}
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${cap.activa ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+                          <h3 className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>{cap.titulo}</h3>
+                          {cap.rubro && <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(96,165,250,0.15)', color: '#60a5fa' }}>{cap.rubro}</span>}
+                          <span className="text-xs px-2 py-0.5 rounded-full" style={cap.activa ? { background: 'rgba(52,211,153,0.15)', color: '#34d399' } : { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)' }}>
                             {cap.activa ? 'Activa' : 'Inactiva'}
                           </span>
                         </div>
-                        {cap.descripcion && <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{cap.descripcion}</p>}
-                        <div className="flex items-center gap-1 mt-1 text-xs text-gray-400">
+                        {cap.descripcion && <p className="text-xs mt-0.5 line-clamp-1" style={{ color: 'rgba(255,255,255,0.4)' }}>{cap.descripcion}</p>}
+                        <div className="flex items-center gap-1 mt-1 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
                           <Star size={11} className="text-amber-400" fill="currentColor" />
                           <span>{cap._count.completadas} {cap._count.completadas === 1 ? 'candidato completó' : 'candidatos completaron'} esta capacitación</span>
                         </div>
@@ -1968,13 +1985,15 @@ export default function EmpresaDashboard() {
                         <button
                           onClick={() => toggleCapActiva(cap.id, cap.activa)}
                           title={cap.activa ? 'Desactivar' : 'Activar'}
-                          className={`p-2 rounded-lg border transition-colors ${cap.activa ? 'border-emerald-200 text-emerald-600 hover:bg-emerald-50' : 'border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                          className="p-2 rounded-lg transition-colors"
+                          style={cap.activa ? { border: '1px solid rgba(52,211,153,0.3)', color: '#34d399' } : { border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}
                         >
                           {cap.activa ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
                         </button>
                         <button
                           onClick={() => eliminarCapacitacion(cap.id)}
-                          className="p-2 rounded-lg border border-red-100 text-red-400 hover:bg-red-50 transition-colors"
+                          className="p-2 rounded-lg transition-colors"
+                          style={{ border: '1px solid rgba(248,113,113,0.2)', color: '#f87171' }}
                           title="Eliminar"
                         >
                           <Trash2 size={15} />
@@ -1994,46 +2013,50 @@ export default function EmpresaDashboard() {
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Servicios y módulos</h2>
-                <p className="text-sm text-gray-500 mt-0.5">Publicá servicios, aceptá candidatos y gestioná sus módulos de trabajo.</p>
+                <h2 className="text-lg font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>Servicios y módulos</h2>
+                <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Publicá servicios, aceptá candidatos y gestioná sus módulos de trabajo.</p>
               </div>
               <button
                 onClick={() => { setNewServicioOpen(v => !v); setServicioSeleccionado(null); }}
-                className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{ background: 'rgba(45,212,191,0.15)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.25)' }}
               >
                 <Plus size={15} /> Nuevo servicio
               </button>
             </div>
 
             {servicioMsg && (
-              <div className={`rounded-lg px-4 py-3 text-sm font-medium ${servicioMsg.startsWith('✓') ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+              <div className="rounded-lg px-4 py-3 text-sm font-medium" style={servicioMsg.startsWith('✓') ? { background: 'rgba(52,211,153,0.1)', color: '#34d399' } : { background: 'rgba(248,113,113,0.1)', color: '#f87171' }}>
                 {servicioMsg}
               </div>
             )}
 
             {/* Formulario nuevo servicio */}
             {newServicioOpen && (
-              <div className="bg-white rounded-xl border border-teal-200 p-5 space-y-4">
-                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                  <Layers size={16} className="text-teal-600" /> {editandoServicioId ? 'Editar servicio' : 'Nuevo servicio'}
+              <div className="rounded-xl p-5 space-y-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(45,212,191,0.2)' }}>
+                <h3 className="font-semibold flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.9)' }}>
+                  <Layers size={16} style={{ color: '#2dd4bf' }} /> {editandoServicioId ? 'Editar servicio' : 'Nuevo servicio'}
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Título *</label>
+                    <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Título *</label>
                     <input value={servicioForm.titulo} onChange={e => setServicioForm(p => ({ ...p, titulo: e.target.value }))}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                       placeholder="Ej: Limpieza de oficinas mensual" />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Descripción *</label>
+                    <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Descripción *</label>
                     <textarea value={servicioForm.descripcion} onChange={e => setServicioForm(p => ({ ...p, descripcion: e.target.value }))}
-                      rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      rows={3} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                       placeholder="Describí qué involucra este servicio..." />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Frecuencia</label>
+                    <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Frecuencia</label>
                     <select value={servicioForm.frecuencia} onChange={e => setServicioForm(p => ({ ...p, frecuencia: e.target.value }))}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+                      className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}>
                       <option value="diaria">Diaria</option>
                       <option value="semanal">Semanal</option>
                       <option value="mensual">Mensual</option>
@@ -2041,39 +2064,44 @@ export default function EmpresaDashboard() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Duración de jornada</label>
+                    <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Duración de jornada</label>
                     <input value={servicioForm.duracion_jornada} onChange={e => setServicioForm(p => ({ ...p, duracion_jornada: e.target.value }))}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                       placeholder="Ej: 6 hs/día, 4 hs los sábados" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Total hs del módulo</label>
+                    <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Total hs del módulo</label>
                     <input type="number" min="1" value={servicioForm.horas_modulo} onChange={e => setServicioForm(p => ({ ...p, horas_modulo: e.target.value }))}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                       placeholder="Ej: 40" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Precio por hora ($)</label>
+                    <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Precio por hora ($)</label>
                     <input type="number" min="0" step="0.01" value={servicioForm.precio_hora} onChange={e => setServicioForm(p => ({ ...p, precio_hora: e.target.value }))}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                       placeholder="Ej: 3500" />
                   </div>
                   {servicioForm.horas_modulo && servicioForm.precio_hora && (
-                    <div className="col-span-2 bg-teal-50 rounded-lg px-3 py-2 text-sm font-semibold text-teal-700 flex items-center gap-2">
+                    <div className="col-span-2 rounded-lg px-3 py-2 text-sm font-semibold flex items-center gap-2" style={{ background: 'rgba(45,212,191,0.1)', color: '#2dd4bf' }}>
                       <span>Honorario estimado por módulo:</span>
                       <span>${(parseFloat(servicioForm.horas_modulo) * parseFloat(servicioForm.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })}</span>
                     </div>
                   )}
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Deadline (opcional)</label>
+                    <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Deadline (opcional)</label>
                     <input type="date" value={servicioForm.deadline} onChange={e => setServicioForm(p => ({ ...p, deadline: e.target.value }))}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+                      className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                   </div>
                   {capacitaciones.length > 0 && (
                     <div className="col-span-2">
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Capacitación requerida (opcional)</label>
+                      <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Capacitación requerida (opcional)</label>
                       <select value={servicioForm.capacitacion_id} onChange={e => setServicioForm(p => ({ ...p, capacitacion_id: e.target.value }))}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+                        style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}>
                         <option value="">Sin capacitación requerida</option>
                         {capacitaciones.map(c => <option key={c.id} value={c.id}>{c.titulo}</option>)}
                       </select>
@@ -2081,26 +2109,28 @@ export default function EmpresaDashboard() {
                   )}
                   <div className="col-span-2">
                     <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-medium text-gray-700">Modelo de contrato / acuerdo (opcional)</label>
+                      <label className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>Modelo de contrato / acuerdo (opcional)</label>
                       <button
                         type="button"
                         onClick={() => setServicioForm(p => ({ ...p, contrato_template: CONTRATO_PLANTILLA(p.titulo || '[NOMBRE DEL SERVICIO]') }))}
-                        className="text-xs text-teal-600 hover:underline flex items-center gap-1"
+                        className="text-xs hover:underline flex items-center gap-1"
+                        style={{ color: '#2dd4bf' }}
                       >
                         <FileText size={11} /> Usar plantilla de referencia
                       </button>
                     </div>
                     <textarea value={servicioForm.contrato_template} onChange={e => setServicioForm(p => ({ ...p, contrato_template: e.target.value }))}
-                      rows={8} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono"
+                      rows={8} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none font-mono"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                       placeholder="Texto base del acuerdo entre las partes..." />
                     {servicioForm.contrato_template && (
-                      <p className="text-[11px] text-gray-400 mt-1">Editá el texto reemplazando los campos entre [corchetes] con los datos reales.</p>
+                      <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Editá el texto reemplazando los campos entre [corchetes] con los datos reales.</p>
                     )}
                   </div>
                 </div>
                 {/* Documentos requeridos */}
                 <div>
-                  <label className="text-xs font-medium text-gray-700 block mb-2">Documentos requeridos al prestador</label>
+                  <label className="text-xs font-medium block mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>Documentos requeridos al prestador</label>
                   <div className="grid grid-cols-2 gap-2">
                     {DOCS_CONFIG.map(doc => (
                       <div key={doc.tipo}>
@@ -2109,7 +2139,7 @@ export default function EmpresaDashboard() {
                             checked={servicioForm.docs_requeridos.some(d => parseDocTipo(d) === doc.tipo)}
                             onChange={() => toggleDocServicio(doc.tipo)}
                             className="w-4 h-4 accent-teal-600 flex-shrink-0" />
-                          <span className="text-xs text-gray-700">{doc.label}</span>
+                          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>{doc.label}</span>
                         </label>
                         {doc.tipo === 'otro' && servicioForm.docs_requeridos.some(d => parseDocTipo(d) === 'otro') && (
                           <input
@@ -2125,7 +2155,8 @@ export default function EmpresaDashboard() {
                               }));
                             }}
                             placeholder="Nombre del documento"
-                            className="mt-1 ml-6 w-full border border-gray-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-teal-500"
+                            className="mt-1 ml-6 w-full rounded-lg px-2 py-1 text-xs focus:outline-none"
+                            style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                           />
                         )}
                       </div>
@@ -2136,27 +2167,29 @@ export default function EmpresaDashboard() {
                 {/* Protocolo */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-medium text-gray-700">Protocolo de trabajo *</label>
+                    <label className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>Protocolo de trabajo *</label>
                     <button onClick={() => setServicioForm(p => ({ ...p, protocolo: [...p.protocolo, { ...PROTOCOLO_ITEM_EMPTY }] }))}
-                      className="text-xs text-teal-600 hover:underline flex items-center gap-1">
+                      className="text-xs hover:underline flex items-center gap-1" style={{ color: '#2dd4bf' }}>
                       <Plus size={12} /> Agregar item
                     </button>
                   </div>
                   <div className="space-y-2">
                     {servicioForm.protocolo.map((pi, idx) => (
                       <div key={idx} className="flex gap-2 items-start">
-                        <span className="text-xs text-gray-400 mt-2 w-5 text-right flex-shrink-0">{idx + 1}.</span>
+                        <span className="text-xs mt-2 w-5 text-right flex-shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }}>{idx + 1}.</span>
                         <div className="flex-1 grid grid-cols-2 gap-2">
                           <input value={pi.item} onChange={e => setServicioForm(p => { const pr = [...p.protocolo]; pr[idx] = { ...pr[idx], item: e.target.value }; return { ...p, protocolo: pr }; })}
-                            className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                            className="rounded-lg px-2 py-1.5 text-sm focus:outline-none"
+                            style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                             placeholder="Item *" />
                           <input value={pi.descripcion} onChange={e => setServicioForm(p => { const pr = [...p.protocolo]; pr[idx] = { ...pr[idx], descripcion: e.target.value }; return { ...p, protocolo: pr }; })}
-                            className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                            className="rounded-lg px-2 py-1.5 text-sm focus:outline-none"
+                            style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                             placeholder="Descripción (opcional)" />
                         </div>
                         {servicioForm.protocolo.length > 1 && (
                           <button onClick={() => setServicioForm(p => ({ ...p, protocolo: p.protocolo.filter((_, i) => i !== idx) }))}
-                            className="p-2 text-red-400 hover:text-red-600 flex-shrink-0"><X size={14} /></button>
+                            className="p-2 flex-shrink-0" style={{ color: '#f87171' }}><X size={14} /></button>
                         )}
                       </div>
                     ))}
@@ -2164,12 +2197,13 @@ export default function EmpresaDashboard() {
                 </div>
                 <div className="flex gap-2 pt-2">
                   <button onClick={crearServicio} disabled={savingServicio}
-                    className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 disabled:opacity-50">
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+                    style={{ background: 'rgba(45,212,191,0.15)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.25)' }}>
                     {savingServicio ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                     {editandoServicioId ? 'Guardar cambios' : 'Crear servicio'}
                   </button>
                   <button onClick={() => { setNewServicioOpen(false); setEditandoServicioId(null); setServicioForm({ titulo: '', descripcion: '', frecuencia: 'mensual', duracion_jornada: '', horas_modulo: '', precio_hora: '', deadline: '', capacitacion_id: '', contrato_template: '', docs_requeridos: [], protocolo: [{ ...PROTOCOLO_ITEM_EMPTY }] }); }}
-                    className="border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
+                    className="px-4 py-2 rounded-lg text-sm" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>Cancelar</button>
                 </div>
               </div>
             )}
@@ -2178,32 +2212,32 @@ export default function EmpresaDashboard() {
             {!servicioSeleccionado && (
               <div className="space-y-3">
                 {serviciosEmpresa.length === 0 && !newServicioOpen && (
-                  <div className="bg-white rounded-xl border border-dashed border-gray-300 p-8 text-center text-gray-500">
+                  <div className="rounded-xl p-8 text-center" style={{ border: '1px dashed rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)' }}>
                     <Layers size={32} className="mx-auto mb-2 opacity-30" />
                     <p className="text-sm">Todavía no creaste ningún servicio.</p>
-                    <button onClick={() => setNewServicioOpen(true)} className="mt-3 text-sm text-teal-600 hover:underline">Crear el primero</button>
+                    <button onClick={() => setNewServicioOpen(true)} className="mt-3 text-sm hover:underline" style={{ color: '#2dd4bf' }}>Crear el primero</button>
                   </div>
                 )}
                 {serviciosEmpresa.map(s => (
-                  <div key={s.id} className="bg-white rounded-xl border border-gray-200 p-4">
+                  <div key={s.id} className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-semibold text-gray-900 text-sm">{s.titulo}</h3>
-                          <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${s.estado === 'activo' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                          <h3 className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>{s.titulo}</h3>
+                          <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={s.estado === 'activo' ? { background: 'rgba(52,211,153,0.15)', color: '#34d399' } : { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)' }}>
                             {s.estado === 'activo' ? 'Activo' : 'Cerrado'}
                           </span>
-                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-teal-50 text-teal-700">
+                          <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(45,212,191,0.1)', color: '#2dd4bf' }}>
                             {s.frecuencia === 'diaria' ? 'Diaria' : s.frecuencia === 'semanal' ? 'Semanal' : s.frecuencia === 'mensual' ? 'Mensual' : 'Única'}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1 line-clamp-1">{s.descripcion}</p>
-                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-400 flex-wrap">
-                          {s.duracion_jornada && <span className="font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full">{s.duracion_jornada}</span>}
-                          {s.horas_modulo && <span className="font-medium text-gray-600">{s.horas_modulo} hs/módulo</span>}
-                          {s.precio_hora && <span className="font-medium text-gray-600">${Number(s.precio_hora).toLocaleString('es-AR')}/hs</span>}
+                        <p className="text-xs mt-1 line-clamp-1" style={{ color: 'rgba(255,255,255,0.5)' }}>{s.descripcion}</p>
+                        <div className="flex items-center gap-3 mt-2 text-xs flex-wrap" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                          {s.duracion_jornada && <span className="font-medium px-2 py-0.5 rounded-full" style={{ background: 'rgba(45,212,191,0.1)', color: '#2dd4bf' }}>{s.duracion_jornada}</span>}
+                          {s.horas_modulo && <span className="font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>{s.horas_modulo} hs/módulo</span>}
+                          {s.precio_hora && <span className="font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>${Number(s.precio_hora).toLocaleString('es-AR')}/hs</span>}
                           {s.horas_modulo && s.precio_hora && (
-                            <span className="font-bold text-teal-700">${(s.horas_modulo * Number(s.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })} total</span>
+                            <span className="font-bold" style={{ color: '#2dd4bf' }}>${(s.horas_modulo * Number(s.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })} total</span>
                           )}
                           <span>{s._count.postulaciones} postulantes</span>
                           <span>{s._count.modulos_asignados} módulos activos</span>
@@ -2213,19 +2247,22 @@ export default function EmpresaDashboard() {
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <button
                           onClick={() => editarServicio(s)}
-                          className="text-xs border border-teal-200 text-teal-600 px-3 py-1.5 rounded-lg hover:bg-teal-50 transition-colors flex items-center gap-1"
+                          className="text-xs px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                          style={{ border: '1px solid rgba(45,212,191,0.3)', color: '#2dd4bf' }}
                         >
                           <Pencil size={12} /> Editar
                         </button>
                         <button
                           onClick={() => { verPostulantesServicio(s); }}
-                          className="text-xs bg-teal-600 text-white px-3 py-1.5 rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-1"
+                          className="text-xs px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                          style={{ background: 'rgba(45,212,191,0.15)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.25)' }}
                         >
                           <Users size={12} /> Gestionar
                         </button>
                         {s.estado === 'activo' && (
                           <button onClick={() => cerrarServicio(s.id)}
-                            className="text-xs border border-gray-200 text-gray-500 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors">
+                            className="text-xs px-3 py-1.5 rounded-lg transition-colors"
+                            style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
                             Cerrar
                           </button>
                         )}
@@ -2241,26 +2278,28 @@ export default function EmpresaDashboard() {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <button onClick={() => { setServicioSeleccionado(null); setPostulantesServicio([]); }}
-                    className="text-sm text-teal-600 hover:underline flex items-center gap-1">
+                    className="text-sm hover:underline flex items-center gap-1" style={{ color: '#2dd4bf' }}>
                     ← Volver
                   </button>
-                  <h3 className="font-semibold text-gray-900">{servicioSeleccionado.titulo}</h3>
+                  <h3 className="font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>{servicioSeleccionado.titulo}</h3>
                 </div>
 
                 {/* Sub-tabs */}
-                <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-fit">
+                <div className="flex gap-1 rounded-lg p-1 w-fit" style={{ background: 'rgba(255,255,255,0.05)' }}>
                   <button onClick={() => setVistaServicio('postulantes')}
-                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${vistaServicio === 'postulantes' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
+                    className="px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
+                    style={vistaServicio === 'postulantes' ? { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.9)' } : { color: 'rgba(255,255,255,0.5)' }}>
                     Postulantes
                     {postulantesServicio.length > 0 && (
-                      <span className="ml-1.5 bg-gray-200 text-gray-600 text-xs rounded-full px-1.5 py-0.5">{postulantesServicio.length}</span>
+                      <span className="ml-1.5 text-xs rounded-full px-1.5 py-0.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>{postulantesServicio.length}</span>
                     )}
                   </button>
                   <button onClick={() => { setVistaServicio('modulos'); }}
-                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${vistaServicio === 'modulos' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
+                    className="px-4 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5"
+                    style={vistaServicio === 'modulos' ? { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.9)' } : { color: 'rgba(255,255,255,0.5)' }}>
                     Módulos activos
                     {modulosServicio.length > 0 && (
-                      <span className="bg-teal-500 text-white text-xs rounded-full px-1.5 py-0.5">{modulosServicio.length}</span>
+                      <span className="text-xs rounded-full px-1.5 py-0.5" style={{ background: 'rgba(45,212,191,0.2)', color: '#2dd4bf' }}>{modulosServicio.length}</span>
                     )}
                   </button>
                 </div>
@@ -2269,43 +2308,46 @@ export default function EmpresaDashboard() {
                 {vistaServicio === 'postulantes' && (
                   <div className="space-y-3">
                     {loadingPostulantesServ && (
-                      <div className="text-center py-8 text-gray-400"><Loader2 size={20} className="animate-spin mx-auto" /></div>
+                      <div className="text-center py-8" style={{ color: 'rgba(255,255,255,0.4)' }}><Loader2 size={20} className="animate-spin mx-auto" /></div>
                     )}
                     {!loadingPostulantesServ && postulantesServicio.length === 0 && (
-                      <div className="bg-white rounded-xl border border-dashed border-gray-200 p-8 text-center text-gray-400 text-sm">
+                      <div className="rounded-xl p-8 text-center text-sm" style={{ border: '1px dashed rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>
                         No hay postulantes todavía
                       </div>
                     )}
                     {postulantesServicio.map(p => (
-                      <div key={p.id} className={`bg-white rounded-xl border p-4 ${
-                        p.estado === 'aceptado' ? 'border-green-200' : p.estado === 'rechazado' ? 'border-red-100' : 'border-gray-200'
-                      }`}>
+                      <div key={p.id} className="rounded-xl p-4" style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        border: `1px solid ${p.estado === 'aceptado' ? 'rgba(52,211,153,0.3)' : p.estado === 'rechazado' ? 'rgba(248,113,113,0.2)' : 'rgba(255,255,255,0.08)'}`,
+                      }}>
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3 min-w-0">
                             {p.usuario.foto_url ? (
-                              <img src={p.usuario.foto_url} alt="" className="w-10 h-10 rounded-full object-cover border border-gray-200 flex-shrink-0" />
+                              <img src={p.usuario.foto_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" style={{ border: '1px solid rgba(255,255,255,0.1)' }} />
                             ) : (
-                              <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold flex-shrink-0">
+                              <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold flex-shrink-0" style={{ background: 'rgba(45,212,191,0.15)', color: '#2dd4bf' }}>
                                 {p.usuario.nombre_completo[0]}
                               </div>
                             )}
                             <div className="min-w-0">
-                              <p className="font-medium text-gray-900 text-sm">{p.usuario.nombre_completo}</p>
-                              <p className="text-xs text-gray-400">{p.usuario.email} · {p.usuario.telefono}</p>
+                              <p className="font-medium text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>{p.usuario.nombre_completo}</p>
+                              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{p.usuario.email} · {p.usuario.telefono}</p>
                               {p.usuario.cv_datos?.resumen && (
-                                <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{p.usuario.cv_datos.resumen}</p>
+                                <p className="text-xs mt-0.5 line-clamp-1" style={{ color: 'rgba(255,255,255,0.5)' }}>{p.usuario.cv_datos.resumen}</p>
                               )}
                             </div>
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
                             {p.usuario.videos.length > 0 && (
                               <a href={p.usuario.videos[0].video_url} target="_blank" rel="noopener noreferrer"
-                                className="text-xs border border-gray-200 text-gray-600 px-2 py-1.5 rounded-lg hover:bg-gray-50 flex items-center gap-1">
+                                className="text-xs px-2 py-1.5 rounded-lg flex items-center gap-1"
+                                style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
                                 <PlayCircle size={12} /> Video
                               </a>
                             )}
                             <a href={`/u/${p.usuario.slug}/cv`} target="_blank" rel="noopener noreferrer"
-                              className="text-xs border border-gray-200 text-gray-600 px-2 py-1.5 rounded-lg hover:bg-gray-50 flex items-center gap-1">
+                              className="text-xs px-2 py-1.5 rounded-lg flex items-center gap-1"
+                              style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
                               <ExternalLink size={12} /> Perfil
                             </a>
                             {p.estado === 'pendiente' && (
@@ -2318,46 +2360,51 @@ export default function EmpresaDashboard() {
                                       placeholder="Hs totales"
                                       value={horasInput[p.id] ?? ''}
                                       onChange={e => setHorasInput(prev => ({ ...prev, [p.id]: e.target.value }))}
-                                      className="w-24 text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-green-500"
+                                      className="w-24 text-xs rounded-lg px-2 py-1.5 focus:outline-none"
+                                      style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                                     />
                                     <button
                                       onClick={() => procesarPostulanteServicio(p.id, 'aceptado', horasInput[p.id] ? parseInt(horasInput[p.id]) : undefined)}
                                       disabled={procesandoPostServ === p.id}
-                                      className="text-xs bg-green-600 text-white px-2 py-1.5 rounded-lg hover:bg-green-700 flex items-center gap-1 disabled:opacity-50">
+                                      className="text-xs px-2 py-1.5 rounded-lg flex items-center gap-1 disabled:opacity-50"
+                                      style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.25)' }}>
                                       {procesandoPostServ === p.id ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />} OK
                                     </button>
-                                    <button onClick={() => setAceptandoConHoras(null)} className="text-xs text-gray-400 hover:text-gray-600 px-1">
+                                    <button onClick={() => setAceptandoConHoras(null)} className="text-xs px-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
                                       <X size={13} />
                                     </button>
                                   </div>
                                 ) : (
                                   <button onClick={() => setAceptandoConHoras(p.id)}
                                     disabled={procesandoPostServ === p.id}
-                                    className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 flex items-center gap-1 disabled:opacity-50">
+                                    className="text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 disabled:opacity-50"
+                                    style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.25)' }}>
                                     <Check size={12} /> Aceptar
                                   </button>
                                 )}
                                 <button onClick={() => procesarPostulanteServicio(p.id, 'rechazado')}
                                   disabled={procesandoPostServ === p.id}
-                                  className="text-xs border border-red-200 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50 flex items-center gap-1 disabled:opacity-50">
+                                  className="text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 disabled:opacity-50"
+                                  style={{ border: '1px solid rgba(248,113,113,0.3)', color: '#f87171' }}>
                                   <X size={12} /> Rechazar
                                 </button>
                               </>
                             )}
                             {p.estado === 'aceptado' && (
                               <>
-                                <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700">
+                                <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399' }}>
                                   Aceptado
                                 </span>
                                 <button
                                   onClick={() => { setVistaServicio('modulos'); }}
-                                  className="text-xs bg-teal-600 text-white px-3 py-1.5 rounded-lg hover:bg-teal-700 flex items-center gap-1">
+                                  className="text-xs px-3 py-1.5 rounded-lg flex items-center gap-1"
+                                  style={{ background: 'rgba(45,212,191,0.15)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.25)' }}>
                                   <Layers size={12} /> Ver módulo
                                 </button>
                               </>
                             )}
                             {p.estado === 'rechazado' && (
-                              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-600">
+                              <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>
                                 Rechazado
                               </span>
                             )}
@@ -2371,9 +2418,9 @@ export default function EmpresaDashboard() {
                 {/* Vista Módulos */}
                 {vistaServicio === 'modulos' && (
                   <div className="space-y-3">
-                    {loadingModulos && <div className="text-center py-8 text-gray-400"><Loader2 size={20} className="animate-spin mx-auto" /></div>}
+                    {loadingModulos && <div className="text-center py-8" style={{ color: 'rgba(255,255,255,0.4)' }}><Loader2 size={20} className="animate-spin mx-auto" /></div>}
                     {!loadingModulos && modulosServicio.length === 0 && (
-                      <div className="bg-white rounded-xl border border-dashed border-gray-200 p-8 text-center text-gray-400 text-sm">
+                      <div className="rounded-xl p-8 text-center text-sm" style={{ border: '1px dashed rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>
                         No hay módulos asignados todavía. Aceptá candidatos desde la vista de Postulantes.
                       </div>
                     )}
@@ -2400,15 +2447,15 @@ export default function EmpresaDashboard() {
           <div className="space-y-5 max-w-xl">
             {/* Card página pública */}
             {empresa?.slug && (
-              <div className="bg-white rounded-xl border border-gray-200 p-5">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <Globe size={15} className="text-teal-600" /> Página pública de tu empresa
+              <div className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.9)' }}>
+                  <Globe size={15} style={{ color: '#2dd4bf' }} /> Página pública de tu empresa
                 </h3>
-                <p className="text-xs text-gray-500 mb-3">
+                <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>
                   Esta es la página que podés compartir con candidatos. Mostrá todas tus ofertas activas y el perfil de tu empresa.
                 </p>
-                <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 mb-3">
-                  <span className="text-xs font-mono text-gray-600 flex-1 truncate">
+                <div className="flex items-center gap-2 rounded-lg px-3 py-2 mb-3" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                  <span className="text-xs font-mono flex-1 truncate" style={{ color: 'rgba(255,255,255,0.6)' }}>
                     {appUrl.replace(/https?:\/\//, '')}/empresa/{empresa.slug}
                   </span>
                 </div>
@@ -2417,13 +2464,15 @@ export default function EmpresaDashboard() {
                     href={`/empresa/${empresa.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-xs border border-gray-200 text-gray-600 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg transition-colors"
+                    style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}
                   >
                     <ExternalLink size={12} /> Ver página
                   </a>
                   <button
                     onClick={copiarLink}
-                    className="flex items-center gap-1.5 text-xs border border-teal-300 text-teal-700 px-3 py-2 rounded-lg hover:bg-teal-50 transition-colors"
+                    className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg transition-colors"
+                    style={{ border: '1px solid rgba(45,212,191,0.3)', color: '#2dd4bf' }}
                   >
                     <Copy size={12} /> {linkCopiado ? '¡Copiado!' : 'Copiar link'}
                   </button>
@@ -2431,7 +2480,8 @@ export default function EmpresaDashboard() {
                     href={`https://wa.me/?text=${encodeURIComponent(shareText(empresa.nombre, `${appUrl}/empresa/${empresa.slug}`))}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-xs bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                    className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg transition-colors"
+                    style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.25)' }}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
@@ -2442,14 +2492,14 @@ export default function EmpresaDashboard() {
               </div>
             )}
 
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-5">Perfil de empresa</h2>
+          <div className="rounded-xl p-6" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <h2 className="text-lg font-semibold mb-5" style={{ color: 'rgba(255,255,255,0.9)' }}>Perfil de empresa</h2>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-2">Logo</label>
+                <label className="text-sm font-medium block mb-2" style={{ color: 'rgba(255,255,255,0.8)' }}>Logo</label>
                 <div className="flex items-center gap-4">
-                  {empresa?.logo_url ? <img src={empresa.logo_url} alt="logo" className="w-16 h-16 rounded-xl object-cover border border-gray-200" /> : <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 text-2xl">🏢</div>}
-                  <label className="border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm cursor-pointer hover:bg-gray-50">
+                  {empresa?.logo_url ? <img src={empresa.logo_url} alt="logo" className="w-16 h-16 rounded-xl object-cover" style={{ border: '1px solid rgba(255,255,255,0.1)' }} /> : <div className="w-16 h-16 rounded-xl flex items-center justify-center text-2xl" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.4)' }}>🏢</div>}
+                  <label className="px-4 py-2 rounded-lg text-sm cursor-pointer" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
                     Subir logo
                     <input type="file" accept="image/*" className="hidden" onChange={subirLogo} />
                   </label>
@@ -2458,13 +2508,13 @@ export default function EmpresaDashboard() {
 
               {/* Galería de fotos */}
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">
+                <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>
                   Fotos de la empresa
-                  <span className="text-xs text-gray-400 font-normal ml-1.5">(aparecen como fondo en tus ofertas)</span>
+                  <span className="text-xs font-normal ml-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>(aparecen como fondo en tus ofertas)</span>
                 </label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {(empresa?.imagenes ?? []).map((url, i) => (
-                    <div key={i} className="relative group w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+                    <div key={i} className="relative group w-20 h-20 rounded-lg overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
                       <img src={url} alt="" className="w-full h-full object-cover" />
                       <button
                         onClick={() => eliminarImagenEmpresa(url)}
@@ -2472,20 +2522,21 @@ export default function EmpresaDashboard() {
                       >×</button>
                     </div>
                   ))}
-                  <label className={`w-20 h-20 rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors ${subiendoImagen ? 'border-gray-200 opacity-50' : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'}`}>
+                  <label className={`w-20 h-20 rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors ${subiendoImagen ? 'opacity-50' : ''}`}
+                    style={{ borderColor: 'rgba(255,255,255,0.15)' }}>
                     <input type="file" accept="image/*" className="hidden" disabled={subiendoImagen} onChange={subirImagenEmpresa} />
-                    <span className="text-2xl text-gray-400 leading-none">+</span>
-                    <span className="text-[10px] text-gray-400 mt-0.5">{subiendoImagen ? 'Subiendo…' : 'Agregar'}</span>
+                    <span className="text-2xl leading-none" style={{ color: 'rgba(255,255,255,0.4)' }}>+</span>
+                    <span className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{subiendoImagen ? 'Subiendo…' : 'Agregar'}</span>
                   </label>
                 </div>
-                <p className="text-xs text-gray-400 mt-1.5">Fotos reales del local, equipo o productos. La primera foto se muestra en las páginas de oferta.</p>
+                <p className="text-xs mt-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Fotos reales del local, equipo o productos. La primera foto se muestra en las páginas de oferta.</p>
               </div>
 
               {/* Fuente */}
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-2">
+                <label className="text-sm font-medium block mb-2" style={{ color: 'rgba(255,255,255,0.8)' }}>
                   Tipografía
-                  <span className="text-xs text-gray-400 font-normal ml-1.5">(se aplica en tu landing y ofertas)</span>
+                  <span className="text-xs font-normal ml-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>(se aplica en tu landing y ofertas)</span>
                 </label>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {(Object.entries(FONT_OPTIONS) as [FontKey, typeof FONT_OPTIONS[FontKey]][]).map(([key, font]) => {
@@ -2498,10 +2549,11 @@ export default function EmpresaDashboard() {
                           setEmpresa(prev => prev ? { ...prev, fuente: key } : prev);
                           await fetch('/api/empresa/perfil', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fuente: key }) });
                         }}
-                        className={`px-3 py-2.5 rounded-lg border-2 text-left transition-all ${isActive ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300 bg-white'}`}
+                        className="px-3 py-2.5 rounded-lg text-left transition-all"
+                        style={isActive ? { border: '2px solid #7048F0', background: 'rgba(112,72,240,0.1)' } : { border: '2px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}
                       >
-                        <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-0.5">Aa</p>
-                        <p className="text-sm font-semibold text-gray-800 truncate" style={{ fontFamily: font.family }}>{font.name}</p>
+                        <p className="text-[10px] uppercase tracking-widest mb-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Aa</p>
+                        <p className="text-sm font-semibold truncate" style={{ color: 'rgba(255,255,255,0.85)', fontFamily: font.family }}>{font.name}</p>
                       </button>
                     );
                   })}
@@ -2510,9 +2562,9 @@ export default function EmpresaDashboard() {
 
               {/* Color de marca */}
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-2">
+                <label className="text-sm font-medium block mb-2" style={{ color: 'rgba(255,255,255,0.8)' }}>
                   Color de marca
-                  <span className="text-xs text-gray-400 font-normal ml-1.5">(botones y textos en tus ofertas)</span>
+                  <span className="text-xs font-normal ml-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>(botones y textos en tus ofertas)</span>
                 </label>
                 <div className="flex items-center gap-3 flex-wrap">
                   {['#16a34a','#2563eb','#dc2626','#d97706','#7c3aed','#0891b2','#db2777','#ea580c','#111827'].map(c => (
@@ -2544,49 +2596,49 @@ export default function EmpresaDashboard() {
                         await fetch('/api/empresa/perfil', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ color_primario: c }) });
                       }}
                     />
-                    <div className="w-8 h-8 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-gray-400 text-xs font-bold">+</div>
+                    <div className="w-8 h-8 rounded-full border-2 border-dashed flex items-center justify-center text-xs font-bold" style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.4)' }}>+</div>
                   </label>
                   {empresa?.color_primario && (
-                    <span className="text-xs text-gray-400 font-mono">{empresa.color_primario}</span>
+                    <span className="text-xs font-mono" style={{ color: 'rgba(255,255,255,0.4)' }}>{empresa.color_primario}</span>
                   )}
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">Nombre *</label>
-                <input value={perfilForm.nombre} onChange={e => setPerfilForm({ ...perfilForm, nombre: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Nombre *</label>
+                <input value={perfilForm.nombre} onChange={e => setPerfilForm({ ...perfilForm, nombre: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">Descripción</label>
-                <textarea value={perfilForm.descripcion} onChange={e => setPerfilForm({ ...perfilForm, descripcion: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Descripción</label>
+                <textarea value={perfilForm.descripcion} onChange={e => setPerfilForm({ ...perfilForm, descripcion: e.target.value })} rows={3} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">
-                  Mensaje de bienvenida <span className="text-xs text-gray-400 font-normal">(aparece en todas tus páginas de oferta)</span>
+                <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                  Mensaje de bienvenida <span className="text-xs font-normal" style={{ color: 'rgba(255,255,255,0.4)' }}>(aparece en todas tus páginas de oferta)</span>
                 </label>
                 <input
                   value={perfilForm.mensaje_bienvenida}
                   onChange={e => setPerfilForm({ ...perfilForm, mensaje_bienvenida: e.target.value })}
                   placeholder="Ej: TE ESTAMOS BUSCANDO, QUEREMOS CONOCERTE"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                 />
-                <p className="text-xs text-gray-400 mt-1">Si lo dejás vacío, se muestra "TE ESTAMOS BUSCANDO".</p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Si lo dejás vacío, se muestra "TE ESTAMOS BUSCANDO".</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-1">Rubro</label>
-                  <input value={perfilForm.rubro} onChange={e => setPerfilForm({ ...perfilForm, rubro: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Rubro</label>
+                  <input value={perfilForm.rubro} onChange={e => setPerfilForm({ ...perfilForm, rubro: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-1">Ciudad</label>
-                  <input value={perfilForm.ciudad} onChange={e => setPerfilForm({ ...perfilForm, ciudad: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Ciudad</label>
+                  <input value={perfilForm.ciudad} onChange={e => setPerfilForm({ ...perfilForm, ciudad: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">Sitio web</label>
-                <input value={perfilForm.sitio_web} onChange={e => setPerfilForm({ ...perfilForm, sitio_web: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Sitio web</label>
+                <input value={perfilForm.sitio_web} onChange={e => setPerfilForm({ ...perfilForm, sitio_web: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
               </div>
-              <button onClick={guardarPerfil} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+              <button onClick={guardarPerfil} disabled={loading} className="px-6 py-2 rounded-lg text-sm font-medium disabled:opacity-50" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' }}>
                 {perfilGuardado ? '✓ Guardado' : loading ? 'Guardando...' : 'Guardar cambios'}
               </button>
             </div>
@@ -2598,61 +2650,62 @@ export default function EmpresaDashboard() {
       {/* Modal agendar cita */}
       {citaModalOpen && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={cerrarCitaModal}>
-          <div className="bg-white rounded-2xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
+          <div className="rounded-2xl max-w-md w-full p-6" style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)' }} onClick={e => e.stopPropagation()}>
             {!citaResultado ? (
               <>
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">Agendar cita{seleccionados.size > 1 ? ' grupal' : ''}</h3>
-                <p className="text-xs text-gray-500 mb-4">{seleccionados.size} candidato{seleccionados.size !== 1 ? 's' : ''} invitado{seleccionados.size !== 1 ? 's' : ''}. Se les avisará por email y te damos un link de WhatsApp para confirmar.</p>
-                {citaError && <div className="bg-red-50 text-red-600 text-sm rounded-lg px-3 py-2 mb-3">{citaError}</div>}
+                <h3 className="text-lg font-semibold mb-1" style={{ color: 'rgba(255,255,255,0.9)' }}>Agendar cita{seleccionados.size > 1 ? ' grupal' : ''}</h3>
+                <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.5)' }}>{seleccionados.size} candidato{seleccionados.size !== 1 ? 's' : ''} invitado{seleccionados.size !== 1 ? 's' : ''}. Se les avisará por email y te damos un link de WhatsApp para confirmar.</p>
+                {citaError && <div className="text-sm rounded-lg px-3 py-2 mb-3" style={{ background: 'rgba(248,113,113,0.1)', color: '#f87171' }}>{citaError}</div>}
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-sm font-medium text-gray-700 block mb-1">Fecha</label>
-                      <input type="date" value={citaForm.fecha} onChange={e => setCitaForm({ ...citaForm, fecha: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Fecha</label>
+                      <input type="date" value={citaForm.fecha} onChange={e => setCitaForm({ ...citaForm, fecha: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700 block mb-1">Hora</label>
-                      <input type="time" value={citaForm.hora} onChange={e => setCitaForm({ ...citaForm, hora: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Hora</label>
+                      <input type="time" value={citaForm.hora} onChange={e => setCitaForm({ ...citaForm, hora: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                     </div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700 block mb-1">Modalidad</label>
+                    <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Modalidad</label>
                     <div className="flex gap-2">
-                      <button onClick={() => setCitaForm({ ...citaForm, modalidad: 'virtual' })} className={`flex-1 px-3 py-2 rounded-lg text-sm border ${citaForm.modalidad === 'virtual' ? 'bg-teal-50 border-teal-400 text-teal-700' : 'border-gray-200 text-gray-500'}`}>Virtual</button>
-                      <button onClick={() => setCitaForm({ ...citaForm, modalidad: 'presencial' })} className={`flex-1 px-3 py-2 rounded-lg text-sm border ${citaForm.modalidad === 'presencial' ? 'bg-teal-50 border-teal-400 text-teal-700' : 'border-gray-200 text-gray-500'}`}>Presencial</button>
+                      <button onClick={() => setCitaForm({ ...citaForm, modalidad: 'virtual' })} className="flex-1 px-3 py-2 rounded-lg text-sm" style={citaForm.modalidad === 'virtual' ? { background: 'rgba(45,212,191,0.1)', border: '1px solid rgba(45,212,191,0.4)', color: '#2dd4bf' } : { border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>Virtual</button>
+                      <button onClick={() => setCitaForm({ ...citaForm, modalidad: 'presencial' })} className="flex-1 px-3 py-2 rounded-lg text-sm" style={citaForm.modalidad === 'presencial' ? { background: 'rgba(45,212,191,0.1)', border: '1px solid rgba(45,212,191,0.4)', color: '#2dd4bf' } : { border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>Presencial</button>
                     </div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700 block mb-1">{citaForm.modalidad === 'presencial' ? 'Dirección' : 'Link de videollamada'}</label>
-                    <input value={citaForm.lugar} onChange={e => setCitaForm({ ...citaForm, lugar: e.target.value })} placeholder={citaForm.modalidad === 'presencial' ? 'Av. Siempre Viva 123, CABA' : 'https://meet.google.com/...'} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>{citaForm.modalidad === 'presencial' ? 'Dirección' : 'Link de videollamada'}</label>
+                    <input value={citaForm.lugar} onChange={e => setCitaForm({ ...citaForm, lugar: e.target.value })} placeholder={citaForm.modalidad === 'presencial' ? 'Av. Siempre Viva 123, CABA' : 'https://meet.google.com/...'} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700 block mb-1">Mensaje (opcional)</label>
-                    <textarea value={citaForm.mensaje} onChange={e => setCitaForm({ ...citaForm, mensaje: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Mensaje (opcional)</label>
+                    <textarea value={citaForm.mensaje} onChange={e => setCitaForm({ ...citaForm, mensaje: e.target.value })} rows={2} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
                   </div>
                 </div>
                 <div className="flex gap-2 mt-5">
-                  <button onClick={enviarCita} disabled={citaEnviando} className="flex-1 bg-teal-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-teal-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                  <button onClick={enviarCita} disabled={citaEnviando} className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2" style={{ background: 'rgba(45,212,191,0.15)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.25)' }}>
                     {citaEnviando ? <Loader2 size={14} className="animate-spin" /> : <CalendarPlus size={14} />}
                     Enviar invitación
                   </button>
-                  <button onClick={cerrarCitaModal} className="px-4 py-2.5 rounded-lg text-sm border border-gray-200 text-gray-600 hover:bg-gray-50">Cancelar</button>
+                  <button onClick={cerrarCitaModal} className="px-4 py-2.5 rounded-lg text-sm" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>Cancelar</button>
                 </div>
               </>
             ) : (
               <>
-                <h3 className="text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2"><Check size={18} className="text-emerald-600" /> Cita agendada</h3>
-                <p className="text-xs text-gray-500 mb-4">Le mandamos un email a cada candidato. También podés enviarles el aviso por WhatsApp:</p>
+                <h3 className="text-lg font-semibold mb-1 flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.9)' }}><Check size={18} style={{ color: '#34d399' }} /> Cita agendada</h3>
+                <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.5)' }}>Le mandamos un email a cada candidato. También podés enviarles el aviso por WhatsApp:</p>
                 <div className="space-y-2 mb-4">
                   {citaResultado.map(w => (
                     <a key={w.url} href={w.url} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center justify-between gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-sm text-green-700 hover:bg-green-100">
+                      className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm"
+                      style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)', color: '#34d399' }}>
                       <span>{w.candidato}</span>
                       <span className="text-xs font-medium">Enviar WhatsApp →</span>
                     </a>
                   ))}
                 </div>
-                <button onClick={cerrarCitaModal} className="w-full bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200">Listo</button>
+                <button onClick={cerrarCitaModal} className="w-full px-4 py-2.5 rounded-lg text-sm font-medium" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.7)' }}>Listo</button>
               </>
             )}
           </div>
@@ -2662,41 +2715,38 @@ export default function EmpresaDashboard() {
       {/* Modal video */}
       {videoModal && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setVideoModal(null)}>
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto" style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-semibold text-gray-900">{videoModal.usuario.nombre_completo}</h3>
+                  <h3 className="font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>{videoModal.usuario.nombre_completo}</h3>
                   {videoModal.usuario.alfa_digital && (
-                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                    <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(167,139,250,0.15)', color: '#a78bfa' }}>
                       {videoModal.usuario.alfa_digital === 'Perfil nativo digital' ? '🚀' : videoModal.usuario.alfa_digital === 'Usuario digital activo' ? '⚡' : '🌱'} {videoModal.usuario.alfa_digital}
                     </span>
                   )}
                 </div>
-                <div className="flex gap-3 text-sm text-gray-500">
+                <div className="flex gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
                   <span>{videoModal.usuario.email}</span>
                   {calcularEdad(videoModal.usuario.fecha_nacimiento) && <span>· {calcularEdad(videoModal.usuario.fecha_nacimiento)}</span>}
                 </div>
               </div>
-              <button onClick={() => setVideoModal(null)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+              <button onClick={() => setVideoModal(null)} className="text-xl" style={{ color: 'rgba(255,255,255,0.4)' }}>✕</button>
             </div>
 
             {/* Video CV genérico */}
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1">Video CV</p>
+            <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Video CV</p>
             <video src={videoModal.video.video_url} controls className="w-full rounded-xl mb-3" />
 
             {/* Intentos por sección */}
             {videoModal.video.section_attempts && videoModal.video.section_attempts.length > 0 && (
-              <div className="bg-gray-50 rounded-xl px-4 py-3 mb-4 border border-gray-100">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">Intentos por sección</p>
+              <div className="rounded-xl px-4 py-3 mb-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>Intentos por sección</p>
                 <div className="space-y-1.5">
                   {videoModal.video.section_attempts.map((s, i) => (
                     <div key={i} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-700">{s.nombre}</span>
-                      <span className={`font-semibold tabular-nums ${
-                        s.intentos === 1 ? 'text-emerald-600' :
-                        s.intentos === 2 ? 'text-amber-600' : 'text-red-500'
-                      }`}>
+                      <span style={{ color: 'rgba(255,255,255,0.7)' }}>{s.nombre}</span>
+                      <span className="font-semibold tabular-nums" style={{ color: s.intentos === 1 ? '#34d399' : s.intentos === 2 ? '#fbbf24' : '#f87171' }}>
                         {s.intentos} {s.intentos === 1 ? 'intento' : 'intentos'}
                       </span>
                     </div>
@@ -2708,30 +2758,30 @@ export default function EmpresaDashboard() {
             {/* Video específico (respuestas a preguntas) */}
             {videoModal.usuario.videos?.[0] && (
               <div className="mb-4">
-                <p className="text-xs font-semibold text-purple-600 uppercase tracking-widest mb-1">Respuestas a tus preguntas</p>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: '#a78bfa' }}>Respuestas a tus preguntas</p>
                 <video src={videoModal.usuario.videos[0].video_url} controls className="w-full rounded-xl" />
               </div>
             )}
 
             {/* Bio */}
             {videoModal.usuario.bio && (
-              <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5">Sobre el candidato</p>
-                <p className="text-sm text-gray-700 leading-relaxed">{videoModal.usuario.bio}</p>
+              <div className="rounded-xl p-4 mb-4" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Sobre el candidato</p>
+                <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.7)' }}>{videoModal.usuario.bio}</p>
               </div>
             )}
 
             {/* Capacitaciones completadas */}
             {(videoModal.usuario.capacitaciones_ok?.length ?? 0) > 0 && (
-              <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-4">
-                <p className="text-xs font-semibold text-amber-700 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+              <div className="rounded-xl p-4 mb-4" style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.15)' }}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-2 flex items-center gap-1.5" style={{ color: '#fbbf24' }}>
                   <GraduationCap size={13} /> Capacitaciones completadas
                 </p>
                 <div className="space-y-1.5">
                   {videoModal.usuario.capacitaciones_ok!.map((c, i) => (
                     <div key={i} className="flex items-start justify-between text-xs">
-                      <span className="text-amber-800 font-medium">{c.capacitacion.titulo}</span>
-                      <span className="text-amber-600 shrink-0 ml-2">{c.capacitacion.empresa.nombre}</span>
+                      <span className="font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>{c.capacitacion.titulo}</span>
+                      <span className="shrink-0 ml-2" style={{ color: '#fbbf24' }}>{c.capacitacion.empresa.nombre}</span>
                     </div>
                   ))}
                 </div>
@@ -2740,16 +2790,16 @@ export default function EmpresaDashboard() {
 
             {/* Referencias verificadas */}
             {(videoModal.usuario.referencias?.length ?? 0) > 0 && (
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4">
-                <p className="text-xs font-semibold text-blue-700 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+              <div className="rounded-xl p-4 mb-4" style={{ background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.15)' }}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-2 flex items-center gap-1.5" style={{ color: '#60a5fa' }}>
                   <Star size={13} /> Referencias verificadas
                 </p>
                 <div className="space-y-3">
                   {videoModal.usuario.referencias!.map((r) => (
-                    <div key={r.id} className="text-xs text-blue-800">
+                    <div key={r.id} className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>
                       <p className="font-semibold">{r.referidor_nombre}{r.referidor_cargo ? ` · ${r.referidor_cargo}` : ''}</p>
-                      <p className="text-blue-600">{r.empresa_nombre}</p>
-                      {r.mensaje && <p className="mt-0.5 text-blue-700 italic">"{r.mensaje}"</p>}
+                      <p style={{ color: '#60a5fa' }}>{r.empresa_nombre}</p>
+                      {r.mensaje && <p className="mt-0.5 italic" style={{ color: 'rgba(255,255,255,0.6)' }}>"{r.mensaje}"</p>}
                     </div>
                   ))}
                 </div>
@@ -2757,31 +2807,31 @@ export default function EmpresaDashboard() {
             )}
 
             {/* CV del candidato */}
-            <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-3">
+            <div className="rounded-xl p-4 mb-4 space-y-3" style={{ background: 'rgba(255,255,255,0.04)' }}>
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-gray-700 uppercase tracking-widest">CV del candidato</p>
+                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.7)' }}>CV del candidato</p>
                 {videoModal.usuario.cv_datos ? (
-                  <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">✓ CV cargado</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399' }}>✓ CV cargado</span>
                 ) : (
-                  <span className="text-xs bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">Sin CV</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)' }}>Sin CV</span>
                 )}
               </div>
               {!videoModal.usuario.cv_datos ? (
-                <p className="text-xs text-gray-400 italic">Este candidato aún no cargó su CV en la plataforma.</p>
+                <p className="text-xs italic" style={{ color: 'rgba(255,255,255,0.4)' }}>Este candidato aún no cargó su CV en la plataforma.</p>
               ) : (
                 <>
                   {videoModal.usuario.cv_datos.resumen && (
-                    <p className="text-sm text-gray-700 leading-relaxed">{videoModal.usuario.cv_datos.resumen}</p>
+                    <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.7)' }}>{videoModal.usuario.cv_datos.resumen}</p>
                   )}
                   {(videoModal.usuario.cv_datos.experiencia?.length ?? 0) > 0 && (
                     <div>
-                      <p className="text-xs font-semibold text-gray-500 mb-1.5">Experiencia</p>
+                      <p className="text-xs font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Experiencia</p>
                       <div className="space-y-1.5">
                         {videoModal.usuario.cv_datos.experiencia!.map((e, i) => (
-                          <div key={i} className="bg-white rounded-lg px-3 py-2 text-xs text-gray-600">
-                            <span className="font-medium text-gray-800">{e.cargo}</span>
-                            <span className="text-gray-400"> — {e.empresa}</span>
-                            {e.periodo && <span className="text-gray-400"> · {e.periodo}</span>}
+                          <div key={i} className="rounded-lg px-3 py-2 text-xs" style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)' }}>
+                            <span className="font-medium" style={{ color: 'rgba(255,255,255,0.85)' }}>{e.cargo}</span>
+                            <span style={{ color: 'rgba(255,255,255,0.4)' }}> — {e.empresa}</span>
+                            {e.periodo && <span style={{ color: 'rgba(255,255,255,0.4)' }}> · {e.periodo}</span>}
                           </div>
                         ))}
                       </div>
@@ -2789,13 +2839,13 @@ export default function EmpresaDashboard() {
                   )}
                   {(videoModal.usuario.cv_datos.educacion?.length ?? 0) > 0 && (
                     <div>
-                      <p className="text-xs font-semibold text-gray-500 mb-1.5">Educación</p>
+                      <p className="text-xs font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Educación</p>
                       <div className="space-y-1.5">
                         {videoModal.usuario.cv_datos.educacion!.map((e, i) => (
-                          <div key={i} className="bg-white rounded-lg px-3 py-2 text-xs text-gray-600">
-                            <span className="font-medium text-gray-800">{e.titulo}</span>
-                            <span className="text-gray-400"> — {e.institucion}</span>
-                            {e.periodo && <span className="text-gray-400"> · {e.periodo}</span>}
+                          <div key={i} className="rounded-lg px-3 py-2 text-xs" style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)' }}>
+                            <span className="font-medium" style={{ color: 'rgba(255,255,255,0.85)' }}>{e.titulo}</span>
+                            <span style={{ color: 'rgba(255,255,255,0.4)' }}> — {e.institucion}</span>
+                            {e.periodo && <span style={{ color: 'rgba(255,255,255,0.4)' }}> · {e.periodo}</span>}
                           </div>
                         ))}
                       </div>
@@ -2804,7 +2854,7 @@ export default function EmpresaDashboard() {
                   {(videoModal.usuario.cv_datos.habilidades?.length ?? 0) > 0 && (
                     <div className="flex flex-wrap gap-1.5">
                       {videoModal.usuario.cv_datos.habilidades!.map((h, i) => (
-                        <span key={i} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{h}</span>
+                        <span key={i} className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(96,165,250,0.15)', color: '#60a5fa' }}>{h}</span>
                       ))}
                     </div>
                   )}
@@ -2814,27 +2864,27 @@ export default function EmpresaDashboard() {
 
             {/* Bio */}
             {videoModal.usuario.bio && (
-              <div className="bg-gray-50 rounded-xl px-4 py-3 mb-4">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1">Bio</p>
-                <p className="text-sm text-gray-700 leading-relaxed">{videoModal.usuario.bio}</p>
+              <div className="rounded-xl px-4 py-3 mb-4" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Bio</p>
+                <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.7)' }}>{videoModal.usuario.bio}</p>
               </div>
             )}
 
             {/* Capacitaciones completadas */}
             {(videoModal.usuario.capacitaciones_ok?.length ?? 0) > 0 && (
-              <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-4">
-                <p className="text-xs font-semibold text-amber-700 uppercase tracking-widest mb-2 flex items-center gap-1">
+              <div className="rounded-xl p-4 mb-4" style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.15)' }}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-2 flex items-center gap-1" style={{ color: '#fbbf24' }}>
                   <GraduationCap size={12} /> Capacitaciones completadas ({videoModal.usuario.capacitaciones_ok!.length})
                 </p>
                 <div className="space-y-1.5">
                   {videoModal.usuario.capacitaciones_ok!.map((c, i) => (
-                    <div key={i} className="flex items-center gap-2 bg-white rounded-lg px-3 py-2">
+                    <div key={i} className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.05)' }}>
                       <Star size={11} className="text-amber-500 flex-shrink-0" fill="currentColor" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-gray-800 truncate">{c.capacitacion.titulo}</p>
-                        <p className="text-xs text-gray-400">{c.capacitacion.empresa.nombre}</p>
+                        <p className="text-xs font-medium truncate" style={{ color: 'rgba(255,255,255,0.85)' }}>{c.capacitacion.titulo}</p>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{c.capacitacion.empresa.nombre}</p>
                       </div>
-                      <span className="text-xs text-amber-600 flex-shrink-0">
+                      <span className="text-xs flex-shrink-0" style={{ color: '#fbbf24' }}>
                         {new Date(c.completada_en).toLocaleDateString('es-AR')}
                       </span>
                     </div>
@@ -2845,19 +2895,19 @@ export default function EmpresaDashboard() {
 
             {/* Referencias laborales verificadas */}
             {(videoModal.usuario.referencias?.length ?? 0) > 0 && (
-              <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                <p className="text-xs font-semibold text-gray-700 uppercase tracking-widest mb-2 flex items-center gap-1">
+              <div className="rounded-xl p-4 mb-4" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-2 flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.7)' }}>
                   <Star size={12} className="text-amber-500" fill="currentColor" /> Referencias verificadas ({videoModal.usuario.referencias!.length})
                 </p>
                 <div className="space-y-2">
                   {videoModal.usuario.referencias!.map((r, i) => (
-                    <div key={i} className="bg-white rounded-lg px-3 py-2">
+                    <div key={i} className="rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.05)' }}>
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-sm font-medium text-gray-800">{r.referidor_nombre}</span>
-                        {r.referidor_cargo && <span className="text-xs text-gray-400">· {r.referidor_cargo}</span>}
-                        <span className="text-xs text-gray-400">en {r.empresa_nombre}</span>
+                        <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.85)' }}>{r.referidor_nombre}</span>
+                        {r.referidor_cargo && <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>· {r.referidor_cargo}</span>}
+                        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>en {r.empresa_nombre}</span>
                       </div>
-                      {r.mensaje && <p className="text-xs text-gray-600 mt-1 italic">"{r.mensaje}"</p>}
+                      {r.mensaje && <p className="text-xs mt-1 italic" style={{ color: 'rgba(255,255,255,0.6)' }}>"{r.mensaje}"</p>}
                     </div>
                   ))}
                 </div>
@@ -2866,14 +2916,15 @@ export default function EmpresaDashboard() {
 
             {/* Documentos */}
             {(videoModal.documentos?.length ?? 0) > 0 && (
-              <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                <p className="text-xs font-semibold text-gray-700 uppercase tracking-widest mb-2">Documentos</p>
+              <div className="rounded-xl p-4 mb-4" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>Documentos</p>
                 <div className="flex flex-wrap gap-2">
                   {videoModal.documentos!.map(doc => {
                     const label = DOCS_CONFIG.find(c => c.tipo === doc.tipo)?.label || doc.tipo;
                     return (
                       <a key={doc.tipo} href={doc.file_url} target="_blank"
-                        className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full hover:bg-green-200 transition-colors">
+                        className="flex items-center gap-1 text-xs px-2 py-1 rounded-full transition-colors"
+                        style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399' }}>
                         <Check size={10} /> {label}
                       </a>
                     );
@@ -2881,7 +2932,7 @@ export default function EmpresaDashboard() {
                   {ofertaSeleccionada?.docs_requeridos?.filter(tipo => !videoModal.documentos?.some(d => d.tipo === parseDocTipo(tipo))).map(tipo => {
                     const label = parseDocLabel(tipo);
                     return (
-                      <span key={tipo} className="flex items-center gap-1 text-xs bg-red-50 text-red-500 px-2 py-1 rounded-full">
+                      <span key={tipo} className="flex items-center gap-1 text-xs px-2 py-1 rounded-full" style={{ background: 'rgba(248,113,113,0.1)', color: '#f87171' }}>
                         <X size={10} /> {label}
                       </span>
                     );
@@ -2892,10 +2943,12 @@ export default function EmpresaDashboard() {
 
             <div className="flex gap-2">
               <a href={`/u/${videoModal.usuario.slug}/cv`} target="_blank"
-                className="flex-1 text-center border border-blue-200 text-blue-600 py-2 rounded-lg text-sm hover:bg-blue-50">Ver perfil →</a>
+                className="flex-1 text-center py-2 rounded-lg text-sm"
+                style={{ border: '1px solid rgba(96,165,250,0.3)', color: '#60a5fa' }}>Ver perfil →</a>
               {ofertaSeleccionada?.mensaje_whatsapp && (
                 <a href={whatsappUrl(videoModal.usuario.telefono, ofertaSeleccionada.mensaje_whatsapp, videoModal.usuario.nombre_completo)}
-                  target="_blank" className="flex-1 text-center bg-green-500 text-white py-2 rounded-lg text-sm hover:bg-green-600">
+                  target="_blank" className="flex-1 text-center py-2 rounded-lg text-sm"
+                  style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.25)' }}>
                   📱 WhatsApp
                 </a>
               )}

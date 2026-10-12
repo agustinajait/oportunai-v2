@@ -100,7 +100,7 @@ export default function AdminClient({
         className="w-full flex items-center justify-between px-6 py-4 hover:bg-ink-50 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-brand-50 rounded-lg flex items-center justify-center text-brand-600">
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(109,40,217,0.2)', color: '#a78bfa' }}>
             {icon}
           </div>
           <div className="text-left">
@@ -253,7 +253,7 @@ export default function AdminClient({
                       <td className="px-4 py-3 text-ink-600">{u.email}</td>
                       <td className="px-4 py-3 text-ink-600">{u.dni}</td>
                       <td className="px-4 py-3">
-                        <span className={`badge ${u.role === 'admin' ? 'bg-brand-100 text-brand-700' : 'bg-ink-100 text-ink-600'}`}>
+                        <span className="badge" style={u.role === 'admin' ? { background: 'rgba(109,40,217,0.2)', color: '#a78bfa' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}>
                           {u.role}
                         </span>
                       </td>
@@ -272,7 +272,7 @@ export default function AdminClient({
                             onClick={() => handleDeleteUsuario(u)}
                             disabled={deletingId === u.id}
                             title="Eliminar usuario"
-                            className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+                            className="p-1.5 rounded-lg text-red-400 hover:text-red-400 transition-colors disabled:opacity-40" style={{}} onMouseEnter={e => (e.currentTarget.style.background='rgba(248,113,113,0.12)')} onMouseLeave={e => (e.currentTarget.style.background='transparent')}
                           >
                             {deletingId === u.id
                               ? <Loader2 size={15} className="animate-spin" />

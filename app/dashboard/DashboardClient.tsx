@@ -829,15 +829,15 @@ export default function DashboardClient({
       mcdonalds: "McDonald's", mostaza: 'Mostaza', starbucks: 'Starbucks', ypf: 'YPF',
     };
     const fuenteColor: Record<string, { bg: string; color: string }> = {
-      oportunai:    { bg: '#ede9fe', color: '#6d28d9' },
-      computrabajo: { bg: '#dbeafe', color: '#1d4ed8' },
-      zonajobs:     { bg: '#d1fae5', color: '#065f46' },
-      bumeran:      { bg: '#fef3c7', color: '#92400e' },
-      mcdonalds:    { bg: '#fef3c7', color: '#b45309' },
-      mostaza:      { bg: '#ffedd5', color: '#9a3412' },
-      starbucks:    { bg: '#d1fae5', color: '#065f46' },
-      ypf:          { bg: '#fef9c3', color: '#713f12' },
-      sanisidro:    { bg: '#e0f2fe', color: '#075985' },
+      oportunai:    { bg: 'rgba(109,40,217,0.2)',  color: '#a78bfa' },
+      computrabajo: { bg: 'rgba(29,78,216,0.2)',   color: '#60a5fa' },
+      zonajobs:     { bg: 'rgba(6,95,70,0.2)',     color: '#34d399' },
+      bumeran:      { bg: 'rgba(251,191,36,0.15)', color: '#fbbf24' },
+      mcdonalds:    { bg: 'rgba(251,191,36,0.15)', color: '#fbbf24' },
+      mostaza:      { bg: 'rgba(251,146,60,0.15)', color: '#fb923c' },
+      starbucks:    { bg: 'rgba(6,95,70,0.2)',     color: '#34d399' },
+      ypf:          { bg: 'rgba(251,191,36,0.15)', color: '#fbbf24' },
+      sanisidro:    { bg: 'rgba(7,89,133,0.2)',    color: '#60a5fa' },
     };
 
     return (

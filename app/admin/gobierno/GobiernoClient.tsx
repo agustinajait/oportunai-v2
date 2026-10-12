@@ -222,7 +222,7 @@ function DrillDownPanel({ dim, color, onClose }: { dim: string; color: Color; on
   }, [dim, color]);
 
   const colorDot = (c: string) =>
-    c === 'verde' ? 'bg-emerald-500' : c === 'amarillo' ? 'bg-amber-400' : c === 'rojo' ? 'bg-red-500' : 'bg-gray-200';
+    c === 'verde' ? 'bg-emerald-500' : c === 'amarillo' ? 'bg-amber-400' : c === 'rojo' ? 'bg-red-500' : 'bg-ink-200';
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm px-4 pb-4 sm:p-6">

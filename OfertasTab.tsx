@@ -95,59 +95,62 @@ export default function OfertasTab({ videos }: { videos: Video[] }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="w-6 h-6 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 0' }}>
+        <div style={{ width: 24, height: 24, border: '2px solid #7048F0', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {mensaje && (
-        <div className={`rounded-lg px-4 py-3 text-sm font-medium ${
-          mensaje.tipo === 'ok' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-        }`}>
+        <div style={{
+          borderRadius: 8, padding: '10px 14px', fontSize: 13, fontWeight: 500,
+          background: mensaje.tipo === 'ok' ? 'rgba(52,211,153,0.12)' : 'rgba(248,113,113,0.12)',
+          border: `1px solid ${mensaje.tipo === 'ok' ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)'}`,
+          color: mensaje.tipo === 'ok' ? '#34d399' : '#f87171',
+        }}>
           {mensaje.texto}
         </div>
       )}
 
       {ofertas.length === 0 ? (
-        <div className="text-center py-16 text-ink-400">
-          <Briefcase size={40} className="mx-auto mb-3 opacity-30" />
+        <div style={{ textAlign: 'center', padding: '64px 0', color: 'rgba(255,255,255,0.4)' }}>
+          <Briefcase size={40} style={{ margin: '0 auto 12px', opacity: 0.3 }} />
           <p>No hay ofertas disponibles por ahora</p>
         </div>
       ) : (
         ofertas.map(oferta => {
           const aplicado = yaAplicoA(oferta.id);
           return (
-            <div key={oferta.id} className="card p-5 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Building2 size={14} className="text-ink-400" />
-                    <span className="text-sm text-ink-500">{oferta.empresa.nombre}</span>
+            <div key={oferta.id} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <Building2 size={14} style={{ color: 'rgba(255,255,255,0.4)' }} />
+                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>{oferta.empresa.nombre}</span>
                   </div>
-                  <h3 className="font-semibold text-ink-900 text-base mb-2">{oferta.titulo}</h3>
-                  <p className="text-sm text-ink-500 line-clamp-2 mb-3">{oferta.descripcion}</p>
-                  <div className="flex flex-wrap gap-2">
+                  <h3 style={{ fontWeight: 600, color: 'rgba(255,255,255,0.9)', fontSize: 15, marginBottom: 8 }}>{oferta.titulo}</h3>
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 12, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>{oferta.descripcion}</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {oferta.area && (
-                      <span className="bg-brand-50 text-brand-700 text-xs px-2.5 py-1 rounded-full">
+                      <span style={{ background: 'rgba(109,40,217,0.2)', color: '#a78bfa', fontSize: 12, padding: '3px 10px', borderRadius: 20 }}>
                         {oferta.area}
                       </span>
                     )}
                     {oferta.ciudad && (
-                      <span className="flex items-center gap-1 text-xs text-ink-400">
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
                         <MapPin size={11} /> {oferta.ciudad}
                       </span>
                     )}
-                    <span className="flex items-center gap-1 text-xs text-ink-400">
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
                       <Monitor size={11} /> {modalidadLabel[oferta.modalidad]}
                     </span>
                   </div>
                 </div>
-                <div className="shrink-0">
+                <div style={{ flexShrink: 0 }}>
                   {aplicado ? (
-                    <div className="flex items-center gap-1.5 bg-green-50 text-green-600 text-sm font-medium px-4 py-2 rounded-xl">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(52,211,153,0.15)', color: '#34d399', fontSize: 13, fontWeight: 500, padding: '8px 14px', borderRadius: 12 }}>
                       <Check size={14} />
                       Aplicado
                     </div>
@@ -157,7 +160,7 @@ export default function OfertasTab({ videos }: { videos: Video[] }) {
                         setOfertaDetalle(oferta);
                         setVideoSeleccionado(videosFinales[0]?.id ?? '');
                       }}
-                      className="flex items-center gap-1.5 bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-brand-700 transition-colors"
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff', fontSize: 13, fontWeight: 600, padding: '8px 14px', borderRadius: 12, border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(109,40,217,0.3)' }}
                     >
                       Aplicar
                       <ChevronRight size={14} />
@@ -172,39 +175,48 @@ export default function OfertasTab({ videos }: { videos: Video[] }) {
 
       {/* Modal de aplicación */}
       {ofertaDetalle && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-            <h3 className="font-semibold text-ink-900 text-lg mb-1">Aplicar a {ofertaDetalle.titulo}</h3>
-            <p className="text-sm text-ink-500 mb-5">{ofertaDetalle.empresa.nombre}</p>
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={e => { if (e.target === e.currentTarget) { setOfertaDetalle(null); setNota(''); } }}
+        >
+          <div style={{ background: '#1a1030', borderRadius: 20, border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 24px 60px rgba(0,0,0,0.5)', maxWidth: 440, width: '100%', padding: 24 }}>
+            <h3 style={{ fontWeight: 600, color: 'rgba(255,255,255,0.9)', fontSize: 17, marginBottom: 4 }}>Aplicar a {ofertaDetalle.titulo}</h3>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>{ofertaDetalle.empresa.nombre}</p>
 
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label className="text-sm font-medium text-ink-700 block mb-2">
+                <label style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: 8 }}>
                   Elegí tu Video CV
                 </label>
                 {videosFinales.length === 0 ? (
-                  <div className="bg-amber-50 text-amber-700 text-sm rounded-lg px-3 py-2">
+                  <div style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.2)', color: '#fbbf24', fontSize: 13, borderRadius: 10, padding: '8px 12px' }}>
                     Todavía no tenés un Video CV grabado. Grabá uno desde tu dashboard primero.
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {videosFinales.map(v => (
-                      <label key={v.id} className={`flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition-colors ${
-                        videoSeleccionado === v.id ? 'border-brand-500 bg-brand-50' : 'border-gray-200 hover:bg-gray-50'
-                      }`}>
+                      <label
+                        key={v.id}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 12,
+                          border: `1.5px solid ${videoSeleccionado === v.id ? '#7048F0' : 'rgba(255,255,255,0.12)'}`,
+                          background: videoSeleccionado === v.id ? 'rgba(109,40,217,0.15)' : 'rgba(255,255,255,0.04)',
+                          borderRadius: 10, padding: '10px 12px', cursor: 'pointer',
+                        }}
+                      >
                         <input
                           type="radio"
                           name="video"
                           value={v.id}
                           checked={videoSeleccionado === v.id}
                           onChange={() => setVideoSeleccionado(v.id)}
-                          className="accent-brand-600"
+                          style={{ accentColor: '#7048F0' }}
                         />
                         <div>
-                          <div className="text-sm font-medium text-ink-800">
+                          <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.85)' }}>
                             {v.tipo === 'video_cv' ? 'Video CV' : 'Video Pitch'}
                           </div>
-                          <div className="text-xs text-ink-400">
+                          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
                             {new Date(v.created_at).toLocaleDateString('es-AR')}
                           </div>
                         </div>
@@ -215,7 +227,7 @@ export default function OfertasTab({ videos }: { videos: Video[] }) {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-ink-700 block mb-1">
+                <label style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: 6 }}>
                   Mensaje para la empresa (opcional)
                 </label>
                 <textarea
@@ -223,21 +235,21 @@ export default function OfertasTab({ videos }: { videos: Video[] }) {
                   onChange={e => setNota(e.target.value)}
                   placeholder="Contale por qué te interesa el puesto..."
                   rows={3}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '9px 12px', fontSize: 13, color: 'rgba(255,255,255,0.85)', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
                 />
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
                 <button
                   onClick={aplicar}
                   disabled={!videoSeleccionado || !!aplicando}
-                  className="flex-1 bg-brand-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors"
+                  style={{ flex: 1, background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff', padding: '11px 0', borderRadius: 10, fontSize: 13, fontWeight: 700, border: 'none', cursor: (!videoSeleccionado || !!aplicando) ? 'not-allowed' : 'pointer', opacity: (!videoSeleccionado || !!aplicando) ? 0.5 : 1, boxShadow: '0 4px 14px rgba(109,40,217,0.3)' }}
                 >
                   {aplicando ? 'Enviando...' : 'Enviar postulación'}
                 </button>
                 <button
                   onClick={() => { setOfertaDetalle(null); setNota(''); }}
-                  className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-ink-600 hover:bg-gray-50 transition-colors"
+                  style={{ padding: '11px 16px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, fontSize: 13, color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}
                 >
                   Cancelar
                 </button>

@@ -75,7 +75,9 @@ Reglas de contenido:
     }],
   });
 
-  const raw = (message.content[0] as { type: string; text: string }).text.trim();
+  const rawText = (message.content[0] as { type: string; text: string }).text.trim();
+  // Strip markdown code fences if Claude wraps the JSON
+  const raw = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
   let cvGenerado: Record<string, unknown>;
   try {
     cvGenerado = JSON.parse(raw);

@@ -1313,7 +1313,7 @@ export default function DashboardClient({
                             {s.empresa.logo_url ? (
                               <img src={s.empresa.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" style={{ border: '1px solid rgba(255,255,255,0.1)' }} />
                             ) : (
-                              <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 font-bold flex-shrink-0">
+                              <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold flex-shrink-0" style={{ background: 'rgba(109,40,217,0.2)', color: '#a78bfa' }}>
                                 {s.empresa.nombre[0]}
                               </div>
                             )}
@@ -1326,7 +1326,7 @@ export default function DashboardClient({
 
                           {/* Chips resumen */}
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="badge bg-brand-50 text-brand-700 text-[11px]">
+                            <span className="badge text-[11px]" style={{ background: 'rgba(109,40,217,0.2)', color: '#a78bfa' }}>
                               {s.frecuencia === 'diaria' ? 'Diaria' : s.frecuencia === 'semanal' ? 'Semanal' : s.frecuencia === 'mensual' ? 'Mensual' : 'Única vez'}
                             </span>
                             {s.duracion_jornada && (
@@ -1736,7 +1736,7 @@ export default function DashboardClient({
                   : [];
 
                 return (
-                  <div className="card p-5 border border-brand-100 bg-gradient-to-br from-brand-50/40 to-white">
+                  <div className="card p-5">
                     {/* Header */}
                     <div className="flex items-center gap-2 mb-4">
                       <span className="text-xl">🚦</span>
@@ -2046,18 +2046,18 @@ export default function DashboardClient({
 
                     {/* Pasos */}
                     <div className="space-y-2">
-                      <div className="flex items-start gap-3 bg-brand-50 border border-brand-100 rounded-xl p-3">
-                        <span className="w-6 h-6 rounded-full bg-brand-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                      <div className="flex items-start gap-3 rounded-xl p-3" style={{ background: 'rgba(109,40,217,0.12)', border: '1px solid rgba(109,40,217,0.25)' }}>
+                        <span className="w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>1</span>
                         <div>
-                          <p className="text-sm font-semibold text-ink-800">Confirmás acá</p>
-                          <p className="text-xs text-ink-500 mt-0.5">Guardamos tu número <span className="font-semibold">{usuario.telefono}</span></p>
+                          <p className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>Confirmás acá</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Guardamos tu número <span className="font-semibold">{usuario.telefono}</span></p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl p-3">
-                        <span className="w-6 h-6 rounded-full bg-[#25D366] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                      <div className="flex items-start gap-3 rounded-xl p-3" style={{ background: 'rgba(37,211,102,0.1)', border: '1px solid rgba(37,211,102,0.2)' }}>
+                        <span className="w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: '#25D366' }}>2</span>
                         <div>
-                          <p className="text-sm font-semibold text-ink-800">Mandás un WhatsApp a {usuario.cv_datos?.origen === 'mentoress' ? 'Mentor EESS' : 'OportunAI'}</p>
-                          <p className="text-xs text-ink-500 mt-0.5">Te abrimos el chat con el mensaje ya escrito. Solo tocás <strong>Enviar</strong>.</p>
+                          <p className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>Mandás un WhatsApp a {usuario.cv_datos?.origen === 'mentoress' ? 'Mentor EESS' : 'OportunAI'}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Te abrimos el chat con el mensaje ya escrito. Solo tocás <strong>Enviar</strong>.</p>
                         </div>
                       </div>
                     </div>

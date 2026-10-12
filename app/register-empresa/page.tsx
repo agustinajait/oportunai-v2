@@ -41,106 +41,129 @@ function RegisterEmpresaForm() {
     }
   };
 
+  const inputStyle: React.CSSProperties = {
+    width: '100%', background: 'rgba(255,255,255,0.06)',
+    border: '1.5px solid rgba(255,255,255,0.12)', borderRadius: 10,
+    padding: '9px 12px', fontSize: 14, color: 'rgba(255,255,255,0.85)',
+    outline: 'none', boxSizing: 'border-box',
+  };
+  const labelStyle: React.CSSProperties = {
+    fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.5)',
+    display: 'block', marginBottom: 5,
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-md">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Registrá tu empresa</h1>
-          <p className="text-gray-500 mt-1 text-sm">Publicá ofertas y encontrá candidatos con Video CV</p>
+    <div style={{ minHeight: '100vh', background: '#0d0d14', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{
+        background: 'rgba(255,255,255,0.05)', borderRadius: 20,
+        border: '1px solid rgba(255,255,255,0.08)',
+        padding: 32, width: '100%', maxWidth: 440,
+      }}>
+        <div style={{ marginBottom: 28 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'rgba(255,255,255,0.9)', margin: 0 }}>Registrá tu empresa</h1>
+          <p style={{ color: 'rgba(255,255,255,0.45)', marginTop: 6, fontSize: 14 }}>Publicá ofertas y encontrá candidatos con Video CV</p>
         </div>
 
-        <div className="space-y-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Nombre de la empresa *</label>
+            <label style={labelStyle}>Nombre de la empresa *</label>
             <input
               name="nombre_empresa"
               value={form.nombre_empresa}
               onChange={handleChange}
               placeholder="Ej: Acme S.A."
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              style={inputStyle}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Rubro</label>
+              <label style={labelStyle}>Rubro</label>
               <input
                 name="rubro"
                 value={form.rubro}
                 onChange={handleChange}
                 placeholder="Ej: Tecnología"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                style={inputStyle}
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Ciudad</label>
+              <label style={labelStyle}>Ciudad</label>
               <input
                 name="ciudad"
                 value={form.ciudad}
                 onChange={handleChange}
                 placeholder="Ej: Buenos Aires"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                style={inputStyle}
               />
             </div>
           </div>
 
-          <hr className="border-gray-100" />
+          <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.08)' }} />
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Tu nombre completo *</label>
+            <label style={labelStyle}>Tu nombre completo *</label>
             <input
               name="nombre_completo"
               value={form.nombre_completo}
               onChange={handleChange}
               placeholder="Ej: María González"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              style={inputStyle}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Email *</label>
+            <label style={labelStyle}>Email *</label>
             <input
               name="email"
               type="email"
               value={form.email}
               onChange={handleChange}
               placeholder="empresa@mail.com"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              style={inputStyle}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Contraseña *</label>
+            <label style={labelStyle}>Contraseña *</label>
             <input
               name="password"
               type="password"
               value={form.password}
               onChange={handleChange}
               placeholder="Mínimo 6 caracteres"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              style={inputStyle}
             />
           </div>
 
           {error && (
-            <div className="bg-red-50 text-red-600 text-sm rounded-lg px-3 py-2">{error}</div>
+            <div style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.25)', color: '#f87171', fontSize: 13, borderRadius: 8, padding: '8px 12px' }}>
+              {error}
+            </div>
           )}
 
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full bg-blue-600 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            style={{
+              width: '100%', background: 'linear-gradient(135deg,#4B33CC,#7048F0)',
+              color: '#fff', borderRadius: 10, padding: '11px 0',
+              fontSize: 14, fontWeight: 700, border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s',
+              boxShadow: '0 4px 14px rgba(109,40,217,0.3)',
+            }}
           >
             {loading ? 'Registrando...' : 'Crear cuenta de empresa'}
           </button>
         </div>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p style={{ textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 20 }}>
           ¿Ya tenés cuenta?{' '}
-          <Link href="/login" className="text-blue-600 hover:underline">Iniciá sesión</Link>
+          <Link href="/login" style={{ color: '#a78bfa', textDecoration: 'none' }}>Iniciá sesión</Link>
         </p>
-        <p className="text-center text-sm text-gray-500 mt-2">
+        <p style={{ textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 8 }}>
           ¿Sos candidato?{' '}
-          <Link href="/register" className="text-blue-600 hover:underline">Registrate acá</Link>
+          <Link href="/register" style={{ color: '#a78bfa', textDecoration: 'none' }}>Registrate acá</Link>
         </p>
       </div>
     </div>
@@ -149,7 +172,7 @@ function RegisterEmpresaForm() {
 
 export default function RegisterEmpresaPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0d0d14' }} />}>
       <RegisterEmpresaForm />
     </Suspense>
   );

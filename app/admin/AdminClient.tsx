@@ -196,11 +196,10 @@ export default function AdminClient({
             <button
               key={t.key}
               onClick={() => setTab(t.key as any)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                tab === t.key
-                  ? 'bg-white text-ink-800 shadow-sm'
-                  : 'text-ink-500 hover:text-ink-700'
-              }`}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all"
+              style={tab === t.key
+                ? { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.9)' }
+                : { color: 'rgba(255,255,255,0.5)' }}
             >
               {t.icon} {t.label}
             </button>

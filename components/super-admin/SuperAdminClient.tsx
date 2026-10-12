@@ -415,7 +415,8 @@ export default function SuperAdminClient({
             { key: 'galeria', label: 'Galería', icon: <Image size={15} />, count: galeriaItems.length },
           ].map(t => (
             <button key={t.key} onClick={() => { setTab(t.key as any); if (t.key === 'ofertas') cargarOfertas(); if (t.key === 'galeria') cargarGaleria(); }}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${tab === t.key ? 'bg-white text-ink-800 shadow-sm' : 'text-ink-500 hover:text-ink-700'}`}>
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all"
+              style={tab === t.key ? { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.9)' } : { color: 'rgba(255,255,255,0.5)' }}>
               {t.icon} {t.label}
               <span className="badge bg-ink-200 text-ink-600 ml-1">{t.count}</span>
             </button>
@@ -612,7 +613,8 @@ export default function SuperAdminClient({
                                 <span className={estadoBadge(rel.estado)}>{rel.estado}</span>
                                 <select value={rel.estado}
                                   onChange={e => handleCambiarEstado(u.id, rel.taller.id, e.target.value)}
-                                  className="text-xs border border-ink-200 rounded-lg px-2 py-1 bg-white">
+                                  className="text-xs rounded-lg px-2 py-1"
+                                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}>
                                   <option value="asignado">asignado</option>
                                   <option value="completado">completado</option>
                                   <option value="validado">validado</option>

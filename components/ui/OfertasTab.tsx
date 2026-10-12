@@ -40,15 +40,15 @@ type PostulacionCompleta = {
   video: { id: string; video_url: string; tipo: string };
 };
 
-const ESTADO_LABEL: Record<string, { label: string; color: string; icon: any }> = {
-  pendiente:      { label: 'En revisión',         color: 'bg-gray-100 text-gray-600',    icon: Clock },
-  visto:          { label: 'Visto',               color: 'bg-blue-100 text-blue-600',    icon: Eye },
-  interesado:     { label: 'Interesados en vos',  color: 'bg-purple-100 text-purple-600', icon: Star },
-  contactar:      { label: 'Te van a contactar',  color: 'bg-yellow-100 text-yellow-700', icon: Phone },
-  en_proceso:     { label: 'En proceso',          color: 'bg-orange-100 text-orange-600', icon: Users },
-  contratado:     { label: '¡Contratado!',        color: 'bg-green-100 text-green-700',  icon: Trophy },
-  bolsa_talentos: { label: 'Bolsa de talentos',   color: 'bg-teal-100 text-teal-600',    icon: Archive },
-  descartado:     { label: 'No seleccionado',     color: 'bg-red-100 text-red-500',      icon: X },
+const ESTADO_LABEL: Record<string, { label: string; bg: string; color: string; icon: any }> = {
+  pendiente:      { label: 'En revisión',         bg: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.55)', icon: Clock },
+  visto:          { label: 'Visto',               bg: 'rgba(96,165,250,0.15)',  color: '#93c5fd',               icon: Eye },
+  interesado:     { label: 'Interesados en vos',  bg: 'rgba(167,139,250,0.15)', color: '#a78bfa',               icon: Star },
+  contactar:      { label: 'Te van a contactar',  bg: 'rgba(251,191,36,0.15)',  color: '#fbbf24',               icon: Phone },
+  en_proceso:     { label: 'En proceso',          bg: 'rgba(251,146,60,0.15)',  color: '#fb923c',               icon: Users },
+  contratado:     { label: '¡Contratado!',        bg: 'rgba(52,211,153,0.15)',  color: '#34d399',               icon: Trophy },
+  bolsa_talentos: { label: 'Bolsa de talentos',   bg: 'rgba(45,212,191,0.15)', color: '#2dd4bf',               icon: Archive },
+  descartado:     { label: 'No seleccionado',     bg: 'rgba(248,113,113,0.12)', color: '#f87171',               icon: X },
 };
 
 const modalidadLabel: Record<string, string> = {
@@ -175,36 +175,48 @@ export default function OfertasTab({ videos, initialOfertaId, origenUsuario }: {
   return (
     <div className="space-y-4">
       {mensaje && (
-        <div className={`rounded-lg px-4 py-3 text-sm font-medium ${
-          mensaje.tipo === 'ok' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-        }`}>
+        <div
+          className="rounded-lg px-4 py-3 text-sm font-medium"
+          style={mensaje.tipo === 'ok'
+            ? { background: 'rgba(52,211,153,0.12)', color: '#34d399', border: '1px solid rgba(52,211,153,0.2)' }
+            : { background: 'rgba(248,113,113,0.12)', color: '#f87171', border: '1px solid rgba(248,113,113,0.2)' }
+          }
+        >
           {mensaje.texto}
         </div>
       )}
 
       {/* Sub-tabs */}
-      <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 w-fit">
+      <div className="flex gap-1 rounded-xl p-1 w-fit" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
         <button
           onClick={() => setVista('explorar')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            vista === 'explorar' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
-          }`}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+          style={vista === 'explorar'
+            ? { background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' }
+            : { color: 'rgba(255,255,255,0.5)' }
+          }
         >
           <Briefcase size={14} />
           Explorar ofertas
         </button>
         <button
           onClick={() => setVista('mis_postulaciones')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            vista === 'mis_postulaciones' ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
-          }`}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+          style={vista === 'mis_postulaciones'
+            ? { background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' }
+            : { color: 'rgba(255,255,255,0.5)' }
+          }
         >
           <Check size={14} />
           Mis postulaciones
           {postulaciones.length > 0 && (
-            <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
-              vista === 'mis_postulaciones' ? 'bg-white/20 text-white' : 'bg-brand-100 text-brand-700'
-            }`}>
+            <span
+              className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
+              style={vista === 'mis_postulaciones'
+                ? { background: 'rgba(255,255,255,0.2)', color: '#fff' }
+                : { background: 'rgba(167,139,250,0.2)', color: '#a78bfa' }
+              }
+            >
               {postulaciones.length}
             </span>
           )}
@@ -223,35 +235,35 @@ export default function OfertasTab({ videos, initialOfertaId, origenUsuario }: {
             ofertas.map(oferta => {
               const aplicado = yaAplicoA(oferta.id);
               return (
-                <div key={oferta.id} className="card p-5 hover:shadow-md transition-shadow">
+                <div key={oferta.id} className="p-5 rounded-2xl transition-all" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         {oferta.empresa.logo_url ? (
-                          <img src={oferta.empresa.logo_url} alt={oferta.empresa.nombre} className="w-7 h-7 rounded-lg object-cover border border-gray-100" />
+                          <img src={oferta.empresa.logo_url} alt={oferta.empresa.nombre} className="w-7 h-7 rounded-lg object-cover" style={{ border: '1px solid rgba(255,255,255,0.1)' }} />
                         ) : (
-                          <div className="w-7 h-7 rounded-lg bg-brand-100 flex items-center justify-center">
-                            <Building2 size={14} className="text-brand-600" />
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(167,139,250,0.2)' }}>
+                            <Building2 size={14} color="#a78bfa" />
                           </div>
                         )}
-                        <span className="text-sm font-medium text-ink-600">{oferta.empresa.nombre}</span>
+                        <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>{oferta.empresa.nombre}</span>
                       </div>
-                      <h3 className="font-semibold text-ink-900 text-base mb-2">{oferta.titulo}</h3>
-                      <p className="text-sm text-ink-500 line-clamp-2 mb-3">{oferta.descripcion}</p>
+                      <h3 className="font-semibold text-base mb-2" style={{ color: 'rgba(255,255,255,0.9)' }}>{oferta.titulo}</h3>
+                      <p className="text-sm line-clamp-2 mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>{oferta.descripcion}</p>
                       <div className="flex flex-wrap gap-2">
                         {oferta.area && (
-                          <span className="bg-brand-50 text-brand-700 text-xs px-2.5 py-1 rounded-full">{oferta.area}</span>
+                          <span className="text-xs px-2.5 py-1 rounded-full" style={{ background: 'rgba(167,139,250,0.15)', color: '#a78bfa' }}>{oferta.area}</span>
                         )}
                         {oferta.ciudad && (
-                          <span className="flex items-center gap-1 text-xs text-ink-400">
+                          <span className="flex items-center gap-1 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
                             <MapPin size={11} /> {oferta.ciudad}
                           </span>
                         )}
-                        <span className="flex items-center gap-1 text-xs text-ink-400">
+                        <span className="flex items-center gap-1 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
                           <Monitor size={11} /> {modalidadLabel[oferta.modalidad]}
                         </span>
                         {oferta.preguntas_videocv?.length > 0 && (
-                          <span className="flex items-center gap-1 text-xs bg-purple-50 text-purple-600 px-2 py-0.5 rounded-full">
+                          <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(167,139,250,0.15)', color: '#a78bfa' }}>
                             <MessageSquare size={10} /> {oferta.preguntas_videocv.length} pregunta{oferta.preguntas_videocv.length !== 1 ? 's' : ''}
                           </span>
                         )}
@@ -259,7 +271,7 @@ export default function OfertasTab({ videos, initialOfertaId, origenUsuario }: {
                     </div>
                     <div className="shrink-0">
                       {aplicado ? (
-                        <div className="flex items-center gap-1.5 bg-green-50 text-green-600 text-sm font-medium px-4 py-2 rounded-xl">
+                        <div className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl" style={{ background: 'rgba(52,211,153,0.12)', color: '#34d399' }}>
                           <Check size={14} /> Aplicado
                         </div>
                       ) : (
@@ -304,29 +316,32 @@ export default function OfertasTab({ videos, initialOfertaId, origenUsuario }: {
                 const estadoInfo = ESTADO_LABEL[post.estado] ?? ESTADO_LABEL.pendiente;
                 const Icon = estadoInfo.icon;
                 return (
-                  <div key={post.id} className="card p-5">
+                  <div key={post.id} className="p-5 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                     <div className="flex items-start gap-4">
                       <div className="shrink-0">
                         {post.oferta.empresa.logo_url ? (
-                          <img src={post.oferta.empresa.logo_url} alt={post.oferta.empresa.nombre} className="w-10 h-10 rounded-xl object-cover border border-gray-100" />
+                          <img src={post.oferta.empresa.logo_url} alt={post.oferta.empresa.nombre} className="w-10 h-10 rounded-xl object-cover" style={{ border: '1px solid rgba(255,255,255,0.1)' }} />
                         ) : (
-                          <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center">
-                            <Building2 size={18} className="text-brand-600" />
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(167,139,250,0.2)' }}>
+                            <Building2 size={18} color="#a78bfa" />
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <h3 className="font-semibold text-ink-900 text-sm">{post.oferta.titulo}</h3>
-                            <p className="text-xs text-ink-400 mt-0.5">{post.oferta.empresa.nombre}</p>
+                            <h3 className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>{post.oferta.titulo}</h3>
+                            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{post.oferta.empresa.nombre}</p>
                           </div>
-                          <span className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${estadoInfo.color}`}>
+                          <span
+                            className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium shrink-0"
+                            style={{ background: estadoInfo.bg, color: estadoInfo.color }}
+                          >
                             <Icon size={11} />
                             {estadoInfo.label}
                           </span>
                         </div>
-                        <div className="flex gap-3 mt-2 text-xs text-ink-400">
+                        <div className="flex gap-3 mt-2 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
                           {post.oferta.ciudad && (
                             <span className="flex items-center gap-1"><MapPin size={10} /> {post.oferta.ciudad}</span>
                           )}
@@ -334,7 +349,7 @@ export default function OfertasTab({ videos, initialOfertaId, origenUsuario }: {
                           <span className="flex items-center gap-1"><Clock size={10} /> {new Date(post.created_at).toLocaleDateString('es-AR')}</span>
                         </div>
                         {post.nota && (
-                          <p className="mt-2 text-xs text-ink-500 bg-ink-50 rounded-lg px-3 py-2 line-clamp-2">
+                          <p className="mt-2 text-xs px-3 py-2 rounded-lg line-clamp-2" style={{ color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.05)' }}>
                             "{post.nota}"
                           </p>
                         )}
@@ -355,42 +370,42 @@ export default function OfertasTab({ videos, initialOfertaId, origenUsuario }: {
         const puedeAplicar = !tienePreguntas ? !!genericoCV : (!!especifico && !!genericoCV);
 
         return (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
+            <div className="rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto" style={{ background: '#1a1030', border: '1px solid rgba(255,255,255,0.1)' }}>
               {/* Header */}
               <div className="flex items-center gap-3 mb-5">
                 {ofertaDetalle.empresa.logo_url ? (
                   <img src={ofertaDetalle.empresa.logo_url} alt={ofertaDetalle.empresa.nombre} className="w-10 h-10 rounded-xl object-cover" />
                 ) : (
-                  <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center">
-                    <Building2 size={18} className="text-brand-600" />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(167,139,250,0.2)' }}>
+                    <Building2 size={18} color="#a78bfa" />
                   </div>
                 )}
                 <div>
-                  <h3 className="font-semibold text-ink-900">{ofertaDetalle.titulo}</h3>
-                  <p className="text-sm text-ink-500">{ofertaDetalle.empresa.nombre}</p>
+                  <h3 className="font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>{ofertaDetalle.titulo}</h3>
+                  <p className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>{ofertaDetalle.empresa.nombre}</p>
                 </div>
               </div>
 
               {tienePreguntas ? (
                 /* ── OFERTA CON PREGUNTAS ESPECÍFICAS ── */
                 <div className="space-y-4">
-                  <div className="bg-purple-50 border border-purple-100 rounded-xl p-4">
+                  <div className="rounded-xl p-4" style={{ background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)' }}>
                     <div className="flex items-center gap-2 mb-2">
-                      <MessageSquare size={14} className="text-purple-500" />
-                      <span className="text-sm font-semibold text-purple-800">Esta empresa tiene preguntas específicas</span>
+                      <MessageSquare size={14} color="#a78bfa" />
+                      <span className="text-sm font-semibold" style={{ color: '#a78bfa' }}>Esta empresa tiene preguntas específicas</span>
                     </div>
                     <ul className="space-y-1.5 mb-3">
                       {ofertaDetalle.preguntas_videocv.map((pregunta, i) => (
-                        <li key={i} className="text-xs text-purple-700 flex gap-2">
+                        <li key={i} className="text-xs flex gap-2" style={{ color: 'rgba(167,139,250,0.85)' }}>
                           <span className="font-semibold shrink-0">{i + 1}.</span>
                           <span>{pregunta}</span>
                         </li>
                       ))}
                     </ul>
                     {especifico ? (
-                      <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
-                        <Check size={13} className="text-emerald-500" />
+                      <div className="flex items-center gap-2 text-xs rounded-lg px-3 py-2" style={{ color: '#34d399', background: 'rgba(52,211,153,0.1)' }}>
+                        <Check size={13} color="#34d399" />
                         Video con respuestas grabado — listo para postularte
                       </div>
                     ) : (
@@ -405,7 +420,7 @@ export default function OfertasTab({ videos, initialOfertaId, origenUsuario }: {
                   </div>
 
                   {!genericoCV && (
-                    <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 text-xs text-amber-700">
+                    <div className="rounded-xl px-4 py-3 text-xs" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', color: '#fbbf24' }}>
                       También necesitás tener tu Video CV grabado. Grabá uno desde "Mi perfil".
                     </div>
                   )}
@@ -413,24 +428,27 @@ export default function OfertasTab({ videos, initialOfertaId, origenUsuario }: {
                   {puedeAplicar && (
                     <>
                       <div>
-                        <label className="text-sm font-medium text-ink-700 block mb-1">Mensaje para la empresa (opcional)</label>
+                        <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.7)' }}>Mensaje para la empresa (opcional)</label>
                         <textarea
                           value={nota} onChange={e => setNota(e.target.value)}
                           placeholder="Contale por qué te interesa el puesto..."
                           rows={3}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                          className="w-full rounded-lg px-3 py-2 text-sm outline-none"
+                          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                         />
                       </div>
                       <div className="flex gap-3">
                         <button
                           onClick={aplicar}
                           disabled={!!aplicando}
-                          className="flex-1 bg-brand-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors"
+                          className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-all"
+                          style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}
                         >
                           {aplicando ? 'Enviando...' : 'Enviar postulación'}
                         </button>
                         <button onClick={() => { setOfertaDetalle(null); setNota(''); }}
-                          className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-ink-600 hover:bg-gray-50">
+                          className="px-4 py-2.5 rounded-xl text-sm"
+                          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.55)' }}>
                           Cancelar
                         </button>
                       </div>
@@ -439,7 +457,8 @@ export default function OfertasTab({ videos, initialOfertaId, origenUsuario }: {
 
                   {!puedeAplicar && (
                     <button onClick={() => { setOfertaDetalle(null); setNota(''); }}
-                      className="w-full border border-gray-200 rounded-xl text-sm text-ink-600 py-2.5 hover:bg-gray-50">
+                      className="w-full rounded-xl text-sm py-2.5"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.55)' }}>
                       Volver
                     </button>
                   )}
@@ -448,23 +467,24 @@ export default function OfertasTab({ videos, initialOfertaId, origenUsuario }: {
                 /* ── OFERTA SIN PREGUNTAS: POSTULACIÓN DIRECTA ── */
                 <div className="space-y-4">
                   {!genericoCV ? (
-                    <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 text-sm text-amber-700">
+                    <div className="rounded-xl px-4 py-3 text-sm" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', color: '#fbbf24' }}>
                       Primero grabá tu Video CV desde "Mi perfil" para poder postularte.
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
-                      <Check size={13} className="text-emerald-500" />
+                    <div className="flex items-center gap-2 text-xs rounded-lg px-3 py-2" style={{ color: '#34d399', background: 'rgba(52,211,153,0.1)' }}>
+                      <Check size={13} color="#34d399" />
                       Tu Video CV se adjuntará automáticamente a la postulación
                     </div>
                   )}
 
                   <div>
-                    <label className="text-sm font-medium text-ink-700 block mb-1">Mensaje para la empresa (opcional)</label>
+                    <label className="text-sm font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.7)' }}>Mensaje para la empresa (opcional)</label>
                     <textarea
                       value={nota} onChange={e => setNota(e.target.value)}
                       placeholder="Contale por qué te interesa el puesto..."
                       rows={3}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      className="w-full rounded-lg px-3 py-2 text-sm outline-none"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                     />
                   </div>
 
@@ -472,12 +492,14 @@ export default function OfertasTab({ videos, initialOfertaId, origenUsuario }: {
                     <button
                       onClick={aplicar}
                       disabled={!genericoCV || !!aplicando}
-                      className="flex-1 bg-brand-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors"
+                      className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-all"
+                      style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}
                     >
                       {aplicando ? 'Enviando...' : 'Enviar postulación'}
                     </button>
                     <button onClick={() => { setOfertaDetalle(null); setNota(''); }}
-                      className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-ink-600 hover:bg-gray-50">
+                      className="px-4 py-2.5 rounded-xl text-sm"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.55)' }}>
                       Cancelar
                     </button>
                   </div>

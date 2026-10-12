@@ -60,7 +60,7 @@ const GALLERY_SLOTS = [
   { big: false, bg: 'linear-gradient(145deg,rgba(20,199,168,0.10),rgba(10,148,133,0.18))', color: '#0A9485', label: 'Capacitaciones' },
   { big: false, bg: 'linear-gradient(145deg,rgba(0,0,0,0.04),rgba(0,0,0,0.09))',           color: '#94a3b8', label: 'Eventos' },
   { big: false, bg: 'linear-gradient(145deg,rgba(20,199,168,0.07),rgba(91,63,224,0.10))',  color: '#5B3FE0', label: 'Equipos' },
-  { big: false, bg: 'linear-gradient(145deg,rgba(91,63,224,0.08),rgba(109,72,240,0.14))',  color: '#7048F0', label: 'Empresas' },
+  { big: false, bg: 'linear-gradient(145deg,rgba(91,63,224,0.05),rgba(109,72,240,0.10))',  color: '#7048F0', label: 'Comunidad' },
   { big: false, bg: 'linear-gradient(145deg,rgba(0,0,0,0.05),rgba(0,0,0,0.10))',           color: '#94a3b8', label: 'Historias' },
 ];
 
@@ -124,7 +124,7 @@ export default async function LandingPage() {
 
         <div className={s.navCenter}>
           <Link href="/"               className={`${s.navLink} ${s.navLinkActive}`}>Para vos</Link>
-          <Link href="/register-empresa" className={s.navLink}>Para empresas</Link>
+          {false && <Link href="/register-empresa" className={s.navLink}>Para empresas</Link>}
           <Link href="/register"        className={s.navLink}>Capacitaciones</Link>
         </div>
 
@@ -498,7 +498,8 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* ── EMPRESA ── */}
+      {/* ── EMPRESA (oculto) ── */}
+      {false && (
       <section className={`${s.empNewSec} sr-up`}>
         <div className={s.empNewL}>
           <div className={s.empNewIcon}><Building2 size={26} strokeWidth={1.75}/></div>
@@ -520,6 +521,7 @@ export default async function LandingPage() {
           />
         </div>
       </section>
+      )}
 
       {/* ── STATS BAR ── */}
       <div className={s.statsBarNew}>
@@ -629,10 +631,10 @@ export default async function LandingPage() {
             <Sparkles size={16} strokeWidth={2} />
             Crear mi perfil
           </Link>
-          <Link href="/register-empresa" className={s.ctaBtnS}>
+          {false && <Link href="/register-empresa" className={s.ctaBtnS}>
             <Building2 size={16} strokeWidth={2} />
             Soy empresa
-          </Link>
+          </Link>}
         </div>
       </section>
 
@@ -642,7 +644,7 @@ export default async function LandingPage() {
         <div className={s.footLinks}>
           <Link href="#" className={s.footLink}>Privacidad</Link>
           <Link href="#" className={s.footLink}>Contacto</Link>
-          <Link href="/register-empresa" className={s.footLink}>Para empresas</Link>
+          {false && <Link href="/register-empresa" className={s.footLink}>Para empresas</Link>}
         </div>
         <span className={s.footCopy}>2026 · OportunAI — impulsado por ONG CAII</span>
       </footer>

@@ -169,7 +169,7 @@ export default async function OfertaDetailPage({ params }: Props) {
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
     {font.url && <link href={font.url} rel="stylesheet" />}
-    <div style={{ fontFamily: font.family, background: pageBg, minHeight: '100vh' }}>
+    <div style={{ fontFamily: font.family, background: '#0d0d14', minHeight: '100vh' }}>
     <style>{`
       @media (max-width: 640px) {
         .nav-login { display: none; }
@@ -182,15 +182,15 @@ export default async function OfertaDetailPage({ params }: Props) {
     `}</style>
 
       {/* ── NAV ── */}
-      <nav style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 30 }}>
+      <nav style={{ background: 'rgba(26,15,60,0.97)', borderBottom: '1px solid rgba(255,255,255,0.07)', position: 'sticky', top: 0, zIndex: 30 }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
             <img src="/logo.png" alt="Oportunai" style={{ width: 28, height: 28 }} />
-            <span style={{ fontWeight: 700, fontSize: 18, color: '#0f172a' }}>Oportunai</span>
+            <span style={{ fontWeight: 700, fontSize: 18, color: 'rgba(255,255,255,0.9)' }}>Oportunai</span>
           </Link>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <Link href="/login" className="nav-login" style={{ color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Iniciar sesión</Link>
-            <Link href="/register" style={{ background: '#2563eb', color: '#fff', padding: '8px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>Empezar gratis</Link>
+            <Link href="/login" className="nav-login" style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Iniciar sesión</Link>
+            <Link href="/register" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff', padding: '8px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>Empezar gratis</Link>
           </div>
         </div>
       </nav>
@@ -440,7 +440,7 @@ export default async function OfertaDetailPage({ params }: Props) {
             icon={
               logoUrl
                 ? <img src={logoUrl} alt={nombreMarca} style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }} />
-                : <div style={{ width: 48, height: 48, borderRadius: 12, background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 700, fontSize: 20, color: '#64748b' }}>{nombreMarca[0]}</div>
+                : <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 700, fontSize: 20, color: 'rgba(255,255,255,0.6)' }}>{nombreMarca[0]}</div>
             }
             title={nombreMarca.toUpperCase()}
             body={empresa.descripcion ?? `${empresa.rubro ? `${empresa.rubro}. ` : ''}Sumate a nuestro equipo.`}
@@ -450,20 +450,20 @@ export default async function OfertaDetailPage({ params }: Props) {
         </div>
 
         {oferta.requisitos && (
-          <div style={{ background: '#fff', borderRadius: 16, padding: '20px 24px', marginBottom: 16, border: '1px solid #e2e8f0' }}>
-            <p style={{ fontWeight: 700, fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Requisitos</p>
-            <p style={{ color: '#475569', fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-line', margin: 0 }}>{oferta.requisitos}</p>
+          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: '20px 24px', marginBottom: 16, border: '1px solid rgba(255,255,255,0.08)' }}>
+            <p style={{ fontWeight: 700, fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Requisitos</p>
+            <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-line', margin: 0 }}>{oferta.requisitos}</p>
           </div>
         )}
 
         {/* Privacy */}
-        <div style={{ background: '#fff', borderRadius: 16, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14, border: '1px solid #e2e8f0' }}>
-          <div style={{ width: 40, height: 40, borderRadius: 10, background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Shield size={18} color="#3b82f6" />
+        <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14, border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Shield size={18} color="#60a5fa" />
           </div>
           <div>
-            <p style={{ fontWeight: 600, fontSize: 14, color: '#0f172a', margin: 0 }}>Tu información está segura</p>
-            <p style={{ fontSize: 12, color: '#94a3b8', margin: '2px 0 0' }}>En Oportunai protegemos tus datos y solo los compartimos con la empresa.</p>
+            <p style={{ fontWeight: 600, fontSize: 14, color: 'rgba(255,255,255,0.9)', margin: 0 }}>Tu información está segura</p>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', margin: '2px 0 0' }}>En Oportunai protegemos tus datos y solo los compartimos con la empresa.</p>
           </div>
         </div>
 
@@ -479,8 +479,8 @@ export default async function OfertaDetailPage({ params }: Props) {
           </Link>
         </div>
 
-        <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: 12, marginTop: 24 }}>
-          Powered by <Link href="/" style={{ color: '#3b82f6' }}>Oportunai</Link> — Selección con Video CV
+        <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.35)', fontSize: 12, marginTop: 24 }}>
+          Powered by <Link href="/" style={{ color: '#a78bfa' }}>Oportunai</Link> — Selección con Video CV
         </p>
         </div>
       </div>
@@ -514,10 +514,10 @@ function Chip({ icon, bg, label, labelColor = '#fff', sub }: {
 function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
-      <div style={{ color: '#94a3b8', marginTop: 2, flexShrink: 0 }}>{icon}</div>
+      <div style={{ color: 'rgba(148,163,184,0.8)', marginTop: 2, flexShrink: 0 }}>{icon}</div>
       <div>
-        <p style={{ color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>{label}</p>
-        <p style={{ color: '#0f172a', fontWeight: 600, fontSize: 13, margin: '2px 0 0' }}>{value}</p>
+        <p style={{ color: 'rgba(148,163,184,0.8)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>{label}</p>
+        <p style={{ color: '#1e1b4b', fontWeight: 600, fontSize: 13, margin: '2px 0 0' }}>{value}</p>
       </div>
     </div>
   );
@@ -535,17 +535,17 @@ function InfoRowDark({ icon, label, value }: { icon: React.ReactNode; label: str
   );
 }
 
-function BottomCard({ icon, title, titleColor = '#0f172a', body, cta, ctaHref }: {
+function BottomCard({ icon, title, titleColor = 'rgba(255,255,255,0.85)', body, cta, ctaHref }: {
   icon: React.ReactNode; title: string; titleColor?: string; body: string; cta: string; ctaHref: string;
 }) {
   return (
-    <div style={{ background: '#fff', borderRadius: 16, padding: '20px 22px', border: '1px solid #e2e8f0' }}>
+    <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: '20px 22px', border: '1px solid rgba(255,255,255,0.08)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
         {icon}
         <p style={{ color: titleColor, fontWeight: 700, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.04em', margin: 0 }}>{title}</p>
       </div>
-      <p style={{ color: '#64748b', fontSize: 13, lineHeight: 1.6, margin: '0 0 12px' }}>{body}</p>
-      <Link href={ctaHref} style={{ color: titleColor !== '#0f172a' ? titleColor : '#2563eb', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+      <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, lineHeight: 1.6, margin: '0 0 12px' }}>{body}</p>
+      <Link href={ctaHref} style={{ color: '#a78bfa', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
         {cta}
       </Link>
     </div>

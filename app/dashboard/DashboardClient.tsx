@@ -2509,7 +2509,7 @@ export default function DashboardClient({
                 const tieneSummary = !!(cvDatos?.resumen);
                 const tieneExp     = (cvDatos?.experiencia?.length ?? 0) > 0;
                 const tieneHabs    = (cvDatos?.habilidades?.length ?? 0) > 0;
-                const tieneLocalidad = !!(cvDatos?.localidad || localidad);
+                const tieneLocalidad = !!(cvDatos?.localidad || localidad || direccion);
                 const sem = usuario.korai_semaforo;
 
                 type PlanStep = {

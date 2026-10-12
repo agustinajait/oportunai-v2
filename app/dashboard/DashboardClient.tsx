@@ -1579,23 +1579,8 @@ export default function DashboardClient({
                 </div>
               )}
 
-              {/* Acción secundaria: CV */}
-              {!cvDatos?.resumen && !(cvDatos?.experiencia?.length) && !(cvDatos?.habilidades?.length) ? (
-                <Link
-                  href="/dashboard/armar-cv"
-                  className="flex items-center gap-4 w-full rounded-2xl p-4 transition-all active:scale-[0.99]"
-                  style={{ textDecoration: 'none', background: 'rgba(255,255,255,0.05)', border: '2px solid rgba(112,72,240,0.35)' }}
-                >
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
-                    <Sparkles size={20} color="#fff" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm leading-tight" style={{ color: 'rgba(255,255,255,0.9)' }}>Armá tu CV</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>Contanos tu experiencia · lo armamos nosotros</p>
-                  </div>
-                  <ChevronRight size={18} style={{ color: 'rgba(255,255,255,0.3)' }} className="flex-shrink-0" />
-                </Link>
-              ) : (
+              {/* CV listo: solo mostrar cuando el usuario ya tiene CV armado */}
+              {!!(cvDatos && Object.keys(cvDatos as Record<string,unknown>).length > 0) && (
                 <div className="flex items-center gap-3 w-full rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
                     <FileText size={20} color="#fff" />

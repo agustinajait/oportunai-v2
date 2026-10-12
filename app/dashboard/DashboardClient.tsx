@@ -1149,11 +1149,11 @@ export default function DashboardClient({
                 </h2>
                 <div className="space-y-3">
                   {misModulos.map(mod => {
-                    const ESTADO_COLOR: Record<string, string> = {
-                      en_progreso: 'bg-blue-100 text-blue-700',
-                      en_riesgo: 'bg-orange-100 text-orange-700',
-                      completado: 'bg-green-100 text-green-700',
-                      aprobado: 'bg-teal-100 text-teal-700',
+                    const ESTADO_STYLE: Record<string, React.CSSProperties> = {
+                      en_progreso: { background: 'rgba(96,165,250,0.15)', color: '#60a5fa' },
+                      en_riesgo:   { background: 'rgba(251,146,60,0.15)', color: '#fb923c' },
+                      completado:  { background: 'rgba(52,211,153,0.15)', color: '#34d399' },
+                      aprobado:    { background: 'rgba(45,212,191,0.15)', color: '#2dd4bf' },
                     };
                     const ESTADO_LABEL: Record<string, string> = {
                       en_progreso: 'En progreso', en_riesgo: 'En riesgo',
@@ -1165,16 +1165,16 @@ export default function DashboardClient({
                     const aprobados = mod.evidencias.filter(e => e.estado === 'aprobado').length;
 
                     return (
-                      <div key={mod.id} className="card border border-gray-200 overflow-hidden">
+                      <div key={mod.id} className="card overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
                         <button
                           onClick={() => setModuloAbierto(isOpen ? null : mod.id)}
-                          className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                          className="w-full flex items-center justify-between p-4 transition-colors"
                         >
                           <div className="flex items-center gap-3 text-left">
                             {mod.empresa.logo_url ? (
-                              <img src={mod.empresa.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover border border-gray-200" />
+                              <img src={mod.empresa.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover flex-shrink-0" style={{ border: '1px solid rgba(255,255,255,0.1)' }} />
                             ) : (
-                              <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-sm">
+                              <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm" style={{ background: 'rgba(45,212,191,0.15)', color: '#2dd4bf' }}>
                                 {mod.empresa.nombre[0]}
                               </div>
                             )}
@@ -1187,7 +1187,7 @@ export default function DashboardClient({
                             {mod.remito && (
                               <span className="text-xs bg-teal-600 text-white px-2 py-0.5 rounded-full">Remito #{mod.remito.numero_remito}</span>
                             )}
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ESTADO_COLOR[mod.estado] ?? 'bg-gray-100 text-gray-600'}`}>
+                            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={ESTADO_STYLE[mod.estado] ?? { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
                               {ESTADO_LABEL[mod.estado] ?? mod.estado}
                             </span>
                             <span className="text-xs text-ink-400">{aprobados}/{totalItems}</span>
@@ -1196,20 +1196,20 @@ export default function DashboardClient({
                         </button>
 
                         {isOpen && (
-                          <div className="border-t border-gray-100 p-4 space-y-3 bg-gray-50/50">
+                          <div className="p-4 space-y-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
                             <div className="flex items-center gap-2 flex-wrap">
                               {mod.horas_asignadas && (
-                                <span className="text-xs font-semibold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: 'rgba(45,212,191,0.15)', color: '#2dd4bf' }}>
                                   <Clock size={11} /> {mod.horas_asignadas} hs
                                 </span>
                               )}
                               {mod.precio_hora && (
-                                <span className="text-xs font-semibold bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">
+                                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)' }}>
                                   ${Number(mod.precio_hora).toLocaleString('es-AR')}/hs
                                 </span>
                               )}
                               {mod.horas_asignadas && mod.precio_hora && (
-                                <span className="text-xs font-bold bg-yellow-50 border border-yellow-200 text-gray-800 px-2 py-0.5 rounded-full">
+                                <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }}>
                                   Total: ${(mod.horas_asignadas * mod.precio_hora).toLocaleString('es-AR', { minimumFractionDigits: 0 })}
                                 </span>
                               )}
@@ -1221,12 +1221,12 @@ export default function DashboardClient({
                             </div>
                             {/* Acuerdo de servicio */}
                             {mod.servicio.contrato_template && (
-                              <details className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                                <summary className="cursor-pointer px-3 py-2.5 text-xs font-semibold text-gray-700 flex items-center gap-2 hover:bg-gray-50 select-none list-none">
-                                  <FileText size={13} className="text-teal-600 flex-shrink-0" /> Ver acuerdo de servicio
+                              <details className="rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                <summary className="cursor-pointer px-3 py-2.5 text-xs font-semibold flex items-center gap-2 select-none list-none" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                                  <FileText size={13} className="text-teal-500 flex-shrink-0" /> Ver acuerdo de servicio
                                 </summary>
-                                <div className="px-3 pb-3 pt-1 border-t border-gray-100">
-                                  <pre className="text-xs text-gray-600 whitespace-pre-wrap font-sans leading-relaxed">{mod.servicio.contrato_template}</pre>
+                                <div className="px-3 pb-3 pt-1" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                                  <pre className="text-xs whitespace-pre-wrap font-sans leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>{mod.servicio.contrato_template}</pre>
                                 </div>
                               </details>
                             )}
@@ -1237,11 +1237,10 @@ export default function DashboardClient({
                                 const keyEv = `${mod.id}-${idx}`;
                                 const enviando = subiendoEvidencia === keyEv;
                                 return (
-                                  <div key={idx} className={`bg-white rounded-xl border p-3 ${
-                                    ev?.estado === 'aprobado' ? 'border-green-200' :
-                                    ev?.estado === 'rechazado' ? 'border-red-200' :
-                                    ev ? 'border-blue-200' : 'border-gray-200'
-                                  }`}>
+                                  <div key={idx} className="rounded-xl p-3" style={{
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: `1px solid ${ev?.estado === 'aprobado' ? 'rgba(52,211,153,0.35)' : ev?.estado === 'rechazado' ? 'rgba(248,113,113,0.35)' : ev ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`,
+                                  }}>
                                     <div className="flex items-start justify-between gap-2 mb-1">
                                       <p className="text-sm font-medium text-ink-800">{item.item}</p>
                                       {ev?.estado === 'aprobado' && <CheckCircle2 size={16} className="text-green-500 flex-shrink-0" />}
@@ -1250,8 +1249,8 @@ export default function DashboardClient({
                                     </div>
                                     {item.descripcion && <p className="text-xs text-ink-400 mb-2">{item.descripcion}</p>}
                                     {ev && (
-                                      <div className="bg-gray-50 rounded-lg px-2 py-1.5 text-xs text-ink-600 mb-2">
-                                        <span className="text-ink-400">Tu evidencia: </span>{ev.texto}
+                                      <div className="rounded-lg px-2 py-1.5 text-xs mb-2" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.65)' }}>
+                                        <span style={{ color: 'rgba(255,255,255,0.4)' }}>Tu evidencia: </span>{ev.texto}
                                       </div>
                                     )}
                                     {(!ev || ev.estado === 'rechazado') && mod.estado !== 'aprobado' && (
@@ -1261,7 +1260,8 @@ export default function DashboardClient({
                                           placeholder={ev?.estado === 'rechazado' ? 'Reenviar evidencia...' : 'Descripción de tu evidencia...'}
                                           value={evidenciaTexto[keyEv] ?? ''}
                                           onChange={e => setEvidenciaTexto(prev => ({ ...prev, [keyEv]: e.target.value }))}
-                                          className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                                          className="flex-1 text-xs rounded-lg px-2 py-1.5 focus:outline-none"
+                                          style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
                                         />
                                         <button
                                           onClick={() => enviarEvidencia(mod.id, idx)}
@@ -1311,7 +1311,7 @@ export default function DashboardClient({
                         <div className="p-4 flex flex-col gap-3">
                           <div className="flex items-start gap-3">
                             {s.empresa.logo_url ? (
-                              <img src={s.empresa.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover border border-gray-100 flex-shrink-0" />
+                              <img src={s.empresa.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" style={{ border: '1px solid rgba(255,255,255,0.1)' }} />
                             ) : (
                               <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 font-bold flex-shrink-0">
                                 {s.empresa.nombre[0]}
@@ -1330,22 +1330,22 @@ export default function DashboardClient({
                               {s.frecuencia === 'diaria' ? 'Diaria' : s.frecuencia === 'semanal' ? 'Semanal' : s.frecuencia === 'mensual' ? 'Mensual' : 'Única vez'}
                             </span>
                             {s.duracion_jornada && (
-                              <span className="badge bg-teal-50 text-teal-700 text-[11px] flex items-center gap-1">
+                              <span className="badge text-[11px] flex items-center gap-1" style={{ background: 'rgba(45,212,191,0.15)', color: '#2dd4bf' }}>
                                 <Clock size={10} /> {s.duracion_jornada}
                               </span>
                             )}
                             {s.horas_modulo && (
-                              <span className="badge bg-teal-50 text-teal-700 text-[11px] font-semibold">
+                              <span className="badge text-[11px] font-semibold" style={{ background: 'rgba(45,212,191,0.15)', color: '#2dd4bf' }}>
                                 {s.horas_modulo} hs/módulo
                               </span>
                             )}
                             {s.capacitacion && (
-                              <span className="badge bg-purple-50 text-purple-700 text-[11px] flex items-center gap-1">
+                              <span className="badge text-[11px] flex items-center gap-1" style={{ background: 'rgba(167,139,250,0.15)', color: '#a78bfa' }}>
                                 <GraduationCap size={10} /> Cap. requerida
                               </span>
                             )}
                             {s.deadline && (
-                              <span className="badge bg-orange-50 text-orange-700 text-[11px] flex items-center gap-1">
+                              <span className="badge text-[11px] flex items-center gap-1" style={{ background: 'rgba(251,146,60,0.15)', color: '#fb923c' }}>
                                 <Clock size={10} /> hasta {new Date(s.deadline).toLocaleDateString('es-AR')}
                               </span>
                             )}
@@ -1353,19 +1353,19 @@ export default function DashboardClient({
 
                           {/* Precio destacado */}
                           {s.precio_hora && (
-                            <div className="flex items-center gap-3 bg-green-50 border border-green-100 rounded-xl px-3 py-2.5">
+                            <div className="flex items-center gap-3 rounded-xl px-3 py-2.5" style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)' }}>
                               <div className="flex-1">
-                                <p className="text-[11px] text-green-600 font-medium">Honorario por módulo</p>
+                                <p className="text-[11px] font-medium" style={{ color: '#34d399' }}>Honorario por módulo</p>
                                 <div className="flex items-baseline gap-1.5 flex-wrap mt-0.5">
-                                  <span className="text-base font-bold text-green-700">
+                                  <span className="text-base font-bold" style={{ color: '#34d399' }}>
                                     ${Number(s.precio_hora).toLocaleString('es-AR')}<span className="text-xs font-medium">/hs</span>
                                   </span>
                                   {s.horas_modulo && (
                                     <>
-                                      <span className="text-xs text-green-500">×</span>
-                                      <span className="text-xs text-green-600">{s.horas_modulo} hs</span>
-                                      <span className="text-xs text-green-500">=</span>
-                                      <span className="text-lg font-extrabold text-green-700">
+                                      <span className="text-xs" style={{ color: '#34d399' }}>×</span>
+                                      <span className="text-xs" style={{ color: '#34d399' }}>{s.horas_modulo} hs</span>
+                                      <span className="text-xs" style={{ color: '#34d399' }}>=</span>
+                                      <span className="text-lg font-extrabold" style={{ color: '#34d399' }}>
                                         ${(s.horas_modulo * Number(s.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })}
                                       </span>
                                     </>
@@ -1390,14 +1390,14 @@ export default function DashboardClient({
 
                         {/* Detalle expandido */}
                         {expandido && (
-                          <div className="border-t border-gray-100 bg-gray-50/60 px-4 pb-4 pt-3 space-y-4">
+                          <div className="px-4 pb-4 pt-3 space-y-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
                             {/* Protocolo */}
                             {protocolo.length > 0 && (
                               <div>
                                 <p className="text-[11px] font-semibold text-ink-500 uppercase tracking-wide mb-2">Protocolo de trabajo</p>
                                 <div className="space-y-2">
                                   {protocolo.map((item, idx) => (
-                                    <div key={idx} className="flex gap-2.5 bg-white rounded-lg border border-gray-200 px-3 py-2.5">
+                                    <div key={idx} className="flex gap-2.5 rounded-lg px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                                       <span className="text-xs text-brand-600 font-bold flex-shrink-0 mt-0.5">{idx + 1}.</span>
                                       <div>
                                         <p className="text-xs font-medium text-ink-800">{item.item}</p>
@@ -1415,7 +1415,7 @@ export default function DashboardClient({
                                 <p className="text-[11px] font-semibold text-ink-500 uppercase tracking-wide mb-2">Documentos requeridos</p>
                                 <div className="flex flex-wrap gap-1.5">
                                   {s.docs_requeridos.map((d, i) => (
-                                    <span key={i} className="text-[11px] bg-white border border-gray-200 text-gray-600 px-2 py-1 rounded-lg flex items-center gap-1">
+                                    <span key={i} className="text-[11px] px-2 py-1 rounded-lg flex items-center gap-1" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
                                       <FileText size={10} /> {docLabel(d)}
                                     </span>
                                   ))}
@@ -1425,23 +1425,23 @@ export default function DashboardClient({
 
                             {/* Capacitación requerida */}
                             {s.capacitacion && (
-                              <div className="bg-purple-50 rounded-lg px-3 py-2 flex items-center gap-2">
-                                <GraduationCap size={14} className="text-purple-600 flex-shrink-0" />
+                              <div className="rounded-lg px-3 py-2 flex items-center gap-2" style={{ background: 'rgba(167,139,250,0.12)' }}>
+                                <GraduationCap size={14} className="flex-shrink-0" style={{ color: '#a78bfa' }} />
                                 <div>
-                                  <p className="text-[11px] font-semibold text-purple-700">Capacitación obligatoria</p>
-                                  <p className="text-xs text-purple-600">{s.capacitacion.titulo}</p>
+                                  <p className="text-[11px] font-semibold" style={{ color: '#a78bfa' }}>Capacitación obligatoria</p>
+                                  <p className="text-xs" style={{ color: 'rgba(167,139,250,0.8)' }}>{s.capacitacion.titulo}</p>
                                 </div>
                               </div>
                             )}
 
                             {/* Acuerdo */}
                             {s.contrato_template && (
-                              <details className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                                <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-gray-700 flex items-center gap-2 hover:bg-gray-50 select-none list-none">
-                                  <FileText size={12} className="text-teal-600" /> Ver modelo de acuerdo
+                              <details className="rounded-lg overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                <summary className="cursor-pointer px-3 py-2 text-xs font-semibold flex items-center gap-2 select-none list-none" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                                  <FileText size={12} style={{ color: '#2dd4bf' }} /> Ver modelo de acuerdo
                                 </summary>
-                                <div className="px-3 pb-3 pt-1 border-t border-gray-100">
-                                  <pre className="text-[11px] text-gray-600 whitespace-pre-wrap font-sans leading-relaxed">{s.contrato_template}</pre>
+                                <div className="px-3 pb-3 pt-1" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                                  <pre className="text-[11px] whitespace-pre-wrap font-sans leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>{s.contrato_template}</pre>
                                 </div>
                               </details>
                             )}
@@ -1449,20 +1449,19 @@ export default function DashboardClient({
                         )}
 
                         {/* Footer con botón aplicar */}
-                        <div className="px-4 pb-4 pt-2 border-t border-gray-100">
+                        <div className="px-4 pb-4 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                           {msgServicio && (
-                            <p className={`text-xs rounded-lg px-2 py-1 mb-2 ${msgServicio.ok ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                            <p className="text-xs rounded-lg px-2 py-1 mb-2" style={msgServicio.ok ? { background: 'rgba(52,211,153,0.12)', color: '#34d399' } : { background: 'rgba(248,113,113,0.12)', color: '#f87171' }}>
                               {msgServicio.msg}
                             </p>
                           )}
                           <button
                             onClick={() => aplicarServicio(s.id)}
                             disabled={yaEnMisModulos || aplicandoServicio === s.id}
-                            className={`w-full text-sm py-2.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
-                              yaEnMisModulos
-                                ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                                : 'bg-brand-600 text-white hover:bg-brand-700'
-                            }`}
+                            className="w-full text-sm py-2.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
+                            style={yaEnMisModulos
+                              ? { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.35)', cursor: 'not-allowed' }
+                              : { background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' }}
                           >
                             {aplicandoServicio === s.id ? <Loader2 size={14} className="animate-spin" /> : null}
                             {yaEnMisModulos ? 'Ya aplicaste' : 'Aplicar a este servicio'}
@@ -1713,11 +1712,11 @@ export default function DashboardClient({
                 const colorCls = (c?: SemaforoColor) =>
                   c === 'verde'    ? 'bg-emerald-500' :
                   c === 'amarillo' ? 'bg-amber-400'   :
-                  c === 'rojo'     ? 'bg-red-500'     : 'bg-gray-200';
-                const textCls = (c?: SemaforoColor) =>
-                  c === 'verde'    ? 'text-emerald-700' :
-                  c === 'amarillo' ? 'text-amber-700'   :
-                  c === 'rojo'     ? 'text-red-700'     : 'text-gray-400';
+                  c === 'rojo'     ? 'bg-red-500'     : 'bg-white/20';
+                const textColor = (c?: SemaforoColor) =>
+                  c === 'verde'    ? '#34d399' :
+                  c === 'amarillo' ? '#fbbf24' :
+                  c === 'rojo'     ? '#f87171' : 'rgba(255,255,255,0.35)';
                 const labelColor = (c?: SemaforoColor) =>
                   c === 'verde'    ? 'Bien'        :
                   c === 'amarillo' ? 'Mejorable'   :
@@ -1761,9 +1760,9 @@ export default function DashboardClient({
                         </p>
                         <div className="grid grid-cols-3 gap-1.5 opacity-40">
                           {DIMS.map(d => (
-                            <div key={d.key} className="flex flex-col items-center gap-1 bg-gray-50 rounded-lg px-1 py-2">
+                            <div key={d.key} className="flex flex-col items-center gap-1 rounded-lg px-1 py-2" style={{ background: 'rgba(255,255,255,0.05)' }}>
                               <span className="text-base">{d.icon}</span>
-                              <div className="w-2 h-2 rounded-full bg-gray-200" />
+                              <div className="w-2 h-2 rounded-full" style={{ background: 'rgba(255,255,255,0.2)' }} />
                               <p className="text-[9px] text-ink-400 text-center">{d.label}</p>
                             </div>
                           ))}
@@ -1790,11 +1789,11 @@ export default function DashboardClient({
                         {/* 6 dimensiones */}
                         <div className="grid grid-cols-3 gap-2">
                           {DIMS.map(d => (
-                            <div key={d.key} className="flex flex-col items-center gap-1 bg-white rounded-xl border border-gray-100 px-2 py-2.5">
+                            <div key={d.key} className="flex flex-col items-center gap-1 rounded-xl px-2 py-2.5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}>
                               <span className="text-lg">{d.icon}</span>
                               <div className={`w-2.5 h-2.5 rounded-full ${colorCls(sem![d.key])}`} />
                               <p className="text-[10px] font-medium text-ink-600 text-center leading-tight">{d.label}</p>
-                              <p className={`text-[9px] font-semibold ${textCls(sem![d.key])}`}>
+                              <p className="text-[9px] font-semibold" style={{ color: textColor(sem![d.key]) }}>
                                 {labelColor(sem![d.key])}
                               </p>
                             </div>
@@ -1807,10 +1806,10 @@ export default function DashboardClient({
                             <p className="text-[10px] font-semibold text-ink-400 uppercase tracking-wide mb-2">Plan de acción</p>
                             <div className="space-y-2">
                               {accionesFiltradas.map(a => (
-                                <div key={a.dim} className="bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-2">
+                                <div key={a.dim} className="rounded-lg px-2.5 py-2" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)' }}>
                                   <div className="flex items-start gap-1.5">
                                     <span className="text-sm flex-shrink-0">{a.icon}</span>
-                                    <p className="text-[10px] text-amber-800 leading-relaxed">{a.texto}</p>
+                                    <p className="text-[10px] leading-relaxed" style={{ color: '#fbbf24' }}>{a.texto}</p>
                                   </div>
                                   {a.accion && (
                                     <button
@@ -2031,7 +2030,7 @@ export default function DashboardClient({
                   className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm"
                   onClick={e => { if (e.target === e.currentTarget) setWaModalOpen(false); }}
                 >
-                  <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm p-6 space-y-5 animate-slide-up sm:animate-none">
+                  <div className="rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm p-6 space-y-5 animate-slide-up sm:animate-none" style={{ background: '#1a1030' }}>
                     {/* Handle bar mobile */}
                     <div className="w-10 h-1 bg-ink-200 rounded-full mx-auto sm:hidden" />
 
@@ -3508,15 +3507,15 @@ function VideoCard({ tipo, titulo, descripcion, icon: Icon, color, recordHref, v
   pagado?: boolean; onUnlock?: () => void;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
       {/* Header */}
       <div className="px-5 pt-5 pb-3 flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="font-bold text-ink-900 text-base">{titulo}</h2>
             {video
-              ? <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full"><Check size={9} strokeWidth={3} /> Grabado</span>
-              : <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full"><Circle size={9} /> Pendiente</span>}
+              ? <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399' }}><Check size={9} strokeWidth={3} /> Grabado</span>
+              : <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(251,191,36,0.15)', color: '#fbbf24' }}><Circle size={9} /> Pendiente</span>}
           </div>
           <p className="text-xs text-ink-400 mt-0.5">{descripcion}</p>
         </div>
@@ -3548,14 +3547,16 @@ function VideoCard({ tipo, titulo, descripcion, icon: Icon, color, recordHref, v
               <div className="flex gap-2">
                 <button
                   onClick={onCopy}
-                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 border border-gray-200 text-ink-600 text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-medium transition-colors"
+                  style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.75)' }}
                 >
                   {copied === copiedKey ? <CheckCheck size={14} className="text-green-500" /> : <Copy size={14} />}
                   {copied === copiedKey ? '¡Copiado!' : 'Copiar link'}
                 </button>
                 <Link
                   href={recordHref}
-                  className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 border border-gray-200 text-ink-500 text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors"
+                  style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.65)' }}
                 >
                   <Circle size={13} /> Re-grabar
                 </Link>
@@ -3571,10 +3572,10 @@ function VideoCard({ tipo, titulo, descripcion, icon: Icon, color, recordHref, v
                 <Lock size={15} /> Desbloquear para compartir
               </button>
               <div className="flex gap-2">
-                <button onClick={onUnlock} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 border border-gray-200 text-ink-400 text-sm font-medium hover:bg-gray-50 transition-colors opacity-60">
+                <button onClick={onUnlock} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-medium transition-colors opacity-60" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
                   <Copy size={14} /> Copiar link
                 </button>
-                <button onClick={onUnlock} className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 border border-gray-200 text-ink-400 text-sm hover:bg-gray-50 transition-colors opacity-60">
+                <button onClick={onUnlock} className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm transition-colors opacity-60" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
                   <Download size={14} /> Descargar
                 </button>
               </div>

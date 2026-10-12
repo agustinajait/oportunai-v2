@@ -97,8 +97,9 @@ Instrucciones:
     }),
   ]);
 
-  const rawFit = (fitMsg.content[0] as { type: string; text: string }).text.trim();
-  const rawAdapt = (adaptMsg.content[0] as { type: string; text: string }).text.trim();
+  const stripFences = (s: string) => s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+  const rawFit = stripFences((fitMsg.content[0] as { type: string; text: string }).text.trim());
+  const rawAdapt = stripFences((adaptMsg.content[0] as { type: string; text: string }).text.trim());
 
   let resultado: Record<string, unknown>;
   let cv_adaptado: CvDatosInput;

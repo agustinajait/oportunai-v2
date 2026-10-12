@@ -78,7 +78,8 @@ Criterios:
     }],
   });
 
-  const raw = (message.content[0] as { type: string; text: string }).text.trim();
+  const rawText = (message.content[0] as { type: string; text: string }).text.trim();
+  const raw = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
   let analisis: Record<string, unknown>;
   try {
     analisis = JSON.parse(raw);

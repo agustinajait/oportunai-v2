@@ -2509,6 +2509,7 @@ export default function DashboardClient({
                 const tieneSummary = !!(cvDatos?.resumen);
                 const tieneExp     = (cvDatos?.experiencia?.length ?? 0) > 0;
                 const tieneHabs    = (cvDatos?.habilidades?.length ?? 0) > 0;
+                const tieneCv      = tieneSummary || tieneExp || tieneHabs || !!(cvDatos && Object.keys(cvDatos as Record<string,unknown>).length > 0);
                 const tieneLocalidad = !!(cvDatos?.localidad || localidad || direccion);
                 const sem = usuario.korai_semaforo;
 
@@ -2529,7 +2530,7 @@ export default function DashboardClient({
                     id: 'cv', icon: '✨',
                     title: 'Armá tu CV',
                     desc: 'Contanos tu experiencia en tus palabras — nosotros la convertimos en un CV profesional',
-                    done: tieneSummary || tieneExp || tieneHabs,
+                    done: tieneCv,
                     cta: { label: 'Armar mi CV', click: () => setTimeout(() => document.getElementById('cv-builder-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50) },
                   },
                   {

@@ -33,7 +33,7 @@ function RegisterForm() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#F5F5F7' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: '#0d0d14' }}>
 
       {/* Hero oscuro */}
       <div
@@ -53,15 +53,15 @@ function RegisterForm() {
 
       {/* Formulario */}
       <div className="flex-1 px-4 pt-6 pb-10 max-w-lg mx-auto w-full">
-        <div className="bg-white rounded-2xl border border-black/5 shadow-sm p-6 mb-4">
+        <div className="rounded-2xl p-6 mb-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: '#6b7280' }}>Nombre completo</label>
+              <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Nombre completo</label>
               <input
                 {...register('nombre_completo')}
                 className="w-full rounded-xl px-4 py-3 text-sm outline-none"
-                style={{ border: '1.5px solid #e5e7eb', color: '#111', background: '#fafafa' }}
+                style={{ border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.06)' }}
                 placeholder="María González"
               />
               {errors.nombre_completo && <p className="text-red-500 text-xs mt-1">{errors.nombre_completo.message}</p>}
@@ -69,22 +69,22 @@ function RegisterForm() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: '#6b7280' }}>DNI</label>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>DNI</label>
                 <input
                   {...register('dni')}
                   className="w-full rounded-xl px-4 py-3 text-sm outline-none"
-                  style={{ border: '1.5px solid #e5e7eb', color: '#111', background: '#fafafa' }}
+                  style={{ border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.06)' }}
                   placeholder="12345678"
                 />
                 {errors.dni && <p className="text-red-500 text-xs mt-1">{errors.dni.message}</p>}
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: '#6b7280' }}>Nacimiento</label>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Nacimiento</label>
                 <input
                   {...register('fecha_nacimiento')}
                   type="date"
                   className="w-full rounded-xl px-4 py-3 text-sm outline-none"
-                  style={{ border: '1.5px solid #e5e7eb', color: '#111', background: '#fafafa' }}
+                  style={{ border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.06)' }}
                 />
                 {errors.fecha_nacimiento && <p className="text-red-500 text-xs mt-1">{errors.fecha_nacimiento.message}</p>}
               </div>
@@ -92,21 +92,21 @@ function RegisterForm() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: '#6b7280' }}>Teléfono</label>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Teléfono</label>
                 <input
                   {...register('telefono')}
                   className="w-full rounded-xl px-4 py-3 text-sm outline-none"
-                  style={{ border: '1.5px solid #e5e7eb', color: '#111', background: '#fafafa' }}
+                  style={{ border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.06)' }}
                   placeholder="1112345678"
                 />
                 {errors.telefono && <p className="text-red-500 text-xs mt-1">{errors.telefono.message}</p>}
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: '#6b7280' }}>Dirección</label>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Dirección</label>
                 <input
                   {...register('direccion')}
                   className="w-full rounded-xl px-4 py-3 text-sm outline-none"
-                  style={{ border: '1.5px solid #e5e7eb', color: '#111', background: '#fafafa' }}
+                  style={{ border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.06)' }}
                   placeholder="Quilmes, Buenos Aires"
                 />
                 {errors.direccion && <p className="text-red-500 text-xs mt-1">{errors.direccion.message}</p>}
@@ -114,32 +114,32 @@ function RegisterForm() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: '#6b7280' }}>Email</label>
+              <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Email</label>
               <input
                 {...register('email')}
                 type="email"
                 className="w-full rounded-xl px-4 py-3 text-sm outline-none"
-                style={{ border: '1.5px solid #e5e7eb', color: '#111', background: '#fafafa' }}
+                style={{ border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.06)' }}
                 placeholder="tu@email.com"
               />
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: '#6b7280' }}>Contraseña</label>
+              <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Contraseña</label>
               <div className="relative">
                 <input
                   {...register('password')}
                   type={showPass ? 'text' : 'password'}
                   className="w-full rounded-xl px-4 py-3 pr-12 text-sm outline-none"
-                  style={{ border: '1.5px solid #e5e7eb', color: '#111', background: '#fafafa' }}
+                  style={{ border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.06)' }}
                   placeholder="Mín. 8 caracteres, 1 mayúscula, 1 número"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors"
-                  style={{ color: '#9ca3af' }}
+                  style={{ color: 'rgba(255,255,255,0.4)' }}
                 >
                   {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
@@ -148,7 +148,7 @@ function RegisterForm() {
             </div>
 
             {serverError && (
-              <div className="text-sm px-4 py-3 rounded-xl" style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}>
+              <div className="text-sm px-4 py-3 rounded-xl" style={{ background: 'rgba(220,38,38,0.1)', color: '#fca5a5', border: '1px solid rgba(220,38,38,0.25)' }}>
                 {serverError}
               </div>
             )}
@@ -165,7 +165,7 @@ function RegisterForm() {
           </form>
         </div>
 
-        <p className="text-center text-sm" style={{ color: '#9ca3af' }}>
+        <p className="text-center text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
           ¿Ya tenés cuenta?{' '}
           <Link href="/login" className="font-semibold" style={{ color: '#7048F0' }}>Ingresá</Link>
         </p>

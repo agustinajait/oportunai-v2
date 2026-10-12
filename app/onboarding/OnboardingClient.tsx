@@ -257,7 +257,7 @@ function OnboardingInner({ nombre, areaLaboral, tieneVideo, origen }: Props) {
 
 export default function OnboardingClient(props: Props) {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-ink-50" />}>
+    <Suspense fallback={<div className="min-h-screen" style={{ background: '#0d0d14' }} />}>
       <OnboardingInner {...props} />
     </Suspense>
   );

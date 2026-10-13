@@ -10,8 +10,8 @@
 
 @layer base {
   * { box-sizing: border-box; }
-  html { font-family: var(--font-body); overflow-x: hidden; font-size: 17px; }
-  body { background: #0d0d14; color: rgba(255,255,255,0.9); overflow-x: hidden; max-width: 100vw; }
+  html { font-family: var(--font-body); overflow-x: hidden; }
+  body { @apply bg-brand-50 text-ink-900; overflow-x: hidden; max-width: 100vw; }
   h1, h2, h3 { font-family: var(--font-display); }
 }
 
@@ -21,31 +21,23 @@
            hover:bg-brand-700 active:scale-95 transition-all duration-150 shadow-sm;
   }
   .btn-secondary {
-    @apply inline-flex items-center gap-2 px-6 py-3 font-medium rounded-xl active:scale-95 transition-all duration-150;
-    background: rgba(255,255,255,0.06);
-    color: rgba(255,255,255,0.85);
-    border: 1px solid rgba(255,255,255,0.12);
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-white text-ink-800 font-medium rounded-xl
+           border border-ink-200 hover:bg-ink-50 active:scale-95 transition-all duration-150;
   }
-  .btn-secondary:hover { background: rgba(255,255,255,0.1); }
   .btn-ghost {
-    @apply inline-flex items-center gap-2 px-4 py-2 font-medium rounded-lg active:scale-95 transition-all duration-150;
-    color: rgba(255,255,255,0.6);
+    @apply inline-flex items-center gap-2 px-4 py-2 text-ink-600 font-medium rounded-lg
+           hover:bg-brand-50 active:scale-95 transition-all duration-150;
   }
-  .btn-ghost:hover { background: rgba(255,255,255,0.06); }
   .input-field {
-    @apply w-full px-4 py-3 rounded-xl placeholder-ink-400 focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-transparent transition-all duration-150;
-    background: rgba(255,255,255,0.06);
-    border: 1.5px solid rgba(255,255,255,0.12);
-    color: rgba(255,255,255,0.85);
+    @apply w-full px-4 py-3 bg-white border border-ink-200 rounded-xl text-ink-800
+           placeholder-ink-400 focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-transparent
+           transition-all duration-150;
   }
   .card {
-    @apply rounded-2xl;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
+    @apply bg-white rounded-2xl border border-brand-100 shadow-sm;
   }
   .label {
-    @apply block text-sm font-medium mb-1.5;
-    color: rgba(255,255,255,0.5);
+    @apply block text-sm font-medium text-ink-600 mb-1.5;
   }
   .error-text {
     @apply text-sm text-red-500 mt-1;

@@ -20,7 +20,7 @@ export default function AlfaPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#0d0d14' }}>
+    <div className="min-h-screen bg-[#f5f4f0] flex items-center justify-center py-10">
       <AlfaQuiz onComplete={handleComplete} onSkip={handleSkip} />
     </div>
   );

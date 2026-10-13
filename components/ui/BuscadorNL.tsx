@@ -459,15 +459,15 @@ export default function BuscadorNL({ variant = 'home', className = '', initialQu
             </p>
 
             {/* Perfil digital */}
-            <div style={{ background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 12, padding: '14px 16px', marginBottom: 12, textAlign: 'left' }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: '#a78bfa', marginBottom: 6 }}>
+            <div style={{ background: '#f5f3ff', borderRadius: 12, padding: '14px 16px', marginBottom: 12, textAlign: 'left' }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: '#6d28d9', marginBottom: 6 }}>
                 📎 Adjuntá el link de tu perfil digital
               </p>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', marginBottom: 10, lineHeight: 1.5 }}>
+              <p style={{ fontSize: 12, color: '#4b5563', marginBottom: 10, lineHeight: 1.5 }}>
                 Copiá tu link y pegalo en el formulario o en el mensaje a la empresa. Así pueden ver tu Video CV y tu perfil completo.
               </p>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <span style={{ flex: 1, fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '6px 10px', color: 'rgba(255,255,255,0.7)', wordBreak: 'break-all' }}>
+                <span style={{ flex: 1, fontSize: 11, background: '#fff', border: '1px solid #ddd6fe', borderRadius: 8, padding: '6px 10px', color: '#374151', wordBreak: 'break-all' }}>
                   {typeof window !== 'undefined' ? window.location.origin : ''}/u/{profileSlug}/cv
                 </span>
                 <button
@@ -477,7 +477,7 @@ export default function BuscadorNL({ variant = 'home', className = '', initialQu
                     setTipCopiado(true);
                     setTimeout(() => setTipCopiado(false), 2000);
                   }}
-                  style={{ flexShrink: 0, background: tipCopiado ? '#059669' : '#7048F0', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'background .2s' }}
+                  style={{ flexShrink: 0, background: tipCopiado ? '#059669' : '#6d28d9', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'background .2s' }}
                 >
                   {tipCopiado ? '✓ Copiado' : 'Copiar'}
                 </button>
@@ -485,17 +485,17 @@ export default function BuscadorNL({ variant = 'home', className = '', initialQu
             </div>
 
             {/* CV descargable */}
-            <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '14px 16px', marginBottom: 20, textAlign: 'left' }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.8)', marginBottom: 6 }}>
+            <div style={{ background: '#f9fafb', borderRadius: 12, padding: '14px 16px', marginBottom: 20, textAlign: 'left' }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 6 }}>
                 📄 Si te piden el CV en PDF
               </p>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 10, lineHeight: 1.5 }}>
+              <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 10, lineHeight: 1.5 }}>
                 OportunAI genera tu CV automáticamente con tus datos. Descargalo y tenelo listo para adjuntar.
               </p>
               <a
                 href="/api/cv/download"
                 download
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, textDecoration: 'none' }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#374151', color: '#fff', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, textDecoration: 'none' }}
               >
                 ⬇ Descargar mi CV
               </a>

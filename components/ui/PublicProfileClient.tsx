@@ -273,7 +273,7 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                     >
                       <Phone size={13} /> Ver contacto
                     </button>
-                    {archivo && (
+                    {(archivo || usuario.cv_datos) && (
                       <a
                         href={`/api/cv/public/${usuario.slug}`}
                         download

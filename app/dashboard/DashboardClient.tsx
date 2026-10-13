@@ -2513,7 +2513,7 @@ export default function DashboardClient({
                     id: 'cv', icon: '✨',
                     title: 'Armá tu CV',
                     desc: 'Contanos tu experiencia en tus palabras — nosotros la convertimos en un CV profesional',
-                    done: tieneCv,
+                    done: tieneSummary || tieneExp,
                     cta: { label: 'Armar mi CV', click: () => setTimeout(() => document.getElementById('cv-builder-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50) },
                   },
                   {

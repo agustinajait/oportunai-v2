@@ -31,12 +31,12 @@ export default function ServicioAplicarButton({ servicioId, yaAplico: initialYaA
 
   if (yaAplico) {
     return (
-      <div className="rounded-2xl p-5" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>
-        <div className="flex items-center gap-2 font-semibold mb-1" style={{ color: '#34d399' }}>
+      <div className="card p-5">
+        <div className="flex items-center gap-2 text-teal-700 font-semibold mb-1">
           <CheckCircle2 size={20} />
           ¡Postulación enviada!
         </div>
-        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
+        <p className="text-sm text-ink-500">
           La empresa revisará tu perfil y te contactará si avanzás.
         </p>
       </div>
@@ -44,16 +44,15 @@ export default function ServicioAplicarButton({ servicioId, yaAplico: initialYaA
   }
 
   return (
-    <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-      <p className="font-semibold text-sm mb-1" style={{ color: 'rgba(255,255,255,0.9)' }}>¿Te interesa este servicio?</p>
-      <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.5)' }}>
+    <div className="card p-5">
+      <p className="font-semibold text-ink-900 mb-1">¿Te interesa este servicio?</p>
+      <p className="text-sm text-ink-500 mb-4">
         Enviá tu postulación ahora. La empresa verá tu Video CV y te contactará.
       </p>
       <button
         onClick={aplicar}
         disabled={loading}
-        className="w-full py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold text-sm text-white transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 16px rgba(109,40,217,0.35)' }}
+        className="btn-primary w-full py-3 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {loading
           ? <><Loader2 size={16} className="animate-spin" /> Enviando…</>
@@ -61,7 +60,7 @@ export default function ServicioAplicarButton({ servicioId, yaAplico: initialYaA
         }
       </button>
       {error && (
-        <p className="text-sm mt-2" style={{ color: '#fca5a5' }}>{error}</p>
+        <p className="text-sm text-red-600 mt-2">{error}</p>
       )}
     </div>
   );

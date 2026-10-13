@@ -112,38 +112,29 @@ export default function CapacitacionPlayer({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }} onClick={onClose}>
-      <div
-        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl"
-        style={{ background: '#1a1030', border: '1px solid rgba(255,255,255,0.1)' }}
-        onClick={e => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+
         {/* Header */}
-        <div className="flex items-start justify-between p-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="flex items-start justify-between p-5 border-b border-gray-100">
           <div>
-            <p className="text-xs font-medium mb-0.5" style={{ color: '#a78bfa' }}>{cap.empresa.nombre}</p>
-            <h2 className="text-lg font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>{cap.titulo}</h2>
-            {cap.descripcion && <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>{cap.descripcion}</p>}
+            <p className="text-xs text-brand-600 font-medium mb-0.5">{cap.empresa.nombre}</p>
+            <h2 className="font-display text-lg font-semibold text-ink-900">{cap.titulo}</h2>
+            {cap.descripcion && <p className="text-sm text-ink-400 mt-0.5">{cap.descripcion}</p>}
           </div>
-          <button onClick={onClose} className="ml-4 flex-shrink-0 transition-colors" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          <button onClick={onClose} className="text-ink-300 hover:text-ink-600 transition-colors ml-4 flex-shrink-0">
             <X size={20} />
           </button>
         </div>
 
         {done ? (
           <div className="p-10 text-center space-y-4">
-            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto" style={{ background: 'rgba(251,191,36,0.15)' }}>
-              <Star size={40} color="#fbbf24" fill="#fbbf24" />
+            <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto">
+              <Star size={40} className="text-amber-500" fill="currentColor" />
             </div>
-            <h3 className="text-2xl font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>¡Capacitación completada!</h3>
-            <p style={{ color: 'rgba(255,255,255,0.55)' }}>Sumaste una estrella a tu perfil. Las empresas pueden ver tus capacitaciones completadas.</p>
-            <button
-              onClick={onClose}
-              className="px-8 py-3 rounded-xl font-bold text-sm text-white"
-              style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 14px rgba(109,40,217,0.35)' }}
-            >
-              Cerrar
-            </button>
+            <h3 className="font-display text-2xl font-semibold text-ink-900">¡Capacitación completada!</h3>
+            <p className="text-ink-500">Sumaste una estrella a tu perfil. Las empresas pueden ver tus capacitaciones completadas.</p>
+            <button onClick={onClose} className="btn-primary justify-center px-8">Cerrar</button>
           </div>
         ) : (
           <div className="p-5 space-y-5">
@@ -154,25 +145,25 @@ export default function CapacitacionPlayer({
                 <div ref={containerRef} className="w-full h-full" />
               </div>
             ) : (
-              <div className="aspect-video rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Video no disponible</p>
+              <div className="aspect-video bg-ink-900 rounded-xl flex items-center justify-center">
+                <p className="text-white/40 text-sm">Video no disponible</p>
               </div>
             )}
 
             {/* Progress bar */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Progreso del video</span>
-                <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.75)' }}>{progress}%</span>
+                <span className="text-xs text-ink-400">Progreso del video</span>
+                <span className="text-xs font-medium text-ink-600">{progress}%</span>
               </div>
-              <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+              <div className="h-2 bg-ink-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-full transition-all duration-500"
-                  style={{ width: `${progress}%`, background: 'linear-gradient(90deg,#4B33CC,#7048F0)' }}
+                  className="h-full bg-brand-500 rounded-full transition-all duration-500"
+                  style={{ width: `${progress}%` }}
                 />
               </div>
               {!quizUnlocked && (
-                <p className="text-xs mt-1.5 flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                <p className="text-xs text-ink-300 mt-1.5 flex items-center gap-1">
                   <Play size={11} /> La pregunta se desbloquea cuando veas el 80% del video
                 </p>
               )}
@@ -180,42 +171,37 @@ export default function CapacitacionPlayer({
 
             {/* Quiz */}
             <div className={`space-y-3 transition-opacity duration-300 ${quizUnlocked ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
-              <div className="pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>Pregunta de verificación</p>
-                <p className="font-medium mb-3" style={{ color: 'rgba(255,255,255,0.85)' }}>{cap.pregunta}</p>
+              <div className="border-t border-ink-100 pt-4">
+                <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest mb-2">Pregunta de verificación</p>
+                <p className="font-medium text-ink-800 mb-3">{cap.pregunta}</p>
                 <div className="space-y-2">
-                  {cap.opciones.map((op, i) => {
-                    let bg = 'rgba(255,255,255,0.05)';
-                    let border = 'rgba(255,255,255,0.12)';
-                    let color = 'rgba(255,255,255,0.75)';
-                    if (submitted && correct && selected === i) {
-                      bg = 'rgba(52,211,153,0.1)'; border = '#34d399'; color = '#34d399';
-                    } else if (submitted && !correct && selected === i) {
-                      bg = 'rgba(248,113,113,0.1)'; border = '#f87171'; color = '#f87171';
-                    } else if (selected === i) {
-                      bg = 'rgba(112,72,240,0.15)'; border = '#7048F0'; color = '#a78bfa';
-                    }
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => !submitted && setSelected(i)}
-                        className="w-full text-left px-4 py-3 rounded-xl text-sm transition-all"
-                        style={{ background: bg, border: `1px solid ${border}`, color }}
-                      >
-                        <span className="font-medium mr-2">{String.fromCharCode(65 + i)}.</span>
-                        {op}
-                      </button>
-                    );
-                  })}
+                  {cap.opciones.map((op, i) => (
+                    <button
+                      key={i}
+                      onClick={() => !submitted && setSelected(i)}
+                      className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all ${
+                        submitted && correct && selected === i
+                          ? 'bg-emerald-50 border-emerald-400 text-emerald-800'
+                          : submitted && !correct && selected === i
+                          ? 'bg-red-50 border-red-400 text-red-700'
+                          : selected === i
+                          ? 'bg-brand-50 border-brand-400 text-brand-800'
+                          : 'bg-white border-ink-200 text-ink-700 hover:border-brand-300'
+                      }`}
+                    >
+                      <span className="font-medium mr-2">{String.fromCharCode(65 + i)}.</span>
+                      {op}
+                    </button>
+                  ))}
                 </div>
 
                 {submitted && correct === false && (
-                  <div className="flex items-center gap-2 text-sm rounded-lg px-3 py-2 mt-2" style={{ color: '#f87171', background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)' }}>
+                  <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mt-2">
                     <AlertCircle size={14} /> Respuesta incorrecta. Volvé a ver el video e intentá de nuevo.
                   </div>
                 )}
                 {submitted && correct === true && (
-                  <div className="flex items-center gap-2 text-sm rounded-lg px-3 py-2 mt-2" style={{ color: '#34d399', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)' }}>
+                  <div className="flex items-center gap-2 text-sm text-emerald-600 bg-emerald-50 rounded-lg px-3 py-2 mt-2">
                     <CheckCircle2 size={14} /> ¡Correcto! Guardando...
                   </div>
                 )}
@@ -224,8 +210,7 @@ export default function CapacitacionPlayer({
                   <button
                     onClick={handleSubmit}
                     disabled={selected === null || saving}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-white mt-3 disabled:opacity-40 transition-all"
-                    style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 14px rgba(109,40,217,0.3)' }}
+                    className="btn-primary w-full justify-center mt-3 disabled:opacity-40"
                   >
                     {saving
                       ? <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />

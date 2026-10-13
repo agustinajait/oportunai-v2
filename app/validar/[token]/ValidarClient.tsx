@@ -46,129 +46,122 @@ export default function ValidarClient({
 
   const firstName = candidato.split(' ')[0];
 
-  const inputStyle = {
-    width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-    borderRadius: 12, padding: '11px 12px 11px 36px', fontSize: 14, color: 'rgba(255,255,255,0.9)',
-    outline: 'none',
-  };
-  const labelStyle = { fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.55)', display: 'block', marginBottom: 6 };
-  const iconWrapStyle: React.CSSProperties = { position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.35)', pointerEvents: 'none' };
-
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#0d0d14' }}>
+    <div className="min-h-screen bg-ink-50 flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md">
 
-      {/* Header */}
-      <div className="relative px-4 pt-12 pb-8 text-center" style={{ background: 'linear-gradient(160deg,#1a0f3c,#2d1b69)' }}>
-        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 70% 30%, #4B33CC 0%, transparent 60%)' }} />
-        <div className="relative z-10">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
-              <Star size={14} className="text-white" fill="white" />
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center gap-2">
+            <div className="w-9 h-9 bg-brand-600 rounded-xl flex items-center justify-center">
+              <Star size={16} className="text-white" fill="white" />
             </div>
-            <span className="font-bold text-white text-sm">Oportunai</span>
+            <span className="font-display text-xl font-semibold text-ink-800">Oportunai</span>
           </Link>
-          <h1 className="font-bold text-2xl text-white mb-1.5">Validar referencia laboral</h1>
-          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
-            <strong style={{ color: 'rgba(255,255,255,0.85)' }}>{candidato}</strong> te nombró como referente
-          </p>
         </div>
-      </div>
-
-      <div className="flex-1 px-4 pt-6 pb-8 max-w-md mx-auto w-full">
 
         {done ? (
-          <div className="rounded-2xl p-8 text-center space-y-4" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto" style={{ background: 'rgba(16,185,129,0.15)' }}>
-              <CheckCircle2 size={36} style={{ color: '#34d399' }} />
+          <div className="card p-8 text-center space-y-4">
+            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle2 size={36} className="text-emerald-600" />
             </div>
-            <h2 className="font-bold text-xl" style={{ color: 'rgba(255,255,255,0.95)' }}>¡Gracias por validar!</h2>
-            <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              La referencia de <strong style={{ color: 'rgba(255,255,255,0.85)' }}>{candidato}</strong> quedó verificada y aparece en su perfil con el badge ⭐ Verificado.
+            <h1 className="font-display text-2xl font-semibold text-ink-900">¡Gracias por validar!</h1>
+            <p className="text-ink-500 text-sm leading-relaxed">
+              La referencia de <strong>{candidato}</strong> quedó verificada y aparece en su perfil con el badge ⭐ Verificado.
             </p>
-            <Link
-              href="/"
-              className="flex items-center justify-center w-full py-3.5 rounded-2xl font-bold text-white transition-all active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 16px rgba(109,40,217,0.4)' }}
-            >
+            <Link href="/" className="btn-primary justify-center w-full mt-2">
               Conocer Oportunai →
             </Link>
           </div>
         ) : (
-          <div className="space-y-5">
-            {/* Info del candidato */}
+          <div className="card p-8 space-y-5">
+            <div>
+              <h1 className="font-display text-2xl font-semibold text-ink-900 mb-2">
+                Validar referencia laboral
+              </h1>
+              <p className="text-ink-500 text-sm leading-relaxed">
+                <strong>{candidato}</strong> te nombró como referente. Si trabajaste con esa persona, confirmalo completando los datos.
+              </p>
+            </div>
+
+            {/* Datos del candidato */}
             <div className="space-y-2">
-              <div className="rounded-xl p-4 flex items-start gap-3" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <Building2 size={15} style={{ color: 'rgba(255,255,255,0.4)', marginTop: 2, flexShrink: 0 }} />
+              <div className="bg-ink-50 rounded-xl p-4 flex items-start gap-3">
+                <Building2 size={16} className="text-ink-400 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-xs mb-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Empresa</p>
-                  <p className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>{empresa_nombre}</p>
+                  <p className="text-xs text-ink-400 mb-0.5">Empresa</p>
+                  <p className="font-medium text-ink-800">{empresa_nombre}</p>
                 </div>
               </div>
-              <div className="rounded-xl p-4 flex items-start gap-3" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <User size={15} style={{ color: 'rgba(255,255,255,0.4)', marginTop: 2, flexShrink: 0 }} />
+              <div className="bg-ink-50 rounded-xl p-4 flex items-start gap-3">
+                <User size={16} className="text-ink-400 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-xs mb-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Tu nombre (ingresado por el candidato)</p>
-                  <p className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>{referidor_nombre}</p>
+                  <p className="text-xs text-ink-400 mb-0.5">Tu nombre (ingresado por el candidato)</p>
+                  <p className="font-medium text-ink-800">{referidor_nombre}</p>
                 </div>
               </div>
             </div>
 
-            {/* Formulario */}
-            <div className="rounded-2xl p-5 space-y-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.4)' }}>Tus datos para verificar</p>
-
+            {/* Datos del referente — obligatorios */}
+            <div className="space-y-3">
+              <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest">Tus datos para verificar</p>
               <div>
-                <label style={labelStyle}>Tu cargo en {empresa_nombre} <span style={{ color: '#f87171' }}>*</span></label>
-                <div style={{ position: 'relative' }}>
-                  <span style={iconWrapStyle}><Briefcase size={13} /></span>
+                <label className="text-xs font-medium text-ink-600 block mb-1.5">
+                  Tu cargo en {empresa_nombre} <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <Briefcase size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
                   <input
                     value={cargo}
                     onChange={e => setCargo(e.target.value)}
                     placeholder="Ej: Gerente, Supervisor, Encargado..."
-                    style={inputStyle}
+                    className="input-field text-sm pl-9"
                   />
                 </div>
               </div>
-
               <div>
-                <label style={labelStyle}>Tu email de contacto <span style={{ color: '#f87171' }}>*</span></label>
-                <div style={{ position: 'relative' }}>
-                  <span style={iconWrapStyle}><Mail size={13} /></span>
+                <label className="text-xs font-medium text-ink-600 block mb-1.5">
+                  Tu email de contacto <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
                   <input
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="tu@empresa.com"
-                    style={inputStyle}
+                    className="input-field text-sm pl-9"
                   />
                 </div>
-                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Visible para las empresas que quieran verificar. No se usa para nada más.</p>
+                <p className="text-xs text-ink-300 mt-1">
+                  Visible para las empresas que quieran verificar. No se usa para nada más.
+                </p>
               </div>
             </div>
 
             {/* Mensaje opcional */}
             <div>
-              <label style={labelStyle}>Mensaje opcional — aparecerá en el perfil de {firstName}</label>
+              <label className="text-xs font-medium text-ink-600 block mb-1.5">
+                Mensaje opcional — aparecerá en el perfil de {firstName}
+              </label>
               <textarea
                 value={mensaje}
                 onChange={e => setMensaje(e.target.value)}
                 rows={3}
                 maxLength={300}
                 placeholder={`Ej: "${firstName} trabajó con nosotros y es muy responsable y puntual..."`}
-                style={{ ...inputStyle, padding: '11px 12px', resize: 'none', height: 'auto' }}
+                className="input-field resize-none text-sm"
               />
-              <p className="text-xs mt-1 text-right" style={{ color: 'rgba(255,255,255,0.3)' }}>{mensaje.length}/300</p>
+              <p className="text-xs text-ink-300 mt-1 text-right">{mensaje.length}/300</p>
             </div>
 
             {error && (
-              <p className="text-sm rounded-xl px-4 py-3" style={{ color: '#fca5a5', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>{error}</p>
+              <p className="text-sm text-red-600 bg-red-50 rounded-lg px-4 py-2">{error}</p>
             )}
 
             <button
               onClick={handleValidar}
               disabled={validando}
-              className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base text-white transition-all active:scale-[0.98] disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 20px rgba(109,40,217,0.4)' }}
+              className="btn-primary w-full justify-center py-3 text-base"
             >
               {validando
                 ? <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
@@ -177,7 +170,7 @@ export default function ValidarClient({
               {validando ? 'Validando...' : 'Confirmar referencia'}
             </button>
 
-            <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            <p className="text-xs text-ink-300 text-center">
               Si no conocés a {firstName} o no querés validar, cerrá esta página.
             </p>
           </div>

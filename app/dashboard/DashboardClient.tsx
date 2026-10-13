@@ -829,15 +829,15 @@ export default function DashboardClient({
       mcdonalds: "McDonald's", mostaza: 'Mostaza', starbucks: 'Starbucks', ypf: 'YPF',
     };
     const fuenteColor: Record<string, { bg: string; color: string }> = {
-      oportunai:    { bg: 'rgba(109,40,217,0.2)',  color: '#a78bfa' },
-      computrabajo: { bg: 'rgba(29,78,216,0.2)',   color: '#60a5fa' },
-      zonajobs:     { bg: 'rgba(6,95,70,0.2)',     color: '#34d399' },
-      bumeran:      { bg: 'rgba(251,191,36,0.15)', color: '#fbbf24' },
-      mcdonalds:    { bg: 'rgba(251,191,36,0.15)', color: '#fbbf24' },
-      mostaza:      { bg: 'rgba(251,146,60,0.15)', color: '#fb923c' },
-      starbucks:    { bg: 'rgba(6,95,70,0.2)',     color: '#34d399' },
-      ypf:          { bg: 'rgba(251,191,36,0.15)', color: '#fbbf24' },
-      sanisidro:    { bg: 'rgba(7,89,133,0.2)',    color: '#60a5fa' },
+      oportunai:    { bg: '#ede9fe', color: '#6d28d9' },
+      computrabajo: { bg: '#dbeafe', color: '#1d4ed8' },
+      zonajobs:     { bg: '#d1fae5', color: '#065f46' },
+      bumeran:      { bg: '#fef3c7', color: '#92400e' },
+      mcdonalds:    { bg: '#fef3c7', color: '#b45309' },
+      mostaza:      { bg: '#ffedd5', color: '#9a3412' },
+      starbucks:    { bg: '#d1fae5', color: '#065f46' },
+      ypf:          { bg: '#fef9c3', color: '#713f12' },
+      sanisidro:    { bg: '#e0f2fe', color: '#075985' },
     };
 
     return (
@@ -846,28 +846,28 @@ export default function DashboardClient({
         <div>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Briefcase size={16} style={{ color: '#a78bfa' }} />
-              <h2 className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>
+              <Briefcase size={16} className="text-brand-600" />
+              <h2 className="font-semibold text-ink-800 text-sm">
                 {loadingRecs ? 'Cargando ofertas…' :
                   recs?.modo === 'perfil' ? 'Ofertas para tu perfil' : 'Últimas ofertas disponibles'}
               </h2>
             </div>
             {recs?.query_usado && (
-              <span className="text-[10px] italic" style={{ color: 'rgba(255,255,255,0.35)' }}>basado en: {recs.query_usado}</span>
+              <span className="text-[10px] text-ink-400 italic">basado en: {recs.query_usado}</span>
             )}
           </div>
 
           {loadingRecs && (
-            <div className="flex items-center justify-center py-10" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <div className="flex items-center justify-center py-10 text-ink-400">
               <Loader2 size={20} className="animate-spin mr-2" /> Buscando ofertas…
             </div>
           )}
 
           {!loadingRecs && recs && recs.resultados.length === 0 && (
-            <div className="p-8 text-center rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
+            <div className="card p-8 text-center text-ink-400">
               <Briefcase size={32} className="mx-auto mb-2 opacity-30" />
               <p className="text-sm">No encontramos ofertas en este momento.</p>
-              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Usá el buscador de abajo para explorar manualmente.</p>
+              <p className="text-xs text-ink-300 mt-1">Usá el buscador de abajo para explorar manualmente.</p>
             </div>
           )}
 
@@ -877,9 +877,9 @@ export default function DashboardClient({
                 const fc = fuenteColor[r.fuente] ?? { bg: '#ede9fe', color: '#6d28d9' };
                 const letra = (r.empresa_nombre || '?')[0].toUpperCase();
                 return (
-                  <div key={r.id} className="flex items-center gap-4 p-4 rounded-2xl transition-all" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div key={r.id} className="card flex items-center gap-4 p-4 hover:border-brand-200 transition-all">
                     {/* Logo / Avatar */}
-                    <div className="w-11 h-11 rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                    <div className="w-11 h-11 rounded-xl flex-shrink-0 overflow-hidden bg-gray-100 flex items-center justify-center">
                       {r.logo_url ? (
                         <img src={r.logo_url} alt={r.empresa_nombre} className="w-full h-full object-contain" />
                       ) : (
@@ -893,12 +893,12 @@ export default function DashboardClient({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide"
-                          style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
+                          style={{ background: fc.bg, color: fc.color }}>
                           {fuenteLabel[r.fuente] || r.fuente}
                         </span>
                       </div>
-                      <p className="text-sm font-semibold truncate" style={{ color: 'rgba(255,255,255,0.9)' }}>{r.titulo}</p>
-                      <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>{r.empresa_nombre}
+                      <p className="text-sm font-semibold text-ink-800 truncate">{r.titulo}</p>
+                      <p className="text-xs text-ink-400">{r.empresa_nombre}
                         {r.ciudad && <span className="ml-1">· {r.ciudad}</span>}
                         {r.salario && <span className="ml-1">· 💰 {r.salario}</span>}
                       </p>
@@ -907,14 +907,14 @@ export default function DashboardClient({
                     {r.tipo === 'interna' ? (
                       <a href={r.url}
                         className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-lg text-white flex items-center gap-1"
-                        style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', textDecoration: 'none' }}>
+                        style={{ background: '#6d28d9', textDecoration: 'none' }}>
                         Postularme <ArrowRight size={12} />
                       </a>
                     ) : (
                       <button
                         type="button"
                         className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1"
-                        style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.65)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}
+                        style={{ background: '#f3f4f6', color: '#374151', border: 'none', cursor: 'pointer' }}
                         onClick={() => setTipOferta({ titulo: r.titulo, empresa: r.empresa_nombre, url: r.url })}
                       >
                         Ver oferta <ExternalLink size={12} />
@@ -930,8 +930,8 @@ export default function DashboardClient({
         {/* ── Buscador manual ─────────────────────────────────── */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Search size={15} style={{ color: 'rgba(255,255,255,0.4)' }} />
-            <h2 className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>Buscar más ofertas</h2>
+            <Search size={15} className="text-ink-400" />
+            <h2 className="font-semibold text-ink-800 text-sm">Buscar más ofertas</h2>
           </div>
           <BuscadorNL variant="dashboard" profileSlug={usuario.slug} />
         </div>
@@ -943,7 +943,7 @@ export default function DashboardClient({
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#0d0d14' }}>
+    <div className="min-h-screen bg-ink-50">
       {/* Registra push silenciosamente si el usuario tiene opt-in */}
       {usuario.korai_opt_in && <PushRegistrar />}
       <Navbar session={{ nombre: usuario.nombre_completo, role: usuario.role, slug: usuario.slug }} />
@@ -952,13 +952,13 @@ export default function DashboardClient({
 
         {/* ── Banner bienvenida Korai ── */}
         {koraiWelcome && (
-          <div className="mb-4 flex items-start gap-3 rounded-xl px-4 py-3 text-sm" style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: '#34d399' }}>
+          <div className="mb-4 flex items-start gap-3 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800">
             <span className="text-lg shrink-0">🎉</span>
             <div className="flex-1">
               <p className="font-semibold">
                 {usuario.cv_datos?.origen === 'mentoress' ? '¡Bienvenido/a a Mentor EESS!' : '¡Bienvenido/a a OportunAI!'}
               </p>
-              <p className="mt-0.5" style={{ color: 'rgba(52,211,153,0.75)' }}>
+              <p className="text-emerald-700 mt-0.5">
                 {usuario.cv_datos?.origen === 'mentoress'
                   ? 'Llegaste desde Korai. Tu diagnóstico ya está cargado. Completá tu perfil y empezá a conectar con estaciones de servicio.'
                   : 'Llegaste desde Korai. Tu diagnóstico ya está cargado en tu perfil. Completá tu CV y empezá a conectar con oportunidades laborales.'
@@ -967,8 +967,7 @@ export default function DashboardClient({
             </div>
             <button
               onClick={() => setKoraiWelcome(false)}
-              className="shrink-0 transition-colors"
-              style={{ color: 'rgba(52,211,153,0.5)' }}
+              className="shrink-0 text-emerald-400 hover:text-emerald-600 transition-colors"
               aria-label="Cerrar"
             >
               <X className="w-4 h-4" />
@@ -978,19 +977,19 @@ export default function DashboardClient({
 
         {/* ── Toast: pago exitoso ── */}
         {pagoOkToast && (
-          <div className="mb-4 flex items-center gap-3 rounded-xl px-4 py-3 text-sm" style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)' }}>
-            <CheckCircle2 size={18} className="shrink-0" style={{ color: '#34d399' }} />
+          <div className="mb-4 flex items-center gap-3 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800">
+            <CheckCircle2 size={18} className="shrink-0 text-emerald-600" />
             <div className="flex-1">
-              <p className="font-semibold" style={{ color: '#34d399' }}>¡Plan premium activado!</p>
-              <p className="mt-0.5 text-xs" style={{ color: 'rgba(52,211,153,0.7)' }}>Ya podés descargar tu CV, analizarlo y adaptarlo a cualquier oferta.</p>
+              <p className="font-semibold">¡Plan premium activado!</p>
+              <p className="text-emerald-700 mt-0.5 text-xs">Ya podés descargar tu CV, analizarlo y adaptarlo a cualquier oferta.</p>
             </div>
-            <button onClick={() => setPagoOkToast(false)} className="shrink-0" style={{ color: 'rgba(52,211,153,0.5)' }}><X className="w-4 h-4" /></button>
+            <button onClick={() => setPagoOkToast(false)} className="shrink-0 text-emerald-400 hover:text-emerald-600"><X className="w-4 h-4" /></button>
           </div>
         )}
 
         {/* ── Banner premium (solo si no pagó) ── */}
         {!pagado && (
-          <div className="mb-4 flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-white shadow-md" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
+          <div className="mb-4 flex items-center gap-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm text-white shadow-md">
             <Sparkles size={20} className="shrink-0 opacity-90" />
             <div className="flex-1 min-w-0">
               <p className="font-semibold leading-tight">Desbloqueá todo con el plan premium</p>
@@ -998,8 +997,7 @@ export default function DashboardClient({
             </div>
             <button
               onClick={() => setPagoModalOpen(true)}
-              className="shrink-0 font-semibold text-xs px-3 py-2 rounded-lg transition-colors whitespace-nowrap"
-              style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.25)' }}
+              className="shrink-0 bg-white text-indigo-700 font-semibold text-xs px-3 py-2 rounded-lg hover:bg-indigo-50 transition-colors whitespace-nowrap"
             >
               Pagar y desbloquear
             </button>
@@ -1008,15 +1006,15 @@ export default function DashboardClient({
 
         <div className="mb-6 sm:mb-8">
           <div className="mb-4">
-            <h1 className="text-2xl sm:text-3xl font-light" style={{ color: 'rgba(255,255,255,0.9)' }}>
+            <h1 className="font-display text-2xl sm:text-3xl font-light text-ink-900">
               Hola, <span className="font-semibold italic">{usuario.nombre_completo.split(' ')[0]}</span> 👋
             </h1>
-            <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Tu perfil laboral digital, todo en un lugar</p>
+            <p className="text-ink-400 mt-1 text-sm">Tu perfil laboral digital, todo en un lugar</p>
           </div>
 
           {/* Tabs — solo desktop; en mobile se usa la bottom nav */}
           <div className="hidden sm:block overflow-x-auto -mx-4 sm:mx-0 scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
-            <div className="flex gap-1 rounded-xl p-1 mx-4 sm:mx-0 w-max sm:w-auto min-w-0" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 mx-4 sm:mx-0 w-max sm:w-auto min-w-0">
               {[
                 { id: 'perfil',      Icon: Video,          label: 'Mi perfil',   badge: null },
                 { id: 'documentos',  Icon: ShieldCheck,    label: 'Documentos',  badge: null },
@@ -1027,8 +1025,9 @@ export default function DashboardClient({
                   <Link
                     key={id}
                     href={href}
-                    className="relative flex items-center gap-1.5 px-2.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap"
-                    style={{ color: 'rgba(255,255,255,0.5)' }}
+                    className={`relative flex items-center gap-1.5 px-2.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
+                      'text-ink-500 hover:text-ink-800'
+                    }`}
                   >
                     <Icon size={13} className="sm:hidden flex-shrink-0" />
                     <Icon size={14} className="hidden sm:block flex-shrink-0" />
@@ -1038,17 +1037,15 @@ export default function DashboardClient({
                   <button
                     key={id}
                     onClick={() => setTab(id as typeof tab)}
-                    className="relative flex items-center gap-1.5 px-2.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap"
-                    style={tab === id
-                      ? { background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' }
-                      : { color: 'rgba(255,255,255,0.5)' }
-                    }
+                    className={`relative flex items-center gap-1.5 px-2.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
+                      tab === id ? 'bg-brand-600 text-white' : 'text-ink-500 hover:text-ink-800'
+                    }`}
                   >
                     <Icon size={13} className="sm:hidden flex-shrink-0" />
                     <Icon size={14} className="hidden sm:block flex-shrink-0" />
                     {label}
                     {badge !== null && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-red-500 text-white">
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${tab === id ? 'bg-white/30 text-white' : 'bg-red-500 text-white'}`}>
                         {badge}
                       </span>
                     )}
@@ -1063,47 +1060,45 @@ export default function DashboardClient({
         {tab === 'citas' && (
           <div className="max-w-2xl space-y-4 animate-fade-in">
             {citasState.length === 0 && (
-              <div className="p-8 text-center rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
+              <div className="card p-8 text-center text-ink-400">
                 <CalendarDays size={32} className="mx-auto mb-2 opacity-40" />
                 <p>Todavía no tenés citas o entrevistas agendadas</p>
               </div>
             )}
             {citasState.map(c => (
-              <div key={c.id} className="p-5 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div key={c.id} className="card p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <p className="font-medium" style={{ color: 'rgba(255,255,255,0.9)' }}>{c.cita.empresa.nombre}</p>
-                    {c.cita.oferta && <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>{c.cita.oferta.titulo}</p>}
+                    <p className="font-medium text-ink-800">{c.cita.empresa.nombre}</p>
+                    {c.cita.oferta && <p className="text-xs text-ink-400">{c.cita.oferta.titulo}</p>}
                   </div>
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={
-                    c.estado === 'confirmada' ? { background: 'rgba(52,211,153,0.12)', color: '#34d399', border: '1px solid rgba(52,211,153,0.25)' } :
-                    c.estado === 'rechazada' ? { background: 'rgba(252,165,165,0.1)', color: '#fca5a5', border: '1px solid rgba(252,165,165,0.2)' } :
-                    { background: 'rgba(251,191,36,0.12)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.25)' }
-                  }>
+                  <span className={`badge ${
+                    c.estado === 'confirmada' ? 'bg-emerald-100 text-emerald-700' :
+                    c.estado === 'rechazada' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'
+                  }`}>
                     {c.estado === 'confirmada' ? 'Confirmada' : c.estado === 'rechazada' ? 'Rechazada' : 'Pendiente'}
                   </span>
                 </div>
-                <div className="space-y-1.5 text-sm mb-4" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                <div className="space-y-1.5 text-sm text-ink-600 mb-4">
                   <p className="flex items-center gap-2">
-                    <Clock size={14} style={{ color: 'rgba(255,255,255,0.35)' }} />
+                    <Clock size={14} className="text-ink-400" />
                     {new Date(c.cita.fecha).toLocaleString('es-AR', { dateStyle: 'full', timeStyle: 'short' })}
                   </p>
                   <p className="flex items-center gap-2">
-                    <MapPin size={14} style={{ color: 'rgba(255,255,255,0.35)' }} />
+                    <MapPin size={14} className="text-ink-400" />
                     {c.cita.modalidad === 'presencial' ? c.cita.lugar : (
-                      <a href={c.cita.lugar} target="_blank" style={{ color: '#a78bfa' }} className="underline">{c.cita.lugar}</a>
+                      <a href={c.cita.lugar} target="_blank" className="text-brand-600 underline">{c.cita.lugar}</a>
                     )}
-                    <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>({c.cita.modalidad === 'presencial' ? 'presencial' : 'virtual'}{c.cita.grupal ? ' · grupal' : ''})</span>
+                    <span className="text-ink-400 text-xs">({c.cita.modalidad === 'presencial' ? 'presencial' : 'virtual'}{c.cita.grupal ? ' · grupal' : ''})</span>
                   </p>
-                  {c.cita.mensaje && <p className="italic" style={{ color: 'rgba(255,255,255,0.45)' }}>"{c.cita.mensaje}"</p>}
+                  {c.cita.mensaje && <p className="text-ink-500 italic">"{c.cita.mensaje}"</p>}
                 </div>
                 {c.estado === 'pendiente' && (
                   <div className="flex gap-2">
                     <button
                       onClick={() => responderCita(c.id, 'confirmada')}
                       disabled={respondiendo === c.id}
-                      className="flex items-center gap-1.5 py-1.5 px-4 text-sm font-semibold rounded-xl text-white transition-all disabled:opacity-50"
-                      style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}
+                      className="btn-primary py-1.5 px-4 text-sm"
                     >
                       {respondiendo === c.id ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                       Confirmar
@@ -1111,8 +1106,7 @@ export default function DashboardClient({
                     <button
                       onClick={() => responderCita(c.id, 'rechazada')}
                       disabled={respondiendo === c.id}
-                      className="flex items-center gap-1.5 py-1.5 px-4 text-sm font-medium rounded-xl transition-all disabled:opacity-50"
-                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.55)' }}
+                      className="btn-ghost py-1.5 px-4 text-sm"
                     >
                       <X size={14} /> Rechazar
                     </button>
@@ -1149,11 +1143,11 @@ export default function DashboardClient({
                 </h2>
                 <div className="space-y-3">
                   {misModulos.map(mod => {
-                    const ESTADO_STYLE: Record<string, React.CSSProperties> = {
-                      en_progreso: { background: 'rgba(96,165,250,0.15)', color: '#60a5fa' },
-                      en_riesgo:   { background: 'rgba(251,146,60,0.15)', color: '#fb923c' },
-                      completado:  { background: 'rgba(52,211,153,0.15)', color: '#34d399' },
-                      aprobado:    { background: 'rgba(45,212,191,0.15)', color: '#2dd4bf' },
+                    const ESTADO_COLOR: Record<string, string> = {
+                      en_progreso: 'bg-blue-100 text-blue-700',
+                      en_riesgo: 'bg-orange-100 text-orange-700',
+                      completado: 'bg-green-100 text-green-700',
+                      aprobado: 'bg-teal-100 text-teal-700',
                     };
                     const ESTADO_LABEL: Record<string, string> = {
                       en_progreso: 'En progreso', en_riesgo: 'En riesgo',
@@ -1165,16 +1159,16 @@ export default function DashboardClient({
                     const aprobados = mod.evidencias.filter(e => e.estado === 'aprobado').length;
 
                     return (
-                      <div key={mod.id} className="card overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div key={mod.id} className="card border border-gray-200 overflow-hidden">
                         <button
                           onClick={() => setModuloAbierto(isOpen ? null : mod.id)}
-                          className="w-full flex items-center justify-between p-4 transition-colors"
+                          className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
                         >
                           <div className="flex items-center gap-3 text-left">
                             {mod.empresa.logo_url ? (
-                              <img src={mod.empresa.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover flex-shrink-0" style={{ border: '1px solid rgba(255,255,255,0.1)' }} />
+                              <img src={mod.empresa.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover border border-gray-200" />
                             ) : (
-                              <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm" style={{ background: 'rgba(45,212,191,0.15)', color: '#2dd4bf' }}>
+                              <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-sm">
                                 {mod.empresa.nombre[0]}
                               </div>
                             )}
@@ -1187,7 +1181,7 @@ export default function DashboardClient({
                             {mod.remito && (
                               <span className="text-xs bg-teal-600 text-white px-2 py-0.5 rounded-full">Remito #{mod.remito.numero_remito}</span>
                             )}
-                            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={ESTADO_STYLE[mod.estado] ?? { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ESTADO_COLOR[mod.estado] ?? 'bg-gray-100 text-gray-600'}`}>
                               {ESTADO_LABEL[mod.estado] ?? mod.estado}
                             </span>
                             <span className="text-xs text-ink-400">{aprobados}/{totalItems}</span>
@@ -1196,20 +1190,20 @@ export default function DashboardClient({
                         </button>
 
                         {isOpen && (
-                          <div className="p-4 space-y-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+                          <div className="border-t border-gray-100 p-4 space-y-3 bg-gray-50/50">
                             <div className="flex items-center gap-2 flex-wrap">
                               {mod.horas_asignadas && (
-                                <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: 'rgba(45,212,191,0.15)', color: '#2dd4bf' }}>
+                                <span className="text-xs font-semibold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full flex items-center gap-1">
                                   <Clock size={11} /> {mod.horas_asignadas} hs
                                 </span>
                               )}
                               {mod.precio_hora && (
-                                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)' }}>
+                                <span className="text-xs font-semibold bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">
                                   ${Number(mod.precio_hora).toLocaleString('es-AR')}/hs
                                 </span>
                               )}
                               {mod.horas_asignadas && mod.precio_hora && (
-                                <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }}>
+                                <span className="text-xs font-bold bg-yellow-50 border border-yellow-200 text-gray-800 px-2 py-0.5 rounded-full">
                                   Total: ${(mod.horas_asignadas * mod.precio_hora).toLocaleString('es-AR', { minimumFractionDigits: 0 })}
                                 </span>
                               )}
@@ -1221,12 +1215,12 @@ export default function DashboardClient({
                             </div>
                             {/* Acuerdo de servicio */}
                             {mod.servicio.contrato_template && (
-                              <details className="rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                                <summary className="cursor-pointer px-3 py-2.5 text-xs font-semibold flex items-center gap-2 select-none list-none" style={{ color: 'rgba(255,255,255,0.75)' }}>
-                                  <FileText size={13} className="text-teal-500 flex-shrink-0" /> Ver acuerdo de servicio
+                              <details className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                                <summary className="cursor-pointer px-3 py-2.5 text-xs font-semibold text-gray-700 flex items-center gap-2 hover:bg-gray-50 select-none list-none">
+                                  <FileText size={13} className="text-teal-600 flex-shrink-0" /> Ver acuerdo de servicio
                                 </summary>
-                                <div className="px-3 pb-3 pt-1" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                                  <pre className="text-xs whitespace-pre-wrap font-sans leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>{mod.servicio.contrato_template}</pre>
+                                <div className="px-3 pb-3 pt-1 border-t border-gray-100">
+                                  <pre className="text-xs text-gray-600 whitespace-pre-wrap font-sans leading-relaxed">{mod.servicio.contrato_template}</pre>
                                 </div>
                               </details>
                             )}
@@ -1237,10 +1231,11 @@ export default function DashboardClient({
                                 const keyEv = `${mod.id}-${idx}`;
                                 const enviando = subiendoEvidencia === keyEv;
                                 return (
-                                  <div key={idx} className="rounded-xl p-3" style={{
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: `1px solid ${ev?.estado === 'aprobado' ? 'rgba(52,211,153,0.35)' : ev?.estado === 'rechazado' ? 'rgba(248,113,113,0.35)' : ev ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`,
-                                  }}>
+                                  <div key={idx} className={`bg-white rounded-xl border p-3 ${
+                                    ev?.estado === 'aprobado' ? 'border-green-200' :
+                                    ev?.estado === 'rechazado' ? 'border-red-200' :
+                                    ev ? 'border-blue-200' : 'border-gray-200'
+                                  }`}>
                                     <div className="flex items-start justify-between gap-2 mb-1">
                                       <p className="text-sm font-medium text-ink-800">{item.item}</p>
                                       {ev?.estado === 'aprobado' && <CheckCircle2 size={16} className="text-green-500 flex-shrink-0" />}
@@ -1249,8 +1244,8 @@ export default function DashboardClient({
                                     </div>
                                     {item.descripcion && <p className="text-xs text-ink-400 mb-2">{item.descripcion}</p>}
                                     {ev && (
-                                      <div className="rounded-lg px-2 py-1.5 text-xs mb-2" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.65)' }}>
-                                        <span style={{ color: 'rgba(255,255,255,0.4)' }}>Tu evidencia: </span>{ev.texto}
+                                      <div className="bg-gray-50 rounded-lg px-2 py-1.5 text-xs text-ink-600 mb-2">
+                                        <span className="text-ink-400">Tu evidencia: </span>{ev.texto}
                                       </div>
                                     )}
                                     {(!ev || ev.estado === 'rechazado') && mod.estado !== 'aprobado' && (
@@ -1260,8 +1255,7 @@ export default function DashboardClient({
                                           placeholder={ev?.estado === 'rechazado' ? 'Reenviar evidencia...' : 'Descripción de tu evidencia...'}
                                           value={evidenciaTexto[keyEv] ?? ''}
                                           onChange={e => setEvidenciaTexto(prev => ({ ...prev, [keyEv]: e.target.value }))}
-                                          className="flex-1 text-xs rounded-lg px-2 py-1.5 focus:outline-none"
-                                          style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
+                                          className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500"
                                         />
                                         <button
                                           onClick={() => enviarEvidencia(mod.id, idx)}
@@ -1311,9 +1305,9 @@ export default function DashboardClient({
                         <div className="p-4 flex flex-col gap-3">
                           <div className="flex items-start gap-3">
                             {s.empresa.logo_url ? (
-                              <img src={s.empresa.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" style={{ border: '1px solid rgba(255,255,255,0.1)' }} />
+                              <img src={s.empresa.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover border border-gray-100 flex-shrink-0" />
                             ) : (
-                              <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold flex-shrink-0" style={{ background: 'rgba(109,40,217,0.2)', color: '#a78bfa' }}>
+                              <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 font-bold flex-shrink-0">
                                 {s.empresa.nombre[0]}
                               </div>
                             )}
@@ -1326,26 +1320,26 @@ export default function DashboardClient({
 
                           {/* Chips resumen */}
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="badge text-[11px]" style={{ background: 'rgba(109,40,217,0.2)', color: '#a78bfa' }}>
+                            <span className="badge bg-brand-50 text-brand-700 text-[11px]">
                               {s.frecuencia === 'diaria' ? 'Diaria' : s.frecuencia === 'semanal' ? 'Semanal' : s.frecuencia === 'mensual' ? 'Mensual' : 'Única vez'}
                             </span>
                             {s.duracion_jornada && (
-                              <span className="badge text-[11px] flex items-center gap-1" style={{ background: 'rgba(45,212,191,0.15)', color: '#2dd4bf' }}>
+                              <span className="badge bg-teal-50 text-teal-700 text-[11px] flex items-center gap-1">
                                 <Clock size={10} /> {s.duracion_jornada}
                               </span>
                             )}
                             {s.horas_modulo && (
-                              <span className="badge text-[11px] font-semibold" style={{ background: 'rgba(45,212,191,0.15)', color: '#2dd4bf' }}>
+                              <span className="badge bg-teal-50 text-teal-700 text-[11px] font-semibold">
                                 {s.horas_modulo} hs/módulo
                               </span>
                             )}
                             {s.capacitacion && (
-                              <span className="badge text-[11px] flex items-center gap-1" style={{ background: 'rgba(167,139,250,0.15)', color: '#a78bfa' }}>
+                              <span className="badge bg-purple-50 text-purple-700 text-[11px] flex items-center gap-1">
                                 <GraduationCap size={10} /> Cap. requerida
                               </span>
                             )}
                             {s.deadline && (
-                              <span className="badge text-[11px] flex items-center gap-1" style={{ background: 'rgba(251,146,60,0.15)', color: '#fb923c' }}>
+                              <span className="badge bg-orange-50 text-orange-700 text-[11px] flex items-center gap-1">
                                 <Clock size={10} /> hasta {new Date(s.deadline).toLocaleDateString('es-AR')}
                               </span>
                             )}
@@ -1353,19 +1347,19 @@ export default function DashboardClient({
 
                           {/* Precio destacado */}
                           {s.precio_hora && (
-                            <div className="flex items-center gap-3 rounded-xl px-3 py-2.5" style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)' }}>
+                            <div className="flex items-center gap-3 bg-green-50 border border-green-100 rounded-xl px-3 py-2.5">
                               <div className="flex-1">
-                                <p className="text-[11px] font-medium" style={{ color: '#34d399' }}>Honorario por módulo</p>
+                                <p className="text-[11px] text-green-600 font-medium">Honorario por módulo</p>
                                 <div className="flex items-baseline gap-1.5 flex-wrap mt-0.5">
-                                  <span className="text-base font-bold" style={{ color: '#34d399' }}>
+                                  <span className="text-base font-bold text-green-700">
                                     ${Number(s.precio_hora).toLocaleString('es-AR')}<span className="text-xs font-medium">/hs</span>
                                   </span>
                                   {s.horas_modulo && (
                                     <>
-                                      <span className="text-xs" style={{ color: '#34d399' }}>×</span>
-                                      <span className="text-xs" style={{ color: '#34d399' }}>{s.horas_modulo} hs</span>
-                                      <span className="text-xs" style={{ color: '#34d399' }}>=</span>
-                                      <span className="text-lg font-extrabold" style={{ color: '#34d399' }}>
+                                      <span className="text-xs text-green-500">×</span>
+                                      <span className="text-xs text-green-600">{s.horas_modulo} hs</span>
+                                      <span className="text-xs text-green-500">=</span>
+                                      <span className="text-lg font-extrabold text-green-700">
                                         ${(s.horas_modulo * Number(s.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })}
                                       </span>
                                     </>
@@ -1390,14 +1384,14 @@ export default function DashboardClient({
 
                         {/* Detalle expandido */}
                         {expandido && (
-                          <div className="px-4 pb-4 pt-3 space-y-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+                          <div className="border-t border-gray-100 bg-gray-50/60 px-4 pb-4 pt-3 space-y-4">
                             {/* Protocolo */}
                             {protocolo.length > 0 && (
                               <div>
                                 <p className="text-[11px] font-semibold text-ink-500 uppercase tracking-wide mb-2">Protocolo de trabajo</p>
                                 <div className="space-y-2">
                                   {protocolo.map((item, idx) => (
-                                    <div key={idx} className="flex gap-2.5 rounded-lg px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                    <div key={idx} className="flex gap-2.5 bg-white rounded-lg border border-gray-200 px-3 py-2.5">
                                       <span className="text-xs text-brand-600 font-bold flex-shrink-0 mt-0.5">{idx + 1}.</span>
                                       <div>
                                         <p className="text-xs font-medium text-ink-800">{item.item}</p>
@@ -1415,7 +1409,7 @@ export default function DashboardClient({
                                 <p className="text-[11px] font-semibold text-ink-500 uppercase tracking-wide mb-2">Documentos requeridos</p>
                                 <div className="flex flex-wrap gap-1.5">
                                   {s.docs_requeridos.map((d, i) => (
-                                    <span key={i} className="text-[11px] px-2 py-1 rounded-lg flex items-center gap-1" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
+                                    <span key={i} className="text-[11px] bg-white border border-gray-200 text-gray-600 px-2 py-1 rounded-lg flex items-center gap-1">
                                       <FileText size={10} /> {docLabel(d)}
                                     </span>
                                   ))}
@@ -1425,23 +1419,23 @@ export default function DashboardClient({
 
                             {/* Capacitación requerida */}
                             {s.capacitacion && (
-                              <div className="rounded-lg px-3 py-2 flex items-center gap-2" style={{ background: 'rgba(167,139,250,0.12)' }}>
-                                <GraduationCap size={14} className="flex-shrink-0" style={{ color: '#a78bfa' }} />
+                              <div className="bg-purple-50 rounded-lg px-3 py-2 flex items-center gap-2">
+                                <GraduationCap size={14} className="text-purple-600 flex-shrink-0" />
                                 <div>
-                                  <p className="text-[11px] font-semibold" style={{ color: '#a78bfa' }}>Capacitación obligatoria</p>
-                                  <p className="text-xs" style={{ color: 'rgba(167,139,250,0.8)' }}>{s.capacitacion.titulo}</p>
+                                  <p className="text-[11px] font-semibold text-purple-700">Capacitación obligatoria</p>
+                                  <p className="text-xs text-purple-600">{s.capacitacion.titulo}</p>
                                 </div>
                               </div>
                             )}
 
                             {/* Acuerdo */}
                             {s.contrato_template && (
-                              <details className="rounded-lg overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                                <summary className="cursor-pointer px-3 py-2 text-xs font-semibold flex items-center gap-2 select-none list-none" style={{ color: 'rgba(255,255,255,0.75)' }}>
-                                  <FileText size={12} style={{ color: '#2dd4bf' }} /> Ver modelo de acuerdo
+                              <details className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-gray-700 flex items-center gap-2 hover:bg-gray-50 select-none list-none">
+                                  <FileText size={12} className="text-teal-600" /> Ver modelo de acuerdo
                                 </summary>
-                                <div className="px-3 pb-3 pt-1" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                                  <pre className="text-[11px] whitespace-pre-wrap font-sans leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>{s.contrato_template}</pre>
+                                <div className="px-3 pb-3 pt-1 border-t border-gray-100">
+                                  <pre className="text-[11px] text-gray-600 whitespace-pre-wrap font-sans leading-relaxed">{s.contrato_template}</pre>
                                 </div>
                               </details>
                             )}
@@ -1449,19 +1443,20 @@ export default function DashboardClient({
                         )}
 
                         {/* Footer con botón aplicar */}
-                        <div className="px-4 pb-4 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div className="px-4 pb-4 pt-2 border-t border-gray-100">
                           {msgServicio && (
-                            <p className="text-xs rounded-lg px-2 py-1 mb-2" style={msgServicio.ok ? { background: 'rgba(52,211,153,0.12)', color: '#34d399' } : { background: 'rgba(248,113,113,0.12)', color: '#f87171' }}>
+                            <p className={`text-xs rounded-lg px-2 py-1 mb-2 ${msgServicio.ok ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
                               {msgServicio.msg}
                             </p>
                           )}
                           <button
                             onClick={() => aplicarServicio(s.id)}
                             disabled={yaEnMisModulos || aplicandoServicio === s.id}
-                            className="w-full text-sm py-2.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
-                            style={yaEnMisModulos
-                              ? { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.35)', cursor: 'not-allowed' }
-                              : { background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' }}
+                            className={`w-full text-sm py-2.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
+                              yaEnMisModulos
+                                ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                                : 'bg-brand-600 text-white hover:bg-brand-700'
+                            }`}
                           >
                             {aplicandoServicio === s.id ? <Loader2 size={14} className="animate-spin" /> : null}
                             {yaEnMisModulos ? 'Ya aplicaste' : 'Aplicar a este servicio'}
@@ -1479,15 +1474,13 @@ export default function DashboardClient({
         {/* Tab Documentos */}
         {tab === 'documentos' && (
           <div className="max-w-2xl space-y-4 animate-fade-in">
-            <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <p className="text-ink-500 text-sm mb-6">
               Subí tus documentos para que las empresas puedan verificar tu perfil al revisar tu postulación.
             </p>
             {docMsg && (
-              <div className="rounded-lg px-4 py-3 text-sm font-medium mb-4"
-                style={docMsg.includes('✓')
-                  ? { background: 'rgba(52,211,153,0.1)', color: '#34d399', border: '1px solid rgba(52,211,153,0.2)' }
-                  : { background: 'rgba(252,165,165,0.1)', color: '#fca5a5', border: '1px solid rgba(252,165,165,0.2)' }
-                }>
+              <div className={`rounded-lg px-4 py-3 text-sm font-medium mb-4 ${
+                docMsg.includes('✓') ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+              }`}>
                 {docMsg}
               </div>
             )}
@@ -1496,35 +1489,39 @@ export default function DashboardClient({
               const documento = getDocumento(doc.tipo);
               const cargando = uploadingDoc === doc.tipo;
               return (
-                <div key={doc.tipo} className="p-5 rounded-2xl flex items-center justify-between gap-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div key={doc.tipo} className="card p-5 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={tiene ? { background: 'rgba(52,211,153,0.12)' } : { background: 'rgba(255,255,255,0.08)' }}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      tiene ? 'bg-emerald-100' : 'bg-ink-100'
+                    }`}>
                       {tiene
-                        ? <Check size={18} style={{ color: '#34d399' }} />
-                        : <FileText size={18} style={{ color: 'rgba(255,255,255,0.4)' }} />
+                        ? <Check size={18} className="text-emerald-600" />
+                        : <FileText size={18} className="text-ink-400" />
                       }
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-medium text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>{doc.label}</p>
+                        <p className="font-medium text-ink-800 text-sm">{doc.label}</p>
                         {tiene && (
-                          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(52,211,153,0.12)', color: '#34d399' }}>
+                          <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">
                             ✓ Cargado
                           </span>
                         )}
                       </div>
-                      <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{doc.descripcion}</p>
+                      <p className="text-xs text-ink-400">{doc.descripcion}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {tiene && documento && (
-                      <a href={documento.file_url} target="_blank" style={{ color: '#a78bfa' }}>
+                      <a
+                        href={documento.file_url}
+                        target="_blank"
+                        className="text-brand-600 hover:text-brand-700"
+                      >
                         <ExternalLink size={15} />
                       </a>
                     )}
-                    <label className={`px-3 py-1.5 rounded-lg text-xs cursor-pointer transition-colors ${cargando ? 'opacity-50 pointer-events-none' : ''}`}
-                      style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.06)' }}>
+                    <label className={`border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-xs cursor-pointer hover:bg-gray-50 transition-colors ${cargando ? 'opacity-50 pointer-events-none' : ''}`}>
                       {cargando ? 'Subiendo...' : tiene ? 'Reemplazar' : 'Subir'}
                       <input
                         type="file"
@@ -1563,38 +1560,53 @@ export default function DashboardClient({
                   <ChevronRight size={18} className="text-white/60 flex-shrink-0" />
                 </Link>
               ) : (
-                <div className="flex items-center gap-4 w-full rounded-2xl p-4" style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)' }}>
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(52,211,153,0.15)' }}>
-                    <CheckCircle2 size={22} style={{ color: '#34d399' }} />
+                <div className="flex items-center gap-4 w-full rounded-2xl p-4 bg-emerald-50 border border-emerald-200">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-100">
+                    <CheckCircle2 size={22} className="text-emerald-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm leading-tight" style={{ color: '#34d399' }}>Video CV listo ✓</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'rgba(52,211,153,0.7)' }}>{pagado ? 'Podés compartirlo con empleadores' : 'Desbloqueá para compartirlo'}</p>
+                    <p className="font-bold text-sm text-emerald-800 leading-tight">Video CV listo ✓</p>
+                    <p className="text-emerald-600 text-xs mt-0.5">{pagado ? 'Podés compartirlo con empleadores' : 'Desbloqueá para compartirlo'}</p>
                   </div>
                   {!pagado && (
-                    <button onClick={() => setPagoModalOpen(true)} className="text-xs font-bold text-white px-3 py-1.5 rounded-lg flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
+                    <button onClick={() => setPagoModalOpen(true)} className="text-xs font-bold bg-brand-600 text-white px-3 py-1.5 rounded-lg flex-shrink-0">
                       Activar
                     </button>
                   )}
                 </div>
               )}
 
-              {/* CV listo: solo mostrar cuando el usuario ya tiene CV armado */}
-              {!!(cvDatos && Object.keys(cvDatos as Record<string,unknown>).length > 0) && (
-                <div className="flex items-center gap-3 w-full rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              {/* Acción secundaria: CV */}
+              {!cvDatos?.resumen && !(cvDatos?.experiencia?.length) && !(cvDatos?.habilidades?.length) ? (
+                <Link
+                  href="/dashboard/armar-cv"
+                  className="flex items-center gap-4 w-full rounded-2xl p-4 bg-white border-2 border-brand-200 transition-all active:scale-[0.99]"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
+                    <Sparkles size={20} color="#fff" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-ink-800 leading-tight">Armá tu CV</p>
+                    <p className="text-ink-400 text-xs mt-0.5">Contanos tu experiencia · lo armamos nosotros</p>
+                  </div>
+                  <ChevronRight size={18} className="text-ink-300 flex-shrink-0" />
+                </Link>
+              ) : (
+                <div className="flex items-center gap-3 w-full rounded-2xl p-4 bg-white border border-gray-100 shadow-sm">
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
                     <FileText size={20} color="#fff" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm leading-tight" style={{ color: 'rgba(255,255,255,0.9)' }}>CV listo ✓</p>
-                    <p className="text-xs mt-0.5 line-clamp-1" style={{ color: 'rgba(255,255,255,0.45)' }}>{cvDatos?.resumen?.substring(0,60) ?? 'Tu CV profesional está armado'}</p>
+                    <p className="font-bold text-sm text-ink-800 leading-tight">CV listo ✓</p>
+                    <p className="text-ink-400 text-xs mt-0.5 line-clamp-1">{cvDatos?.resumen?.substring(0,60) ?? 'Tu CV profesional está armado'}</p>
                   </div>
                   <div className="flex gap-1.5 flex-shrink-0">
                     {pagado
-                      ? <a href="/api/cv/download" download className="text-xs font-bold text-white px-3 py-1.5 rounded-lg flex items-center gap-1" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}><Download size={12} /> DOCX</a>
-                      : <button onClick={() => setPagoModalOpen(true)} className="text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}><Lock size={12} /> DOCX</button>
+                      ? <a href="/api/cv/download" download className="text-xs font-bold bg-brand-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1"><Download size={12} /> DOCX</a>
+                      : <button onClick={() => setPagoModalOpen(true)} className="text-xs font-bold bg-ink-100 text-ink-500 px-3 py-1.5 rounded-lg flex items-center gap-1"><Lock size={12} /> DOCX</button>
                     }
-                    <Link href="/dashboard/armar-cv" className="text-xs font-medium px-3 py-1.5 rounded-lg flex items-center gap-1" style={{ textDecoration: 'none', background: 'rgba(112,72,240,0.15)', color: '#a78bfa' }}>Editar</Link>
+                    <Link href="/dashboard/armar-cv" className="text-xs font-medium text-brand-600 px-3 py-1.5 rounded-lg bg-brand-50 flex items-center gap-1" style={{ textDecoration: 'none' }}>Editar</Link>
                   </div>
                 </div>
               )}
@@ -1603,28 +1615,27 @@ export default function DashboardClient({
             {/* ── Columna izquierda ──────────────────────────────── */}
             <div className="space-y-5 order-3 lg:order-1">
               {/* Flyer card — oculto en mobile (reemplazado por barra de acciones rápidas) */}
-              <div className="hidden lg:block p-5 space-y-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="hidden lg:block card p-5 space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-content-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                     <FileText size={20} color="#fff" strokeWidth={1.75} />
                   </div>
                   <div>
-                    <p className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>Mi perfil laboral</p>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Tarjeta con QR para imprimir o compartir</p>
+                    <p className="font-semibold text-ink-800 text-sm">Mi perfil laboral</p>
+                    <p className="text-xs text-ink-400">Tarjeta con QR para imprimir o compartir</p>
                   </div>
                 </div>
                 {/* Foto de perfil */}
                 <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.1)', border: '2px solid rgba(255,255,255,0.15)' }}>
+                  <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-ink-100 flex items-center justify-center border-2 border-ink-200">
                     {fotoUrl
                       ? <img src={fotoUrl} alt="Foto" className="w-full h-full object-cover" />
-                      : <span className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>{usuario.nombre_completo.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase()}</span>
+                      : <span className="text-ink-400 text-xs font-bold">{usuario.nombre_completo.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase()}</span>
                     }
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>{fotoUrl ? 'Foto cargada ✓' : 'Sin foto de perfil todavía'}</p>
-                    <label className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer transition-colors ${uploadingFoto ? 'pointer-events-none opacity-50' : ''}`}
-                      style={{ background: 'rgba(112,72,240,0.15)', color: '#a78bfa' }}>
+                    <p className="text-xs text-ink-500 mb-1.5">{fotoUrl ? 'Foto cargada ✓' : 'Sin foto de perfil todavía'}</p>
+                    <label className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer transition-colors ${uploadingFoto ? 'bg-ink-100 text-ink-400 pointer-events-none' : 'bg-brand-50 text-brand-600 hover:bg-brand-100'}`}>
                       {uploadingFoto ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
                       {uploadingFoto ? 'Subiendo...' : fotoUrl ? 'Cambiar foto' : 'Subir foto'}
                       <input type="file" accept="image/*" className="hidden" disabled={uploadingFoto}
@@ -1632,24 +1643,24 @@ export default function DashboardClient({
                     </label>
                   </div>
                 </div>
-                <Link href="/dashboard/flyer" className="w-full flex items-center justify-center gap-1.5 text-sm font-bold py-2.5 rounded-xl text-white" style={{ textDecoration:'none', background:'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
+                <Link href="/dashboard/flyer" className="btn-primary w-full justify-center text-sm py-2.5" style={{ textDecoration:'none', display:'flex', alignItems:'center', gap:6 }}>
                   <FileText size={15} /> Ver mi perfil laboral
                 </Link>
               </div>
 
               {/* Descargar CV — oculto en mobile */}
-              <div className="hidden lg:block p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="hidden lg:block card p-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-11 h-11 rounded-xl flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                     <FileText size={18} color="#fff" />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>Descargá tu CV para postularte</p>
-                    <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>Oportunai lo arma con tus datos · optimizado para filtros ATS</p>
+                    <p className="font-semibold text-ink-800 text-sm">Descargá tu CV para postularte</p>
+                    <p className="text-xs text-ink-400 leading-relaxed">Oportunai lo arma con tus datos · optimizado para filtros ATS</p>
                   </div>
                 </div>
                 {!pagado && (
-                  <div className="mb-2 flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', color: '#fbbf24' }}>
+                  <div className="mb-2 flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-700">
                     <Sparkles size={13} /> Función premium · <button onClick={() => setPagoModalOpen(true)} className="underline font-semibold">Desbloquear</button>
                   </div>
                 )}
@@ -1664,14 +1675,14 @@ export default function DashboardClient({
                   }
                   <div className="flex gap-2">
                     {pagado
-                      ? <Link href={`/u/${usuario.slug}/cv-print`} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-colors" style={{ textDecoration:'none', background:'rgba(252,165,165,0.1)', color:'#fca5a5', border:'1px solid rgba(252,165,165,0.2)' }}>
+                      ? <Link href={`/u/${usuario.slug}/cv-print`} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition-colors" style={{ textDecoration:'none' }}>
                           <FileText size={14} /> PDF
                         </Link>
-                      : <button onClick={() => setPagoModalOpen(true)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-colors" style={{ background:'rgba(252,165,165,0.1)', color:'#fca5a5', border:'1px solid rgba(252,165,165,0.2)' }}>
+                      : <button onClick={() => setPagoModalOpen(true)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
                           <FileText size={14} /> PDF
                         </button>
                     }
-                    <Link href={`/u/${usuario.slug}/cv`} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-colors" style={{ textDecoration:'none', background:'rgba(112,72,240,0.15)', color:'#a78bfa', border:'1px solid rgba(112,72,240,0.25)' }}>
+                    <Link href={`/u/${usuario.slug}/cv`} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors" style={{ textDecoration:'none' }}>
                       <FileText size={14} /> Vista previa
                     </Link>
                   </div>
@@ -1697,11 +1708,11 @@ export default function DashboardClient({
                 const colorCls = (c?: SemaforoColor) =>
                   c === 'verde'    ? 'bg-emerald-500' :
                   c === 'amarillo' ? 'bg-amber-400'   :
-                  c === 'rojo'     ? 'bg-red-500'     : 'bg-white/20';
-                const textColor = (c?: SemaforoColor) =>
-                  c === 'verde'    ? '#34d399' :
-                  c === 'amarillo' ? '#fbbf24' :
-                  c === 'rojo'     ? '#f87171' : 'rgba(255,255,255,0.35)';
+                  c === 'rojo'     ? 'bg-red-500'     : 'bg-gray-200';
+                const textCls = (c?: SemaforoColor) =>
+                  c === 'verde'    ? 'text-emerald-700' :
+                  c === 'amarillo' ? 'text-amber-700'   :
+                  c === 'rojo'     ? 'text-red-700'     : 'text-gray-400';
                 const labelColor = (c?: SemaforoColor) =>
                   c === 'verde'    ? 'Bien'        :
                   c === 'amarillo' ? 'Mejorable'   :
@@ -1721,7 +1732,7 @@ export default function DashboardClient({
                   : [];
 
                 return (
-                  <div className="card p-5">
+                  <div className="card p-5 border border-brand-100 bg-gradient-to-br from-brand-50/40 to-white">
                     {/* Header */}
                     <div className="flex items-center gap-2 mb-4">
                       <span className="text-xl">🚦</span>
@@ -1745,9 +1756,9 @@ export default function DashboardClient({
                         </p>
                         <div className="grid grid-cols-3 gap-1.5 opacity-40">
                           {DIMS.map(d => (
-                            <div key={d.key} className="flex flex-col items-center gap-1 rounded-lg px-1 py-2" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                            <div key={d.key} className="flex flex-col items-center gap-1 bg-gray-50 rounded-lg px-1 py-2">
                               <span className="text-base">{d.icon}</span>
-                              <div className="w-2 h-2 rounded-full" style={{ background: 'rgba(255,255,255,0.2)' }} />
+                              <div className="w-2 h-2 rounded-full bg-gray-200" />
                               <p className="text-[9px] text-ink-400 text-center">{d.label}</p>
                             </div>
                           ))}
@@ -1774,11 +1785,11 @@ export default function DashboardClient({
                         {/* 6 dimensiones */}
                         <div className="grid grid-cols-3 gap-2">
                           {DIMS.map(d => (
-                            <div key={d.key} className="flex flex-col items-center gap-1 rounded-xl px-2 py-2.5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                            <div key={d.key} className="flex flex-col items-center gap-1 bg-white rounded-xl border border-gray-100 px-2 py-2.5">
                               <span className="text-lg">{d.icon}</span>
                               <div className={`w-2.5 h-2.5 rounded-full ${colorCls(sem![d.key])}`} />
                               <p className="text-[10px] font-medium text-ink-600 text-center leading-tight">{d.label}</p>
-                              <p className="text-[9px] font-semibold" style={{ color: textColor(sem![d.key]) }}>
+                              <p className={`text-[9px] font-semibold ${textCls(sem![d.key])}`}>
                                 {labelColor(sem![d.key])}
                               </p>
                             </div>
@@ -1791,10 +1802,10 @@ export default function DashboardClient({
                             <p className="text-[10px] font-semibold text-ink-400 uppercase tracking-wide mb-2">Plan de acción</p>
                             <div className="space-y-2">
                               {accionesFiltradas.map(a => (
-                                <div key={a.dim} className="rounded-lg px-2.5 py-2" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)' }}>
+                                <div key={a.dim} className="bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-2">
                                   <div className="flex items-start gap-1.5">
                                     <span className="text-sm flex-shrink-0">{a.icon}</span>
-                                    <p className="text-[10px] leading-relaxed" style={{ color: '#fbbf24' }}>{a.texto}</p>
+                                    <p className="text-[10px] text-amber-800 leading-relaxed">{a.texto}</p>
                                   </div>
                                   {a.accion && (
                                     <button
@@ -1846,38 +1857,37 @@ export default function DashboardClient({
               })())}
 
               {/* Perfil digital */}
-              <div className="p-6 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="card p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <Zap size={16} style={{ color: '#a78bfa' }} />
-                  <h2 className="font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>Perfil digital</h2>
+                  <Zap size={16} className="text-purple-600" />
+                  <h2 className="font-semibold text-ink-800">Perfil digital</h2>
                 </div>
                 {alfaBadge ? (
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 rounded-xl p-3" style={{ background: 'rgba(112,72,240,0.12)', border: '1px solid rgba(112,72,240,0.2)' }}>
+                    <div className="flex items-center gap-3 bg-purple-50 rounded-xl p-3">
                       <div className="w-10 h-10 bg-[#533AB7] rounded-xl flex items-center justify-center text-xl flex-shrink-0">
                         {alfaBadge === 'Perfil nativo digital' ? '🚀' : alfaBadge === 'Usuario digital activo' ? '⚡' : '🌱'}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold" style={{ color: '#a78bfa' }}>{alfaBadge}</p>
+                        <p className="text-sm font-semibold text-purple-800">{alfaBadge}</p>
                         {usuario.alfa_score !== null && (
-                          <p className="text-xs" style={{ color: 'rgba(167,139,250,0.6)' }}>{usuario.alfa_score} / 15 puntos</p>
+                          <p className="text-xs text-purple-500">{usuario.alfa_score} / 15 puntos</p>
                         )}
                       </div>
                     </div>
                     <Link
                       href="/dashboard/alfabetizacion"
-                      className="block text-center text-xs hover:underline transition-colors"
-                      style={{ color: '#a78bfa' }}
+                      className="block text-center text-xs text-purple-600 hover:text-purple-800 hover:underline transition-colors"
                     >
                       Volver a hacer el test
                     </Link>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                    <p className="text-sm text-ink-500 leading-relaxed">
                       Completá el test de alfabetización digital y sumá un badge a tu perfil.
                     </p>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Solo tarda 2 minutos · 5 preguntas</p>
+                    <p className="text-xs text-ink-300">Solo tarda 2 minutos · 5 preguntas</p>
                     <Link
                       href="/dashboard/alfabetizacion"
                       className="inline-flex items-center gap-2 bg-[#533AB7] hover:bg-purple-800 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors"
@@ -2015,7 +2025,7 @@ export default function DashboardClient({
                   className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm"
                   onClick={e => { if (e.target === e.currentTarget) setWaModalOpen(false); }}
                 >
-                  <div className="rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm p-6 space-y-5 animate-slide-up sm:animate-none" style={{ background: '#1a1030' }}>
+                  <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm p-6 space-y-5 animate-slide-up sm:animate-none">
                     {/* Handle bar mobile */}
                     <div className="w-10 h-1 bg-ink-200 rounded-full mx-auto sm:hidden" />
 
@@ -2031,18 +2041,18 @@ export default function DashboardClient({
 
                     {/* Pasos */}
                     <div className="space-y-2">
-                      <div className="flex items-start gap-3 rounded-xl p-3" style={{ background: 'rgba(109,40,217,0.12)', border: '1px solid rgba(109,40,217,0.25)' }}>
-                        <span className="w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>1</span>
+                      <div className="flex items-start gap-3 bg-brand-50 border border-brand-100 rounded-xl p-3">
+                        <span className="w-6 h-6 rounded-full bg-brand-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
                         <div>
-                          <p className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>Confirmás acá</p>
-                          <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Guardamos tu número <span className="font-semibold">{usuario.telefono}</span></p>
+                          <p className="text-sm font-semibold text-ink-800">Confirmás acá</p>
+                          <p className="text-xs text-ink-500 mt-0.5">Guardamos tu número <span className="font-semibold">{usuario.telefono}</span></p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-3 rounded-xl p-3" style={{ background: 'rgba(37,211,102,0.1)', border: '1px solid rgba(37,211,102,0.2)' }}>
-                        <span className="w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: '#25D366' }}>2</span>
+                      <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl p-3">
+                        <span className="w-6 h-6 rounded-full bg-[#25D366] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
                         <div>
-                          <p className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>Mandás un WhatsApp a {usuario.cv_datos?.origen === 'mentoress' ? 'Mentor EESS' : 'OportunAI'}</p>
-                          <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Te abrimos el chat con el mensaje ya escrito. Solo tocás <strong>Enviar</strong>.</p>
+                          <p className="text-sm font-semibold text-ink-800">Mandás un WhatsApp a {usuario.cv_datos?.origen === 'mentoress' ? 'Mentor EESS' : 'OportunAI'}</p>
+                          <p className="text-xs text-ink-500 mt-0.5">Te abrimos el chat con el mensaje ya escrito. Solo tocás <strong>Enviar</strong>.</p>
                         </div>
                       </div>
                     </div>
@@ -2077,19 +2087,19 @@ export default function DashboardClient({
               )}
 
               {/* Referencias */}
-              <div className="p-6 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="card p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <Star size={16} style={{ color: '#fbbf24' }} />
-                  <h2 className="font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>Referencias laborales</h2>
+                  <Star size={16} className="text-amber-500" />
+                  <h2 className="font-semibold text-ink-800">Referencias laborales</h2>
                   {referencias.filter(r => r.estado === 'validada').length > 0 && (
-                    <span className="ml-auto text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1" style={{ background: 'rgba(251,191,36,0.12)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.25)' }}>
+                    <span className="ml-auto badge bg-amber-100 text-amber-700 flex items-center gap-1">
                       <Star size={10} fill="currentColor" />
                       {referencias.filter(r => r.estado === 'validada').length} verificadas
                     </span>
                   )}
                 </div>
 
-                <p className="text-xs mb-4 leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                <p className="text-xs text-ink-400 mb-4 leading-relaxed">
                   Agregá un ex-jefe o empleador como referente. Te damos un link para que lo comparta por WhatsApp. Cuando valida, aparece ⭐ en tu perfil.
                 </p>
 
@@ -2099,22 +2109,19 @@ export default function DashboardClient({
                     value={refEmpresa}
                     onChange={e => setRefEmpresa(e.target.value)}
                     placeholder="Nombre de la empresa"
-                    className="w-full text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
+                    className="input-field text-sm"
                   />
                   <input
                     value={refNombre}
                     onChange={e => setRefNombre(e.target.value)}
                     placeholder="Nombre del referente (jefe, supervisor...)"
-                    className="w-full text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
+                    className="input-field text-sm"
                     onKeyDown={e => { if (e.key === 'Enter') agregarReferencia(); }}
                   />
                   <button
                     onClick={agregarReferencia}
                     disabled={addingRef || !refEmpresa.trim() || !refNombre.trim()}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-all active:scale-[0.98]"
-                    style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}
+                    className="btn-primary w-full justify-center text-sm py-2 disabled:opacity-50"
                   >
                     {addingRef
                       ? <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
@@ -2125,11 +2132,7 @@ export default function DashboardClient({
                 </div>
 
                 {refMsg && (
-                  <p className="text-xs rounded-lg px-3 py-2 mb-3"
-                    style={refMsg.includes('Error')
-                      ? { background: 'rgba(252,165,165,0.1)', color: '#fca5a5' }
-                      : { background: 'rgba(52,211,153,0.1)', color: '#34d399' }
-                    }>
+                  <p className={`text-xs rounded-lg px-3 py-2 mb-3 ${refMsg.includes('Error') ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
                     {refMsg}
                   </p>
                 )}
@@ -2137,42 +2140,40 @@ export default function DashboardClient({
                 {/* Lista */}
                 {loadingRefs ? (
                   <div className="flex items-center justify-center py-4">
-                    <Loader2 size={16} className="animate-spin" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                    <Loader2 size={16} className="animate-spin text-ink-300" />
                   </div>
                 ) : referencias.length > 0 ? (
-                  <div className="space-y-2 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                  <div className="space-y-2 pt-2 border-t border-ink-100">
                     {referencias.map(r => (
-                      <div key={r.id} className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                      <div key={r.id} className="bg-ink-50 rounded-xl p-3">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-start gap-2 min-w-0">
-                            <Building2 size={14} className="mt-0.5 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }} />
+                            <Building2 size={14} className="text-ink-400 mt-0.5 flex-shrink-0" />
                             <div className="min-w-0">
-                              <p className="text-sm font-medium truncate" style={{ color: 'rgba(255,255,255,0.9)' }}>{r.empresa_nombre}</p>
-                              <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.4)' }}>{r.referidor_nombre}</p>
+                              <p className="text-sm font-medium text-ink-800 truncate">{r.empresa_nombre}</p>
+                              <p className="text-xs text-ink-400 truncate">{r.referidor_nombre}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-1 flex-shrink-0">
                             {r.estado === 'validada' ? (
-                              <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: 'rgba(52,211,153,0.12)', color: '#34d399' }}>
+                              <span className="badge bg-emerald-100 text-emerald-700 flex items-center gap-1">
                                 <Check size={10} strokeWidth={3} /> Verificado
                               </span>
                             ) : (
                               <>
                                 <button
                                   onClick={() => copyRefLink(r.token)}
-                                  className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors"
-                                  style={{ background: 'rgba(112,72,240,0.15)', color: '#a78bfa' }}
+                                  className="flex items-center gap-1 text-xs text-brand-600 bg-brand-50 hover:bg-brand-100 px-2 py-1 rounded-lg transition-colors"
                                   title="Copiar link de validación"
                                 >
                                   {copiedRef === r.token
-                                    ? <><CheckCheck size={12} style={{ color: '#34d399' }} /> Copiado</>
+                                    ? <><CheckCheck size={12} className="text-emerald-600" /> Copiado</>
                                     : <><Link2 size={12} /> Link</>
                                   }
                                 </button>
                                 <button
                                   onClick={() => eliminarReferencia(r.id)}
-                                  className="p-1"
-                                  style={{ color: 'rgba(252,165,165,0.6)' }}
+                                  className="text-red-400 hover:text-red-600 p-1"
                                   title="Eliminar"
                                 >
                                   <Trash2 size={13} />
@@ -2182,7 +2183,7 @@ export default function DashboardClient({
                           </div>
                         </div>
                         {r.estado !== 'validada' && (
-                          <p className="text-xs mt-1.5 pl-5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                          <p className="text-xs text-ink-400 mt-1.5 pl-5">
                             Pendiente de validación — compartí el link con {r.referidor_nombre.split(' ')[0]}
                           </p>
                         )}
@@ -2190,55 +2191,54 @@ export default function DashboardClient({
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs italic text-center py-2" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                  <p className="text-xs text-ink-300 italic text-center py-2">
                     Aún no tenés referencias. ¡Agregá la primera!
                   </p>
                 )}
               </div>
 
               {/* Capacitaciones */}
-              <div className="rounded-2xl p-6" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="card p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <GraduationCap size={16} color="#a78bfa" />
-                  <h2 className="font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>Capacitaciones</h2>
+                  <GraduationCap size={16} className="text-blue-600" />
+                  <h2 className="font-semibold text-ink-800">Capacitaciones</h2>
                   {capacitaciones.filter(c => c.completada).length > 0 && (
-                    <span className="ml-auto flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full" style={{ background: 'rgba(251,191,36,0.12)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.2)' }}>
+                    <span className="ml-auto badge bg-amber-100 text-amber-700 flex items-center gap-1">
                       <Star size={10} fill="currentColor" />
                       {capacitaciones.filter(c => c.completada).length} completadas
                     </span>
                   )}
                 </div>
-                <p className="text-xs mb-4 leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                <p className="text-xs text-ink-400 mb-4 leading-relaxed">
                   Mirá videos de empresas y respondé una pregunta para ganar una ⭐ en tu perfil.
                 </p>
                 {capacitaciones.length === 0 ? (
-                  <p className="text-xs italic text-center py-2" style={{ color: 'rgba(255,255,255,0.3)' }}>No hay capacitaciones disponibles todavía.</p>
+                  <p className="text-xs text-ink-300 italic text-center py-2">No hay capacitaciones disponibles todavía.</p>
                 ) : (
                   <div className="space-y-2">
                     {capacitaciones.map(cap => {
                       const ytId = cap.video_url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?\s]{11})/)?.[1] ?? null;
                       return (
-                        <div key={cap.id} className="rounded-xl p-3" style={cap.completada ? { background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.18)' } : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        <div key={cap.id} className={`rounded-xl border p-3 ${cap.completada ? 'border-emerald-200 bg-emerald-50' : 'border-ink-200 bg-white'}`}>
                           <div className="flex items-start gap-3">
                             {ytId && (
                               <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt={cap.titulo} className="w-20 h-12 object-cover rounded-lg flex-shrink-0" />
                             )}
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.4)' }}>{cap.empresa.nombre}</p>
-                              <p className="text-sm font-semibold line-clamp-1" style={{ color: 'rgba(255,255,255,0.9)' }}>{cap.titulo}</p>
-                              {cap.descripcion && <p className="text-xs line-clamp-1 mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{cap.descripcion}</p>}
+                              <p className="text-xs font-medium text-ink-400">{cap.empresa.nombre}</p>
+                              <p className="text-sm font-semibold text-ink-800 line-clamp-1">{cap.titulo}</p>
+                              {cap.descripcion && <p className="text-xs text-ink-400 line-clamp-1 mt-0.5">{cap.descripcion}</p>}
                             </div>
                           </div>
                           <div className="mt-2">
                             {cap.completada ? (
-                              <span className="inline-flex items-center gap-1 text-xs font-medium" style={{ color: '#34d399' }}>
-                                <Star size={11} fill="#fbbf24" color="#fbbf24" /> Completada — ⭐ sumada a tu perfil
+                              <span className="inline-flex items-center gap-1 text-xs text-emerald-700 font-medium">
+                                <Star size={11} fill="currentColor" className="text-amber-500" /> Completada — ⭐ sumada a tu perfil
                               </span>
                             ) : (
                               <button
                                 onClick={() => setPlayerCap(cap)}
-                                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold text-white transition-colors"
-                                style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}
+                                className="flex items-center gap-1.5 text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
                               >
                                 <PlayCircle size={13} /> Hacer capacitación
                               </button>
@@ -2252,33 +2252,33 @@ export default function DashboardClient({
               </div>
 
               {/* ── Armá tu CV ───────────────────────────────────── */}
-              <div id="cv-builder-section" className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div id="cv-builder-section" className="card p-5">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
                     <Sparkles size={18} color="#fff" />
                   </div>
                   <div>
-                    <p className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>Tu CV profesional</p>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>Contanos lo que sabés — lo armamos nosotros</p>
+                    <p className="font-semibold text-ink-800 text-sm">Tu CV profesional</p>
+                    <p className="text-xs text-ink-400">Contanos lo que sabés — lo armamos nosotros</p>
                   </div>
                 </div>
 
                 {/* Si ya tiene datos → estado completado */}
                 {cvDatos?.resumen || (cvDatos?.experiencia?.length ?? 0) > 0 || (cvDatos?.habilidades?.length ?? 0) > 0 ? (
                   <div className="space-y-3">
-                    <div className="rounded-xl p-3 space-y-2" style={{ background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.18)' }}>
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-2">
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-semibold" style={{ color: '#34d399' }}>✓ CV armado</p>
-                        <Link href="/dashboard/armar-cv" className="text-[10px] hover:underline" style={{ color: '#34d399', textDecoration: 'none' }}>
+                        <p className="text-xs font-semibold text-emerald-700">✓ CV armado</p>
+                        <Link href="/dashboard/armar-cv" className="text-[10px] text-emerald-600 hover:underline">
                           Actualizar →
                         </Link>
                       </div>
-                      {cvDatos?.resumen && <p className="text-xs leading-relaxed line-clamp-2" style={{ color: 'rgba(255,255,255,0.6)' }}>{cvDatos.resumen}</p>}
+                      {cvDatos?.resumen && <p className="text-xs text-emerald-800 leading-relaxed line-clamp-2">{cvDatos.resumen}</p>}
                       {(cvDatos?.habilidades?.length ?? 0) > 0 && (
                         <div className="flex flex-wrap gap-1">
                           {cvDatos!.habilidades!.slice(0, 5).map((h, i) => (
-                            <span key={i} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(52,211,153,0.12)', color: '#34d399' }}>{h}</span>
+                            <span key={i} className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">{h}</span>
                           ))}
                         </div>
                       )}
@@ -2287,7 +2287,7 @@ export default function DashboardClient({
                     {/* Permitir re-generar */}
                     {generarMsg === null && (
                       <details className="group">
-                        <summary className="text-[10px] cursor-pointer list-none" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                        <summary className="text-[10px] text-ink-400 hover:text-brand-600 cursor-pointer list-none">
                           Actualizar con nueva info →
                         </summary>
                         <div className="mt-3 space-y-2">
@@ -2296,8 +2296,7 @@ export default function DashboardClient({
                             onChange={e => setTextoLibre(e.target.value)}
                             placeholder="Contanos qué cambió — nuevos trabajos, cursos, habilidades..."
                             rows={3}
-                            className="w-full text-xs rounded-xl px-3 py-2.5 resize-none focus:outline-none"
-                            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
+                            className="w-full text-xs border border-ink-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-brand-300 text-ink-700 placeholder-ink-300"
                           />
                           <button
                             onClick={generarCVdesdeTexto}
@@ -2311,25 +2310,23 @@ export default function DashboardClient({
                       </details>
                     )}
                     {generarMsg && (
-                      <p className="text-xs text-center" style={{ color: generarMsg.includes('!') ? '#34d399' : '#fca5a5' }}>{generarMsg}</p>
+                      <p className={`text-xs text-center ${generarMsg.includes('!') ? 'text-emerald-600' : 'text-red-500'}`}>{generarMsg}</p>
                     )}
                   </div>
                 ) : (
                   /* Sin datos — mostrar las dos rutas */
                   <div className="space-y-3">
                     {/* Tabs */}
-                    <div className="flex gap-1 rounded-xl p-1" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <div className="flex gap-1 bg-ink-50 rounded-xl p-1">
                       <button
                         onClick={() => setCvBuilderTab('texto')}
-                        className="flex-1 text-xs font-semibold py-2 rounded-lg transition-colors"
-                        style={cvBuilderTab === 'texto' ? { background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' } : { color: 'rgba(255,255,255,0.45)' }}
+                        className={`flex-1 text-xs font-semibold py-2 rounded-lg transition-colors ${cvBuilderTab === 'texto' ? 'bg-white text-brand-700 shadow-sm' : 'text-ink-400 hover:text-ink-600'}`}
                       >
                         No tengo CV
                       </button>
                       <button
                         onClick={() => setCvBuilderTab('pdf')}
-                        className="flex-1 text-xs font-semibold py-2 rounded-lg transition-colors"
-                        style={cvBuilderTab === 'pdf' ? { background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff' } : { color: 'rgba(255,255,255,0.45)' }}
+                        className={`flex-1 text-xs font-semibold py-2 rounded-lg transition-colors ${cvBuilderTab === 'pdf' ? 'bg-white text-brand-700 shadow-sm' : 'text-ink-400 hover:text-ink-600'}`}
                       >
                         Ya tengo un CV
                       </button>
@@ -2338,7 +2335,7 @@ export default function DashboardClient({
                     {/* Tab: texto libre */}
                     {cvBuilderTab === 'texto' && (
                       <div className="space-y-2">
-                        <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                        <p className="text-[10px] text-ink-500 leading-relaxed">
                           Contanos en tus palabras: en qué trabajaste (aunque sea changas o informal), qué sabés hacer, hasta qué año fuiste al colegio o si hiciste algún curso.
                         </p>
                         <Link
@@ -2354,16 +2351,16 @@ export default function DashboardClient({
                     {/* Tab: subir PDF */}
                     {cvBuilderTab === 'pdf' && (
                       <div className="space-y-2">
-                        <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.45)' }}>Subí tu CV en PDF y lo analizamos para optimizarlo.</p>
+                        <p className="text-[10px] text-ink-500">Subí tu CV en PDF y lo analizamos para optimizarlo.</p>
                         {archivoCV ? (
                           <div className="space-y-2">
-                            <div className="flex items-center gap-3 rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                              <FileText size={15} color="#a78bfa" className="flex-shrink-0" />
+                            <div className="flex items-center gap-3 bg-ink-50 rounded-xl p-3">
+                              <FileText size={15} className="text-brand-600 flex-shrink-0" />
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium truncate" style={{ color: 'rgba(255,255,255,0.8)' }}>CV subido</p>
-                                <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>{new Date(archivoCV.created_at).toLocaleDateString('es-AR')}</p>
+                                <p className="text-xs font-medium text-ink-700 truncate">CV subido</p>
+                                <p className="text-[10px] text-ink-400">{new Date(archivoCV.created_at).toLocaleDateString('es-AR')}</p>
                               </div>
-                              <a href={archivoCV.file_url} target="_blank" rel="noopener noreferrer" style={{ color: '#a78bfa' }}>
+                              <a href={archivoCV.file_url} target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:text-brand-600">
                                 <ExternalLink size={14} />
                               </a>
                             </div>
@@ -2377,16 +2374,16 @@ export default function DashboardClient({
                             </button>
                           </div>
                         ) : (
-                          <label className={`flex flex-col items-center gap-2 rounded-xl p-5 cursor-pointer transition-colors ${uploading ? 'opacity-60 pointer-events-none' : ''}`} style={{ border: '2px dashed rgba(112,72,240,0.35)' }}>
-                            <Upload size={20} color="rgba(167,139,250,0.6)" />
-                            <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                          <label className={`flex flex-col items-center gap-2 border-2 border-dashed border-ink-200 rounded-xl p-5 cursor-pointer hover:border-brand-300 hover:bg-brand-50/30 transition-colors ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
+                            <Upload size={20} className="text-ink-300" />
+                            <p className="text-xs text-ink-400 text-center">
                               {uploading ? 'Subiendo...' : 'Tocá para subir tu CV en PDF'}
                             </p>
-                            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>PDF · máx 10 MB</p>
+                            <p className="text-[10px] text-ink-300">PDF · máx 10 MB</p>
                             <input type="file" accept=".pdf" className="hidden" onChange={handleFileUpload} />
                           </label>
                         )}
-                        {uploadMsg && <p className="text-xs text-center" style={{ color: uploadMsg.includes('✓') ? '#34d399' : '#fca5a5' }}>{uploadMsg}</p>}
+                        {uploadMsg && <p className={`text-xs text-center ${uploadMsg.includes('✓') ? 'text-emerald-600' : 'text-red-500'}`}>{uploadMsg}</p>}
                       </div>
                     )}
                   </div>
@@ -2395,43 +2392,45 @@ export default function DashboardClient({
 
               {/* Talleres */}
               {tallersAsignados.length > 0 && (
-                <div className="rounded-2xl p-6" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div className="card p-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <BookOpen size={16} color="#a78bfa" />
-                    <h2 className="font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>Mis talleres</h2>
+                    <BookOpen size={16} className="text-purple-600" />
+                    <h2 className="font-semibold text-ink-800">Mis talleres</h2>
                   </div>
 
                   <div className="space-y-3">
                     <div>
-                      <label className="text-xs mb-1 block" style={{ color: 'rgba(255,255,255,0.45)' }}>Seleccioná un taller</label>
+                      <label className="text-xs text-ink-400 mb-1 block">Seleccioná un taller</label>
                       <div className="relative">
                         <select
                           value={selectedTaller}
                           onChange={e => setSelectedTaller(e.target.value)}
-                          className="w-full text-sm rounded-xl px-3 py-2.5 appearance-none pr-8 focus:outline-none"
-                          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
+                          className="input-field text-sm appearance-none pr-8"
                         >
                           <option value="">— elegí un taller —</option>
                           {tallersAsignados.map(ta => (
                             <option key={ta.taller.id} value={ta.taller.id}>{ta.taller.nombre}</option>
                           ))}
                         </select>
-                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'rgba(255,255,255,0.4)' }} />
+                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
                       </div>
                     </div>
 
                     {tiposDisponibles.length > 0 && (
                       <div>
-                        <label className="text-xs mb-1 block" style={{ color: 'rgba(255,255,255,0.45)' }}>Tipo de video</label>
+                        <label className="text-xs text-ink-400 mb-1 block">Tipo de video</label>
                         <div className="flex gap-2">
                           {tiposDisponibles.map(t => (
                             <button
                               key={t.value}
                               onClick={() => setSelectedTipo(t.value as 'video_cv')}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                              style={selectedTipo === t.value
-                                ? { background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff', border: '1px solid transparent' }
-                                : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.12)' }}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                                selectedTipo === t.value
+                                  ? t.value === 'video_cv'
+                                    ? 'bg-brand-600 text-white border-brand-600'
+                                    : 'bg-emerald-600 text-white border-emerald-600'
+                                  : 'bg-white text-ink-600 border-ink-200 hover:border-ink-300'
+                              }`}
                             >
                               <Video size={14} />
                               {t.label}
@@ -2444,8 +2443,7 @@ export default function DashboardClient({
                     {selectedTaller && (
                       <button
                         onClick={handleIrATaller}
-                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-all active:scale-[0.98]"
-                        style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 14px rgba(109,40,217,0.3)' }}
+                        className="btn-primary w-full justify-center gap-2 py-3"
                       >
                         <Zap size={15} />
                         Grabar para este taller
@@ -2454,15 +2452,15 @@ export default function DashboardClient({
                     )}
                   </div>
 
-                  <div className="mt-4 pt-4 space-y-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                  <div className="mt-4 pt-4 border-t border-ink-100 space-y-2">
                     {tallersAsignados.map(ta => (
                       <div key={ta.taller.id} className="flex items-center justify-between text-xs">
-                        <span style={{ color: 'rgba(255,255,255,0.6)' }}>{ta.taller.nombre}</span>
-                        <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={
-                          ta.estado === 'validado' ? { background: 'rgba(52,211,153,0.12)', color: '#34d399' } :
-                          ta.estado === 'completado' ? { background: 'rgba(96,165,250,0.12)', color: '#60a5fa' } :
-                          { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.45)' }
-                        }>{ta.estado}</span>
+                        <span className="text-ink-600">{ta.taller.nombre}</span>
+                        <span className={`badge ${
+                          ta.estado === 'validado' ? 'bg-emerald-100 text-emerald-700' :
+                          ta.estado === 'completado' ? 'bg-blue-100 text-blue-700' :
+                          'bg-ink-100 text-ink-500'
+                        }`}>{ta.estado}</span>
                       </div>
                     ))}
                   </div>
@@ -2550,51 +2548,51 @@ export default function DashboardClient({
                 const cargoLabel = cvDatos?.experiencia?.[0]?.cargo ?? '';
 
                 return (
-                  <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(112,72,240,0.3)', borderLeft: '4px solid #7048F0' }}>
+                  <div className="card p-5" style={{ borderLeft: '4px solid #6d28d9', background: 'linear-gradient(135deg,#f9f7ff,#ffffff)' }}>
                     {/* Header */}
                     <div className="flex items-center gap-2 mb-4">
                       <span className="text-xl flex-shrink-0">🗺️</span>
                       <div className="flex-1 min-w-0">
-                        <h2 className="font-semibold text-sm leading-tight" style={{ color: 'rgba(255,255,255,0.9)' }}>Mi camino al empleo</h2>
-                        <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Tus próximos pasos para conseguir trabajo</p>
+                        <h2 className="font-semibold text-ink-800 text-sm leading-tight">Mi camino al empleo</h2>
+                        <p className="text-[10px] text-ink-400">Tus próximos pasos para conseguir trabajo</p>
                       </div>
                       {/* Progress pill */}
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className="w-14 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                        <div className="w-14 h-1.5 bg-ink-100 rounded-full overflow-hidden">
                           <div
                             className="h-full rounded-full transition-all duration-500"
-                            style={{ width: `${pct}%`, background: pct === 100 ? '#10b981' : '#7048F0' }}
+                            style={{ width: `${pct}%`, background: pct === 100 ? '#10b981' : '#6d28d9' }}
                           />
                         </div>
-                        <span className="text-xs font-bold" style={{ color: pct === 100 ? '#34d399' : '#a78bfa' }}>{pct}%</span>
+                        <span className="text-xs font-bold" style={{ color: pct === 100 ? '#059669' : '#6d28d9' }}>{pct}%</span>
                       </div>
                     </div>
 
                     {/* Estado del perfil */}
                     {perfilListo ? (
-                      <div className="flex items-center gap-3 rounded-xl px-3 py-3 mb-4" style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.18)' }}>
+                      <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-3 mb-4">
                         <span className="text-2xl flex-shrink-0">✅</span>
                         <div>
-                          <p className="text-sm font-semibold" style={{ color: '#34d399' }}>¡Perfil listo para postularte!</p>
-                          <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.55)' }}>Descargá tu CV y compartí tu perfil laboral con empleadores.</p>
+                          <p className="text-sm font-semibold text-emerald-800">¡Perfil listo para postularte!</p>
+                          <p className="text-xs text-emerald-700 mt-0.5">Descargá tu CV y compartí tu perfil laboral con empleadores.</p>
                         </div>
                       </div>
                     ) : (
                       <div className="space-y-2 mb-4">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>Próximos pasos</p>
+                        <p className="text-[10px] font-semibold text-ink-400 uppercase tracking-wider">Próximos pasos</p>
                         {pendientes.slice(0, 3).map(step => (
-                          <div key={step.id} className="flex items-center gap-3 rounded-xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                          <div key={step.id} className="flex items-center gap-3 bg-white border border-ink-100 rounded-xl px-3 py-2.5 shadow-sm">
                             <span className="text-base flex-shrink-0">{step.icon}</span>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-semibold leading-tight" style={{ color: 'rgba(255,255,255,0.85)' }}>{step.title}</p>
-                              <p className="text-[11px] leading-relaxed mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{step.desc}</p>
+                              <p className="text-xs font-semibold text-ink-800 leading-tight">{step.title}</p>
+                              <p className="text-[11px] text-ink-400 leading-relaxed mt-0.5">{step.desc}</p>
                             </div>
                             {step.cta && (
                               step.cta.href ? (
                                 <Link
                                   href={step.cta.href}
                                   className="flex-shrink-0 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg whitespace-nowrap transition-colors"
-                                  style={{ background: 'rgba(112,72,240,0.2)', color: '#a78bfa', textDecoration: 'none' }}
+                                  style={{ background: '#ede9fe', color: '#6d28d9', textDecoration: 'none' }}
                                 >
                                   {step.cta.label} →
                                 </Link>
@@ -2602,7 +2600,7 @@ export default function DashboardClient({
                                 <button
                                   onClick={step.cta.click}
                                   className="flex-shrink-0 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg whitespace-nowrap transition-colors"
-                                  style={{ background: 'rgba(112,72,240,0.2)', color: '#a78bfa' }}
+                                  style={{ background: '#ede9fe', color: '#6d28d9' }}
                                 >
                                   {step.cta.label} →
                                 </button>
@@ -2661,44 +2659,44 @@ export default function DashboardClient({
               })()}
 
               {/* ── Mis datos ──────────────────────────────────────── */}
-              <div className="rounded-2xl p-6" id="mis-datos-section" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="card p-6" id="mis-datos-section">
                 <div className="flex items-center justify-between mb-1">
-                  <h2 className="font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>Mis datos</h2>
-                  {datosMsgOk && <span className="text-xs font-medium" style={{ color: '#34d399' }}>Guardado ✓</span>}
+                  <h2 className="font-semibold text-ink-800">Mis datos</h2>
+                  {datosMsgOk && <span className="text-xs text-emerald-600 font-medium">Guardado ✓</span>}
                   {!editandoDatos && (
-                    <button onClick={() => setEditandoDatos(true)} className="flex items-center gap-1 py-1 px-2 rounded-lg text-xs transition-colors" style={{ color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <button onClick={() => setEditandoDatos(true)} className="btn-ghost py-1 px-2 text-xs gap-1">
                       <Edit3 size={13} /> Editar
                     </button>
                   )}
                 </div>
-                <div className="rounded-xl p-3 mb-4" style={{ background: 'rgba(112,72,240,0.1)', border: '1px solid rgba(112,72,240,0.2)' }}>
-                  <p className="text-xs font-medium mb-0.5" style={{ color: '#a78bfa' }}>📄 Con estos datos Oportunai construye tu CV</p>
-                  <p className="text-xs leading-relaxed" style={{ color: 'rgba(167,139,250,0.8)' }}>Cuanto más completes, mejor queda tu CV y más chances tenés. Oportunai lo optimiza automáticamente para pasar los filtros ATS de las empresas.</p>
+                <div className="bg-brand-50 border border-brand-100 rounded-xl p-3 mb-4">
+                  <p className="text-xs text-brand-700 font-medium mb-0.5">📄 Con estos datos Oportunai construye tu CV</p>
+                  <p className="text-xs text-brand-600 leading-relaxed">Cuanto más completes, mejor queda tu CV y más chances tenés. Oportunai lo optimiza automáticamente para pasar los filtros ATS de las empresas.</p>
                 </div>
 
                 {!editandoDatos ? (
-                  <div className="space-y-4 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <div className="space-y-4 text-sm text-ink-600">
                     <div className="flex flex-wrap gap-3">
-                      {fechaNac && <span style={{ color: 'rgba(255,255,255,0.55)' }}><span style={{ color: 'rgba(255,255,255,0.4)' }}>Nac:</span> {new Date(fechaNac + 'T00:00:00').toLocaleDateString('es-AR')}</span>}
-                      {telefono && <span style={{ color: 'rgba(255,255,255,0.55)' }}>📞 {telefono}</span>}
-                      {direccion && <span style={{ color: 'rgba(255,255,255,0.55)' }}>🏠 {direccion}</span>}
+                      {fechaNac && <span className="text-ink-500"><span className="text-ink-400">Nac:</span> {new Date(fechaNac + 'T00:00:00').toLocaleDateString('es-AR')}</span>}
+                      {telefono && <span className="text-ink-500">📞 {telefono}</span>}
+                      {direccion && <span className="text-ink-500">🏠 {direccion}</span>}
                     </div>
                     {(nivelEstudios || disponibilidad || localidad) && (
                       <div className="flex flex-wrap gap-2">
-                        {nivelEstudios && <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}>{nivelEstudios}</span>}
-                        {disponibilidad && <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}>{disponibilidad}</span>}
-                        {localidad && <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}>📍 {localidad}</span>}
+                        {nivelEstudios && <span className="text-xs bg-ink-50 text-ink-600 px-2 py-1 rounded-full">{nivelEstudios}</span>}
+                        {disponibilidad && <span className="text-xs bg-ink-50 text-ink-600 px-2 py-1 rounded-full">{disponibilidad}</span>}
+                        {localidad && <span className="text-xs bg-ink-50 text-ink-600 px-2 py-1 rounded-full">📍 {localidad}</span>}
                       </div>
                     )}
                     {resumenPerfil && <p className="leading-relaxed">{resumenPerfil}</p>}
                     {experiencias.length > 0 && (
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-widest mb-2 flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.4)' }}><BriefcaseIcon size={12} /> Experiencia</p>
+                        <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest mb-2 flex items-center gap-1"><BriefcaseIcon size={12} /> Experiencia</p>
                         <div className="space-y-1.5">
                           {experiencias.map((e, i) => (
-                            <div key={i} className="rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                              <p className="font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>{e.cargo} <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 'normal' }}>en {e.empresa}</span></p>
-                              {e.periodo && <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{e.periodo}</p>}
+                            <div key={i} className="bg-ink-50 rounded-lg px-3 py-2">
+                              <p className="font-medium text-ink-700">{e.cargo} <span className="text-ink-400 font-normal">en {e.empresa}</span></p>
+                              {e.periodo && <p className="text-xs text-ink-400">{e.periodo}</p>}
                             </div>
                           ))}
                         </div>
@@ -2706,12 +2704,12 @@ export default function DashboardClient({
                     )}
                     {educaciones.length > 0 && (
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-widest mb-2 flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.4)' }}><GraduationCap size={12} /> Educación</p>
+                        <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest mb-2 flex items-center gap-1"><GraduationCap size={12} /> Educación</p>
                         <div className="space-y-1.5">
                           {educaciones.map((e, i) => (
-                            <div key={i} className="rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                              <p className="font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>{e.titulo} <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 'normal' }}>— {e.institucion}</span></p>
-                              {e.periodo && <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{e.periodo}</p>}
+                            <div key={i} className="bg-ink-50 rounded-lg px-3 py-2">
+                              <p className="font-medium text-ink-700">{e.titulo} <span className="text-ink-400 font-normal">— {e.institucion}</span></p>
+                              {e.periodo && <p className="text-xs text-ink-400">{e.periodo}</p>}
                             </div>
                           ))}
                         </div>
@@ -2719,17 +2717,17 @@ export default function DashboardClient({
                     )}
                     {habilidades.length > 0 && (
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-widest mb-2 flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.4)' }}><Wrench size={12} /> Habilidades</p>
+                        <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest mb-2 flex items-center gap-1"><Wrench size={12} /> Habilidades</p>
                         <div className="flex flex-wrap gap-1.5">
-                          {habilidades.map((h, i) => <span key={i} className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(112,72,240,0.15)', color: '#a78bfa' }}>{h}</span>)}
+                          {habilidades.map((h, i) => <span key={i} className="text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full">{h}</span>)}
                         </div>
                       </div>
                     )}
                     {herramientas.length > 0 && (
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-widest mb-2 flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.4)' }}>💻 Herramientas digitales</p>
+                        <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest mb-2 flex items-center gap-1">💻 Herramientas digitales</p>
                         <div className="flex flex-wrap gap-1.5">
-                          {herramientas.map((h, i) => <span key={i} className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(20,184,166,0.12)', color: '#2dd4bf' }}>{h}</span>)}
+                          {herramientas.map((h, i) => <span key={i} className="text-xs bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full">{h}</span>)}
                         </div>
                       </div>
                     )}
@@ -2737,57 +2735,57 @@ export default function DashboardClient({
                       <div className="flex flex-wrap gap-2 pt-1">
                         {linkedinUrl && (
                           <a href={linkedinUrl.startsWith('http') ? linkedinUrl : `https://${linkedinUrl}`} target="_blank" rel="noopener noreferrer"
-                            className="text-xs flex items-center gap-1 px-2 py-1 rounded-full" style={{ color: '#60a5fa', background: 'rgba(96,165,250,0.1)', textDecoration: 'none' }}>
+                            className="text-xs flex items-center gap-1 text-blue-600 hover:underline bg-blue-50 px-2 py-1 rounded-full">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                             LinkedIn
                           </a>
                         )}
                         {instagramUrl && (
                           <a href={instagramUrl.startsWith('http') ? instagramUrl : `https://instagram.com/${instagramUrl.replace('@', '')}`} target="_blank" rel="noopener noreferrer"
-                            className="text-xs flex items-center gap-1 px-2 py-1 rounded-full" style={{ color: '#f472b6', background: 'rgba(244,114,182,0.1)', textDecoration: 'none' }}>
+                            className="text-xs flex items-center gap-1 text-pink-600 hover:underline bg-pink-50 px-2 py-1 rounded-full">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
                             Instagram
                           </a>
                         )}
                         {sitioWeb && (
                           <a href={sitioWeb.startsWith('http') ? sitioWeb : `https://${sitioWeb}`} target="_blank" rel="noopener noreferrer"
-                            className="text-xs flex items-center gap-1 px-2 py-1 rounded-full" style={{ color: 'rgba(255,255,255,0.55)', background: 'rgba(255,255,255,0.07)', textDecoration: 'none' }}>
+                            className="text-xs flex items-center gap-1 text-ink-600 hover:underline bg-ink-50 px-2 py-1 rounded-full">
                             🌐 Sitio web
                           </a>
                         )}
                       </div>
                     )}
                     {!fechaNac && !resumenPerfil && !nivelEstudios && !disponibilidad && !localidad && !experiencias.length && !educaciones.length && !habilidades.length && !herramientas.length && (
-                      <p className="italic text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>Completá tus datos para que las empresas te conozcan mejor.</p>
+                      <p className="text-ink-300 italic text-sm">Completá tus datos para que las empresas te conozcan mejor.</p>
                     )}
                   </div>
                 ) : (
                   <div className="space-y-5">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.55)' }}>Teléfono</label>
-                        <input type="tel" value={telefono} onChange={e => setTelefono(e.target.value)} placeholder="Ej: 11 1234-5678" className="w-full text-sm rounded-xl px-3 py-2.5 focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
+                        <label className="text-xs font-medium text-ink-600 block mb-1">Teléfono</label>
+                        <input type="tel" value={telefono} onChange={e => setTelefono(e.target.value)} placeholder="Ej: 11 1234-5678" className="input-field text-sm" />
                       </div>
                       <div>
-                        <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.55)' }}>Fecha de nacimiento</label>
-                        <input type="date" value={fechaNac} onChange={e => setFechaNac(e.target.value)} className="w-full text-sm rounded-xl px-3 py-2.5 focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
+                        <label className="text-xs font-medium text-ink-600 block mb-1">Fecha de nacimiento</label>
+                        <input type="date" value={fechaNac} onChange={e => setFechaNac(e.target.value)} className="input-field text-sm" />
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.55)' }}>Dirección</label>
-                      <input type="text" value={direccion} onChange={e => setDireccion(e.target.value)} placeholder="Ej: Av. Corrientes 1234, CABA" className="w-full text-sm rounded-xl px-3 py-2.5 focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
+                      <label className="text-xs font-medium text-ink-600 block mb-1">Dirección</label>
+                      <input type="text" value={direccion} onChange={e => setDireccion(e.target.value)} placeholder="Ej: Av. Corrientes 1234, CABA" className="input-field text-sm" />
                     </div>
 
                     <div>
-                      <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.55)' }}>Resumen profesional</label>
-                      <textarea value={resumenPerfil} onChange={e => setResumenPerfil(e.target.value)} rows={3} placeholder="Describí brevemente tu perfil y objetivos..." className="w-full text-sm rounded-xl px-3 py-2.5 resize-none focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
+                      <label className="text-xs font-medium text-ink-600 block mb-1">Resumen profesional</label>
+                      <textarea value={resumenPerfil} onChange={e => setResumenPerfil(e.target.value)} rows={3} placeholder="Describí brevemente tu perfil y objetivos..." className="input-field resize-none text-sm" />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.55)' }}>Nivel de estudios</label>
-                        <select value={nivelEstudios} onChange={e => setNivelEstudios(e.target.value)} className="w-full text-sm rounded-xl px-3 py-2.5 focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}>
+                        <label className="text-xs font-medium text-ink-600 block mb-1">Nivel de estudios</label>
+                        <select value={nivelEstudios} onChange={e => setNivelEstudios(e.target.value)} className="input-field text-sm">
                           <option value="">Seleccioná</option>
                           <option>Primario completo</option>
                           <option>Secundario incompleto</option>
@@ -2800,8 +2798,8 @@ export default function DashboardClient({
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.55)' }}>Disponibilidad horaria</label>
-                        <select value={disponibilidad} onChange={e => setDisponibilidad(e.target.value)} className="w-full text-sm rounded-xl px-3 py-2.5 focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}>
+                        <label className="text-xs font-medium text-ink-600 block mb-1">Disponibilidad horaria</label>
+                        <select value={disponibilidad} onChange={e => setDisponibilidad(e.target.value)} className="input-field text-sm">
                           <option value="">Seleccioná</option>
                           <option>Full time</option>
                           <option>Part time mañana</option>
@@ -2814,31 +2812,31 @@ export default function DashboardClient({
                     </div>
 
                     <div>
-                      <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(255,255,255,0.55)' }}>Localidad</label>
-                      <input type="text" value={localidad} onChange={e => setLocalidad(e.target.value)} placeholder="Ej: Buenos Aires, CABA" className="w-full text-sm rounded-xl px-3 py-2.5 focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
+                      <label className="text-xs font-medium text-ink-600 block mb-1">Localidad</label>
+                      <input type="text" value={localidad} onChange={e => setLocalidad(e.target.value)} placeholder="Ej: Buenos Aires, CABA" className="input-field text-sm" />
                     </div>
 
                     {/* Redes sociales */}
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>Redes sociales</p>
+                      <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest mb-2">Redes sociales</p>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs w-20 flex-shrink-0 flex items-center gap-1" style={{ color: '#60a5fa' }}>
+                          <span className="text-xs text-blue-600 w-20 flex-shrink-0 flex items-center gap-1">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                             LinkedIn
                           </span>
-                          <input type="url" value={linkedinUrl} onChange={e => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/tu-perfil" className="w-full text-sm rounded-xl px-3 py-2 focus:outline-none flex-1" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
+                          <input type="url" value={linkedinUrl} onChange={e => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/tu-perfil" className="input-field text-sm flex-1" />
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs w-20 flex-shrink-0 flex items-center gap-1" style={{ color: '#f472b6' }}>
+                          <span className="text-xs text-pink-600 w-20 flex-shrink-0 flex items-center gap-1">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
                             Instagram
                           </span>
-                          <input type="text" value={instagramUrl} onChange={e => setInstagramUrl(e.target.value)} placeholder="@tu_usuario o URL" className="w-full text-sm rounded-xl px-3 py-2 focus:outline-none flex-1" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
+                          <input type="text" value={instagramUrl} onChange={e => setInstagramUrl(e.target.value)} placeholder="@tu_usuario o URL" className="input-field text-sm flex-1" />
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs w-20 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.45)' }}>🌐 Sitio web</span>
-                          <input type="url" value={sitioWeb} onChange={e => setSitioWeb(e.target.value)} placeholder="https://tu-portfolio.com" className="w-full text-sm rounded-xl px-3 py-2 focus:outline-none flex-1" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
+                          <span className="text-xs text-ink-500 w-20 flex-shrink-0">🌐 Sitio web</span>
+                          <input type="url" value={sitioWeb} onChange={e => setSitioWeb(e.target.value)} placeholder="https://tu-portfolio.com" className="input-field text-sm flex-1" />
                         </div>
                       </div>
                     </div>
@@ -2846,15 +2844,15 @@ export default function DashboardClient({
                     {/* Experiencia */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <label className="text-xs font-medium flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.55)' }}><BriefcaseIcon size={12} /> Experiencia laboral</label>
-                        <button onClick={() => setExperiencias(p => [...p, { empresa: '', cargo: '', periodo: '', descripcion: '' }])} className="text-xs flex items-center gap-1 hover:underline" style={{ color: '#a78bfa' }}><Plus size={12} /> Agregar</button>
+                        <label className="text-xs font-medium text-ink-600 flex items-center gap-1"><BriefcaseIcon size={12} /> Experiencia laboral</label>
+                        <button onClick={() => setExperiencias(p => [...p, { empresa: '', cargo: '', periodo: '', descripcion: '' }])} className="text-xs text-brand-600 hover:underline flex items-center gap-1"><Plus size={12} /> Agregar</button>
                       </div>
                       <div className="space-y-2">
                         {experiencias.map((e, i) => (
-                          <div key={i} className="rounded-xl p-3 space-y-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                          <div key={i} className="bg-ink-50 rounded-xl p-3 space-y-2">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                              <input value={e.cargo} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, cargo: ev.target.value } : x))} placeholder="Cargo / puesto" className="text-xs py-1.5 rounded-lg px-2.5 focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)' }} />
-                              <input value={e.empresa} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, empresa: ev.target.value } : x))} placeholder="Empresa" className="text-xs py-1.5 rounded-lg px-2.5 focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)' }} />
+                              <input value={e.cargo} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, cargo: ev.target.value } : x))} placeholder="Cargo / puesto" className="input-field text-xs py-1.5" />
+                              <input value={e.empresa} onChange={ev => setExperiencias(p => p.map((x, j) => j === i ? { ...x, empresa: ev.target.value } : x))} placeholder="Empresa" className="input-field text-xs py-1.5" />
                             </div>
                             <div className="flex gap-2 items-center">
                               <select
@@ -2863,24 +2861,24 @@ export default function DashboardClient({
                                   const hasta = e.periodo?.split(' - ')[1] ?? 'Actualidad';
                                   setExperiencias(p => p.map((x, j) => j === i ? { ...x, periodo: ev.target.value ? `${ev.target.value} - ${hasta}` : '' } : x));
                                 }}
-                                className="text-xs py-1.5 rounded-lg px-2.5 flex-1 focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)' }}
+                                className="input-field text-xs py-1.5 flex-1"
                               >
                                 <option value="">Desde</option>
                                 {YEARS.map(y => <option key={y}>{y}</option>)}
                               </select>
-                              <span className="text-xs flex-shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }}>–</span>
+                              <span className="text-ink-400 text-xs flex-shrink-0">–</span>
                               <select
                                 value={e.periodo?.split(' - ')[1] ?? 'Actualidad'}
                                 onChange={ev => {
                                   const desde = e.periodo?.split(' - ')[0] ?? '';
                                   setExperiencias(p => p.map((x, j) => j === i ? { ...x, periodo: desde ? `${desde} - ${ev.target.value}` : '' } : x));
                                 }}
-                                className="text-xs py-1.5 rounded-lg px-2.5 flex-1 focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)' }}
+                                className="input-field text-xs py-1.5 flex-1"
                               >
                                 <option>Actualidad</option>
                                 {YEARS.map(y => <option key={y}>{y}</option>)}
                               </select>
-                              <button onClick={() => setExperiencias(p => p.filter((_, j) => j !== i))} className="px-2" style={{ color: 'rgba(252,165,165,0.7)' }}><X size={14} /></button>
+                              <button onClick={() => setExperiencias(p => p.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-600 px-2"><X size={14} /></button>
                             </div>
                           </div>
                         ))}
@@ -2890,19 +2888,19 @@ export default function DashboardClient({
                     {/* Educación */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <label className="text-xs font-medium flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.55)' }}><GraduationCap size={12} /> Educación</label>
-                        <button onClick={() => setEducaciones(p => [...p, { institucion: '', titulo: '', periodo: '' }])} className="text-xs flex items-center gap-1 hover:underline" style={{ color: '#a78bfa' }}><Plus size={12} /> Agregar</button>
+                        <label className="text-xs font-medium text-ink-600 flex items-center gap-1"><GraduationCap size={12} /> Educación</label>
+                        <button onClick={() => setEducaciones(p => [...p, { institucion: '', titulo: '', periodo: '' }])} className="text-xs text-brand-600 hover:underline flex items-center gap-1"><Plus size={12} /> Agregar</button>
                       </div>
                       <div className="space-y-2">
                         {educaciones.map((e, i) => (
-                          <div key={i} className="rounded-xl p-3 space-y-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                          <div key={i} className="bg-ink-50 rounded-xl p-3 space-y-2">
                             <div className="grid grid-cols-2 gap-2">
-                              <input value={e.titulo} onChange={ev => setEducaciones(p => p.map((x, j) => j === i ? { ...x, titulo: ev.target.value } : x))} placeholder="Título / carrera" className="text-xs py-1.5 rounded-lg px-2.5 focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)' }} />
-                              <input value={e.institucion} onChange={ev => setEducaciones(p => p.map((x, j) => j === i ? { ...x, institucion: ev.target.value } : x))} placeholder="Institución" className="text-xs py-1.5 rounded-lg px-2.5 focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)' }} />
+                              <input value={e.titulo} onChange={ev => setEducaciones(p => p.map((x, j) => j === i ? { ...x, titulo: ev.target.value } : x))} placeholder="Título / carrera" className="input-field text-xs py-1.5" />
+                              <input value={e.institucion} onChange={ev => setEducaciones(p => p.map((x, j) => j === i ? { ...x, institucion: ev.target.value } : x))} placeholder="Institución" className="input-field text-xs py-1.5" />
                             </div>
                             <div className="flex gap-2">
-                              <input value={e.periodo} onChange={ev => setEducaciones(p => p.map((x, j) => j === i ? { ...x, periodo: ev.target.value } : x))} placeholder="Período (ej: 2018–2022)" className="text-xs py-1.5 rounded-lg px-2.5 flex-1 focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)' }} />
-                              <button onClick={() => setEducaciones(p => p.filter((_, j) => j !== i))} className="px-2" style={{ color: 'rgba(252,165,165,0.7)' }}><X size={14} /></button>
+                              <input value={e.periodo} onChange={ev => setEducaciones(p => p.map((x, j) => j === i ? { ...x, periodo: ev.target.value } : x))} placeholder="Período (ej: 2018–2022)" className="input-field text-xs py-1.5 flex-1" />
+                              <button onClick={() => setEducaciones(p => p.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-600 px-2"><X size={14} /></button>
                             </div>
                           </div>
                         ))}
@@ -2911,23 +2909,23 @@ export default function DashboardClient({
 
                     {/* Habilidades */}
                     <div>
-                      <label className="text-xs font-medium block mb-2 flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.55)' }}><Wrench size={12} /> Habilidades</label>
+                      <label className="text-xs font-medium text-ink-600 block mb-2 flex items-center gap-1"><Wrench size={12} /> Habilidades</label>
                       <div className="flex flex-wrap gap-1.5 mb-2">
                         {habilidades.map((h, i) => (
-                          <span key={i} className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(112,72,240,0.15)', color: '#a78bfa' }}>
-                            {h} <button onClick={() => setHabilidades(p => p.filter((_, j) => j !== i))} style={{ color: 'rgba(167,139,250,0.6)' }}><X size={10} /></button>
+                          <span key={i} className="flex items-center gap-1 text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full">
+                            {h} <button onClick={() => setHabilidades(p => p.filter((_, j) => j !== i))} className="text-brand-400 hover:text-red-500"><X size={10} /></button>
                           </span>
                         ))}
                       </div>
                       <div className="flex gap-2 mb-2">
-                        <input value={habilidadInput} onChange={e => setHabilidadInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && habilidadInput.trim()) { setHabilidades(p => [...p, habilidadInput.trim()]); setHabilidadInput(''); e.preventDefault(); }}} placeholder="Escribí una habilidad y presioná Enter" className="text-xs py-1.5 rounded-lg px-2.5 flex-1 focus:outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }} />
-                        <button onClick={() => { if (habilidadInput.trim()) { setHabilidades(p => [...p, habilidadInput.trim()]); setHabilidadInput(''); }}} className="text-xs py-1.5 px-3 rounded-lg transition-colors" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}><Plus size={13} /></button>
+                        <input value={habilidadInput} onChange={e => setHabilidadInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && habilidadInput.trim()) { setHabilidades(p => [...p, habilidadInput.trim()]); setHabilidadInput(''); e.preventDefault(); }}} placeholder="Escribí una habilidad y presioná Enter" className="input-field text-xs py-1.5 flex-1" />
+                        <button onClick={() => { if (habilidadInput.trim()) { setHabilidades(p => [...p, habilidadInput.trim()]); setHabilidadInput(''); }}} className="btn-ghost text-xs py-1.5 px-3"><Plus size={13} /></button>
                       </div>
-                      <p className="text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Sugerencias:</p>
+                      <p className="text-xs text-ink-400 mb-1.5">Sugerencias:</p>
                       <div className="flex flex-wrap gap-1.5">
                         {(cvDatos?.origen === 'mentoress' ? HABILIDADES_EES : HABILIDADES_SUGERIDAS).filter(h => !habilidades.includes(h)).map(h => (
                           <button key={h} onClick={() => setHabilidades(p => [...p, h])}
-                            className="text-xs px-2 py-0.5 rounded-full transition-colors" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                            className="text-xs bg-ink-100 text-ink-500 hover:bg-brand-50 hover:text-brand-600 px-2 py-0.5 rounded-full transition-colors">
                             + {h}
                           </button>
                         ))}
@@ -2936,18 +2934,18 @@ export default function DashboardClient({
 
                     {/* Herramientas digitales */}
                     <div>
-                      <label className="text-xs font-medium block mb-2" style={{ color: 'rgba(255,255,255,0.55)' }}>💻 Herramientas digitales</label>
+                      <label className="text-xs font-medium text-ink-600 block mb-2">💻 Herramientas digitales</label>
                       <div className="flex flex-wrap gap-1.5 mb-2">
                         {herramientas.map((h, i) => (
-                          <span key={i} className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(20,184,166,0.12)', color: '#2dd4bf' }}>
-                            {h} <button onClick={() => setHerramientas(p => p.filter((_, j) => j !== i))} style={{ color: 'rgba(45,212,191,0.6)' }}><X size={10} /></button>
+                          <span key={i} className="flex items-center gap-1 text-xs bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full">
+                            {h} <button onClick={() => setHerramientas(p => p.filter((_, j) => j !== i))} className="text-teal-400 hover:text-red-500"><X size={10} /></button>
                           </span>
                         ))}
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {HERRAMIENTAS_DIGITALES.filter(h => !herramientas.includes(h)).map(h => (
                           <button key={h} onClick={() => setHerramientas(p => [...p, h])}
-                            className="text-xs px-2 py-0.5 rounded-full transition-colors" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                            className="text-xs bg-ink-100 text-ink-500 hover:bg-teal-50 hover:text-teal-600 px-2 py-0.5 rounded-full transition-colors">
                             + {h}
                           </button>
                         ))}
@@ -2955,14 +2953,13 @@ export default function DashboardClient({
                     </div>
 
                     {/* Botón guardar */}
-                    <div className="pt-2 flex gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div className="pt-2 border-t border-ink-100 flex gap-2">
                       <button onClick={guardarDatos} disabled={guardandoDatos}
-                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-60 transition-all active:scale-[0.98]"
-                        style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 14px rgba(109,40,217,0.3)' }}>
+                        className="btn-primary flex-1 justify-center py-3 text-sm gap-2">
                         <Check size={16} /> {guardandoDatos ? 'Guardando...' : 'Guardar todos mis datos'}
                       </button>
                       <button onClick={() => setEditandoDatos(false)}
-                        className="px-4 text-sm rounded-xl transition-colors" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#fca5a5' }}>
+                        className="btn-ghost px-4 text-sm text-red-500">
                         Cancelar
                       </button>
                     </div>
@@ -2971,25 +2968,25 @@ export default function DashboardClient({
               </div>
 
               {/* ── Analizador de CV ──────────────────────────────── */}
-              <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="card p-5">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#0ea5e9,#38bdf8)' }}>
                     <BrainCircuit size={18} color="#fff" />
                   </div>
                   <div>
-                    <p className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>Revisión de tu CV</p>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>Analizamos tu CV y te decimos exactamente qué mejorar</p>
+                    <p className="font-semibold text-ink-800 text-sm">Revisión de tu CV</p>
+                    <p className="text-xs text-ink-400">Analizamos tu CV y te decimos exactamente qué mejorar</p>
                   </div>
                 </div>
 
                 {/* Bloqueo si no hay datos */}
                 {!cvDatos?.resumen && !(cvDatos?.experiencia?.length) && !(cvDatos?.habilidades?.length) && (
-                  <div className="rounded-xl p-3 text-center space-y-2" style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)' }}>
-                    <p className="text-xs font-medium" style={{ color: '#fbbf24' }}>Primero completá tu CV</p>
-                    <p className="text-[10px]" style={{ color: 'rgba(251,191,36,0.7)' }}>Para poder revisarlo necesitamos que primero nos cuentes tu experiencia.</p>
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center space-y-2">
+                    <p className="text-xs text-amber-800 font-medium">Primero completá tu CV</p>
+                    <p className="text-[10px] text-amber-700">Para poder revisarlo necesitamos que primero nos cuentes tu experiencia.</p>
                     <button
                       onClick={() => document.getElementById('cv-builder-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-                      className="text-[10px] font-semibold hover:underline" style={{ color: '#fbbf24' }}
+                      className="text-[10px] font-semibold text-amber-700 hover:underline"
                     >
                       Completar mi CV →
                     </button>
@@ -3010,29 +3007,29 @@ export default function DashboardClient({
                 )}
 
                 {analisisError && (
-                  <p className="text-xs mt-2" style={{ color: '#fca5a5' }}>{analisisError}</p>
+                  <p className="text-xs text-red-500 mt-2">{analisisError}</p>
                 )}
 
                 {analisisCV && (
                   <div className="space-y-3 mt-1">
                     {/* Score */}
-                    <div className="flex items-center gap-3 rounded-xl p-3" style={{ background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.15)' }}>
+                    <div className="flex items-center gap-3 bg-sky-50 rounded-xl p-3">
                       <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg"
-                        style={{ background: analisisCV.puntaje >= 70 ? 'rgba(52,211,153,0.15)' : analisisCV.puntaje >= 40 ? 'rgba(251,191,36,0.15)' : 'rgba(252,165,165,0.15)', color: analisisCV.puntaje >= 70 ? '#34d399' : analisisCV.puntaje >= 40 ? '#fbbf24' : '#fca5a5' }}>
+                        style={{ background: analisisCV.puntaje >= 70 ? '#d1fae5' : analisisCV.puntaje >= 40 ? '#fef3c7' : '#fee2e2', color: analisisCV.puntaje >= 70 ? '#065f46' : analisisCV.puntaje >= 40 ? '#92400e' : '#991b1b' }}>
                         {analisisCV.puntaje}
                       </div>
                       <div>
-                        <p className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.85)' }}>{analisisCV.resumen_rapido}</p>
-                        <p className="text-[10px] mt-0.5 capitalize" style={{ color: 'rgba(255,255,255,0.4)' }}>{analisisCV.nivel} · {analisisCV.puntaje}/100</p>
+                        <p className="text-xs font-bold text-ink-700">{analisisCV.resumen_rapido}</p>
+                        <p className="text-[10px] text-ink-400 mt-0.5 capitalize">{analisisCV.nivel} · {analisisCV.puntaje}/100</p>
                       </div>
                     </div>
 
                     {/* Fortalezas */}
                     {analisisCV.fortalezas?.length > 0 && (
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: '#34d399' }}>✓ Fortalezas</p>
+                        <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wide mb-1">✓ Fortalezas</p>
                         {analisisCV.fortalezas.map((f, i) => (
-                          <p key={i} className="text-xs pl-3 mb-1" style={{ color: 'rgba(255,255,255,0.6)', borderLeft: '2px solid rgba(52,211,153,0.4)' }}>{f}</p>
+                          <p key={i} className="text-xs text-ink-600 pl-3 border-l-2 border-emerald-300 mb-1">{f}</p>
                         ))}
                       </div>
                     )}
@@ -3040,11 +3037,11 @@ export default function DashboardClient({
                     {/* Mejoras */}
                     {analisisCV.mejoras?.length > 0 && (
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: '#fbbf24' }}>↑ Mejoras sugeridas</p>
+                        <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-1">↑ Mejoras sugeridas</p>
                         {analisisCV.mejoras.map((m, i) => (
-                          <div key={i} className="rounded-lg px-2.5 py-2 mb-1.5" style={{ background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.15)' }}>
-                            <p className="text-xs font-semibold" style={{ color: '#fbbf24' }}>{m.titulo}</p>
-                            <p className="text-[10px] mt-0.5" style={{ color: 'rgba(251,191,36,0.7)' }}>{m.consejo}</p>
+                          <div key={i} className="bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-2 mb-1.5">
+                            <p className="text-xs font-semibold text-amber-900">{m.titulo}</p>
+                            <p className="text-[10px] text-amber-700 mt-0.5">{m.consejo}</p>
                           </div>
                         ))}
                       </div>
@@ -3053,10 +3050,10 @@ export default function DashboardClient({
                     {/* Faltan */}
                     {analisisCV.faltan?.length > 0 && (
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: '#fca5a5' }}>✗ Faltan completar</p>
+                        <p className="text-[10px] font-bold text-red-600 uppercase tracking-wide mb-1">✗ Faltan completar</p>
                         <div className="flex flex-wrap gap-1.5">
                           {analisisCV.faltan.map((f, i) => (
-                            <span key={i} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(252,165,165,0.1)', border: '1px solid rgba(252,165,165,0.2)', color: '#fca5a5' }}>{f}</span>
+                            <span key={i} className="text-[10px] bg-red-50 border border-red-200 text-red-700 px-2 py-0.5 rounded-full">{f}</span>
                           ))}
                         </div>
                       </div>
@@ -3064,20 +3061,20 @@ export default function DashboardClient({
 
                     {/* Tip ATS */}
                     {analisisCV.tip_ats && (
-                      <div className="rounded-xl px-3 py-2.5" style={{ background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.15)' }}>
-                        <p className="text-[10px] font-bold mb-0.5" style={{ color: '#38bdf8' }}>💡 Tip ATS</p>
-                        <p className="text-[10px]" style={{ color: 'rgba(56,189,248,0.8)' }}>{analisisCV.tip_ats}</p>
+                      <div className="bg-sky-50 border border-sky-200 rounded-xl px-3 py-2.5">
+                        <p className="text-[10px] font-bold text-sky-700 mb-0.5">💡 Tip ATS</p>
+                        <p className="text-[10px] text-sky-700">{analisisCV.tip_ats}</p>
                       </div>
                     )}
 
                     <div className="flex items-center justify-between">
                       {analisisCV.cached && (
-                        <span className="text-[10px] italic" style={{ color: 'rgba(255,255,255,0.3)' }}>Análisis guardado</span>
+                        <span className="text-[10px] text-ink-300 italic">Análisis guardado</span>
                       )}
                       <button
                         onClick={() => analizarCV(true)}
                         disabled={analisisLoading}
-                        className="text-[10px] hover:underline transition-colors ml-auto" style={{ color: 'rgba(255,255,255,0.4)' }}
+                        className="text-[10px] text-ink-400 hover:text-sky-600 hover:underline transition-colors ml-auto"
                       >
                         {analisisLoading ? 'Actualizando...' : 'Actualizar análisis →'}
                       </button>
@@ -3087,25 +3084,25 @@ export default function DashboardClient({
               </div>
 
               {/* ── Adaptación al puesto ──────────────────────────── */}
-              <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="card p-5">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#8b5cf6,#a78bfa)' }}>
                     <Target size={18} color="#fff" />
                   </div>
                   <div>
-                    <p className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>Adaptación al puesto</p>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>Pegá una oferta y chequeá tu compatibilidad</p>
+                    <p className="font-semibold text-ink-800 text-sm">Adaptación al puesto</p>
+                    <p className="text-xs text-ink-400">Pegá una oferta y chequeá tu compatibilidad</p>
                   </div>
                 </div>
 
                 {/* Bloqueo si no hay datos */}
                 {!cvDatos?.resumen && !(cvDatos?.experiencia?.length) && !(cvDatos?.habilidades?.length) && (
-                  <div className="rounded-xl p-3 text-center space-y-2" style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)' }}>
-                    <p className="text-xs font-medium" style={{ color: '#fbbf24' }}>Primero completá tu CV</p>
-                    <p className="text-[10px]" style={{ color: 'rgba(251,191,36,0.7)' }}>Para compararlo con una oferta necesitamos conocer tu perfil primero.</p>
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center space-y-2">
+                    <p className="text-xs text-amber-800 font-medium">Primero completá tu CV</p>
+                    <p className="text-[10px] text-amber-700">Para compararlo con una oferta necesitamos conocer tu perfil primero.</p>
                     <button
                       onClick={() => document.getElementById('cv-builder-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-                      className="text-[10px] font-semibold hover:underline" style={{ color: '#fbbf24' }}
+                      className="text-[10px] font-semibold text-amber-700 hover:underline"
                     >
                       Completar mi CV →
                     </button>
@@ -3119,8 +3116,7 @@ export default function DashboardClient({
                       onChange={e => setFitCheckInput(e.target.value)}
                       placeholder="Pegá aquí el texto de la oferta laboral..."
                       rows={4}
-                      className="w-full text-xs rounded-xl px-3 py-2.5 resize-none focus:outline-none"
-                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}
+                      className="w-full text-xs border border-ink-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-violet-300 text-ink-700 placeholder-ink-300"
                     />
                     <button
                       onClick={checkFit}
@@ -3132,31 +3128,31 @@ export default function DashboardClient({
                         ? <><Loader2 size={15} className="animate-spin" /> Comparando tu perfil...</>
                         : <><Target size={15} /> Ver qué tan compatible soy</>}
                     </button>
-                    {fitCheckError && <p className="text-xs" style={{ color: '#fca5a5' }}>{fitCheckError}</p>}
+                    {fitCheckError && <p className="text-xs text-red-500">{fitCheckError}</p>}
                   </div>
                 )}
 
                 {fitCheckResult && (
                   <div className="space-y-3">
                     {/* Score */}
-                    <div className="flex items-center gap-3 rounded-xl p-3" style={{ background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)' }}>
+                    <div className="flex items-center gap-3 bg-violet-50 rounded-xl p-3">
                       <div className="flex-shrink-0 w-14 h-14 rounded-full flex flex-col items-center justify-center font-bold"
-                        style={{ background: fitCheckResult.match_score >= 70 ? 'rgba(52,211,153,0.15)' : fitCheckResult.match_score >= 40 ? 'rgba(251,191,36,0.15)' : 'rgba(252,165,165,0.15)', color: fitCheckResult.match_score >= 70 ? '#34d399' : fitCheckResult.match_score >= 40 ? '#fbbf24' : '#fca5a5' }}>
+                        style={{ background: fitCheckResult.match_score >= 70 ? '#d1fae5' : fitCheckResult.match_score >= 40 ? '#fef3c7' : '#fee2e2', color: fitCheckResult.match_score >= 70 ? '#065f46' : fitCheckResult.match_score >= 40 ? '#92400e' : '#991b1b' }}>
                         <span className="text-xl">{fitCheckResult.match_score}</span>
                         <span className="text-[9px] font-normal">/ 100</span>
                       </div>
                       <div>
-                        <p className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.85)' }}>{fitCheckResult.resumen}</p>
-                        <p className="text-[10px] mt-0.5 capitalize" style={{ color: 'rgba(255,255,255,0.4)' }}>{fitCheckResult.nivel_match}</p>
+                        <p className="text-xs font-bold text-ink-700">{fitCheckResult.resumen}</p>
+                        <p className="text-[10px] text-ink-400 mt-0.5 capitalize">{fitCheckResult.nivel_match}</p>
                       </div>
                     </div>
 
                     {/* Cumple */}
                     {fitCheckResult.cumple?.length > 0 && (
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: '#34d399' }}>✓ Lo que cumplís</p>
+                        <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wide mb-1">✓ Lo que cumplís</p>
                         {fitCheckResult.cumple.map((c, i) => (
-                          <p key={i} className="text-xs pl-3 mb-1" style={{ color: 'rgba(255,255,255,0.6)', borderLeft: '2px solid rgba(52,211,153,0.4)' }}>{c}</p>
+                          <p key={i} className="text-xs text-ink-600 pl-3 border-l-2 border-emerald-300 mb-1">{c}</p>
                         ))}
                       </div>
                     )}
@@ -3164,18 +3160,18 @@ export default function DashboardClient({
                     {/* Falta */}
                     {fitCheckResult.falta?.length > 0 && (
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: '#fbbf24' }}>↑ Brechas a cubrir</p>
+                        <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-1">↑ Brechas a cubrir</p>
                         {fitCheckResult.falta.map((f, i) => (
-                          <p key={i} className="text-xs pl-3 mb-1" style={{ color: 'rgba(255,255,255,0.6)', borderLeft: '2px solid rgba(251,191,36,0.4)' }}>{f}</p>
+                          <p key={i} className="text-xs text-ink-600 pl-3 border-l-2 border-amber-300 mb-1">{f}</p>
                         ))}
                       </div>
                     )}
 
                     {/* Consejo */}
                     {fitCheckResult.consejo_postulacion && (
-                      <div className="rounded-xl px-3 py-2.5" style={{ background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)' }}>
-                        <p className="text-[10px] font-bold mb-0.5" style={{ color: '#a78bfa' }}>💡 Consejo para postularte</p>
-                        <p className="text-[10px]" style={{ color: 'rgba(167,139,250,0.8)' }}>{fitCheckResult.consejo_postulacion}</p>
+                      <div className="bg-violet-50 border border-violet-200 rounded-xl px-3 py-2.5">
+                        <p className="text-[10px] font-bold text-violet-700 mb-0.5">💡 Consejo para postularte</p>
+                        <p className="text-[10px] text-violet-700">{fitCheckResult.consejo_postulacion}</p>
                       </div>
                     )}
 
@@ -3195,7 +3191,7 @@ export default function DashboardClient({
 
                     <button
                       onClick={() => { setFitCheckResult(null); setFitCvAdaptado(null); setFitCheckInput(''); }}
-                      className="text-[10px] hover:underline transition-colors" style={{ color: 'rgba(255,255,255,0.4)' }}
+                      className="text-[10px] text-ink-400 hover:text-violet-600 hover:underline transition-colors"
                     >
                       Analizar otra oferta →
                     </button>
@@ -3204,18 +3200,18 @@ export default function DashboardClient({
               </div>
 
               {usuario.videos.filter(v => v.taller).length > 0 && (
-                <div className="rounded-2xl p-6" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div className="card p-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <BookOpen size={16} color="#a78bfa" />
-                    <h2 className="font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>Videos de Talleres</h2>
+                    <BookOpen size={16} className="text-purple-600" />
+                    <h2 className="font-semibold text-ink-800">Videos de Talleres</h2>
                   </div>
                   <div className="space-y-3">
                     {usuario.videos.filter(v => v.taller).map(v => (
-                      <div key={v.id} className="flex items-center gap-3 rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <div key={v.id} className="flex items-center gap-3 bg-ink-50 rounded-xl p-3">
                         <VideoThumbnail src={v.video_url} size="sm" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>Video CV</p>
-                          <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.4)' }}>{v.taller?.nombre} · {new Date(v.created_at).toLocaleDateString('es-AR')}</p>
+                          <p className="text-sm font-medium text-ink-700">Video CV</p>
+                          <p className="text-xs text-ink-400 truncate">{v.taller?.nombre} · {new Date(v.created_at).toLocaleDateString('es-AR')}</p>
                         </div>
                       </div>
                     ))}
@@ -3236,38 +3232,37 @@ export default function DashboardClient({
           onClick={() => setTipOferta(null)}
         >
           <div
-            className="rounded-3xl max-w-md w-full relative overflow-y-auto"
-            style={{ maxHeight: '90vh', padding: '32px 28px 24px', background: '#1a1030', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}
+            className="bg-white rounded-3xl max-w-md w-full relative shadow-2xl overflow-y-auto"
+            style={{ maxHeight: '90vh', padding: '32px 28px 24px' }}
             onClick={e => e.stopPropagation()}
           >
             <button
               onClick={() => setTipOferta(null)}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-              style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
               aria-label="Cerrar"
             >
               <X size={16} />
             </button>
 
-            <div className="inline-block text-xs font-bold px-3 py-1 rounded-full mb-3" style={{ background: 'rgba(112,72,240,0.2)', color: '#a78bfa', border: '1px solid rgba(112,72,240,0.3)' }}>
+            <div className="inline-block bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full mb-3">
               💡 Tip antes de postularte
             </div>
 
-            <h3 className="text-base font-bold mb-1 leading-snug" style={{ color: 'rgba(255,255,255,0.95)' }}>
+            <h3 className="text-base font-bold text-gray-900 mb-1 leading-snug">
               Vas a ir al sitio de {tipOferta.empresa}
             </h3>
-            <p className="text-sm mb-4 rounded-xl px-3 py-2" style={{ color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <strong style={{ color: 'rgba(255,255,255,0.8)' }}>{tipOferta.titulo}</strong>
+            <p className="text-sm text-gray-500 mb-4 bg-gray-50 rounded-xl px-3 py-2">
+              <strong className="text-gray-700">{tipOferta.titulo}</strong>
             </p>
 
             {/* Perfil digital */}
-            <div className="rounded-2xl p-4 mb-3" style={{ background: 'rgba(112,72,240,0.1)', border: '1px solid rgba(112,72,240,0.2)' }}>
-              <p className="text-xs font-bold mb-1" style={{ color: '#a78bfa' }}>📎 Adjuntá el link de tu perfil digital</p>
-              <p className="text-xs mb-3 leading-relaxed" style={{ color: 'rgba(167,139,250,0.8)' }}>
+            <div className="bg-purple-50 rounded-2xl p-4 mb-3">
+              <p className="text-xs font-bold text-purple-800 mb-1">📎 Adjuntá el link de tu perfil digital</p>
+              <p className="text-xs text-purple-700 mb-3 leading-relaxed">
                 Pegalo en el formulario o mensaje a la empresa. Pueden ver tu Video CV y perfil completo.
               </p>
               <div className="flex items-center gap-2">
-                <span className="flex-1 text-[11px] rounded-lg px-2.5 py-1.5 break-all" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(112,72,240,0.25)', color: 'rgba(255,255,255,0.6)' }}>
+                <span className="flex-1 text-[11px] bg-white border border-purple-200 rounded-lg px-2.5 py-1.5 text-gray-600 break-all">
                   {typeof window !== 'undefined' ? window.location.origin : ''}/u/{usuario.slug}/cv
                 </span>
                 <button
@@ -3285,16 +3280,16 @@ export default function DashboardClient({
             </div>
 
             {/* CV descargable */}
-            <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <p className="text-xs font-bold mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>📄 Si te piden el CV en PDF</p>
-              <p className="text-xs mb-3 leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <div className="bg-gray-50 rounded-2xl p-4 mb-4">
+              <p className="text-xs font-bold text-gray-700 mb-1">📄 Si te piden el CV en PDF</p>
+              <p className="text-xs text-gray-500 mb-3 leading-relaxed">
                 OportunAI genera tu CV con tus datos. Descargalo y tenelo listo para adjuntar.
               </p>
               <a
                 href="/api/cv/download"
                 download
                 className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg text-white"
-                style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.15)', textDecoration: 'none' }}
+                style={{ background: '#374151', textDecoration: 'none' }}
               >
                 <Download size={13} /> Descargar mi CV
               </a>
@@ -3328,8 +3323,8 @@ export default function DashboardClient({
 
       {/* ── Bottom navigation — mobile only ───────────────────────────────────── */}
       <nav
-        className="sm:hidden fixed bottom-0 left-0 right-0 z-40"
-        style={{ background: 'rgba(26,15,60,0.97)', borderTop: '1px solid rgba(255,255,255,0.07)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+        className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="flex items-stretch">
           {([
@@ -3340,8 +3335,9 @@ export default function DashboardClient({
             <button
               key={id}
               onClick={() => setTab(id)}
-              className="flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors"
-              style={{ color: tab === id ? '#a78bfa' : 'rgba(255,255,255,0.4)' }}
+              className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors ${
+                tab === id ? 'text-brand-600' : 'text-ink-400 active:text-ink-600'
+              }`}
             >
               <div className="relative">
                 <Icon size={22} strokeWidth={tab === id ? 2.25 : 1.75} />
@@ -3358,8 +3354,8 @@ export default function DashboardClient({
           ))}
           <Link
             href={usuario.cv_datos?.origen === 'mentoress' ? '/dashboard/capacitate?vertical=eess' : '/dashboard/capacitate'}
-            className="flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors"
-            style={{ textDecoration: 'none', color: 'rgba(255,255,255,0.4)' }}
+            className="flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors text-ink-400 active:text-ink-600"
+            style={{ textDecoration: 'none' }}
           >
             <GraduationCap size={22} strokeWidth={1.75} />
             <span className="text-[10px] leading-tight font-medium">Capacitate</span>
@@ -3370,23 +3366,23 @@ export default function DashboardClient({
       {/* ── Promo WhatsApp: aparece cuando el perfil está completo y no hay opt-in ── */}
       {waPromoVisible && !waActivo && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="rounded-t-3xl sm:rounded-2xl w-full sm:max-w-sm p-6 space-y-5 animate-slide-up sm:animate-none" style={{ background: '#1a1030', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}>
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm p-6 space-y-5 animate-slide-up sm:animate-none">
             {/* Handle bar mobile */}
-            <div className="w-10 h-1 rounded-full mx-auto sm:hidden" style={{ background: 'rgba(255,255,255,0.15)' }} />
+            <div className="w-10 h-1 bg-ink-200 rounded-full mx-auto sm:hidden" />
 
             {/* Header */}
             <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: 'rgba(37,211,102,0.1)' }}>
+              <div className="w-16 h-16 bg-[#25D366]/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <span className="text-4xl">💬</span>
               </div>
-              <h3 className="text-xl font-bold" style={{ color: 'rgba(255,255,255,0.95)' }}>¡Tu perfil está listo!</h3>
-              <p className="text-sm mt-2 leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              <h3 className="text-xl font-bold text-ink-800">¡Tu perfil está listo!</h3>
+              <p className="text-sm text-ink-500 mt-2 leading-relaxed">
                 ¿Querés que te acompañemos por WhatsApp en tu búsqueda de trabajo?
               </p>
             </div>
 
             {/* Beneficios */}
-            <div className="space-y-2.5 rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="space-y-2.5 bg-ink-50 rounded-2xl p-4">
               {[
                 { icon: '🔗', text: 'Te mandamos el link de tu perfil laboral' },
                 { icon: '🚦', text: 'Te guiamos al diagnóstico para recomendarte oportunidades según tu situación' },
@@ -3394,20 +3390,19 @@ export default function DashboardClient({
               ].map(({ icon, text }) => (
                 <div key={text} className="flex items-start gap-3">
                   <span className="text-lg flex-shrink-0">{icon}</span>
-                  <p className="text-sm leading-snug" style={{ color: 'rgba(255,255,255,0.6)' }}>{text}</p>
+                  <p className="text-sm text-ink-600 leading-snug">{text}</p>
                 </div>
               ))}
             </div>
 
-            <p className="text-xs text-center leading-relaxed" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            <p className="text-xs text-ink-400 text-center leading-relaxed">
               Gratis · Podés desactivarlo cuando quieras
             </p>
 
             <div className="flex flex-col-reverse sm:flex-row gap-2.5">
               <button
                 onClick={descartarPromo}
-                className="flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-colors"
-                style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.05)' }}
+                className="flex-1 px-4 py-3 rounded-xl border border-ink-200 text-sm font-medium text-ink-500 hover:bg-ink-50 transition-colors"
               >
                 Ahora no
               </button>
@@ -3432,23 +3427,23 @@ export default function DashboardClient({
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
           onClick={(e) => { if (e.target === e.currentTarget) { setPagoModalOpen(false); setPagoError(null); } }}
         >
-          <div className="rounded-2xl w-full max-w-sm p-6 space-y-4" style={{ background: '#1a1030', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
                   <Sparkles size={18} color="#fff" />
                 </div>
                 <div>
-                  <h2 className="font-bold text-base leading-tight" style={{ color: 'rgba(255,255,255,0.95)' }}>Plan premium</h2>
-                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Pago único · Sin suscripción</p>
+                  <h2 className="font-bold text-ink-900 text-base leading-tight">Plan premium</h2>
+                  <p className="text-xs text-ink-400">Pago único · Sin suscripción</p>
                 </div>
               </div>
-              <button onClick={() => { setPagoModalOpen(false); setPagoError(null); }} style={{ color: 'rgba(255,255,255,0.4)' }}>
+              <button onClick={() => { setPagoModalOpen(false); setPagoError(null); }} className="text-ink-400 hover:text-ink-700">
                 <X size={20} />
               </button>
             </div>
 
-            <ul className="space-y-2 text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            <ul className="space-y-2 text-sm text-ink-700">
               {[
                 'CV en formato DOCX listo para enviar',
                 'CV PDF optimizado para imprimir',
@@ -3456,21 +3451,21 @@ export default function DashboardClient({
                 'Adaptación del CV a cualquier oferta',
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <CheckCircle2 size={16} color="#34d399" className="shrink-0 mt-0.5" />
+                  <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
                   <span>{item}</span>
                 </li>
               ))}
             </ul>
 
             {pagoError && (
-              <p className="text-xs rounded-lg px-3 py-2" style={{ color: '#fca5a5', background: 'rgba(252,165,165,0.08)', border: '1px solid rgba(252,165,165,0.2)' }}>{pagoError}</p>
+              <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{pagoError}</p>
             )}
 
             <button
               onClick={iniciarPago}
               disabled={pagoLoading}
               className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98] disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 16px rgba(109,40,217,0.35)' }}
+              style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}
             >
               {pagoLoading
                 ? <><Loader2 size={16} className="animate-spin" /> Redirigiendo...</>
@@ -3478,7 +3473,7 @@ export default function DashboardClient({
               }
             </button>
 
-            <p className="text-center text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Procesado de forma segura por Stripe</p>
+            <p className="text-center text-xs text-ink-400">Procesado de forma segura por Stripe</p>
           </div>
         </div>
       )}
@@ -3493,15 +3488,15 @@ function VideoCard({ tipo, titulo, descripcion, icon: Icon, color, recordHref, v
   pagado?: boolean; onUnlock?: () => void;
 }) {
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       {/* Header */}
       <div className="px-5 pt-5 pb-3 flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="font-bold text-ink-900 text-base">{titulo}</h2>
             {video
-              ? <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399' }}><Check size={9} strokeWidth={3} /> Grabado</span>
-              : <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(251,191,36,0.15)', color: '#fbbf24' }}><Circle size={9} /> Pendiente</span>}
+              ? <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full"><Check size={9} strokeWidth={3} /> Grabado</span>
+              : <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full"><Circle size={9} /> Pendiente</span>}
           </div>
           <p className="text-xs text-ink-400 mt-0.5">{descripcion}</p>
         </div>
@@ -3533,16 +3528,14 @@ function VideoCard({ tipo, titulo, descripcion, icon: Icon, color, recordHref, v
               <div className="flex gap-2">
                 <button
                   onClick={onCopy}
-                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-medium transition-colors"
-                  style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.75)' }}
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 border border-gray-200 text-ink-600 text-sm font-medium hover:bg-gray-50 transition-colors"
                 >
                   {copied === copiedKey ? <CheckCheck size={14} className="text-green-500" /> : <Copy size={14} />}
                   {copied === copiedKey ? '¡Copiado!' : 'Copiar link'}
                 </button>
                 <Link
                   href={recordHref}
-                  className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors"
-                  style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.65)' }}
+                  className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 border border-gray-200 text-ink-500 text-sm font-medium hover:bg-gray-50 transition-colors"
                 >
                   <Circle size={13} /> Re-grabar
                 </Link>
@@ -3558,10 +3551,10 @@ function VideoCard({ tipo, titulo, descripcion, icon: Icon, color, recordHref, v
                 <Lock size={15} /> Desbloquear para compartir
               </button>
               <div className="flex gap-2">
-                <button onClick={onUnlock} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-medium transition-colors opacity-60" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
+                <button onClick={onUnlock} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 border border-gray-200 text-ink-400 text-sm font-medium hover:bg-gray-50 transition-colors opacity-60">
                   <Copy size={14} /> Copiar link
                 </button>
-                <button onClick={onUnlock} className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm transition-colors opacity-60" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
+                <button onClick={onUnlock} className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 border border-gray-200 text-ink-400 text-sm hover:bg-gray-50 transition-colors opacity-60">
                   <Download size={14} /> Descargar
                 </button>
               </div>

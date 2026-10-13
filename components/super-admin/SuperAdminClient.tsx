@@ -25,30 +25,17 @@ interface EmpresaOferta { id: string; titulo: string; estado: string; created_at
 interface Empresa { id: string; nombre: string; slug: string; logo_url: string | null; rubro: string | null; ciudad: string | null; activa: boolean; created_at: string; miembros: EmpresaMiembro[]; _count: { ofertas: number }; ofertas: EmpresaOferta[]; }
 
 // ── Helpers ──────────────────────────────────────────────────────────
-const estadoBadge = (estado: string): React.CSSProperties => {
-  const map: Record<string, React.CSSProperties> = {
-    asignado:   { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' },
-    completado: { background: 'rgba(96,165,250,0.15)',  color: '#60a5fa' },
-    validado:   { background: 'rgba(52,211,153,0.15)',  color: '#34d399' },
-  };
-  return map[estado] ?? { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' };
+const estadoBadge = (estado: string) => {
+  const map: Record<string, string> = { asignado: 'badge bg-ink-100 text-ink-600', completado: 'badge bg-blue-100 text-blue-700', validado: 'badge bg-emerald-100 text-emerald-700' };
+  return map[estado] ?? 'badge bg-ink-100 text-ink-600';
 };
-const roleBadge = (role: string): React.CSSProperties => {
-  const map: Record<string, React.CSSProperties> = {
-    super_admin: { background: 'rgba(167,139,250,0.15)', color: '#a78bfa' },
-    admin:       { background: 'rgba(109,40,217,0.2)',   color: '#a78bfa' },
-    empleador:   { background: 'rgba(251,191,36,0.15)',  color: '#fbbf24' },
-    user:        { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' },
-  };
-  return map[role] ?? { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' };
+const roleBadge = (role: string) => {
+  const map: Record<string, string> = { super_admin: 'bg-purple-100 text-purple-700', admin: 'bg-brand-100 text-brand-700', empleador: 'bg-amber-100 text-amber-700', user: 'bg-ink-100 text-ink-600' };
+  return map[role] ?? 'bg-ink-100 text-ink-600';
 };
-const ofertaEstadoBadge = (estado: string): React.CSSProperties => {
-  const map: Record<string, React.CSSProperties> = {
-    activa:  { background: 'rgba(52,211,153,0.15)',  color: '#34d399' },
-    pausada: { background: 'rgba(251,191,36,0.15)',  color: '#fbbf24' },
-    cerrada: { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' },
-  };
-  return map[estado] ?? { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' };
+const ofertaEstadoBadge = (estado: string) => {
+  const map: Record<string, string> = { activa: 'bg-emerald-100 text-emerald-700', pausada: 'bg-amber-100 text-amber-700', cerrada: 'bg-ink-100 text-ink-500' };
+  return map[estado] ?? 'bg-ink-100 text-ink-500';
 };
 
 // ── Password Reset Component ─────────────────────────────────────────
@@ -428,8 +415,7 @@ export default function SuperAdminClient({
             { key: 'galeria', label: 'Galería', icon: <Image size={15} />, count: galeriaItems.length },
           ].map(t => (
             <button key={t.key} onClick={() => { setTab(t.key as any); if (t.key === 'ofertas') cargarOfertas(); if (t.key === 'galeria') cargarGaleria(); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all"
-              style={tab === t.key ? { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.9)' } : { color: 'rgba(255,255,255,0.5)' }}>
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${tab === t.key ? 'bg-white text-ink-800 shadow-sm' : 'text-ink-500 hover:text-ink-700'}`}>
               {t.icon} {t.label}
               <span className="badge bg-ink-200 text-ink-600 ml-1">{t.count}</span>
             </button>
@@ -549,8 +535,8 @@ export default function SuperAdminClient({
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="flex gap-2 text-xs">
-                      <span className="badge" style={roleBadge(u.role)}>{u.role}</span>
-                      <span className="badge" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}>{u.taller_usuarios.length} talleres</span>
+                      <span className={`badge ${roleBadge(u.role)}`}>{u.role}</span>
+                      <span className="badge bg-ink-100 text-ink-600">{u.taller_usuarios.length} talleres</span>
                       <span className="badge bg-ink-100 text-ink-600">{u._count.videos} videos</span>
                     </div>
                     {expandedUser === u.id ? <ChevronUp size={16} className="text-ink-400" /> : <ChevronDown size={16} className="text-ink-400" />}
@@ -623,11 +609,10 @@ export default function SuperAdminClient({
                                 </p>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="badge" style={estadoBadge(rel.estado)}>{rel.estado}</span>
+                                <span className={estadoBadge(rel.estado)}>{rel.estado}</span>
                                 <select value={rel.estado}
                                   onChange={e => handleCambiarEstado(u.id, rel.taller.id, e.target.value)}
-                                  className="text-xs rounded-lg px-2 py-1"
-                                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)' }}>
+                                  className="text-xs border border-ink-200 rounded-lg px-2 py-1 bg-white">
                                   <option value="asignado">asignado</option>
                                   <option value="completado">completado</option>
                                   <option value="validado">validado</option>
@@ -696,13 +681,13 @@ export default function SuperAdminClient({
                 <button onClick={() => setExpandedEmpresa(expandedEmpresa === e.id ? null : e.id)}
                   className="w-full flex items-center justify-between px-6 py-4 hover:bg-ink-50 transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(251,191,36,0.15)', color: '#fbbf24' }}>
-                      <Building2 size={18} />
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                      <Building2 size={18} className="text-amber-600" />
                     </div>
                     <div className="text-left">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-semibold text-ink-800">{e.nombre}</p>
-                        {!e.activa && <span className="badge text-xs" style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>Inactiva</span>}
+                        {!e.activa && <span className="badge bg-red-100 text-red-600 text-xs">Inactiva</span>}
                         {e.origen && (
                           <span className="text-[10px] font-semibold bg-violet-100 text-violet-700 border border-violet-200 rounded-full px-2 py-0.5">
                             {e.origen}
@@ -760,8 +745,8 @@ export default function SuperAdminClient({
                                   </div>
                                 </div>
                                 <div className="flex gap-2 ml-3 flex-shrink-0">
-                                  <span className="badge text-xs" style={{ background: 'rgba(251,191,36,0.15)', color: '#fbbf24' }}>{m.rol_interno}</span>
-                                  <span className="badge text-xs" style={roleBadge(m.usuario.role)}>{m.usuario.role}</span>
+                                  <span className="badge bg-amber-100 text-amber-700 text-xs">{m.rol_interno}</span>
+                                  <span className={`badge text-xs ${roleBadge(m.usuario.role)}`}>{m.usuario.role}</span>
                                 </div>
                               </div>
                             </div>
@@ -784,8 +769,8 @@ export default function SuperAdminClient({
                                 <p className="text-xs text-ink-400 mt-0.5">{new Date(o.created_at).toLocaleDateString('es-AR')}</p>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="badge text-xs" style={ofertaEstadoBadge(o.estado)}>{o.estado}</span>
-                                <span className="badge text-xs" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}>{o._count.postulaciones} postulaciones</span>
+                                <span className={`badge text-xs ${ofertaEstadoBadge(o.estado)}`}>{o.estado}</span>
+                                <span className="badge bg-ink-100 text-ink-600 text-xs">{o._count.postulaciones} postulaciones</span>
                               </div>
                             </div>
                           ))}
@@ -942,10 +927,11 @@ export default function SuperAdminClient({
                 </div>
                 <button
                   onClick={() => toggleOfertaEstado(o)}
-                  className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
-                  style={o.estado === 'activa'
-                    ? { background: 'rgba(248,113,113,0.15)', color: '#f87171' }
-                    : { background: 'rgba(52,211,153,0.15)', color: '#34d399' }}
+                  className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex-shrink-0 ${
+                    o.estado === 'activa'
+                      ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                      : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                  }`}
                 >
                   {o.estado === 'activa' ? 'Cerrar' : 'Activar'}
                 </button>
@@ -1023,8 +1009,7 @@ export default function SuperAdminClient({
                           {item.big ? 'Normal' : '↕ Grande'}
                         </button>
                         <button onClick={() => eliminarFotoGaleria(item.id)}
-                          className="text-xs px-2.5 py-1 rounded-lg font-medium transition-colors"
-                          style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>
+                          className="text-xs px-2.5 py-1 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
                           <Trash2 size={12} />
                         </button>
                       </div>

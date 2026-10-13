@@ -168,7 +168,7 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
     {font.url && <link href={font.url} rel="stylesheet" />}
-    <div style={{ fontFamily: font.family, background: '#0d0d14', minHeight: '100vh' }}>
+    <div style={{ fontFamily: font.family, background: pageBg, minHeight: '100vh' }}>
     <style>{`
       .oferta-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
       .oferta-card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.12); }
@@ -184,15 +184,15 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
     `}</style>
 
       {/* NAV */}
-      <nav style={{ background: 'rgba(26,15,60,0.97)', borderBottom: '1px solid rgba(255,255,255,0.07)', position: 'sticky', top: 0, zIndex: 30, backdropFilter: 'blur(24px)' }}>
+      <nav style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 30 }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
             <img src="/logo.png" alt="Oportunai" style={{ width: 28, height: 28 }} />
-            <span style={{ fontWeight: 700, fontSize: 18, color: 'rgba(255,255,255,0.9)' }}>Oportunai</span>
+            <span style={{ fontWeight: 700, fontSize: 18, color: '#0f172a' }}>Oportunai</span>
           </Link>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <Link href="/login" className="nav-login" style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Iniciar sesión</Link>
-            <Link href="/register" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', color: '#fff', padding: '8px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>Empezar gratis</Link>
+            <Link href="/login" className="nav-login" style={{ color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Iniciar sesión</Link>
+            <Link href="/register" style={{ background: '#2563eb', color: '#fff', padding: '8px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>Empezar gratis</Link>
           </div>
         </div>
       </nav>
@@ -389,16 +389,16 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
         </p>
 
         {totalOfertas === 0 ? (
-          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: '56px 24px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ background: '#fff', borderRadius: 16, padding: '56px 24px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
             {empresa.logo_url ? (
-              <img src={empresa.logo_url} alt={empresa.nombre} style={{ width: 64, height: 64, borderRadius: 14, objectFit: 'cover', display: 'block', margin: '0 auto 16px', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }} />
+              <img src={empresa.logo_url} alt={empresa.nombre} style={{ width: 64, height: 64, borderRadius: 14, objectFit: 'cover', display: 'block', margin: '0 auto 16px', boxShadow: '0 4px 16px rgba(0,0,0,0.12)' }} />
             ) : (
-              <div style={{ width: 64, height: 64, borderRadius: 14, background: 'rgba(255,255,255,0.07)', border: `2px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 26, fontWeight: 900, color }}>
+              <div style={{ width: 64, height: 64, borderRadius: 14, background: pageBg, border: `2px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 26, fontWeight: 900, color }}>
                 {empresa.nombre[0]}
               </div>
             )}
-            <p style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 700, fontSize: 15, margin: '0 0 6px' }}>No hay ofertas activas por ahora.</p>
-            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, margin: 0 }}>Volvé pronto para encontrar nuevas oportunidades.</p>
+            <p style={{ color: '#0f172a', fontWeight: 700, fontSize: 15, margin: '0 0 6px' }}>No hay ofertas activas por ahora.</p>
+            <p style={{ color: '#94a3b8', fontSize: 13, margin: 0 }}>Volvé pronto para encontrar nuevas oportunidades.</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -409,20 +409,20 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
                 style={{ textDecoration: 'none', color: 'inherit' }}
               >
                 <div className="oferta-card" style={{
-                  background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: '20px 24px',
-                  border: '1px solid rgba(255,255,255,0.08)', borderLeft: `4px solid ${color}`,
+                  background: '#fff', borderRadius: 16, padding: '20px 24px',
+                  border: '1px solid #e2e8f0', borderLeft: `4px solid ${color}`,
                   display: 'flex', alignItems: 'center',
                   justifyContent: 'space-between', gap: 16,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                      <p style={{ fontWeight: 700, fontSize: 16, color: 'rgba(255,255,255,0.9)', margin: 0 }}>{oferta.titulo}</p>
-                      <span style={{ background: `${color}25`, color, fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0 }}>
+                      <p style={{ fontWeight: 700, fontSize: 16, color: '#0f172a', margin: 0 }}>{oferta.titulo}</p>
+                      <span style={{ background: `${color}15`, color, fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0 }}>
                         ACTIVA
                       </span>
                     </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, fontSize: 13, color: '#64748b' }}>
                       {oferta.ciudad && (
                         <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                           <MapPin size={13} /> {oferta.ciudad}
@@ -432,7 +432,7 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
                         <Briefcase size={13} /> {MODALIDAD_LABEL[oferta.modalidad] ?? oferta.modalidad}
                       </span>
                       {oferta.area && (
-                        <span style={{ background: 'rgba(96,165,250,0.15)', color: '#93c5fd', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999 }}>
+                        <span style={{ background: '#eff6ff', color: '#2563eb', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999 }}>
                           {oferta.area}
                         </span>
                       )}
@@ -453,15 +453,15 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
           </div>
         )}
 
-        <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.35)', fontSize: 12, marginTop: 32 }}>
-          Powered by <Link href="/" style={{ color: '#a78bfa' }}>Oportunai</Link> — Selección con Video CV
+        <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: 12, marginTop: 32 }}>
+          Powered by <Link href="/" style={{ color: '#3b82f6' }}>Oportunai</Link> — Selección con Video CV
         </p>
         </div>
       </div>
 
       {/* SERVICIOS */}
       {totalServicios > 0 && (
-        <div id="servicios" style={{ position: 'relative', overflow: 'hidden', background: 'transparent' }}>
+        <div id="servicios" style={{ position: 'relative', overflow: 'hidden', background: `${pageBg}` }}>
           <div style={{
             position: 'absolute', inset: 0, pointerEvents: 'none',
             background: `radial-gradient(circle 400px at 90% 50%, ${color}08 0%, transparent 60%)`,
@@ -476,20 +476,20 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
                 const protocolo = (s.protocolo as { item: string; descripcion: string }[]) ?? [];
                 return (
                   <div key={s.id} className="oferta-card" style={{
-                    background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: '20px 24px',
-                    border: '1px solid rgba(255,255,255,0.08)', borderLeft: `4px solid ${color}80`,
+                    background: '#fff', borderRadius: 16, padding: '20px 24px',
+                    border: '1px solid #e2e8f0', borderLeft: `4px solid ${color}80`,
                     display: 'flex', alignItems: 'flex-start',
                     justifyContent: 'space-between', gap: 16,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                   }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
-                        <p style={{ fontWeight: 700, fontSize: 16, color: 'rgba(255,255,255,0.9)', margin: 0 }}>{s.titulo}</p>
+                        <p style={{ fontWeight: 700, fontSize: 16, color: '#0f172a', margin: 0 }}>{s.titulo}</p>
                         <span style={{ background: `${color}15`, color, fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                           {FRECUENCIA_LABEL[s.frecuencia] ?? s.frecuencia}
                         </span>
                       </div>
-                      <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 }}>{s.descripcion}</p>
+                      <p style={{ color: '#64748b', fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 }}>{s.descripcion}</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
                         {s.duracion_jornada && (
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: `${color}12`, color, fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999 }}>
@@ -497,32 +497,32 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
                           </span>
                         )}
                         {s.horas_modulo && (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(45,212,191,0.15)', color: '#2dd4bf', fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999 }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#f0fdfa', color: '#0d9488', fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999 }}>
                             {s.horas_modulo} hs
                           </span>
                         )}
                         {s.precio_hora && (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(52,211,153,0.15)', color: '#34d399', fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999 }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#f0fdf4', color: '#16a34a', fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999 }}>
                             ${Number(s.precio_hora).toLocaleString('es-AR')}/hs
                           </span>
                         )}
                         {s.horas_modulo && s.precio_hora && (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.3)', fontSize: 12, fontWeight: 800, padding: '3px 10px', borderRadius: 999 }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#fefce8', color: '#854d0e', border: '1px solid #fde68a', fontSize: 12, fontWeight: 800, padding: '3px 10px', borderRadius: 999 }}>
                             ${(s.horas_modulo * Number(s.precio_hora)).toLocaleString('es-AR', { minimumFractionDigits: 0 })} total
                           </span>
                         )}
                         {s.deadline && (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#94a3b8', fontSize: 12 }}>
                             <CalendarClock size={12} /> Deadline: {new Date(s.deadline).toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}
                           </span>
                         )}
                         {protocolo.length > 0 && (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#94a3b8', fontSize: 12 }}>
                             <Layers size={12} /> {protocolo.length} {protocolo.length === 1 ? 'ítem en protocolo' : 'ítems en protocolo'}
                           </span>
                         )}
                         {s._count.postulaciones > 0 && (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#94a3b8', fontSize: 12 }}>
                             <Users size={12} /> {s._count.postulaciones} postulante{s._count.postulaciones !== 1 ? 's' : ''}
                           </span>
                         )}
@@ -530,12 +530,12 @@ export default async function EmpresaPublicaPage({ params }: { params: { slug: s
                       {protocolo.length > 0 && (
                         <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                           {protocolo.slice(0, 4).map((item, idx) => (
-                            <span key={idx} style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, fontSize: 11, color: 'rgba(255,255,255,0.65)', padding: '3px 10px', fontWeight: 500 }}>
+                            <span key={idx} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 11, color: '#475569', padding: '3px 10px', fontWeight: 500 }}>
                               {item.item}
                             </span>
                           ))}
                           {protocolo.length > 4 && (
-                            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', padding: '3px 6px' }}>+{protocolo.length - 4} más</span>
+                            <span style={{ fontSize: 11, color: '#94a3b8', padding: '3px 6px' }}>+{protocolo.length - 4} más</span>
                           )}
                         </div>
                       )}

@@ -2514,7 +2514,7 @@ export default function DashboardClient({
                     title: 'Armá tu CV',
                     desc: 'Contanos tu experiencia en tus palabras — nosotros la convertimos en un CV profesional',
                     done: tieneSummary || tieneExp,
-                    cta: { label: 'Armar mi CV', click: () => setTimeout(() => document.getElementById('cv-builder-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50) },
+                    cta: { label: 'Armar mi CV', href: '/dashboard/armar-cv' },
                   },
                   {
                     id: 'datos', icon: '📝',

@@ -524,7 +524,7 @@ export default function DashboardClient({
   const cvUrl = `${appUrl}/u/${usuario.slug}/cv`;
 
   const videoCV = usuario.videos.find(v => v.tipo === 'video_cv' && !v.taller && !v.oferta_id);
-  const archivoCV = usuario.archivos[0] ?? null;
+  const [archivoCV, setArchivoCV] = useState<Archivo | null>(usuario.archivos[0] ?? null);
 
   useEffect(() => {
     if (tab === 'documentos') cargarDocumentos();
@@ -734,8 +734,9 @@ export default function DashboardClient({
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.type !== 'application/pdf') {
-      setUploadMsg('Solo se permiten archivos PDF');
+    const tiposPermitidos = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!tiposPermitidos.includes(file.type)) {
+      setUploadMsg('Solo se permiten archivos PDF o Word (.doc, .docx)');
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -745,7 +746,7 @@ export default function DashboardClient({
     setUploading(true);
     setUploadMsg(null);
 
-    const ext = 'pdf';
+    const ext = file.name.split('.').pop() ?? 'pdf';
     const filename = `${usuario.id}/cv-${Date.now()}.${ext}`;
     const { error: uploadError } = await getSupabase().storage
       .from('videos')
@@ -765,6 +766,8 @@ export default function DashboardClient({
     });
     setUploading(false);
     if (res.ok) {
+      const nuevoArchivo = await res.json();
+      setArchivoCV(nuevoArchivo);
       setUploadMsg('CV subido. Extrayendo datos...');
       // Auto-analizar el CV para poblar cv_datos
       try {
@@ -783,6 +786,17 @@ export default function DashboardClient({
     } else {
       const j = await res.json();
       setUploadMsg(j.error ?? 'Error al subir');
+    }
+  };
+
+  const eliminarArchivoCV = async () => {
+    if (!archivoCV) return;
+    const res = await fetch(`/api/files/${archivoCV.id}`, { method: 'DELETE' });
+    if (res.ok) {
+      setArchivoCV(null);
+      setUploadMsg(null);
+    } else {
+      setUploadMsg('No se pudo eliminar el archivo');
     }
   };
 
@@ -2360,9 +2374,16 @@ export default function DashboardClient({
                                 <p className="text-xs font-medium text-ink-700 truncate">CV subido</p>
                                 <p className="text-[10px] text-ink-400">{new Date(archivoCV.created_at).toLocaleDateString('es-AR')}</p>
                               </div>
-                              <a href={archivoCV.file_url} target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:text-brand-600">
+                              <a href={archivoCV.file_url} target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:text-brand-600 mr-1">
                                 <ExternalLink size={14} />
                               </a>
+                              <button
+                                onClick={eliminarArchivoCV}
+                                className="text-red-400 hover:text-red-600 transition-colors"
+                                title="Eliminar y subir otro"
+                              >
+                                <X size={14} />
+                              </button>
                             </div>
                             <button
                               onClick={analyzeCV}
@@ -2377,10 +2398,10 @@ export default function DashboardClient({
                           <label className={`flex flex-col items-center gap-2 border-2 border-dashed border-ink-200 rounded-xl p-5 cursor-pointer hover:border-brand-300 hover:bg-brand-50/30 transition-colors ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
                             <Upload size={20} className="text-ink-300" />
                             <p className="text-xs text-ink-400 text-center">
-                              {uploading ? 'Subiendo...' : 'Tocá para subir tu CV en PDF'}
+                              {uploading ? 'Subiendo...' : 'Tocá para subir tu CV'}
                             </p>
-                            <p className="text-[10px] text-ink-300">PDF · máx 10 MB</p>
-                            <input type="file" accept=".pdf" className="hidden" onChange={handleFileUpload} />
+                            <p className="text-[10px] text-ink-300">PDF o Word · máx 10 MB</p>
+                            <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handleFileUpload} />
                           </label>
                         )}
                         {uploadMsg && <p className={`text-xs text-center ${uploadMsg.includes('✓') ? 'text-emerald-600' : 'text-red-500'}`}>{uploadMsg}</p>}

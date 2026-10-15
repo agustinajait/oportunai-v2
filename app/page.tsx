@@ -124,7 +124,7 @@ export default async function LandingPage() {
 
         <div className={s.navCenter}>
           <Link href="/"               className={`${s.navLink} ${s.navLinkActive}`}>Para vos</Link>
-          {false && <Link href="/register-empresa" className={s.navLink}>Para empresas</Link>}
+          <Link href="/register-empresa" className={s.navLink}>Para empresas</Link>
           <Link href="/register"        className={s.navLink}>Capacitaciones</Link>
         </div>
 
@@ -498,8 +498,8 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* ── EMPRESA (oculto) ── */}
-      {false && <section className={`${s.empNewSec} sr-up`}>
+      {/* ── EMPRESA ── */}
+      <section className={`${s.empNewSec} sr-up`}>
         <div className={s.empNewL}>
           <div className={s.empNewIcon}><Building2 size={26} strokeWidth={1.75}/></div>
           <h2 className={s.empNewH}>¿Sos una empresa y buscás<br/>personas para tu equipo?</h2>
@@ -519,7 +519,7 @@ export default async function LandingPage() {
             className={s.empNewVideo}
           />
         </div>
-      </section>}
+      </section>
 
       {/* ── STATS BAR ── */}
       <div className={s.statsBarNew}>
@@ -629,10 +629,10 @@ export default async function LandingPage() {
             <Sparkles size={16} strokeWidth={2} />
             Crear mi perfil
           </Link>
-          {false && <Link href="/register-empresa" className={s.ctaBtnS}>
+          <Link href="/register-empresa" className={s.ctaBtnS}>
             <Building2 size={16} strokeWidth={2} />
             Soy empresa
-          </Link>}
+          </Link>
         </div>
       </section>
 
@@ -642,7 +642,7 @@ export default async function LandingPage() {
         <div className={s.footLinks}>
           <Link href="#" className={s.footLink}>Privacidad</Link>
           <Link href="#" className={s.footLink}>Contacto</Link>
-          {false && <Link href="/register-empresa" className={s.footLink}>Para empresas</Link>}
+          <Link href="/register-empresa" className={s.footLink}>Para empresas</Link>
         </div>
         <span className={s.footCopy}>2026 · OportunAI — impulsado por ONG CAII</span>
       </footer>

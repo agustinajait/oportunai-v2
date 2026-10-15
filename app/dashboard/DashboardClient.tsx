@@ -1031,6 +1031,7 @@ export default function DashboardClient({
             <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 mx-4 sm:mx-0 w-max sm:w-auto min-w-0">
               {[
                 { id: 'perfil',      Icon: Video,          label: 'Mi perfil',   badge: null },
+                { id: 'ofertas',     Icon: Briefcase,      label: 'Ofertas',     badge: null },
                 { id: 'documentos',  Icon: ShieldCheck,    label: 'Documentos',  badge: null },
                 { id: 'citas',       Icon: CalendarDays,   label: 'Citas',       badge: citasPendientes > 0 ? citasPendientes : null },
                 { id: 'capacitate',  Icon: GraduationCap,  label: 'Capacitate',  badge: null, href: usuario.cv_datos?.origen === 'mentoress' ? '/dashboard/capacitate?vertical=eess' : '/dashboard/capacitate' },
@@ -1132,7 +1133,7 @@ export default function DashboardClient({
         )}
 
         {/* Tab Ofertas */}
-        {false && tab === 'ofertas' && (
+        {tab === 'ofertas' && (
           <OfertasDashboard
             videos={usuario.videos}
             initialOfertaId={initialOfertaId}
@@ -3350,6 +3351,7 @@ export default function DashboardClient({
         <div className="flex items-stretch">
           {([
             { id: 'perfil',     Icon: User,         label: 'Perfil',   badge: null },
+            { id: 'ofertas',    Icon: Briefcase,     label: 'Ofertas',  badge: null },
             { id: 'citas',      Icon: CalendarDays,  label: 'Citas',    badge: citasPendientes > 0 ? citasPendientes : null },
             { id: 'documentos', Icon: FileText,      label: 'Docs',     badge: null },
           ] as { id: typeof tab; Icon: React.ElementType; label: string; badge: number | null }[]).map(({ id, Icon, label, badge }) => (

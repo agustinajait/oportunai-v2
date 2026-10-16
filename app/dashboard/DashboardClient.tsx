@@ -11,7 +11,7 @@ import {
   BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck,
   CalendarDays, MapPin, Loader2, Plus, GraduationCap, Briefcase as BriefcaseIcon, Wrench,
   Star, Building2, Link2, Trash2, PlayCircle, Download, Layers, AlertTriangle, CheckCircle2, XCircle, ChevronRight,
-  User, Search, Target, BrainCircuit, Sparkles, Lock,
+  User, Search, Target, BrainCircuit, Sparkles,
 } from 'lucide-react';
 import OfertasTab from '@/components/ui/OfertasTab';
 import BuscadorNL from '@/components/ui/BuscadorNL';
@@ -168,23 +168,6 @@ export default function DashboardClient({
   const [respondiendo, setRespondiendo] = useState<string | null>(null);
   const citasPendientes = citasState.filter(c => c.estado === 'pendiente').length;
 
-  // ── Stripe premium ──────────────────────────────────────────────────
-  const [pagoModalOpen, setPagoModalOpen] = useState(false);
-  const [pagoLoading, setPagoLoading] = useState(false);
-  const [pagoError, setPagoError] = useState<string | null>(null);
-  const [pagoOkToast, setPagoOkToast] = useState(false);
-
-  useEffect(() => {
-    if (searchParams.get('pago') === 'ok') {
-      setPagoOkToast(true);
-      const url = new URL(window.location.href);
-      url.searchParams.delete('pago');
-      window.history.replaceState({}, '', url.toString());
-      const t = setTimeout(() => setPagoOkToast(false), 5000);
-      return () => clearTimeout(t);
-    }
-  }, [searchParams]);
-
   useEffect(() => {
     const accion = searchParams.get('accion');
     if (accion === 'cv' || accion === 'subir-cv') {
@@ -194,19 +177,6 @@ export default function DashboardClient({
     }
   }, [searchParams]);
 
-  async function iniciarPago() {
-    setPagoLoading(true);
-    setPagoError(null);
-    try {
-      const res = await fetch('/api/pagos/checkout', { method: 'POST' });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Error al iniciar el pago');
-      if (data.url) window.location.href = data.url;
-    } catch (e: any) {
-      setPagoError(e.message ?? 'No se pudo iniciar el pago');
-      setPagoLoading(false);
-    }
-  }
   // ────────────────────────────────────────────────────────────────────
 
   async function responderCita(id: string, estado: 'confirmada' | 'rechazada') {
@@ -409,7 +379,6 @@ export default function DashboardClient({
   const [analisisError, setAnalisisError] = useState<string | null>(null);
 
   async function analizarCV(forzar = false) {
-    if (!pagado) { setPagoModalOpen(true); return; }
     setAnalisisLoading(true);
     setAnalisisError(null);
     try {
@@ -439,7 +408,6 @@ export default function DashboardClient({
 
   async function checkFit() {
     if (!fitCheckInput.trim()) return;
-    if (!pagado) { setPagoModalOpen(true); return; }
     setFitCheckLoading(true);
     setFitCheckError(null);
     setFitCheckResult(null);
@@ -463,7 +431,6 @@ export default function DashboardClient({
 
   async function descargarCvAdaptado() {
     if (!fitCvAdaptado) return;
-    if (!pagado) { setPagoModalOpen(true); return; }
     setDescargandoCvAdaptado(true);
     try {
       const res = await fetch('/api/cv/fit-check/cv', {
@@ -990,33 +957,6 @@ export default function DashboardClient({
         )}
 
         {/* ── Toast: pago exitoso ── */}
-        {pagoOkToast && (
-          <div className="mb-4 flex items-center gap-3 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800">
-            <CheckCircle2 size={18} className="shrink-0 text-emerald-600" />
-            <div className="flex-1">
-              <p className="font-semibold">¡Plan premium activado!</p>
-              <p className="text-emerald-700 mt-0.5 text-xs">Ya podés descargar tu CV, analizarlo y adaptarlo a cualquier oferta.</p>
-            </div>
-            <button onClick={() => setPagoOkToast(false)} className="shrink-0 text-emerald-400 hover:text-emerald-600"><X className="w-4 h-4" /></button>
-          </div>
-        )}
-
-        {/* ── Banner premium (solo si no pagó) ── */}
-        {!pagado && (
-          <div className="mb-4 flex items-center gap-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm text-white shadow-md">
-            <Sparkles size={20} className="shrink-0 opacity-90" />
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold leading-tight">Desbloqueá todo con el plan premium</p>
-              <p className="text-white/80 text-xs mt-0.5 leading-snug">CV en DOCX, PDF, analizador IA y adaptación al puesto.</p>
-            </div>
-            <button
-              onClick={() => setPagoModalOpen(true)}
-              className="shrink-0 bg-white text-indigo-700 font-semibold text-xs px-3 py-2 rounded-lg hover:bg-indigo-50 transition-colors whitespace-nowrap"
-            >
-              Pagar y desbloquear
-            </button>
-          </div>
-        )}
 
         <div className="mb-6 sm:mb-8">
           <div className="mb-4">
@@ -1581,13 +1521,8 @@ export default function DashboardClient({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm text-emerald-800 leading-tight">Video CV listo ✓</p>
-                    <p className="text-emerald-600 text-xs mt-0.5">{pagado ? 'Podés compartirlo con empleadores' : 'Desbloqueá para compartirlo'}</p>
+                    <p className="text-emerald-600 text-xs mt-0.5">Podés compartirlo con empleadores</p>
                   </div>
-                  {!pagado && (
-                    <button onClick={() => setPagoModalOpen(true)} className="text-xs font-bold bg-brand-600 text-white px-3 py-1.5 rounded-lg flex-shrink-0">
-                      Activar
-                    </button>
-                  )}
                 </div>
               )}
 
@@ -1617,10 +1552,7 @@ export default function DashboardClient({
                     <p className="text-ink-400 text-xs mt-0.5 line-clamp-1">{cvDatos?.resumen?.substring(0,60) ?? 'Tu CV profesional está armado'}</p>
                   </div>
                   <div className="flex gap-1.5 flex-shrink-0">
-                    {pagado
-                      ? <a href="/api/cv/download" download className="text-xs font-bold bg-brand-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1"><Download size={12} /> DOCX</a>
-                      : <button onClick={() => setPagoModalOpen(true)} className="text-xs font-bold bg-ink-100 text-ink-500 px-3 py-1.5 rounded-lg flex items-center gap-1"><Lock size={12} /> DOCX</button>
-                    }
+                    <a href="/api/cv/download" download className="text-xs font-bold bg-brand-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1"><Download size={12} /> DOCX</a>
                     <Link href="/dashboard/armar-cv" className="text-xs font-medium text-brand-600 px-3 py-1.5 rounded-lg bg-brand-50 flex items-center gap-1" style={{ textDecoration: 'none' }}>Editar</Link>
                   </div>
                 </div>
@@ -1674,29 +1606,14 @@ export default function DashboardClient({
                     <p className="text-xs text-ink-400 leading-relaxed">Oportunai lo arma con tus datos · optimizado para filtros ATS</p>
                   </div>
                 </div>
-                {!pagado && (
-                  <div className="mb-2 flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-700">
-                    <Sparkles size={13} /> Función premium · <button onClick={() => setPagoModalOpen(true)} className="underline font-semibold">Desbloquear</button>
-                  </div>
-                )}
                 <div className="flex flex-col gap-2">
-                  {pagado
-                    ? <a href="/api/cv/download" download className="w-full flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98]" style={{ textDecoration:'none', background:'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
-                        <Download size={15} /> Descargar DOCX
-                      </a>
-                    : <button onClick={() => setPagoModalOpen(true)} className="w-full flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98]" style={{ background:'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
-                        <Sparkles size={15} /> Desbloquear DOCX
-                      </button>
-                  }
+                  <a href="/api/cv/download" download className="w-full flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98]" style={{ textDecoration:'none', background:'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
+                    <Download size={15} /> Descargar DOCX
+                  </a>
                   <div className="flex gap-2">
-                    {pagado
-                      ? <Link href={`/u/${usuario.slug}/cv-print`} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition-colors" style={{ textDecoration:'none' }}>
-                          <FileText size={14} /> PDF
-                        </Link>
-                      : <button onClick={() => setPagoModalOpen(true)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
-                          <FileText size={14} /> PDF
-                        </button>
-                    }
+                    <Link href={`/u/${usuario.slug}/cv-print`} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition-colors" style={{ textDecoration:'none' }}>
+                      <FileText size={14} /> PDF
+                    </Link>
                     <Link href={`/u/${usuario.slug}/cv`} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors" style={{ textDecoration:'none' }}>
                       <FileText size={14} /> Vista previa
                     </Link>
@@ -2503,8 +2420,8 @@ export default function DashboardClient({
                 copied={copied}
                 onCopy={() => copyUrl(cvUrl, 'cv')}
                 copiedKey="cv"
-                pagado={pagado}
-                onUnlock={() => setPagoModalOpen(true)}
+                pagado={true}
+                onUnlock={() => {}}
               />
 
               {/* ── Mi camino al empleo (plan personalizado) ──────── */}
@@ -3444,62 +3361,6 @@ export default function DashboardClient({
         </div>
       )}
 
-      {/* ── Modal pago premium ────────────────────────────── */}
-      {pagoModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
-          onClick={(e) => { if (e.target === e.currentTarget) { setPagoModalOpen(false); setPagoError(null); } }}
-        >
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}>
-                  <Sparkles size={18} color="#fff" />
-                </div>
-                <div>
-                  <h2 className="font-bold text-ink-900 text-base leading-tight">Plan premium</h2>
-                  <p className="text-xs text-ink-400">Pago único · Sin suscripción</p>
-                </div>
-              </div>
-              <button onClick={() => { setPagoModalOpen(false); setPagoError(null); }} className="text-ink-400 hover:text-ink-700">
-                <X size={20} />
-              </button>
-            </div>
-
-            <ul className="space-y-2 text-sm text-ink-700">
-              {[
-                'CV en formato DOCX listo para enviar',
-                'CV PDF optimizado para imprimir',
-                'Revisión completa de tu CV',
-                'Adaptación del CV a cualquier oferta',
-              ].map((item, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-
-            {pagoError && (
-              <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{pagoError}</p>
-            )}
-
-            <button
-              onClick={iniciarPago}
-              disabled={pagoLoading}
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98] disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)' }}
-            >
-              {pagoLoading
-                ? <><Loader2 size={16} className="animate-spin" /> Redirigiendo...</>
-                : <><Sparkles size={16} /> Pagar y desbloquear</>
-              }
-            </button>
-
-            <p className="text-center text-xs text-ink-400">Procesado de forma segura por Stripe</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -3535,8 +3396,7 @@ function VideoCard({ tipo, titulo, descripcion, icon: Icon, color, recordHref, v
             <video src={video.video_url} controls className="w-full h-full object-cover" />
           </div>
 
-          {pagado ? (
-            <div className="px-4 pb-4 space-y-2.5">
+          <div className="px-4 pb-4 space-y-2.5">
               <p className="text-xs font-semibold text-ink-500 uppercase tracking-wide">Compartí con empleadores</p>
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(`¡Hola! Te comparto mi perfil laboral 👇\n${shareUrl}`)}`}
@@ -3564,29 +3424,6 @@ function VideoCard({ tipo, titulo, descripcion, icon: Icon, color, recordHref, v
                 </Link>
               </div>
             </div>
-          ) : (
-            <div className="px-4 pb-4 space-y-2.5">
-              <button
-                onClick={onUnlock}
-                className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 font-bold text-sm text-white transition-all active:scale-[0.98]"
-                style={{ background: 'linear-gradient(135deg,#4B33CC,#7048F0)', boxShadow: '0 4px 14px rgba(109,40,217,0.3)' }}
-              >
-                <Lock size={15} /> Desbloquear para compartir
-              </button>
-              <div className="flex gap-2">
-                <button onClick={onUnlock} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 border border-gray-200 text-ink-400 text-sm font-medium hover:bg-gray-50 transition-colors opacity-60">
-                  <Copy size={14} /> Copiar link
-                </button>
-                <button onClick={onUnlock} className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 border border-gray-200 text-ink-400 text-sm hover:bg-gray-50 transition-colors opacity-60">
-                  <Download size={14} /> Descargar
-                </button>
-              </div>
-              <p className="text-center text-xs text-ink-400 leading-relaxed">Activá tu perfil para compartirlo con empleadores</p>
-              <Link href={recordHref} className="text-center text-xs text-ink-300 hover:text-brand-600 transition-colors block">
-                Volver a grabar →
-              </Link>
-            </div>
-          )}
         </>
       ) : (
         /* Sin video: estado vacío atractivo */

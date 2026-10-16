@@ -6,7 +6,7 @@ import { Suspense } from 'react';
 import { CheckCircle, Video } from 'lucide-react';
 
 interface Props {
-  nombre:    string;
+  nombre:      string;
   areaLaboral: string;
   tieneVideo:  boolean;
   origen?:     string;
@@ -26,12 +26,17 @@ const AREAS_EESS = [
 
 function OnboardingInner({ nombre, areaLaboral, tieneVideo, origen }: Props) {
   const esMentoress = origen === 'mentoress';
-  const areas = esMentoress ? AREAS_EESS : AREAS;
   const router = useRouter();
 
   const [step, setStep]       = useState(1);
-  const [area, setArea]       = useState(areaLaboral);
+  const [areas, setAreas]     = useState<string[]>(() =>
+    areaLaboral ? areaLaboral.split(',').map(a => a.trim()).filter(Boolean) : []
+  );
   const [videoOk, setVideoOk] = useState(tieneVideo);
+
+  function toggleArea(a: string) {
+    setAreas(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]);
+  }
   const [saving, setSaving]   = useState(false);
   const [error, setError]     = useState('');
 
@@ -44,7 +49,7 @@ function OnboardingInner({ nombre, areaLaboral, tieneVideo, origen }: Props) {
       const res = await fetch('/api/user/onboarding', {
         method:  'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ area_laboral: area }),
+        body:    JSON.stringify({ area_laboral: areas.join(', ') }),
       });
       if (!res.ok) throw new Error('Error al guardar');
       setStep(2);
@@ -120,17 +125,17 @@ function OnboardingInner({ nombre, areaLaboral, tieneVideo, origen }: Props) {
             <div className="space-y-6">
               <div>
                 <h1 className="text-2xl font-bold text-ink-900">Hola, {primer} 👋</h1>
-                <p className="text-gray-500 mt-1">¿En qué área querés trabajar?</p>
+                <p className="text-gray-500 mt-1">¿En qué áreas querés trabajar? <span className="text-gray-400 text-xs">(podés elegir más de una)</span></p>
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {areas.map(a => (
+                {(esMentoress ? AREAS_EESS : AREAS).map(a => (
                   <button
                     key={a}
                     type="button"
-                    onClick={() => setArea(a)}
+                    onClick={() => toggleArea(a)}
                     className={`px-3.5 py-2 rounded-full text-sm font-medium border transition-all ${
-                      area === a
+                      areas.includes(a)
                         ? 'bg-brand-600 text-white border-brand-600'
                         : 'bg-white text-gray-600 border-gray-200 hover:border-brand-400'
                     }`}
@@ -144,7 +149,7 @@ function OnboardingInner({ nombre, areaLaboral, tieneVideo, origen }: Props) {
 
               <button
                 onClick={guardarAreaYContinuar}
-                disabled={!area || saving}
+                disabled={areas.length === 0 || saving}
                 className="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-40"
               >
                 {saving ? 'Guardando...' : 'Continuar →'}

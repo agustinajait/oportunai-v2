@@ -66,5 +66,5 @@ export default async function DashboardPage() {
 
   if (!usuario) redirect('/login');
 
-  return <DashboardClient usuario={usuario as any} tallersAsignados={tallersAsignados as any} citas={citas as any} pagado={usuario.pagado ?? false} />;
+  return <DashboardClient usuario={usuario as any} tallersAsignados={tallersAsignados as any} citas={citas as any} pagado={true} />;
 }

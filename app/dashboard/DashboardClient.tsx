@@ -377,6 +377,30 @@ export default function DashboardClient({
   const [analisisCV, setAnalisisCV] = useState<AnalisisCvResult | null>(null);
   const [analisisLoading, setAnalisisLoading] = useState(false);
   const [analisisError, setAnalisisError] = useState<string | null>(null);
+  const [mejorando, setMejorando] = useState(false);
+  const [mejoraOk, setMejoraOk] = useState(false);
+
+  async function aplicarMejoras() {
+    if (!analisisCV?.mejoras?.length) return;
+    setMejorando(true);
+    setMejoraOk(false);
+    try {
+      const res = await fetch('/api/cv/mejorar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mejoras: analisisCV.mejoras }),
+      });
+      if (!res.ok) throw new Error('Error al mejorar');
+      const data = await res.json();
+      setCvDatos(data.cv_datos);
+      setMejoraOk(true);
+      setAnalisisCV(null); // Limpiar análisis para que se regenere con el CV mejorado
+    } catch {
+      // silencioso, usuario puede reintentar
+    } finally {
+      setMejorando(false);
+    }
+  }
 
   async function analizarCV(forzar = false) {
     setAnalisisLoading(true);
@@ -742,14 +766,16 @@ export default function DashboardClient({
         const analyzeData = await analyzeRes.json();
         if (analyzeRes.ok) {
           setCvDatos(analyzeData.cv_datos);
-          setUploadMsg('CV subido y analizado ✓ — tu perfil fue actualizado');
+          setUploadMsg('CV extraído ✓ — analizando sugerencias de mejora...');
+          // Auto-trigger revisión para mostrar los tips
+          await analizarCV(true);
+          setUploadMsg('CV listo ✓ — revisá las sugerencias y aplicá las mejoras');
         } else {
           setUploadMsg('CV subido ✓ (analizá el CV para completar tu perfil)');
         }
       } catch {
         setUploadMsg('CV subido ✓ (analizá el CV para completar tu perfil)');
       }
-      setTimeout(() => router.refresh(), 2000);
     } else {
       const j = await res.json();
       setUploadMsg(j.error ?? 'Error al subir');
@@ -3003,6 +3029,30 @@ export default function DashboardClient({
                       <div className="bg-sky-50 border border-sky-200 rounded-xl px-3 py-2.5">
                         <p className="text-[10px] font-bold text-sky-700 mb-0.5">💡 Tip ATS</p>
                         <p className="text-[10px] text-sky-700">{analisisCV.tip_ats}</p>
+                      </div>
+                    )}
+
+                    {/* Botón para aplicar las mejoras automáticamente */}
+                    {analisisCV.mejoras?.length > 0 && (
+                      <div className="pt-1">
+                        {mejoraOk ? (
+                          <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
+                            <span className="text-xs text-emerald-700 font-semibold">✓ Mejoras aplicadas — tu CV fue actualizado</span>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={aplicarMejoras}
+                            disabled={mejorando}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-xs text-white transition-all active:scale-[0.98] disabled:opacity-60"
+                            style={{ background: 'linear-gradient(135deg,#0A9485,#14b8a6)' }}
+                          >
+                            {mejorando ? (
+                              <><Loader2 size={13} className="animate-spin" /> Aplicando mejoras...</>
+                            ) : (
+                              <><Sparkles size={13} /> Aplicar estas mejoras con IA</>
+                            )}
+                          </button>
+                        )}
                       </div>
                     )}
 

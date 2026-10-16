@@ -299,7 +299,7 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                   {isCv ? 'Video CV' : 'Video Pitch'}
                 </p>
               </div>
-              {video && usuario.pagado ? (
+              {video ? (
                 <video
                   src={video.video_url}
                   controls
@@ -307,26 +307,6 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                   playsInline
                   className="w-full aspect-video bg-black"
                 />
-              ) : video && !usuario.pagado ? (
-                <div className="mx-3 mb-3 rounded-xl bg-ink-900 aspect-video flex flex-col items-center justify-center gap-2 relative overflow-hidden">
-                  <video
-                    src={video.video_url}
-                    preload="metadata"
-                    playsInline
-                    className="w-full h-full object-cover absolute inset-0 opacity-20 blur-sm"
-                  />
-                  <div className="relative z-10 flex flex-col items-center gap-3 px-4 text-center">
-                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
-                      <ShieldCheck size={22} className="text-white/80" />
-                    </div>
-                    <div>
-                      <p className="text-white font-semibold text-sm">Video en activación</p>
-                      <p className="text-white/50 text-xs mt-1 leading-relaxed">
-                        {firstName} está configurando su perfil.<br />Podés contactarle directamente.
-                      </p>
-                    </div>
-                  </div>
-                </div>
               ) : (
                 <div className="mx-3 mb-3 rounded-xl bg-ink-900 aspect-video flex flex-col items-center justify-center gap-2">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${accentClass.ring}`}>
@@ -337,7 +317,7 @@ export default function PublicProfileClient({ usuario, tipo }: Props) {
                   <p className="text-white/40 text-xs">Sin video</p>
                 </div>
               )}
-              {video && usuario.pagado && (
+              {video && (
                 <div className="px-3 py-2.5 flex gap-2 border-t border-ink-100 mt-auto">
                   <button
                     onClick={handleShare}

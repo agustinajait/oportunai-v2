@@ -20,13 +20,9 @@ export async function POST(req: NextRequest) {
 
   const usuario = await prisma.usuario.findUnique({
     where: { id: session.userId },
-    select: { nombre_completo: true, cv_datos: true, cv_analisis: true, pagado: true },
+    select: { nombre_completo: true, cv_datos: true, cv_analisis: true },
   });
   if (!usuario) return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
-
-  if (!usuario.pagado) {
-    return NextResponse.json({ error: 'Se requiere plan premium', code: 'PAYMENT_REQUIRED' }, { status: 402 });
-  }
 
   // Devolver caché si existe y no se forzó
   if (usuario.cv_analisis && !forzar) {

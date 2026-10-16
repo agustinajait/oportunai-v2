@@ -24,23 +24,75 @@ const AREAS_EESS = [
   'Embajador de tienda', 'Entrenador', 'Maestranza',
 ];
 
+const INTRO_SLIDES = [
+  {
+    title: 'Armá tu perfil',
+    text: 'En minutos tenés tu perfil laboral digital completo. Las empresas te encuentran y vos encontrás las mejores oportunidades.',
+    icon: (
+      <svg viewBox="0 0 120 120" width="130" height="130" fill="none">
+        <circle cx="60" cy="40" r="26" fill="#C7C7CC" />
+        <ellipse cx="60" cy="100" rx="44" ry="24" fill="#C7C7CC" />
+      </svg>
+    ),
+  },
+  {
+    title: 'Grabá tu Video CV',
+    text: '90 segundos para mostrar quién sos. Las empresas te ven antes de leer nada. Tu cara, tu voz, tu personalidad.',
+    icon: (
+      <svg viewBox="0 0 120 120" width="130" height="130" fill="none">
+        <rect x="8" y="28" width="72" height="64" rx="8" fill="#C7C7CC" />
+        <polygon points="88,40 112,28 112,92 88,80" fill="#AEAEB2" />
+        <circle cx="44" cy="60" r="16" fill="#E5E5EA" />
+        <polygon points="38,52 38,68 56,60" fill="#C7C7CC" />
+      </svg>
+    ),
+  },
+  {
+    title: 'Conseguí trabajo',
+    text: 'Postulate a ofertas, compartí tu perfil con empleadores y capacitate con cursos con certificado.',
+    icon: (
+      <svg viewBox="0 0 120 120" width="130" height="130" fill="none">
+        <rect x="14" y="44" width="92" height="60" rx="8" fill="#C7C7CC" />
+        <rect x="36" y="30" width="48" height="24" rx="6" fill="#AEAEB2" />
+        <rect x="48" y="38" width="24" height="8" rx="2" fill="#C7C7CC" />
+        <rect x="48" y="72" width="24" height="20" rx="4" fill="#E5E5EA" />
+      </svg>
+    ),
+  },
+];
+
 function OnboardingInner({ nombre, areaLaboral, tieneVideo, origen }: Props) {
   const esMentoress = origen === 'mentoress';
   const router = useRouter();
 
-  const [step, setStep]       = useState(1);
-  const [areas, setAreas]     = useState<string[]>(() =>
+  // intro slides (step 0), then real steps 1-2
+  const [introSlide, setIntroSlide] = useState(0);
+  const [showIntro, setShowIntro]   = useState(true);
+  const [step, setStep]             = useState(1);
+  const [areas, setAreas]           = useState<string[]>(() =>
     areaLaboral ? areaLaboral.split(',').map(a => a.trim()).filter(Boolean) : []
   );
   const [videoOk, setVideoOk] = useState(tieneVideo);
-
-  function toggleArea(a: string) {
-    setAreas(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]);
-  }
   const [saving, setSaving]   = useState(false);
   const [error, setError]     = useState('');
 
   const primer = nombre?.split(' ')[0] ?? 'hola';
+
+  function toggleArea(a: string) {
+    setAreas(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]);
+  }
+
+  function introNext() {
+    if (introSlide < INTRO_SLIDES.length - 1) {
+      setIntroSlide(s => s + 1);
+    } else {
+      setShowIntro(false);
+    }
+  }
+
+  async function saltear() {
+    setShowIntro(false);
+  }
 
   async function guardarAreaYContinuar() {
     setSaving(true);
@@ -74,6 +126,76 @@ function OnboardingInner({ nombre, areaLaboral, tieneVideo, origen }: Props) {
     }
   }
 
+  const brandColor = esMentoress ? '#00B6D8' : '#5B3FE0';
+  const slide = INTRO_SLIDES[introSlide];
+
+  /* ── Pantallas de intro ─────────────────────────────────────── */
+  if (showIntro) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col">
+        {/* Saltear */}
+        <div className="flex justify-end px-5 pt-5">
+          <button
+            onClick={saltear}
+            className="text-sm font-medium"
+            style={{ color: '#8E8E93' }}
+          >
+            Saltear
+          </button>
+        </div>
+
+        {/* Contenido */}
+        <div className="flex-1 flex flex-col items-center justify-center px-8 text-center gap-8">
+          {/* Título */}
+          <h1
+            className="text-4xl font-extrabold tracking-tight"
+            style={{ color: brandColor }}
+          >
+            {slide.title}
+          </h1>
+
+          {/* Ícono */}
+          <div className="opacity-80">
+            {slide.icon}
+          </div>
+
+          {/* Descripción */}
+          <p className="text-base text-ink-600 leading-relaxed max-w-xs">
+            {slide.text}
+          </p>
+        </div>
+
+        {/* Puntos + botón siguiente */}
+        <div className="flex flex-col items-center gap-6 pb-12 px-8">
+          {/* Dots */}
+          <div className="flex gap-2 items-center">
+            {INTRO_SLIDES.map((_, i) => (
+              <div
+                key={i}
+                className="rounded-full transition-all duration-300"
+                style={{
+                  width:  i === introSlide ? 20 : 8,
+                  height: 8,
+                  background: i === introSlide ? brandColor : '#D1D1D6',
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Botón */}
+          <button
+            onClick={introNext}
+            className="w-full max-w-xs py-4 rounded-2xl text-white font-bold text-base transition-all active:scale-[0.98]"
+            style={{ background: brandColor }}
+          >
+            {introSlide < INTRO_SLIDES.length - 1 ? 'Siguiente' : 'Empezar →'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Onboarding real ────────────────────────────────────────── */
   return (
     <div className="min-h-screen bg-ink-50 flex flex-col">
 
@@ -245,7 +367,7 @@ function OnboardingInner({ nombre, areaLaboral, tieneVideo, origen }: Props) {
 
 export default function OnboardingClient(props: Props) {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-ink-50" />}>
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
       <OnboardingInner {...props} />
     </Suspense>
   );

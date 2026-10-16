@@ -410,7 +410,7 @@
 
 .stepsNew {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: center;
   gap: 0;
   max-width: 1100px;
@@ -1952,6 +1952,8 @@
     padding: 2.5rem 1.5rem 2rem;
     order: 2;
     max-width: 100%;
+    align-items: center;
+    text-align: center;
   }
   .heroNewRight {
     display: block;
@@ -1962,7 +1964,8 @@
   /* Las tarjetas flotantes se ocultan en mobile */
   .heroCard { display: none; }
   .heroNewH { font-size: 32px; }
-  .heroNewSub { font-size: 15px; }
+  .heroNewSub { font-size: 15px; max-width: 100%; text-align: center; }
+  .heroNewHint { justify-content: center; }
   .heroNewCtaBtn {
     width: 100%;
     justify-content: center;

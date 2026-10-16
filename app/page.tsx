@@ -163,7 +163,7 @@ export default async function LandingPage() {
 
           <p className={s.heroNewHint}>
             <CircleCheck size={14} strokeWidth={2}/>
-            En minutos, desde tu celular.
+            Gratis · Video de 90 seg · Desde tu celular.
           </p>
 
           {/* Scroll down arrow — desktop only */}
@@ -190,7 +190,10 @@ export default async function LandingPage() {
               <div className={s.heroCardTitle}>VideoCV</div>
             </div>
             <div className={s.heroCardSub}>Mostrá lo que un CV no dice</div>
-            <div className={s.heroCardBar}><div className={`${s.heroCardBarFill} ${s.heroCardBarPurple}`}/></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+              <div className={s.heroCardBar} style={{ flex: 1, marginTop: 0 }}><div className={`${s.heroCardBarFill} ${s.heroCardBarPurple}`}/></div>
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#5B3FE0', whiteSpace: 'nowrap' }}>90 seg</span>
+            </div>
           </div>
 
           {/* Card 2 — CV optimizado */}
@@ -394,19 +397,24 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* ── CAPACITACIONES ── */}
-      <section className={`${s.sec} sr-up`}>
+      {/* ── CAPACITATE (unificado) ── */}
+      <section className={`${s.sec} sr-up`} style={{ background: 'linear-gradient(180deg, #f8f7ff 0%, #f0fdf9 60%, #ffffff 100%)' }}>
         <div className={s.secHead}>
           <div>
-            <p className={s.eyebrow}>Exclusivo Oportunai</p>
-            <h2 className={s.secH}>Aprendé antes de arrancar.<br/>Entrá capacitado desde el día uno.</h2>
-            <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, maxWidth: 420, margin: '8px 0 0' }}>Capacitaciones en video para estaciones de servicio, atención al cliente y comidas rápidas. Cargadas por las mismas empresas que buscan personal.</p>
+            <p className={s.eyebrow} style={{ color: '#5B3FE0' }}>🎓 Capacitate · Oportunai</p>
+            <h2 className={s.secH}>Aprendé y sumá certificados<br/>a tu perfil profesional.</h2>
+            <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, maxWidth: 480, margin: '8px 0 0' }}>
+              Capacitaciones de las empresas que te van a contratar, más cursos propios con certificado incluido en tu perfil público.
+            </p>
             <p style={{ fontSize: 13, color: '#5B3FE0', fontWeight: 600, margin: '10px 0 0', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <CircleCheck size={14} strokeWidth={2}/> Incluye Test de Nativo Digital — completalo y destacate en tu perfil
+              <CircleCheck size={14} strokeWidth={2}/> Completá los cursos y destacate frente a los empleadores
             </p>
           </div>
           <Link href="/register" className={s.verMas}>Ver todas →</Link>
         </div>
+
+        {/* Talleres de empresas */}
+        <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 14px' }}>De las empresas</p>
         <div className={s.capGrid}>
           {talleres.length > 0
             ? talleres.map((t, i) => {
@@ -453,22 +461,11 @@ export default async function LandingPage() {
               ))
           }
         </div>
-      </section>
 
-      {/* ── CAPACITATE: cursos propios ── */}
-      <section className={`${s.sec} sr-up`} style={{ background: 'linear-gradient(180deg, #f0fdf9 0%, #ffffff 100%)' }}>
-        <div className={s.secHead}>
-          <div>
-            <p className={s.eyebrow} style={{ color: '#0A9485' }}>🎓 Capacitate · Oportunai</p>
-            <h2 className={s.secH}>Desarrollá competencias.<br/>Sumá certificados a tu perfil.</h2>
-            <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, maxWidth: 420, margin: '8px 0 0' }}>
-              Módulos cortos con quiz final. Cada curso que aprobás aparece certificado en tu perfil público y lo ven los empleadores.
-            </p>
-          </div>
-          <Link href="/register" className={s.verMas} style={{ color: '#0A9485', borderColor: '#0A9485' }}>Ver todos →</Link>
-          {/* "Ver todos" podría apuntar a /capacitate cuando haya listado público */}
-        </div>
+        <div style={{ height: 1, background: '#e2e8f0', margin: '36px 0 28px' }}/>
 
+        {/* Cursos propios con certificado */}
+        <p style={{ fontSize: 11, fontWeight: 700, color: '#0A9485', letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 14px' }}>Cursos Oportunai · Con certificado</p>
         <div className={s.capacitateGrid}>
           {(capacitateContenidos.length > 0 ? capacitateContenidos : [
             { slug: 'asistente-ia',     titulo: 'Asistente de IA',     icono: '🤖', categoria: 'Digital',       descripcion: 'Usá IA para resolver tareas laborales concretas.' },
@@ -491,7 +488,6 @@ export default async function LandingPage() {
               </div>
               <div className={s.capacitateFoot}>
                 <span className={s.capacitateBadge}>✓ Certificado</span>
-                
               </div>
             </Link>
           ))}

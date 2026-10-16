@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Sparkles, Download, CheckCircle, Loader2, Video, Plus, X, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Sparkles, Download, CheckCircle, Loader2, Video, Plus, X, ChevronDown, Upload, FileText, ArrowRight } from 'lucide-react';
+import { getSupabase } from '@/lib/supabase';
 
 interface VideoAnalisis {
   puntaje: number;
@@ -18,9 +19,11 @@ interface Props {
   cvResumenActual: string | null;
   videoAnalisis: VideoAnalisis | null;
   videoSecciones: { nombre: string; intentos: number }[] | null;
+  userId: string;
 }
 
-type Stage = 'form' | 'generating' | 'done' | 'error';
+type Mode  = 'elegir' | 'subir' | 'armar';
+type Stage = 'form' | 'generating' | 'done' | 'error' | 'uploading' | 'upload-done' | 'upload-error';
 
 const HABILIDADES_SUGERIDAS = [
   'Atención al cliente', 'Trabajo en equipo', 'Comunicación', 'Puntualidad',
@@ -51,16 +54,22 @@ export default function AmarCVClient({
   cvExistente,
   cvResumenActual,
   videoAnalisis,
+  userId,
 }: Props) {
   const router = useRouter();
 
+  const [mode, setMode]   = useState<Mode>(cvExistente ? 'elegir' : 'elegir');
   const [stage, setStage] = useState<Stage>('form');
   const [errorMsg, setErrorMsg] = useState('');
   const [cvResumenGenerado, setCvResumenGenerado] = useState<string | null>(null);
 
-  // Campos del formulario
+  // Upload state
+  const [uploadMsg, setUploadMsg] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Form fields
   const [experiencias, setExperiencias] = useState<Experiencia[]>([{ empresa: '', cargo: '', periodo: '' }]);
-  const [habilidades, setHabilidades] = useState<string[]>([]);
+  const [habilidades, setHabilidades]   = useState<string[]>([]);
   const [nivelEstudios, setNivelEstudios] = useState('');
   const [disponibilidad, setDisponibilidad] = useState<string[]>([]);
   const [zona, setZona] = useState('');
@@ -68,28 +77,22 @@ export default function AmarCVClient({
   function agregarExperiencia() {
     setExperiencias(p => [...p, { empresa: '', cargo: '', periodo: '' }]);
   }
-
   function quitarExperiencia(i: number) {
     setExperiencias(p => p.filter((_, idx) => idx !== i));
   }
-
   function updateExp(i: number, field: keyof Experiencia, val: string) {
     setExperiencias(p => p.map((e, idx) => idx === i ? { ...e, [field]: val } : e));
   }
-
   function toggleHabilidad(h: string) {
     setHabilidades(p => p.includes(h) ? p.filter(x => x !== h) : [...p, h]);
   }
-
   function toggleDisponibilidad(d: string) {
     setDisponibilidad(p => p.includes(d) ? p.filter(x => x !== d) : [...p, d]);
   }
 
   function buildTextoLibre(): string {
     const lines: string[] = [];
-
     if (nombre) lines.push(`Me llamo ${nombre}.`);
-
     const expsValidas = experiencias.filter(e => e.empresa.trim() || e.cargo.trim());
     if (expsValidas.length > 0) {
       lines.push('Mi experiencia laboral:');
@@ -98,23 +101,10 @@ export default function AmarCVClient({
         lines.push('- ' + parts.join(', '));
       });
     }
-
-    if (habilidades.length > 0) {
-      lines.push(`Mis habilidades: ${habilidades.join(', ')}.`);
-    }
-
-    if (nivelEstudios) {
-      lines.push(`Nivel de estudios: ${nivelEstudios}.`);
-    }
-
-    if (disponibilidad.length > 0) {
-      lines.push(`Disponibilidad: ${disponibilidad.join(', ')}.`);
-    }
-
-    if (zona.trim()) {
-      lines.push(`Zona donde puedo trabajar: ${zona.trim()}.`);
-    }
-
+    if (habilidades.length > 0)    lines.push(`Mis habilidades: ${habilidades.join(', ')}.`);
+    if (nivelEstudios)             lines.push(`Nivel de estudios: ${nivelEstudios}.`);
+    if (disponibilidad.length > 0) lines.push(`Disponibilidad: ${disponibilidad.join(', ')}.`);
+    if (zona.trim())               lines.push(`Zona donde puedo trabajar: ${zona.trim()}.`);
     return lines.join('\n');
   }
 
@@ -141,20 +131,256 @@ export default function AmarCVClient({
     }
   }
 
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const tiposPermitidos = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!tiposPermitidos.includes(file.type)) {
+      setUploadMsg('Solo se permiten archivos PDF o Word (.doc, .docx)');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadMsg('El archivo supera los 10 MB');
+      return;
+    }
+    setStage('uploading');
+    setUploadMsg('');
+
+    const ext = file.name.split('.').pop() ?? 'pdf';
+    const filename = `${userId}/cv-${Date.now()}.${ext}`;
+    const { error: uploadError } = await getSupabase().storage
+      .from('videos')
+      .upload(filename, file, { contentType: file.type, upsert: true });
+
+    if (uploadError) {
+      setUploadMsg('Error al subir: ' + uploadError.message);
+      setStage('upload-error');
+      return;
+    }
+
+    const { data: urlData } = getSupabase().storage.from('videos').getPublicUrl(filename);
+    const res = await fetch('/api/files/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file_url: urlData.publicUrl, file_type: ext }),
+    });
+
+    if (!res.ok) {
+      setUploadMsg('Error al guardar el archivo');
+      setStage('upload-error');
+      return;
+    }
+
+    // Auto-analizar para extraer datos del CV
+    try {
+      const analyzeRes = await fetch('/api/user/cv', { method: 'POST' });
+      const analyzeData = await analyzeRes.json();
+      if (analyzeRes.ok) {
+        setCvResumenGenerado(analyzeData.cv_datos?.resumen ?? null);
+      }
+    } catch { /* silencioso */ }
+
+    setStage('upload-done');
+  }
+
+  const titleBar = (
+    <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
+      <button
+        onClick={() => mode !== 'elegir' && stage === 'form' ? setMode('elegir') : router.push('/dashboard')}
+        className="text-ink-400 hover:text-ink-800 transition-colors p-1 -ml-1"
+      >
+        <ArrowLeft size={20} />
+      </button>
+      <h1 className="font-semibold text-ink-800 text-sm">
+        {mode === 'elegir' ? 'Tu CV' : mode === 'subir' ? 'Subir mi CV' : cvExistente ? 'Actualizá tu CV' : 'Armá tu CV'}
+      </h1>
+    </div>
+  );
+
+  // ── PANTALLA ELEGIR ─────────────────────────────────────────────────────────
+  if (mode === 'elegir') {
+    return (
+      <div className="min-h-screen bg-ink-50">
+        {titleBar}
+        <div className="max-w-lg mx-auto px-4 py-8 space-y-4">
+          <div>
+            <h2 className="text-xl font-bold text-ink-900">¿Cómo querés armar tu CV?</h2>
+            <p className="text-sm text-ink-400 mt-1">Elegí la opción que mejor te quede.</p>
+          </div>
+
+          {/* Opción 1: Ya tengo CV */}
+          <button
+            onClick={() => { setMode('subir'); setStage('form'); }}
+            className="w-full text-left bg-white border-2 border-brand-200 hover:border-brand-400 rounded-2xl p-5 transition-all active:scale-[0.99] group"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-100 transition-colors">
+                <FileText size={22} className="text-brand-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-ink-900 text-base leading-tight">Ya tengo un CV</p>
+                <p className="text-sm text-ink-500 mt-1 leading-relaxed">
+                  Subí tu CV en PDF o Word y lo mejoramos con IA — lo optimizamos para pasar los filtros automáticos de las empresas.
+                </p>
+                <span className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-brand-600">
+                  Subir y mejorar <ArrowRight size={12} />
+                </span>
+              </div>
+            </div>
+          </button>
+
+          {/* Opción 2: No tengo CV */}
+          <button
+            onClick={() => { setMode('armar'); setStage('form'); }}
+            className="w-full text-left bg-white border-2 border-gray-200 hover:border-brand-300 rounded-2xl p-5 transition-all active:scale-[0.99] group"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-ink-50 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-50 transition-colors">
+                <Sparkles size={22} className="text-ink-500 group-hover:text-brand-500 transition-colors" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-ink-900 text-base leading-tight">No tengo CV todavía</p>
+                <p className="text-sm text-ink-500 mt-1 leading-relaxed">
+                  Contanos en qué trabajaste y qué sabés hacer. Con esa info armamos tu CV profesional en segundos.
+                </p>
+                <span className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-ink-500 group-hover:text-brand-600 transition-colors">
+                  Armar desde cero <ArrowRight size={12} />
+                </span>
+              </div>
+            </div>
+          </button>
+
+          {cvExistente && cvResumenActual && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+              <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-1">CV guardado actualmente</p>
+              <p className="text-sm text-emerald-800 leading-relaxed">{cvResumenActual}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── MODO SUBIR CV ───────────────────────────────────────────────────────────
+  if (mode === 'subir') {
+    return (
+      <div className="min-h-screen bg-ink-50">
+        {titleBar}
+        <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
+
+          {/* Uploading */}
+          {stage === 'uploading' && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 flex flex-col items-center text-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-brand-600/10 flex items-center justify-center">
+                <Loader2 size={28} className="text-brand-600 animate-spin" />
+              </div>
+              <div>
+                <p className="font-semibold text-ink-800 text-lg">Subiendo tu CV...</p>
+                <p className="text-sm text-ink-400 mt-1">Estamos leyendo tu archivo y extrayendo tus datos.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Upload form */}
+          {stage === 'form' && (
+            <>
+              <div className="bg-brand-50 border border-brand-100 rounded-2xl p-4 space-y-1">
+                <p className="text-sm font-semibold text-brand-800">¿Qué hacemos con tu CV?</p>
+                {[
+                  'Extraemos tu experiencia, habilidades y datos',
+                  'Lo optimizamos para pasar filtros automáticos (ATS)',
+                  'Queda guardado en tu perfil para compartir con empresas',
+                ].map(t => (
+                  <div key={t} className="flex items-start gap-2">
+                    <span className="text-brand-500 text-xs mt-0.5 flex-shrink-0">→</span>
+                    <p className="text-xs text-brand-700 leading-snug">{t}</p>
+                  </div>
+                ))}
+              </div>
+
+              <label className="flex flex-col items-center gap-3 bg-white border-2 border-dashed border-brand-300 hover:border-brand-500 rounded-2xl p-8 cursor-pointer transition-colors">
+                <div className="w-14 h-14 rounded-xl bg-brand-50 flex items-center justify-center">
+                  <Upload size={24} className="text-brand-500" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold text-ink-800">Tocá para subir tu CV</p>
+                  <p className="text-sm text-ink-400 mt-0.5">PDF o Word (.doc, .docx) · máx 10 MB</p>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
+              </label>
+
+              {uploadMsg && <p className="text-sm text-red-500 text-center">{uploadMsg}</p>}
+            </>
+          )}
+
+          {/* Upload done */}
+          {stage === 'upload-done' && (
+            <div className="space-y-4">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+                <div className="flex flex-col items-center text-center gap-3">
+                  <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                    <CheckCircle size={32} className="text-emerald-500" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-ink-800 text-xl">¡CV mejorado y guardado!</p>
+                    <p className="text-sm text-ink-400 mt-1">Tu perfil fue actualizado con los datos de tu CV.</p>
+                  </div>
+                </div>
+
+                {cvResumenGenerado && (
+                  <div className="bg-ink-50 rounded-xl px-4 py-3">
+                    <p className="text-xs font-semibold text-ink-500 uppercase tracking-wide mb-1">Tu resumen profesional</p>
+                    <p className="text-sm text-ink-700 leading-relaxed">{cvResumenGenerado}</p>
+                  </div>
+                )}
+
+                <a
+                  href="/api/cv/download"
+                  download
+                  className="w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold py-4 rounded-xl transition-colors text-base"
+                >
+                  <Download size={18} />
+                  Descargar mi CV mejorado
+                </a>
+
+                <button
+                  onClick={() => router.push('/dashboard?tab=perfil')}
+                  className="w-full flex items-center justify-center gap-2 border border-gray-200 text-ink-600 hover:bg-gray-50 font-medium py-3 rounded-xl transition-colors text-sm"
+                >
+                  Ver mi perfil completo →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Upload error */}
+          {stage === 'upload-error' && (
+            <div className="bg-white rounded-2xl border border-red-100 shadow-sm p-6 text-center space-y-3">
+              <p className="font-semibold text-red-600">No pudimos subir el archivo</p>
+              <p className="text-sm text-ink-400">{uploadMsg}</p>
+              <button
+                onClick={() => { setStage('form'); setUploadMsg(''); }}
+                className="border border-gray-200 text-ink-600 text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                Intentar de nuevo
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── MODO ARMAR CV (formulario) ──────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-ink-50">
-      {/* Top bar */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
-        <button
-          onClick={() => router.push('/dashboard')}
-          className="text-ink-400 hover:text-ink-800 transition-colors p-1 -ml-1"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="font-semibold text-ink-800 text-sm">
-          {cvExistente ? 'Actualizá tu CV' : 'Armá tu CV'}
-        </h1>
-      </div>
+      {titleBar}
 
       <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
 
@@ -184,13 +410,9 @@ export default function AmarCVClient({
             {/* CV existente */}
             {cvExistente && cvResumenActual && (
               <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
-                <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-1">
-                  Tu CV actual
-                </p>
+                <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-1">Tu CV actual</p>
                 <p className="text-sm text-emerald-800 leading-relaxed">{cvResumenActual}</p>
-                <p className="text-xs text-emerald-600 mt-2">
-                  Completá los datos abajo y vamos a actualizar tu CV.
-                </p>
+                <p className="text-xs text-emerald-600 mt-2">Completá los datos abajo y vamos a actualizar tu CV.</p>
               </div>
             )}
 
@@ -272,7 +494,6 @@ export default function AmarCVClient({
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
               <p className="font-semibold text-ink-800 text-base">Un poco más sobre vos</p>
 
-              {/* Nivel estudios */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-ink-600">Estudios</label>
                 <div className="relative">
@@ -282,15 +503,12 @@ export default function AmarCVClient({
                     className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-400 appearance-none bg-white pr-8"
                   >
                     <option value="">Seleccioná tu nivel de estudios</option>
-                    {NIVELES_ESTUDIOS.map(n => (
-                      <option key={n} value={n}>{n}</option>
-                    ))}
+                    {NIVELES_ESTUDIOS.map(n => <option key={n} value={n}>{n}</option>)}
                   </select>
                   <ChevronDown size={14} className="absolute right-3 top-3 text-ink-400 pointer-events-none" />
                 </div>
               </div>
 
-              {/* Disponibilidad */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-ink-600">Disponibilidad</label>
                 <div className="flex flex-wrap gap-2">
@@ -310,7 +528,6 @@ export default function AmarCVClient({
                 </div>
               </div>
 
-              {/* Zona */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-ink-600">¿En qué zona podés trabajar?</label>
                 <input
@@ -363,9 +580,7 @@ export default function AmarCVClient({
                 </div>
                 <div>
                   <p className="font-semibold text-ink-800 text-xl">¡Tu CV está listo!</p>
-                  <p className="text-sm text-ink-400 mt-1">
-                    Ya está guardado en tu perfil.
-                  </p>
+                  <p className="text-sm text-ink-400 mt-1">Ya está guardado en tu perfil.</p>
                 </div>
               </div>
 

@@ -32,6 +32,7 @@ export default async function AmarCVPage() {
       cvResumenActual={(cvDatos.resumen as string) ?? null}
       videoAnalisis={(ultimoVideo?.analisis_ia as any) ?? null}
       videoSecciones={(ultimoVideo?.section_attempts as any) ?? null}
+      userId={session.userId}
     />
   );
 }

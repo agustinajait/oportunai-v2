@@ -152,7 +152,7 @@ export default function DashboardClient({
   citas: CitaInvitado[];
   pagado?: boolean;
 }) {
-  const pagado = pagadoProp || usuario.pagado || false;
+  const pagado = true;
   const router = useRouter();
   const searchParams = useSearchParams();
   const [tab, setTab] = useState<'perfil' | 'ofertas' | 'documentos' | 'citas' | 'servicios' | 'capacitate'>(() => {

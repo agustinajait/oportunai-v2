@@ -89,7 +89,7 @@ export default function SuperAdminClient({
   talleres: Taller[]; usuarios: Usuario[]; empresas: Empresa[]; session: SessionPayload;
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<'talleres' | 'usuarios' | 'empresas' | 'ofertas' | 'galeria'>('talleres');
+  const [tab, setTab] = useState<'talleres' | 'usuarios' | 'empresas' | 'ofertas' | 'galeria' | 'videocv'>('talleres');
   const [talleres, setTalleres] = useState<Taller[]>(initTalleres);
   const [usuarios, setUsuarios] = useState<Usuario[]>(initUsuarios);
   const [empresas, setEmpresas] = useState<Empresa[]>(initEmpresas);
@@ -166,6 +166,48 @@ export default function SuperAdminClient({
   // ── Empresa state ───────────────────────────────────────────────────
   const [expandedEmpresa, setExpandedEmpresa] = useState<string | null>(null);
   const [togglingEmpresa, setTogglingEmpresa] = useState<string | null>(null);
+
+  // ── Video CV Base state ─────────────────────────────────────────────
+  type ConfigVideo = { id: string; tipo_video: string; nombre_modulo: string; duracion_base: number; texto_guia: string; orden: number };
+  const [configVideos, setConfigVideos] = useState<ConfigVideo[]>([]);
+  const [configVideoLoaded, setConfigVideoLoaded] = useState(false);
+  const [editingConfig, setEditingConfig] = useState<Record<string, { duracion_base: number; texto_guia: string }>>({});
+  const [savingConfig, setSavingConfig] = useState<string | null>(null);
+  const [configSavedMsg, setConfigSavedMsg] = useState<string | null>(null);
+
+  async function cargarConfigVideo() {
+    if (configVideoLoaded) return;
+    const res = await fetch('/api/admin/config');
+    if (res.ok) {
+      const data = await res.json();
+      setConfigVideos(data);
+    }
+    setConfigVideoLoaded(true);
+  }
+
+  const getConfigEdit = (c: ConfigVideo) => editingConfig[c.id] ?? { duracion_base: c.duracion_base, texto_guia: c.texto_guia };
+  const isDirtyConfig = (c: ConfigVideo) => {
+    const e = editingConfig[c.id];
+    return e && (e.duracion_base !== c.duracion_base || e.texto_guia !== c.texto_guia);
+  };
+
+  async function guardarConfig(c: ConfigVideo) {
+    const e = getConfigEdit(c);
+    setSavingConfig(c.id);
+    const res = await fetch('/api/admin/config', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: c.id, duracion_base: e.duracion_base, texto_guia: e.texto_guia }),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setConfigVideos(prev => prev.map(x => x.id === c.id ? updated : x));
+      setEditingConfig(prev => { const n = { ...prev }; delete n[c.id]; return n; });
+      setConfigSavedMsg('Guardado ✓');
+      setTimeout(() => setConfigSavedMsg(null), 2500);
+    }
+    setSavingConfig(null);
+  }
 
   // ── Galería state ────────────────────────────────────────────────────
   type GaleriaItem = { id: string; src: string; label: string; big: boolean; orden: number; activa: boolean };
@@ -412,9 +454,10 @@ export default function SuperAdminClient({
             { key: 'usuarios', label: 'Usuarios', icon: <Users size={15} />, count: usuarios.length },
             { key: 'empresas', label: 'Empresas', icon: <Building2 size={15} />, count: empresas.length },
             { key: 'ofertas', label: 'Ofertas', icon: <Briefcase size={15} />, count: ofertas.length },
+            { key: 'videocv', label: 'Video CV', icon: <Video size={15} />, count: configVideos.length },
             { key: 'galeria', label: 'Galería', icon: <Image size={15} />, count: galeriaItems.length },
           ].map(t => (
-            <button key={t.key} onClick={() => { setTab(t.key as any); if (t.key === 'ofertas') cargarOfertas(); if (t.key === 'galeria') cargarGaleria(); }}
+            <button key={t.key} onClick={() => { setTab(t.key as any); if (t.key === 'ofertas') cargarOfertas(); if (t.key === 'galeria') cargarGaleria(); if (t.key === 'videocv') cargarConfigVideo(); }}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${tab === t.key ? 'bg-white text-ink-800 shadow-sm' : 'text-ink-500 hover:text-ink-700'}`}>
               {t.icon} {t.label}
               <span className="badge bg-ink-200 text-ink-600 ml-1">{t.count}</span>
@@ -937,6 +980,95 @@ export default function SuperAdminClient({
                 </button>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* ── TAB: VIDEO CV BASE ──────────────────────────────────────── */}
+        {tab === 'videocv' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-ink-900">Módulos del Video CV base</h2>
+                <p className="text-sm text-ink-400 mt-0.5">Editá los textos guía y la duración de cada sección del Video CV genérico.</p>
+              </div>
+              {configSavedMsg && (
+                <span className="text-sm font-semibold text-emerald-600">{configSavedMsg}</span>
+              )}
+            </div>
+
+            {!configVideoLoaded && (
+              <div className="card p-8 text-center text-ink-400">
+                <Loader2 size={24} className="animate-spin mx-auto mb-2" />
+                <p className="text-sm">Cargando módulos...</p>
+              </div>
+            )}
+
+            {configVideoLoaded && configVideos.length === 0 && (
+              <div className="card p-8 text-center text-ink-400">
+                <Video size={28} className="mx-auto mb-2 opacity-30" />
+                <p className="text-sm">No hay módulos de configuración cargados.</p>
+              </div>
+            )}
+
+            {/* Agrupado por tipo_video */}
+            {(() => {
+              const grupos = configVideos.reduce<Record<string, ConfigVideo[]>>((acc, c) => {
+                (acc[c.tipo_video] = acc[c.tipo_video] ?? []).push(c);
+                return acc;
+              }, {});
+              return Object.entries(grupos).map(([tipo, modulos]) => (
+                <div key={tipo} className="card p-6 space-y-4">
+                  <h3 className="font-semibold text-ink-700 text-sm uppercase tracking-wide flex items-center gap-2">
+                    <Video size={14} />
+                    {tipo === 'video_cv' ? 'Video CV' : tipo === 'video_cv_eess' ? 'Video CV — Estaciones de Servicio' : tipo}
+                  </h3>
+                  {modulos.map(c => {
+                    const e = getConfigEdit(c);
+                    const dirty = isDirtyConfig(c);
+                    const saving = savingConfig === c.id;
+                    return (
+                      <div key={c.id} className="border border-gray-100 rounded-xl p-4 space-y-3 bg-ink-50/40">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-ink-800 text-sm">
+                            {c.orden}. {c.nombre_modulo}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <label className="text-xs text-ink-500">Duración (seg)</label>
+                            <input
+                              type="number"
+                              min={10}
+                              max={120}
+                              value={e.duracion_base}
+                              onChange={ev => setEditingConfig(prev => ({ ...prev, [c.id]: { ...e, duracion_base: Number(ev.target.value) } }))}
+                              className="input-field w-20 text-sm py-1"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="label text-xs mb-1 block">Texto guía (lo ve el usuario mientras graba)</label>
+                          <textarea
+                            rows={3}
+                            value={e.texto_guia}
+                            onChange={ev => setEditingConfig(prev => ({ ...prev, [c.id]: { ...e, texto_guia: ev.target.value } }))}
+                            className="input-field text-sm resize-y w-full"
+                          />
+                        </div>
+                        {dirty && (
+                          <button
+                            onClick={() => guardarConfig(c)}
+                            disabled={saving}
+                            className="btn-primary py-2 px-4 text-sm flex items-center gap-2 disabled:opacity-50"
+                          >
+                            {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                            {saving ? 'Guardando...' : 'Guardar cambios'}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ));
+            })()}
           </div>
         )}
 

@@ -27,7 +27,7 @@ const AREAS_EESS = [
 const INTRO_SLIDES = [
   {
     title: 'Armá tu perfil',
-    text: 'En minutos tenés tu perfil laboral digital completo. Las empresas te encuentran y vos encontrás las mejores oportunidades.',
+    text: 'En minutos tenés tu perfil laboral digital completo para mostrar todo tu potencial.',
     icon: (
       <svg viewBox="0 0 120 120" width="130" height="130" fill="none">
         <circle cx="60" cy="40" r="26" fill="#C7C7CC" />
@@ -37,7 +37,7 @@ const INTRO_SLIDES = [
   },
   {
     title: 'Grabá tu Video CV',
-    text: '90 segundos para mostrar quién sos. Las empresas te ven antes de leer nada. Tu cara, tu voz, tu personalidad.',
+    text: '90 segundos para mostrar tu talento. Tu cara, tu voz, tu personalidad — todo lo que un CV en papel no puede transmitir.',
     icon: (
       <svg viewBox="0 0 120 120" width="130" height="130" fill="none">
         <rect x="8" y="28" width="72" height="64" rx="8" fill="#C7C7CC" />
@@ -333,7 +333,7 @@ function OnboardingInner({ nombre, areaLaboral, tieneVideo, origen }: Props) {
                 {[
                   'Generamos tu CV profesional en segundos',
                   'Compartís tu perfil con empleadores',
-                  'Las empresas te encuentran por tu perfil',
+                  'Mostrás tu talento más allá del papel',
                 ].map(t => (
                   <div key={t} className="flex items-start gap-2">
                     <span className="text-brand-500 text-xs mt-0.5 flex-shrink-0">→</span>

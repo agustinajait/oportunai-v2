@@ -289,6 +289,24 @@ function OnboardingInner({ nombre, areaLaboral, tieneVideo, origen }: Props) {
                 </p>
               </div>
 
+              {/* Tutorial */}
+              <div className="rounded-2xl border border-gray-100 shadow-sm overflow-hidden bg-white">
+                <div className="px-4 pt-4 pb-2">
+                  <p className="text-xs font-semibold text-ink-500 uppercase tracking-wide mb-1">🎬 Mirá el tutorial antes de grabar</p>
+                  <p className="text-xs text-ink-400">Seguí estos consejos y tu Video CV va a destacar.</p>
+                </div>
+                <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                  <iframe
+                    src="https://www.youtube.com/embed/vUxJi3MTcOU"
+                    title="Tutorial Video CV"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 w-full h-full"
+                    style={{ border: 'none' }}
+                  />
+                </div>
+              </div>
+
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
 
                 {/* Preview visual */}

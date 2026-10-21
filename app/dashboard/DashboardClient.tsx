@@ -394,7 +394,6 @@ export default function DashboardClient({
       const data = await res.json();
       setCvDatos(data.cv_datos);
       setMejoraOk(true);
-      setAnalisisCV(null); // Limpiar análisis para que se regenere con el CV mejorado
     } catch {
       // silencioso, usuario puede reintentar
     } finally {
@@ -2958,7 +2957,14 @@ export default function DashboardClient({
                   </div>
                 )}
 
-                {!analisisCV && !!(cvDatos?.resumen || (cvDatos?.experiencia?.length ?? 0) > 0 || (cvDatos?.habilidades?.length ?? 0) > 0) && (
+                {/* Toast de éxito de mejoras — visible aunque se limpie el análisis */}
+                {mejoraOk && !analisisCV && (
+                  <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
+                    <span className="text-xs text-emerald-700 font-semibold">✓ Mejoras aplicadas — tu CV fue actualizado</span>
+                  </div>
+                )}
+
+                {!analisisCV && !mejoraOk && !!(cvDatos?.resumen || (cvDatos?.experiencia?.length ?? 0) > 0 || (cvDatos?.habilidades?.length ?? 0) > 0) && (
                   <button
                     onClick={() => analizarCV()}
                     disabled={analisisLoading}
@@ -3033,26 +3039,27 @@ export default function DashboardClient({
                     )}
 
                     {/* Botón para aplicar las mejoras automáticamente */}
-                    {analisisCV.mejoras?.length > 0 && (
+                    {analisisCV.mejoras?.length > 0 && !mejoraOk && (
                       <div className="pt-1">
-                        {mejoraOk ? (
-                          <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
-                            <span className="text-xs text-emerald-700 font-semibold">✓ Mejoras aplicadas — tu CV fue actualizado</span>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={aplicarMejoras}
-                            disabled={mejorando}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-xs text-white transition-all active:scale-[0.98] disabled:opacity-60"
-                            style={{ background: 'linear-gradient(135deg,#0A9485,#14b8a6)' }}
-                          >
-                            {mejorando ? (
-                              <><Loader2 size={13} className="animate-spin" /> Aplicando mejoras...</>
-                            ) : (
-                              <><Sparkles size={13} /> Aplicar estas mejoras con IA</>
-                            )}
-                          </button>
-                        )}
+                        <button
+                          onClick={aplicarMejoras}
+                          disabled={mejorando}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-xs text-white transition-all active:scale-[0.98] disabled:opacity-60"
+                          style={{ background: 'linear-gradient(135deg,#0A9485,#14b8a6)' }}
+                        >
+                          {mejorando ? (
+                            <><Loader2 size={13} className="animate-spin" /> Aplicando mejoras...</>
+                          ) : (
+                            <><Sparkles size={13} /> Aplicar estas mejoras con IA</>
+                          )}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Toast de éxito inline (mientras analisisCV sigue visible) */}
+                    {mejoraOk && (
+                      <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
+                        <span className="text-xs text-emerald-700 font-semibold">✓ Mejoras aplicadas — tu CV fue actualizado</span>
                       </div>
                     )}
 

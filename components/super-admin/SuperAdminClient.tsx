@@ -448,7 +448,7 @@ export default function SuperAdminClient({
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-ink-100 rounded-xl p-1 mb-8 w-fit">
+        <div className="flex gap-1 bg-ink-100 rounded-xl p-1 mb-8 overflow-x-auto">
           {[
             { key: 'talleres', label: 'Talleres', icon: <BookOpen size={15} />, count: talleres.length },
             { key: 'usuarios', label: 'Usuarios', icon: <Users size={15} />, count: usuarios.length },

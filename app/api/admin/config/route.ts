@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { configuracionVideoSchema } from '@/lib/validations';
 export async function GET() {
   const session = await getSession();
-  if (!session || session.role !== 'admin') {
+  if (!session || (session.role !== 'admin' && session.role !== 'super_admin')) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
   }
 
@@ -18,7 +18,7 @@ export async function GET() {
 
 export async function PATCH(req: NextRequest) {
   const session = await getSession();
-  if (!session || session.role !== 'admin') {
+  if (!session || (session.role !== 'admin' && session.role !== 'super_admin')) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
   }
 

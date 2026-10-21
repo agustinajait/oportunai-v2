@@ -49,7 +49,7 @@ const INTRO_SLIDES = [
   },
   {
     title: 'Conseguí trabajo',
-    text: 'Postulate a ofertas, compartí tu perfil con empleadores y capacitate con cursos con certificado.',
+    text: 'Compartí tu perfil con empleadores, capacitate con cursos con certificado y conseguí tu próxima oportunidad laboral.',
     icon: (
       <svg viewBox="0 0 120 120" width="130" height="130" fill="none">
         <rect x="14" y="44" width="92" height="60" rx="8" fill="#C7C7CC" />
@@ -332,7 +332,7 @@ function OnboardingInner({ nombre, areaLaboral, tieneVideo, origen }: Props) {
                 <p className="text-xs font-semibold text-brand-700 uppercase tracking-wide">Después del video</p>
                 {[
                   'Generamos tu CV profesional en segundos',
-                  'Podés postularte a ofertas de trabajo',
+                  'Compartís tu perfil con empleadores',
                   'Las empresas te encuentran por tu perfil',
                 ].map(t => (
                   <div key={t} className="flex items-start gap-2">

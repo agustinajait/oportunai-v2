@@ -11,7 +11,7 @@ import {
   BookOpen, ChevronDown, ArrowRight, Zap, Briefcase, ShieldCheck,
   CalendarDays, MapPin, Loader2, Plus, GraduationCap, Briefcase as BriefcaseIcon, Wrench,
   Star, Building2, Link2, Trash2, PlayCircle, Download, Layers, AlertTriangle, CheckCircle2, XCircle, ChevronRight,
-  User, Search, Target, BrainCircuit, Sparkles,
+  User, Search, Target, BrainCircuit, Sparkles, Share2,
 } from 'lucide-react';
 import OfertasTab from '@/components/ui/OfertasTab';
 import BuscadorNL from '@/components/ui/BuscadorNL';
@@ -1582,6 +1582,31 @@ export default function DashboardClient({
                   </div>
                 </div>
               )}
+
+              {/* Acción: Compartir perfil */}
+              <div className="flex items-center gap-3 w-full rounded-2xl p-4 bg-white border border-gray-100 shadow-sm">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-brand-600">
+                  <Share2 size={20} color="#fff" />
+                </div>
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <p className="font-bold text-sm text-ink-800 leading-tight">Compartí tu perfil</p>
+                  <p className="text-ink-400 text-xs mt-0.5 truncate">{cvUrl.replace('https://', '')}</p>
+                </div>
+                <div className="flex gap-1.5 flex-shrink-0">
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent('Hola! Te comparto mi perfil laboral con mi CV y Video CV: ' + cvUrl)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="text-sm font-bold bg-[#25D366] text-white px-3 py-1.5 rounded-lg"
+                    style={{ textDecoration: 'none' }}
+                  >💬</a>
+                  <button
+                    onClick={() => copyUrl(cvUrl, 'share_mobile')}
+                    className="text-xs font-medium text-brand-600 px-3 py-1.5 rounded-lg bg-brand-50 flex items-center"
+                  >
+                    {copied === 'share_mobile' ? <CheckCheck size={12} className="text-emerald-600" /> : <Copy size={12} />}
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* ── Columna izquierda ──────────────────────────────── */}
@@ -2449,6 +2474,45 @@ export default function DashboardClient({
                 onUnlock={() => {}}
               />
 
+              {/* ── Compartí tu perfil laboral ──────────────────── */}
+              <div className="card p-5">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center bg-brand-600">
+                    <Share2 size={18} color="#fff" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-ink-800 text-sm">Compartí tu perfil laboral</p>
+                    <p className="text-xs text-ink-400">Tu CV, Video CV y referencias en un solo link</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 bg-ink-50 rounded-xl px-3 py-2.5 mb-3">
+                  <p className="text-xs text-ink-600 truncate flex-1 font-mono">{cvUrl}</p>
+                  <button onClick={() => copyUrl(cvUrl, 'share_card')} className="text-brand-600 flex-shrink-0 hover:text-brand-800 transition-colors">
+                    {copied === 'share_card' ? <CheckCheck size={16} className="text-emerald-600" /> : <Copy size={16} />}
+                  </button>
+                </div>
+
+                <div className="flex gap-2">
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent('Hola! Te comparto mi perfil laboral con mi CV y Video CV: ' + cvUrl)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#25D366] hover:bg-[#20b958] transition-colors"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    💬 WhatsApp
+                  </a>
+                  <Link
+                    href={`/u/${usuario.slug}`}
+                    target="_blank"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    <User size={14} /> Ver como empleador
+                  </Link>
+                </div>
+              </div>
+
               {/* ── Mi camino al empleo (plan personalizado) ──────── */}
               {(() => {
                 const tieneVideo   = !!videoCV;
@@ -2608,6 +2672,26 @@ export default function DashboardClient({
                         </button>
                       </div>
                     )}
+
+                    {/* Herramientas IA */}
+                    <div className="flex gap-2 mb-3">
+                      <button
+                        onClick={() => document.getElementById('cv-analyzer-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                        className="flex-1 flex flex-col items-center gap-1 bg-sky-50 border border-sky-100 rounded-xl py-2.5 px-2 text-center hover:bg-sky-100 transition-colors"
+                      >
+                        <BrainCircuit size={16} className="text-sky-600" />
+                        <p className="text-[10px] font-semibold text-sky-700 leading-tight">Revisión de CV</p>
+                        <p className="text-[9px] text-sky-500">Analizamos y mejoramos</p>
+                      </button>
+                      <button
+                        onClick={() => document.getElementById('fit-check-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                        className="flex-1 flex flex-col items-center gap-1 bg-violet-50 border border-violet-100 rounded-xl py-2.5 px-2 text-center hover:bg-violet-100 transition-colors"
+                      >
+                        <Target size={16} className="text-violet-600" />
+                        <p className="text-[10px] font-semibold text-violet-700 leading-tight">Comparar con oferta</p>
+                        <p className="text-[9px] text-violet-500">¿Sos compatible?</p>
+                      </button>
+                    </div>
 
                     {/* CTA Ver perfil laboral */}
                     <Link
@@ -2932,7 +3016,7 @@ export default function DashboardClient({
               </div>
 
               {/* ── Analizador de CV ──────────────────────────────── */}
-              <div className="card p-5">
+              <div id="cv-analyzer-section" className="card p-5">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#0ea5e9,#38bdf8)' }}>
                     <BrainCircuit size={18} color="#fff" />
@@ -3080,7 +3164,7 @@ export default function DashboardClient({
               </div>
 
               {/* ── Adaptación al puesto ──────────────────────────── */}
-              <div className="card p-5">
+              <div id="fit-check-section" className="card p-5">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#8b5cf6,#a78bfa)' }}>
                     <Target size={18} color="#fff" />

@@ -9,26 +9,30 @@ interface Props { params: { slug: string } }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const usuario = await prisma.usuario.findUnique({
     where: { slug: params.slug },
-    select: { nombre_completo: true },
+    select: { nombre_completo: true, foto_url: true, cv_datos: true },
   });
 
   if (!usuario) return { title: 'Perfil no encontrado' };
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
-  const ogImage = `${appUrl}/og-default.png`;
+  const ogImage = (usuario.foto_url as string | null) ?? `${appUrl}/og-default.png`;
+  const cv = usuario.cv_datos as { resumen?: string } | null;
+  const descripcion = cv?.resumen
+    ? `${cv.resumen.slice(0, 120)}…`
+    : `Mirá el perfil laboral de ${usuario.nombre_completo} en Oportunai.`;
+
   return {
-    title: `Video CV de ${usuario.nombre_completo} | Oportunai`,
-    description: `Mirá el Video CV de ${usuario.nombre_completo} en Oportunai.`,
+    title: `Perfil de ${usuario.nombre_completo} | Oportunai`,
+    description: descripcion,
     openGraph: {
       title: `Conocé a ${usuario.nombre_completo}`,
-      description: `Mirá el Video CV de ${usuario.nombre_completo} en Oportunai.`,
+      description: descripcion,
       url: `${appUrl}/u/${params.slug}/cv`,
       siteName: 'Oportunai',
-      images: [{ url: ogImage, width: 1200, height: 630, alt: `Video CV de ${usuario.nombre_completo}` }],
-      type: 'video.other',
-      videos: [{ url: `${appUrl}/u/${params.slug}/cv`, type: 'text/html' }],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: `Foto de ${usuario.nombre_completo}` }],
+      type: 'profile',
     },
-    twitter: { card: 'summary_large_image', title: `Conocé a ${usuario.nombre_completo}`, description: `Mirá el Video CV de ${usuario.nombre_completo} en Oportunai.`, images: [ogImage] },
+    twitter: { card: 'summary_large_image', title: `Conocé a ${usuario.nombre_completo}`, description: descripcion, images: [ogImage] },
   };
 }
 
